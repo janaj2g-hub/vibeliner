@@ -159,6 +159,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     private var localEventMonitor: Any?
     private var globalEventMonitor: Any?
     private var pendingScreenRecordingRemediationRefresh = false
+    private var requiresScreenRecordingRelaunch = false
 
     private lazy var popoverController = NSHostingController(
         rootView: MenuBarPopover(
@@ -220,7 +221,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
                 screenRecordingState: refreshedState
             )
             if refreshedState.isAuthorized {
-                presentIssue(screenRecordingRelaunchIssue())
+                handleAuthorizedScreenRecordingGrant()
             }
             return
         }
@@ -332,6 +333,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         guard liveScreenRecordingState.isAuthorized else {
             presentIssue(ScreenRecordingPermissionState.notGranted.issue, offersScreenRecordingShortcut: true)
+            return false
+        }
+
+        guard !requiresScreenRecordingRelaunch else {
+            presentIssue(screenRecordingRelaunchIssue())
             return false
         }
 
@@ -525,7 +531,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
 
         if isAuthorized {
-            presentIssue(screenRecordingRelaunchIssue())
+            handleAuthorizedScreenRecordingGrant()
             return
         }
 
@@ -754,10 +760,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     private func screenRecordingRelaunchIssue() -> UserFacingIssue {
-        UserFacingIssue(
-            title: "Quit and reopen vibeliner",
-            message: "macOS now appears to allow Screen Recording for vibeliner.",
-            recoverySuggestion: "Quit and reopen the app, then try your capture again so the updated permission applies cleanly.",
+        let runtimeIdentity = AppRuntimeIdentity.current()
+        return UserFacingIssue(
+            title: "Relaunch required before capture",
+            message: "Screen Recording permission changed, but this running process cannot safely resume capture until it restarts.",
+            recoverySuggestion: "Relaunch into the canonical app copy before trying capture again. \(runtimeIdentity.canonicalLaunchGuidance)",
             technicalDetails: nil
         )
     }
@@ -772,6 +779,38 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             recoverySuggestion: recoverySuggestion,
             technicalDetails: "runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
         )
+    }
+
+    private func handleAuthorizedScreenRecordingGrant() {
+        requiresScreenRecordingRelaunch = true
+
+        if relaunchIntoCanonicalAppIfPossible() {
+            return
+        }
+
+        presentIssue(screenRecordingRelaunchIssue())
+    }
+
+    @discardableResult
+    private func relaunchIntoCanonicalAppIfPossible() -> Bool {
+        let runtimeIdentity = AppRuntimeIdentity.current()
+        guard let canonicalAppURL = runtimeIdentity.canonicalAppURL else {
+            return false
+        }
+
+        guard FileManager.default.fileExists(atPath: canonicalAppURL.path) else {
+            return false
+        }
+
+        guard NSWorkspace.shared.open(canonicalAppURL) else {
+            return false
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            NSApp.terminate(nil)
+        }
+
+        return true
     }
 
     private func presentIssue(_ issue: UserFacingIssue, offersScreenRecordingShortcut: Bool = false) {

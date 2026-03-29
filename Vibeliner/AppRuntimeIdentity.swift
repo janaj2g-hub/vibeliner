@@ -41,6 +41,14 @@ struct AppRuntimeIdentity {
         return "Launch \(expectedDistAppPath) before testing capture or authorizing Screen Recording."
     }
 
+    var canonicalAppURL: URL? {
+        guard let expectedDistAppPath else {
+            return nil
+        }
+
+        return URL(fileURLWithPath: expectedDistAppPath)
+    }
+
     var runCopyStatus: String {
         if isSupportedRuntimeCopy {
             return "Running the canonical repo-local dist app. Use this copy for Screen Recording authorization and capture testing."
