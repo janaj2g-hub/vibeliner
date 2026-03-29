@@ -172,6 +172,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             openGeneralSettings: { [weak self] in
                 self?.showSettings(for: .general)
             },
+            openHotkeySettings: { [weak self] in
+                self?.showSettings(for: .hotkey)
+            },
             openPromptSettings: { [weak self] in
                 self?.showSettings(for: .promptSettings)
             },

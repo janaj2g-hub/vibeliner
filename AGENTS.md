@@ -73,7 +73,7 @@ If you touch prompt/export semantics, screenshot-path insertion, or annotation m
 - **Language:** Swift 5 language mode in Xcode (`SWIFT_VERSION = 5.0`); currently built on this machine with Apple Swift 6.3 / Xcode 26.4
 - **Frameworks:** AppKit + SwiftUI, macOS 14+
 - **Build:** `xcodebuild -project Vibeliner.xcodeproj -scheme Vibeliner build`
-- **Run:** `open /Users/jongrossman/Documents/vibeliner/V1/vibeliner/dist/Vibeliner.app` for the latest repo-local app, or run from Xcode
+- **Run:** `./scripts/open-dist-app.sh` for the canonical repo-local app, or `open /Users/jongrossman/Documents/vibeliner/V1/vibeliner/dist/Vibeliner.app`
 - **Dependencies:** KeyboardShortcuts (Sindre Sorhus), ArgumentParser (Apple, CLI only)
 
 ## Technical background
@@ -201,9 +201,10 @@ xcodebuild -project Vibeliner.xcodeproj -scheme vibeliner-cli build
 
 Notes:
 - The shared `Vibeliner` scheme copies the built app to `dist/Vibeliner.app` on every successful app build.
-- Treat `dist/Vibeliner.app` as the canonical bundle for manual testing outside Xcode.
-- Xcode's Run button still launches the DerivedData app, not `dist/Vibeliner.app`.
-- For Screen Recording / TCC debugging, authorize the same bundle path the app reports in About. Prefer `dist/Vibeliner.app` for stable local testing.
+- Treat `dist/Vibeliner.app` as the canonical bundle for Screen Recording authorization and manual capture testing.
+- Use `./scripts/open-dist-app.sh` after builds so the same supported app copy is opened every time.
+- Xcode's Run button still launches the DerivedData app, not `dist/Vibeliner.app`, and that copy is not the supported capture runtime.
+- For Screen Recording / TCC debugging, authorize the same bundle path the app reports in About and prefer the canonical `dist/Vibeliner.app` path.
 - `dist/` is ignored by git; do not commit the built `.app` bundle.
 
 ## Reference

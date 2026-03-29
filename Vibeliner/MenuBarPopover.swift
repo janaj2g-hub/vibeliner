@@ -12,12 +12,12 @@ private struct InteractiveMenuRow<Content: View>: View {
     var body: some View {
         Button(action: action) {
             content()
-                .padding(.horizontal, 10)
-                .padding(.vertical, 7)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 9)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
-                    RoundedRectangle(cornerRadius: 10, style: .continuous)
-                        .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(isHovered ? Color.white.opacity(0.09) : Color.clear)
                 )
         }
         .buttonStyle(.plain)
@@ -34,6 +34,7 @@ struct MenuBarPopover: View {
     let startCapture: () -> Void
     let onCopyCapturePrompt: (CaptureRecord) -> Bool
     let openGeneralSettings: () -> Void
+    let openHotkeySettings: () -> Void
     let openPromptSettings: () -> Void
     let openAboutSettings: () -> Void
     let openCapturesFolder: () -> Void
@@ -48,6 +49,14 @@ struct MenuBarPopover: View {
         formatter.unitsStyle = .short
         return formatter
     }()
+
+    private var shortcutSummary: String {
+        guard let shortcut = KeyboardShortcuts.getShortcut(for: .captureScreen) else {
+            return "Not set"
+        }
+
+        return String(describing: shortcut)
+    }
 
     private var showsSetupSection: Bool {
         let setupNeedsScreenRecording = !appState.setupSummary.screenRecordingAuthorized
@@ -64,10 +73,27 @@ struct MenuBarPopover: View {
         return !(appState.lastIssue?.isScreenRecordingRelated ?? false)
     }
 
+    private var needsStorageSetup: Bool {
+        !appState.setupSummary.storageStatus.isReady
+    }
+
+    private var recentCapturesSummary: String {
+        let count = appState.recentCaptures.count
+        guard count > 0 else {
+            return "None"
+        }
+
+        if count == 1 {
+            return "1 item"
+        }
+
+        return "\(count) items"
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            if showsSetupSection {
-                readinessSection
+            if showsSetupSection || needsStorageSetup {
+                setupActionsSection
                 sectionDivider
             }
 
@@ -76,124 +102,98 @@ struct MenuBarPopover: View {
                 sectionDivider
             }
 
-            recentCapturesSection
+            primaryActionsSection
             sectionDivider
-            utilitySection
-            sectionDivider
-            hotkeySection
-            sectionDivider
+            settingsSection
 
             InteractiveMenuRow(isEnabled: true, action: openAboutSettings) {
                 menuRowLabel("About vibeliner", systemImage: "info.circle")
             }
 
+            sectionDivider
+
             InteractiveMenuRow(isEnabled: true, action: { NSApp.terminate(nil) }) {
-                Text("Quit vibeliner")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.primary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
+                menuRowLabel("Quit vibeliner", systemImage: "power")
             }
         }
-        .padding(14)
-        .frame(width: 320)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 10)
+        .frame(width: 286)
         .fixedSize(horizontal: false, vertical: true)
     }
 
-    private var readinessSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("Setup")
-
-            VStack(alignment: .leading, spacing: 0) {
-                Text(appState.setupSummary.setupHeading)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.orange)
-                    .padding(.bottom, 8)
-
-                if !appState.setupSummary.screenRecordingAuthorized {
-                    readinessRow(
-                        symbol: "1",
-                        title: "Screen Recording permission",
-                        isReady: false,
-                        detail: compactReadinessDetail(for: appState.setupSummary.screenRecordingDetail),
-                        actionTitle: "Grant Access",
-                        action: requestScreenRecordingAccess
+    private var setupActionsSection: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            if showsSetupSection {
+                InteractiveMenuRow(isEnabled: true, action: requestScreenRecordingAccess) {
+                    menuRowLabel(
+                        "Grant Screen Recording Access",
+                        systemImage: "display",
+                        trailingText: nil,
+                        showsChevron: true,
+                        accentColor: .orange
                     )
                 }
-
-                if !appState.setupSummary.screenRecordingAuthorized && !appState.setupSummary.storageStatus.isReady {
-                    sectionDivider
-                        .padding(.vertical, 10)
-                }
-
-                readinessRow(
-                    symbol: appState.setupSummary.storageStatus.isReady ? "checkmark" : (!appState.setupSummary.screenRecordingAuthorized ? "2" : "1"),
-                    title: "Captures folder",
-                    isReady: appState.setupSummary.storageStatus.isReady,
-                    detail: compactReadinessDetail(for: appState.setupSummary.storageStatus.detail),
-                    actionTitle: "Open Folder",
-                    action: openCapturesFolder
-                )
             }
-            .padding(12)
-            .background(sectionCardBackground)
-            .overlay(sectionCardBorder)
-            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+
+            if needsStorageSetup {
+                InteractiveMenuRow(isEnabled: true, action: openCapturesFolder) {
+                    menuRowLabel(
+                        "Open captures folder",
+                        systemImage: "folder",
+                        trailingText: nil,
+                        showsChevron: true,
+                        accentColor: .orange
+                    )
+                }
+            }
         }
-    }
-
-    private var sectionCardBackground: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .fill(Color.white.opacity(0.05))
-    }
-
-    private var sectionCardBorder: some View {
-        RoundedRectangle(cornerRadius: 16, style: .continuous)
-            .stroke(Color.white.opacity(0.06), lineWidth: 1)
     }
 
     private var sectionDivider: some View {
         Rectangle()
-            .fill(Color(nsColor: .separatorColor).opacity(0.35))
+            .fill(Color.white.opacity(0.11))
             .frame(height: 1)
-            .padding(.vertical, 10)
+            .padding(.vertical, 8)
     }
 
-    private func menuRowLabel(_ title: String, systemImage: String) -> some View {
+    private func menuRowLabel(
+        _ title: String,
+        systemImage: String,
+        trailingText: String? = nil,
+        showsChevron: Bool = false,
+        accentColor: Color? = nil
+    ) -> some View {
         HStack(spacing: 10) {
             Image(systemName: systemImage)
-                .font(.system(size: 13, weight: .medium))
-                .foregroundStyle(.primary)
+                .font(.system(size: 14, weight: .regular))
+                .foregroundStyle(accentColor ?? .primary)
                 .frame(width: 18)
 
             Text(title)
-                .font(.system(size: 13))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(accentColor ?? .primary)
 
             Spacer()
+
+            if let trailingText {
+                Text(trailingText)
+                    .font(.system(size: 13))
+                    .foregroundStyle(.secondary)
+            }
+
+            if showsChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(.secondary.opacity(0.8))
+            }
         }
         .contentShape(Rectangle())
     }
 
-    private func iconBadge(symbol: String, isReady: Bool) -> some View {
-        ZStack {
-            Circle()
-                .fill(isReady ? Color.green.opacity(0.2) : Color.white.opacity(0.08))
-                .frame(width: 28, height: 28)
-
-            if symbol == "checkmark" {
-                Image(systemName: "checkmark")
-                    .font(.system(size: 13, weight: .bold))
-                    .foregroundStyle(.green)
-            } else {
-                Text(symbol)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.orange)
-            }
-        }
-    }
-
     private func issueSection(_ issue: UserFacingIssue) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(alignment: .top) {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(alignment: .firstTextBaseline) {
                 Label(issue.title, systemImage: "exclamationmark.triangle.fill")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.orange)
@@ -217,96 +217,54 @@ struct MenuBarPopover: View {
 
             Text(issue.message)
                 .font(.system(size: 11))
-                .foregroundStyle(.primary)
+                .foregroundStyle(.secondary)
 
             if let recoverySuggestion = issue.recoverySuggestion, !recoverySuggestion.isEmpty {
                 Text(recoverySuggestion)
-                    .font(.system(size: 11))
+                .font(.system(size: 11))
                     .foregroundStyle(.secondary)
             }
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color.white.opacity(0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.orange.opacity(0.18), lineWidth: 1)
-        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
     }
 
-    private var recentCapturesSection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            sectionTitle("Recent Captures")
-
-            if appState.recentCaptures.isEmpty {
-                Text("no captures yet")
-                    .font(.system(size: 12))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            } else {
-                ForEach(appState.recentCaptures, id: \.id) { record in
-                    InteractiveMenuRow(isEnabled: true, action: { copyCapturePrompt(for: record) }) {
-                        HStack(alignment: .center, spacing: 10) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(displaySlug(for: record.slug))
-                                    .font(.system(size: 12, weight: .bold))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-
-                                Text("\(record.count) \(record.count == 1 ? "note" : "notes") · \(relativeFormatter.localizedString(for: record.created, relativeTo: Date()))")
-                                    .font(.system(size: 11))
-                                    .foregroundStyle(.secondary)
-                                    .lineLimit(1)
-                            }
-
-                            Spacer()
-
-                            if copiedCaptureID == record.id {
-                                Text("Copied")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundStyle(.blue)
-                                    .transition(.opacity)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private var utilitySection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            sectionTitle("Actions")
-
+    private var primaryActionsSection: some View {
+        VStack(alignment: .leading, spacing: 2) {
             InteractiveMenuRow(isEnabled: !appState.isCaptureInProgress, action: startCapture) {
                 menuRowLabel(appState.isCaptureInProgress ? "Capturing..." : "Capture now", systemImage: "camera.viewfinder")
             }
 
-            InteractiveMenuRow(isEnabled: true, action: openPromptSettings) {
-                menuRowLabel("Prompt settings", systemImage: "slider.horizontal.3")
-            }
-
-            InteractiveMenuRow(isEnabled: true, action: openGeneralSettings) {
-                menuRowLabel("General settings", systemImage: "gearshape")
+            if let latestCapture = appState.recentCaptures.first {
+                InteractiveMenuRow(isEnabled: true, action: { copyCapturePrompt(for: latestCapture) }) {
+                    menuRowLabel(
+                        "Copy latest capture",
+                        systemImage: "clock.arrow.circlepath",
+                        trailingText: copiedCaptureID == latestCapture.id
+                            ? "Copied"
+                            : relativeFormatter.localizedString(for: latestCapture.created, relativeTo: Date())
+                    )
+                }
             }
 
             InteractiveMenuRow(isEnabled: true, action: openCapturesFolder) {
-                menuRowLabel("Open captures folder", systemImage: "folder")
+                menuRowLabel("Recent captures", systemImage: "tray.full", trailingText: recentCapturesSummary, showsChevron: true)
             }
         }
     }
 
-    private var hotkeySection: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            sectionTitle("Hotkey")
+    private var settingsSection: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            InteractiveMenuRow(isEnabled: true, action: openPromptSettings) {
+                menuRowLabel("Prompt settings", systemImage: "slider.horizontal.3", showsChevron: true)
+            }
 
-            HStack {
-                Text("Change hotkey")
-                    .font(.system(size: 12))
-                Spacer()
-                KeyboardShortcuts.Recorder(for: .captureScreen)
+            InteractiveMenuRow(isEnabled: true, action: openGeneralSettings) {
+                menuRowLabel("General settings", systemImage: "gearshape", showsChevron: true)
+            }
+
+            InteractiveMenuRow(isEnabled: true, action: openHotkeySettings) {
+                menuRowLabel("Hotkey", systemImage: "command", trailingText: shortcutSummary, showsChevron: true)
             }
         }
     }
@@ -327,49 +285,6 @@ struct MenuBarPopover: View {
                 copiedCaptureID = nil
             }
         }
-    }
-
-    private func readinessRow(
-        symbol: String,
-        title: String,
-        isReady: Bool,
-        detail: String,
-        actionTitle: String?,
-        action: @escaping () -> Void
-    ) -> some View {
-        HStack(alignment: .top, spacing: 12) {
-            iconBadge(symbol: symbol, isReady: isReady)
-
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text(title)
-                        .font(.system(size: 13, weight: .semibold))
-
-                    Spacer()
-
-                    if let actionTitle {
-                        Button(actionTitle) {
-                            action()
-                        }
-                        .buttonStyle(.plain)
-                        .font(.system(size: 12))
-                        .foregroundStyle(.blue)
-                    }
-                }
-
-                Text(detail)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-        }
-    }
-
-    private func sectionTitle(_ title: String) -> some View {
-        Text(title)
-            .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(.secondary)
-            .padding(.horizontal, 10)
     }
 
     private func displaySlug(for slug: String) -> String {

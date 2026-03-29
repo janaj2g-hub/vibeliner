@@ -26,7 +26,7 @@ class CaptureManager {
     private init() {}
 
     func captureRegion() async -> CaptureOutcome {
-        let runtimeIdentity = CaptureRuntimeIdentity.current()
+        let runtimeIdentity = AppRuntimeIdentity.current()
         let captureURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("png")
@@ -135,7 +135,7 @@ class CaptureManager {
         outputURL: URL
     ) -> CaptureFailure {
         let stderr = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-        let runtimeIdentity = CaptureRuntimeIdentity.current()
+        let runtimeIdentity = AppRuntimeIdentity.current()
         let diagnostics = diagnosticSummary(
             result: result,
             fileStatus: fileStatus,
@@ -211,7 +211,7 @@ class CaptureManager {
         result: (exitCode: Int32, standardError: String),
         fileStatus: CaptureFileStatus,
         outputURL: URL,
-        runtimeIdentity: CaptureRuntimeIdentity
+        runtimeIdentity: AppRuntimeIdentity
     ) -> String {
         let stderr = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
         let stderrSummary = stderr.isEmpty ? "<empty>" : stderr
@@ -238,60 +238,5 @@ private struct CaptureFileStatus {
             exists = false
             size = nil
         }
-    }
-}
-
-private struct CaptureRuntimeIdentity {
-    let bundleIdentifier: String
-    let appBundlePath: String
-    let expectedDistAppPath: String?
-
-    var isRunningDerivedDataCopy: Bool {
-        appBundlePath.contains("/DerivedData/")
-    }
-
-    var isLikelyRunningWrongAppCopy: Bool {
-        guard let expectedDistAppPath else {
-            return isRunningDerivedDataCopy
-        }
-
-        return isRunningDerivedDataCopy || appBundlePath != expectedDistAppPath
-    }
-
-    var runCopyLabel: String {
-        if let expectedDistAppPath, appBundlePath == expectedDistAppPath {
-            return "dist"
-        }
-
-        if isRunningDerivedDataCopy {
-            return "derivedData"
-        }
-
-        return "other"
-    }
-
-    var runCopyRecoverySuggestion: String {
-        if let expectedDistAppPath {
-            return "Authorize the exact app copy you are running in Screen Recording, or rebuild and launch \(expectedDistAppPath), then quit and reopen vibeliner before retrying."
-        }
-
-        return "Authorize the exact app copy you are running in Screen Recording, then quit and reopen vibeliner before retrying."
-    }
-
-    static func current() -> Self {
-        let bundle = Bundle.main
-        let sourceRoot = bundle.object(forInfoDictionaryKey: "VBLSourceRoot") as? String
-        let expectedDistAppPath = sourceRoot.map {
-            URL(fileURLWithPath: $0)
-                .appendingPathComponent("dist/Vibeliner.app")
-                .standardizedFileURL
-                .path
-        }
-
-        return CaptureRuntimeIdentity(
-            bundleIdentifier: bundle.bundleIdentifier ?? "unknown",
-            appBundlePath: bundle.bundleURL.standardizedFileURL.path,
-            expectedDistAppPath: expectedDistAppPath
-        )
     }
 }

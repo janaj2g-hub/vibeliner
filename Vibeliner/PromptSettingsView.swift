@@ -326,37 +326,19 @@ struct PromptSettingsView: View {
     }
 
     private var bundleIdentifier: String {
-        Bundle.main.bundleIdentifier ?? "unknown"
+        AppRuntimeIdentity.current().bundleIdentifier
     }
 
     private var appBundlePath: String {
-        Bundle.main.bundleURL.standardizedFileURL.path
+        AppRuntimeIdentity.current().appBundlePath
     }
 
     private var expectedDistAppPath: String? {
-        guard
-            let sourceRoot = Bundle.main.object(forInfoDictionaryKey: "VBLSourceRoot") as? String,
-            !sourceRoot.isEmpty
-        else {
-            return nil
-        }
-
-        return URL(fileURLWithPath: sourceRoot)
-            .appendingPathComponent("dist/Vibeliner.app")
-            .standardizedFileURL
-            .path
+        AppRuntimeIdentity.current().expectedDistAppPath
     }
 
     private var runCopyStatus: String {
-        if let expectedDistAppPath, appBundlePath == expectedDistAppPath {
-            return "Running the repo-local dist app. Use this copy for the most stable Screen Recording/TCC testing."
-        }
-
-        if appBundlePath.contains("/DerivedData/") {
-            return "Running the Xcode DerivedData app. Screen Recording approval for dist/Vibeliner.app will not apply to this copy."
-        }
-
-        return "Running a non-dist app copy. Make sure macOS Screen Recording approval was granted to this exact path."
+        AppRuntimeIdentity.current().runCopyStatus
     }
 
     private func refreshSaveDir() {

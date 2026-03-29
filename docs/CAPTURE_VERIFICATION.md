@@ -2,6 +2,13 @@
 
 Use this checklist when debugging Screen Recording, `screencapture`, or app-copy/TCC issues.
 
+## Canonical runtime
+
+- Build with `xcodebuild -project Vibeliner.xcodeproj -scheme Vibeliner build`.
+- Launch with `./scripts/open-dist-app.sh`.
+- Treat `dist/Vibeliner.app` as the only supported local runtime for Screen Recording authorization and manual capture verification.
+- Do not use the Xcode DerivedData app as the reference runtime for capture testing.
+
 ## Manual matrix
 
 - First run, permission missing:
@@ -25,5 +32,6 @@ Use this checklist when debugging Screen Recording, `screencapture`, or app-copy
 ## Notes
 
 - Prefer `dist/Vibeliner.app` for the most stable local TCC testing.
-- Xcode Run still launches the DerivedData app unless you explicitly launch the repo-local bundle yourself.
+- Use `./scripts/open-dist-app.sh` so the same supported app copy is opened every time after a build.
+- Xcode Run still launches the DerivedData app unless you explicitly launch the repo-local bundle yourself, and that copy is not the supported capture runtime.
 - When debugging authorization, always verify the exact app path macOS approved matches the copy you are currently running.
