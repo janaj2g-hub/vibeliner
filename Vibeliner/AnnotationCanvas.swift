@@ -7,12 +7,42 @@ private struct AnnotationDragState {
     var hasExceededThreshold: Bool
 }
 
+private final class InlineNoteTextFieldCell: NSTextFieldCell {
+    var textInsets = NSSize(width: 12, height: 8)
+
+    override func drawingRect(forBounds rect: NSRect) -> NSRect {
+        adjustedRect(forBounds: rect)
+    }
+
+    override func titleRect(forBounds rect: NSRect) -> NSRect {
+        adjustedRect(forBounds: rect)
+    }
+
+    override func select(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate anObject: Any?, start selStart: Int, length selLength: Int) {
+        super.select(withFrame: adjustedRect(forBounds: rect), in: controlView, editor: textObj, delegate: anObject, start: selStart, length: selLength)
+    }
+
+    override func edit(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate anObject: Any?, event theEvent: NSEvent?) {
+        super.edit(withFrame: adjustedRect(forBounds: rect), in: controlView, editor: textObj, delegate: anObject, event: theEvent)
+    }
+
+    private func adjustedRect(forBounds rect: NSRect) -> NSRect {
+        let insetRect = rect.insetBy(dx: textInsets.width, dy: textInsets.height)
+        let naturalSize = cellSize(forBounds: NSRect(origin: .zero, size: NSSize(width: insetRect.width, height: .greatestFiniteMagnitude)))
+        guard naturalSize.height < insetRect.height else {
+            return insetRect
+        }
+        let originY = insetRect.origin.y + floor((insetRect.height - naturalSize.height) / 2)
+        return NSRect(x: insetRect.origin.x, y: originY, width: insetRect.width, height: naturalSize.height)
+    }
+}
+
 class AnnotationCanvas: NSView, NSTextFieldDelegate {
     private let noteOffsetX: CGFloat = 22
-    private let noteHorizontalPadding: CGFloat = 10
-    private let noteVerticalPadding: CGFloat = 7
+    private let noteHorizontalPadding: CGFloat = 12
+    private let noteVerticalPadding: CGFloat = 8
     private let noteCornerRadius: CGFloat = 8
-    private let noteTextWidth: CGFloat = 176
+    private let noteMaxTextWidth: CGFloat = 176
     private let noteMinHeight: CGFloat = 30
     private let notePlaceholder = "Describe issue..."
 
@@ -263,16 +293,21 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         circle.fill()
 
         // White number text, smaller font for 2+ digits
-        let fontSize: CGFloat = number >= 10 ? 12 : 15
-        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .semibold)
+        let isDoubleDigit = number >= 10
+        let fontSize: CGFloat = isDoubleDigit ? 12 : 15
+        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
         let text = NSAttributedString(string: "\(number)", attributes: [
             .font: font,
             .foregroundColor: Constants.badgeTextColor
         ])
         let textSize = text.size()
+        let descender = abs(font.descender)
+        let baseY = badgeRect.midY - ((font.ascender - descender) / 2)
+        let textOriginY = floor(baseY - descender)
+        let textOriginX = floor(badgeRect.midX - (textSize.width / 2) + badgeOpticalOffsetX(for: number))
         let textRect = NSRect(
-            x: floor(badgeRect.midX - (textSize.width / 2)),
-            y: floor(badgeRect.midY - (textSize.height / 2) + (number >= 10 ? -0.5 : 0.25)),
+            x: textOriginX,
+            y: textOriginY,
             width: ceil(textSize.width),
             height: ceil(textSize.height)
         )
@@ -309,10 +344,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
             .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.5),
-            .paragraphStyle: paragraphStyle
+            .paragraphStyle: centeredParagraphStyle(using: paragraphStyle)
         ]
 
-        let textRect = rect.insetBy(dx: noteHorizontalPadding, dy: noteVerticalPadding - 1)
+        let textRect = rect.insetBy(dx: noteHorizontalPadding, dy: noteVerticalPadding)
         (note as NSString).draw(in: textRect, withAttributes: attributes)
     }
 
@@ -581,9 +616,13 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
         let textField = NSTextField(frame: fieldRect)
+        let cell = InlineNoteTextFieldCell()
+        cell.textInsets = NSSize(width: noteHorizontalPadding, height: noteVerticalPadding)
+        textField.cell = cell
         textField.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         textField.textColor = Constants.inlineNoteTextColor
         textField.backgroundColor = Constants.inlineNoteBackgroundColor
+        textField.alignment = .center
         textField.isBordered = false
         textField.isBezeled = false
         textField.focusRingType = .none
@@ -863,18 +902,20 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? notePlaceholder
             : annotation.note
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.lineBreakMode = .byWordWrapping
+        let paragraphStyle = centeredParagraphStyle()
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
             .paragraphStyle: paragraphStyle
         ]
 
+        let minTextWidth = ceil((notePlaceholder as NSString).size(withAttributes: attributes).width)
+        let measuredSingleLineWidth = ceil((note as NSString).size(withAttributes: attributes).width)
+        let textWidth = min(max(minTextWidth, measuredSingleLineWidth), noteMaxTextWidth)
         let constraintRect = NSRect(
             x: 0,
             y: 0,
-            width: noteTextWidth,
+            width: textWidth,
             height: .greatestFiniteMagnitude
         )
         let measuredRect = (note as NSString).boundingRect(
@@ -882,7 +923,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes
         )
-        let width = noteTextWidth + (noteHorizontalPadding * 2)
+        let width = textWidth + (noteHorizontalPadding * 2)
         let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
         let x = annotation.startPoint.x + noteOffsetX
 
@@ -901,6 +942,22 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         var annotation = annotations[activeAnnotationIndex]
         annotation.note = activeTextField.stringValue
         activeTextField.frame = noteRect(for: annotation)
+    }
+
+    private func centeredParagraphStyle(using paragraphStyle: NSMutableParagraphStyle = NSMutableParagraphStyle()) -> NSMutableParagraphStyle {
+        paragraphStyle.alignment = .center
+        paragraphStyle.lineBreakMode = .byWordWrapping
+        return paragraphStyle
+    }
+
+    private func badgeOpticalOffsetX(for number: Int) -> CGFloat {
+        if number == 3 {
+            return -0.8
+        }
+        if number >= 10 {
+            return -0.45
+        }
+        return 0
     }
 
     private func polylineContainsPoint(_ points: [CGPoint], point: CGPoint, tolerance: CGFloat) -> Bool {
