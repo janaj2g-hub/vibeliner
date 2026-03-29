@@ -21,13 +21,13 @@ struct PromptSettingsView: View {
             tokenGuidance
             preambleSection(
                 title: "Single capture preamble",
-                helper: "Use \(PromptBuilder.screenshotPathToken) to place the screenshot path yourself. If you omit it, Vibeliner appends a separate screenshot line automatically.",
+                helper: PromptBuilder.singlePreambleGuidance,
                 text: $preambleSingle,
                 resetAction: { preambleSingle = defaults.preambleSingle }
             )
             preambleSection(
                 title: "Batch preamble",
-                helper: "Reserved for multi-capture exports. The same screenshot-path token rules apply when this template is used.",
+                helper: PromptBuilder.batchPreambleGuidance,
                 text: $preambleBatch,
                 resetAction: { preambleBatch = defaults.preambleBatch }
             )
@@ -73,7 +73,7 @@ struct PromptSettingsView: View {
                         .fill(Color(nsColor: NSColor(calibratedWhite: 0.2, alpha: 1.0)))
                 )
 
-            Text("Saved prompt.md files keep a relative screenshot path (\(PromptBuilder.savedScreenshotReference)). Copy for LLM resolves that path to an absolute screenshot path so pasting works from any Claude Code or Cursor working directory.")
+            Text(PromptBuilder.pathGuidance)
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
