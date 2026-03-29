@@ -173,10 +173,9 @@ class CaptureStore {
 
         // Write prompt.md
         let promptURL = folderURL.appendingPathComponent(promptFilename)
-        let promptText = PromptBuilder.buildPrompt(
+        let promptText = PromptBuilder.buildSavedPrompt(
             preambleTemplate: preamble,
-            annotations: annotations,
-            screenshotReference: PromptBuilder.savedScreenshotReference
+            annotations: annotations
         )
         try promptText.write(to: promptURL, atomically: true, encoding: .utf8)
 
@@ -217,10 +216,9 @@ class CaptureStore {
 
         // Overwrite prompt.md
         let promptURL = folderURL.appendingPathComponent(promptFilename)
-        let promptText = PromptBuilder.buildPrompt(
+        let promptText = PromptBuilder.buildSavedPrompt(
             preambleTemplate: preamble,
-            annotations: annotations,
-            screenshotReference: PromptBuilder.savedScreenshotReference
+            annotations: annotations
         )
         try promptText.write(to: promptURL, atomically: true, encoding: .utf8)
 
