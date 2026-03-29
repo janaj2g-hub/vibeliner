@@ -10,10 +10,11 @@ private struct AnnotationDragState {
 class AnnotationCanvas: NSView, NSTextFieldDelegate {
     private let noteOffsetX: CGFloat = 22
     private let noteHorizontalPadding: CGFloat = 10
-    private let noteVerticalPadding: CGFloat = 5
+    private let noteVerticalPadding: CGFloat = 7
     private let noteCornerRadius: CGFloat = 8
-    private let noteMaxWidth: CGFloat = 240
-    private let noteMinWidth: CGFloat = 150
+    private let noteTextWidth: CGFloat = 176
+    private let noteMinHeight: CGFloat = 30
+    private let notePlaceholder = "Describe issue..."
 
     var backgroundImage: NSImage? {
         didSet { needsDisplay = true }
@@ -156,7 +157,6 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
     private func drawArrow(from start: CGPoint, to end: CGPoint) {
         Constants.annotationRed.setStroke()
-        Constants.annotationRed.setFill()
 
         // Line
         let linePath = NSBezierPath()
@@ -181,11 +181,12 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         linePath.move(to: start)
         linePath.line(to: end)
         linePath.stroke()
+        drawArrowhead(at: end, from: start, dashed: true)
     }
 
-    private func drawArrowhead(at tip: CGPoint, from origin: CGPoint) {
-        let headLength: CGFloat = 10
-        let headWidth: CGFloat = 8
+    private func drawArrowhead(at tip: CGPoint, from origin: CGPoint, dashed: Bool = false) {
+        let headLength: CGFloat = 14
+        let headWidth: CGFloat = 11
         let angle = atan2(tip.y - origin.y, tip.x - origin.x)
 
         let p1 = CGPoint(
@@ -198,11 +199,17 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         )
 
         let head = NSBezierPath()
-        head.move(to: tip)
-        head.line(to: p1)
+        head.lineWidth = Constants.strokeWidth
+        head.lineCapStyle = .round
+        head.lineJoinStyle = .round
+        if dashed {
+            let pattern: [CGFloat] = [6, 4]
+            head.setLineDash(pattern, count: 2, phase: 0)
+        }
+        head.move(to: p1)
+        head.line(to: tip)
         head.line(to: p2)
-        head.close()
-        head.fill()
+        head.stroke()
     }
 
     // MARK: - Circle Drawing
@@ -256,18 +263,20 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         circle.fill()
 
         // White number text, smaller font for 2+ digits
-        let fontSize: CGFloat = number >= 10 ? 12 : 14
-        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
-        let text = "\(number)" as NSString
-        let paragraphStyle = NSMutableParagraphStyle()
-        paragraphStyle.alignment = .center
-        let attrs: [NSAttributedString.Key: Any] = [
+        let fontSize: CGFloat = number >= 10 ? 12 : 15
+        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .semibold)
+        let text = NSAttributedString(string: "\(number)", attributes: [
             .font: font,
-            .foregroundColor: Constants.badgeTextColor,
-            .paragraphStyle: paragraphStyle
-        ]
-        let textRect = badgeRect.offsetBy(dx: 0, dy: number >= 10 ? -0.5 : 0.5)
-        text.draw(in: textRect, withAttributes: attrs)
+            .foregroundColor: Constants.badgeTextColor
+        ])
+        let textSize = text.size()
+        let textRect = NSRect(
+            x: floor(badgeRect.midX - (textSize.width / 2)),
+            y: floor(badgeRect.midY - (textSize.height / 2) + (number >= 10 ? -0.5 : 0.25)),
+            width: ceil(textSize.width),
+            height: ceil(textSize.height)
+        )
+        text.draw(in: textRect)
     }
 
     private func drawBadgeHoverRing(at point: CGPoint) {
@@ -373,21 +382,28 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             return
         }
 
-        if let index = annotationIndex(at: clamped) {
-            if activeAnnotationIndex == index, let activeTextField {
-                selectedAnnotationIndex = index
+        if let badgeIndex = badgeAnnotationIndex(near: clamped) {
+            if activeAnnotationIndex == badgeIndex, let activeTextField {
+                selectedAnnotationIndex = badgeIndex
                 window?.makeFirstResponder(activeTextField)
                 return
             }
 
             finalizeActiveTextField()
-            selectedAnnotationIndex = index
+            selectedAnnotationIndex = badgeIndex
             annotationDragState = AnnotationDragState(
-                index: index,
+                index: badgeIndex,
                 initialPoint: clamped,
                 lastPoint: clamped,
                 hasExceededThreshold: false
             )
+            needsDisplay = true
+            return
+        }
+
+        if let index = annotationIndex(at: clamped) {
+            finalizeActiveTextField()
+            selectedAnnotationIndex = index
             needsDisplay = true
             return
         }
@@ -572,13 +588,20 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         textField.isBezeled = false
         textField.focusRingType = .none
         textField.wantsLayer = true
-        textField.layer?.cornerRadius = 5
+        textField.layer?.cornerRadius = noteCornerRadius
         textField.layer?.masksToBounds = true
-        textField.placeholderString = "Describe issue..."
+        textField.placeholderString = notePlaceholder
         textField.delegate = self
         textField.isEditable = true
         textField.isSelectable = true
         textField.stringValue = annotation.note
+        if let cell = textField.cell as? NSTextFieldCell {
+            cell.wraps = true
+            cell.isScrollable = false
+            cell.usesSingleLineMode = false
+            cell.lineBreakMode = .byWordWrapping
+        }
+        textField.maximumNumberOfLines = 0
 
         // Remove any existing text field
         activeTextField?.removeFromSuperview()
@@ -596,6 +619,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             if becameFirstResponder {
                 textField.selectText(nil)
             }
+            self.resizeActiveTextField()
             self.isActivatingTextField = false
         }
     }
@@ -662,6 +686,12 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         DispatchQueue.main.async { [weak self] in
             self?.finalizeActiveTextField()
         }
+    }
+
+    func controlTextDidChange(_ obj: Notification) {
+        guard let changedField = obj.object as? NSTextField else { return }
+        guard changedField === activeTextField else { return }
+        resizeActiveTextField()
     }
 
     // MARK: - Undo
@@ -830,7 +860,9 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     }
 
     private func noteRect(for annotation: Annotation) -> NSRect {
-        let note = annotation.note.isEmpty ? "Describe issue..." : annotation.note
+        let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? notePlaceholder
+            : annotation.note
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.lineBreakMode = .byWordWrapping
 
@@ -839,31 +871,36 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             .paragraphStyle: paragraphStyle
         ]
 
-        let constraintRect = NSRect(x: 0, y: 0, width: noteMaxWidth - (noteHorizontalPadding * 2), height: .greatestFiniteMagnitude)
+        let constraintRect = NSRect(
+            x: 0,
+            y: 0,
+            width: noteTextWidth,
+            height: .greatestFiniteMagnitude
+        )
         let measuredRect = (note as NSString).boundingRect(
             with: constraintRect.size,
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes
         )
-        let width = min(
-            max(noteMinWidth, ceil(measuredRect.width) + (noteHorizontalPadding * 2)),
-            noteMaxWidth
-        )
-        let height = ceil(measuredRect.height) + (noteVerticalPadding * 2)
-        let proposedX = annotation.startPoint.x + noteOffsetX
-        let x: CGFloat
-        if proposedX + width > bounds.width {
-            x = annotation.startPoint.x - noteOffsetX - width
-        } else {
-            x = proposedX
-        }
+        let width = noteTextWidth + (noteHorizontalPadding * 2)
+        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
+        let x = annotation.startPoint.x + noteOffsetX
 
         return NSRect(
             x: x,
             y: annotation.startPoint.y - (height / 2),
             width: width,
-            height: max(20, height)
+            height: height
         )
+    }
+
+    private func resizeActiveTextField() {
+        guard let activeTextField, let activeAnnotationIndex, activeAnnotationIndex < annotations.count else {
+            return
+        }
+        var annotation = annotations[activeAnnotationIndex]
+        annotation.note = activeTextField.stringValue
+        activeTextField.frame = noteRect(for: annotation)
     }
 
     private func polylineContainsPoint(_ points: [CGPoint], point: CGPoint, tolerance: CGFloat) -> Bool {
