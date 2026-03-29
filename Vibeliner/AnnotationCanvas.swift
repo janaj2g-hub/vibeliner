@@ -37,6 +37,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
     // In-progress shape preview
     private var shapeStartPoint: CGPoint?
+    private var activeShapeTool: AnnotationType?
     private var trackingArea: NSTrackingArea?
 
     override var acceptsFirstResponder: Bool { true }
@@ -67,7 +68,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
         // Draw in-progress shape preview
         if let start = shapeStartPoint, let stroke = currentStroke, let end = stroke.last {
-            switch currentTool {
+            switch activeShapeTool ?? currentTool {
             case .arrow:
                 drawArrowPreview(from: start, to: end)
             case .circle:
@@ -330,8 +331,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         selectedAnnotationIndex = nil
 
         let clamped = clamp(point)
+        activeShapeTool = currentTool
+        let tool = activeShapeTool ?? currentTool
 
-        switch currentTool {
+        switch tool {
         case .freehand:
             currentStroke = [clamped]
         case .arrow, .circle:
@@ -343,8 +346,9 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override func mouseDragged(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
+        let tool = activeShapeTool ?? currentTool
 
-        switch currentTool {
+        switch tool {
         case .freehand:
             currentStroke?.append(clamped)
         case .arrow, .circle:
@@ -359,9 +363,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override func mouseUp(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
+        let tool = activeShapeTool ?? currentTool
 
         let annotation: Annotation
-        switch currentTool {
+        switch tool {
         case .freehand:
             guard let stroke = currentStroke else { return }
             let finalPoints: [CGPoint]
@@ -377,6 +382,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             )
         case .arrow:
             guard let start = shapeStartPoint else { return }
+            guard isMeaningfulShape(from: start, to: clamped) else {
+                resetInProgressShapeState()
+                return
+            }
             annotation = Annotation(
                 number: annotations.count + 1,
                 type: .arrow,
@@ -384,6 +393,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             )
         case .circle:
             guard let center = shapeStartPoint else { return }
+            guard isMeaningfulShape(from: center, to: clamped) else {
+                resetInProgressShapeState()
+                return
+            }
             annotation = Annotation(
                 number: annotations.count + 1,
                 type: .circle,
@@ -392,8 +405,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         }
 
         annotations.append(annotation)
-        currentStroke = nil
-        shapeStartPoint = nil
+        resetInProgressShapeState()
         needsDisplay = true
 
         // Show inline text field for the new annotation
@@ -663,5 +675,15 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             x: max(0, min(point.x, bounds.width)),
             y: max(0, min(point.y, bounds.height))
         )
+    }
+
+    private func isMeaningfulShape(from start: CGPoint, to end: CGPoint) -> Bool {
+        hypot(end.x - start.x, end.y - start.y) >= 4
+    }
+
+    private func resetInProgressShapeState() {
+        currentStroke = nil
+        shapeStartPoint = nil
+        activeShapeTool = nil
     }
 }
