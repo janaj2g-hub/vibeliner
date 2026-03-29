@@ -68,6 +68,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeTextView != nil
     }
 
+    var activeEditingTextView: NSTextView? {
+        activeTextView
+    }
+
     // MARK: - Drawing
 
     override func draw(_ dirtyRect: NSRect) {
@@ -833,6 +837,9 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
     override func keyDown(with event: NSEvent) {
         if isEditingInlineText {
+            if handleInlineEditorKeyEvent(event) {
+                return
+            }
             super.keyDown(with: event)
             return
         }
@@ -871,6 +878,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         }
 
         super.keyDown(with: event)
+    }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if isEditingInlineText, handleInlineEditorKeyEvent(event) {
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
     }
 
     // MARK: - Helpers
@@ -1019,6 +1033,29 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             return -0.45
         }
         return 0
+    }
+
+    private func handleInlineEditorKeyEvent(_ event: NSEvent) -> Bool {
+        guard let activeTextView else { return false }
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let characters = event.charactersIgnoringModifiers?.lowercased() ?? ""
+
+        if modifiers == [.command], characters == "z" {
+            activeTextView.undoManager?.undo()
+            return true
+        }
+
+        if modifiers == [], event.keyCode == 51 {
+            activeTextView.deleteBackward(nil)
+            return true
+        }
+
+        if modifiers == [], event.keyCode == 117 {
+            activeTextView.deleteForward(nil)
+            return true
+        }
+
+        return false
     }
 
     private func polylineContainsPoint(_ points: [CGPoint], point: CGPoint, tolerance: CGFloat) -> Bool {

@@ -352,8 +352,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func menuUndoAction(_ sender: Any?) {
-        if isTextEditingActive() {
-            _ = window?.firstResponder?.tryToPerform(Selector(("undo:")), with: sender)
+        if let activeTextView = activeTextEditingView() {
+            activeTextView.undoManager?.undo()
             return
         }
 
@@ -361,8 +361,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func menuCopyAction(_ sender: Any?) {
-        if isTextEditingActive() {
-            _ = window?.firstResponder?.tryToPerform(#selector(NSText.copy(_:)), with: sender)
+        if let activeTextView = activeTextEditingView() {
+            _ = activeTextView.tryToPerform(#selector(NSText.copy(_:)), with: sender)
             return
         }
 
@@ -495,15 +495,27 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func isTextEditingActive() -> Bool {
-        guard let firstResponder = window?.firstResponder else {
-            return false
-        }
-
-        if let textView = firstResponder as? NSTextView, textView.isFieldEditor {
+        if activeTextEditingView() != nil {
             return true
         }
 
-        return firstResponder is NSText
+        return false
+    }
+
+    private func activeTextEditingView() -> NSTextView? {
+        if let textView = canvas.activeEditingTextView {
+            return textView
+        }
+
+        guard let firstResponder = window?.firstResponder else {
+            return nil
+        }
+
+        if let textView = firstResponder as? NSTextView {
+            return textView
+        }
+
+        return nil
     }
 
     func windowWillClose(_ notification: Notification) {
