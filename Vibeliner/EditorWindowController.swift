@@ -95,7 +95,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             symbolName: "xmark",
             size: buttonSize,
             target: self,
-            action: #selector(closeEditor)
+            action: #selector(closeEditor),
+            tintColor: .lightGray
         )
         closeButton.frame.origin = CGPoint(x: x, y: (toolbarHeight - buttonSize) / 2)
         toolbar.addSubview(closeButton)
@@ -104,18 +105,27 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         x = addSeparator(in: toolbar, at: x, height: toolbarHeight)
 
         let tools: [(AnnotationType, String)] = [
-            (.freehand, "pencil.line"),
+            (.freehand, "custom-number-badge"),
             (.arrow, "arrow.up.right"),
             (.circle, "circle"),
         ]
 
         for (tool, symbol) in tools {
-            let button = makeIconButton(
-                symbolName: symbol,
-                size: buttonSize,
-                target: self,
-                action: #selector(toolSelected(_:))
-            )
+            let button = symbol == "custom-number-badge"
+                ? makeIconButton(
+                    image: makeNumberBadgeIcon(size: buttonSize),
+                    size: buttonSize,
+                    target: self,
+                    action: #selector(toolSelected(_:)),
+                    tintColor: Constants.toolbarAnnotationIconColor
+                )
+                : makeIconButton(
+                    symbolName: symbol,
+                    size: buttonSize,
+                    target: self,
+                    action: #selector(toolSelected(_:)),
+                    tintColor: Constants.toolbarAnnotationIconColor
+                )
             button.tag = toolTag(for: tool)
             button.frame.origin = CGPoint(x: x, y: (toolbarHeight - buttonSize) / 2)
             toolbar.addSubview(button)
@@ -130,7 +140,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             symbolName: "arrow.uturn.backward",
             size: buttonSize,
             target: self,
-            action: #selector(undoAction)
+            action: #selector(undoAction),
+            tintColor: .lightGray
         )
         undoButton.frame.origin = CGPoint(x: x, y: (toolbarHeight - buttonSize) / 2)
         undoButton.isEnabled = false
@@ -168,9 +179,9 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             symbolName: "trash",
             size: buttonSize,
             target: self,
-            action: #selector(deleteAction)
+            action: #selector(deleteAction),
+            tintColor: Constants.annotationRed
         )
-        trashButton.contentTintColor = Constants.annotationRed
         trashButton.frame.origin = CGPoint(
             x: saveButton.frame.minX - buttonSize - 12,
             y: (toolbarHeight - buttonSize) / 2
@@ -179,14 +190,19 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         toolbar.addSubview(trashButton)
     }
 
-    private func makeIconButton(symbolName: String, size: CGFloat, target: AnyObject, action: Selector) -> NSButton {
+    private func makeIconButton(symbolName: String, size: CGFloat, target: AnyObject, action: Selector, tintColor: NSColor) -> NSButton {
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)
+        return makeIconButton(image: image, size: size, target: target, action: action, tintColor: tintColor)
+    }
+
+    private func makeIconButton(image: NSImage?, size: CGFloat, target: AnyObject, action: Selector, tintColor: NSColor) -> NSButton {
         let button = NSButton(frame: NSRect(x: 0, y: 0, width: size, height: size))
         button.bezelStyle = .inline
         button.isBordered = false
-        button.image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)
+        button.image = image
         button.imagePosition = .imageOnly
         button.imageScaling = .scaleProportionallyDown
-        button.contentTintColor = .lightGray
+        button.contentTintColor = tintColor
         button.target = target
         button.action = action
         button.wantsLayer = true
@@ -239,7 +255,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         guard let canvas else {
             for (_, button) in toolButtons {
                 button.layer?.backgroundColor = nil
-                button.contentTintColor = .lightGray
+                button.layer?.borderWidth = 0
+                button.contentTintColor = Constants.toolbarAnnotationIconColor
             }
             undoButton?.isEnabled = false
             return
@@ -247,12 +264,15 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
 
         for (tool, button) in toolButtons {
             if tool == canvas.currentTool {
-                button.layer?.backgroundColor = accentBlue.withAlphaComponent(0.3).cgColor
-                button.layer?.cornerRadius = 5
-                button.contentTintColor = .white
+                button.layer?.backgroundColor = accentBlue.withAlphaComponent(0.35).cgColor
+                button.layer?.cornerRadius = 6
+                button.layer?.borderWidth = 1
+                button.layer?.borderColor = Constants.annotationRed.withAlphaComponent(0.7).cgColor
+                button.contentTintColor = Constants.toolbarAnnotationIconColor
             } else {
                 button.layer?.backgroundColor = nil
-                button.contentTintColor = .lightGray
+                button.layer?.borderWidth = 0
+                button.contentTintColor = Constants.toolbarAnnotationIconColor
             }
         }
 
@@ -520,6 +540,36 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
                 }
             }
         }
+    }
+
+    private func makeNumberBadgeIcon(size: CGFloat) -> NSImage {
+        let image = NSImage(size: NSSize(width: size, height: size))
+        image.lockFocus()
+
+        let bounds = NSRect(x: 0, y: 0, width: size, height: size)
+        let circleRect = bounds.insetBy(dx: 3, dy: 3)
+
+        Constants.toolbarAnnotationIconColor.setStroke()
+        let circle = NSBezierPath(ovalIn: circleRect)
+        circle.lineWidth = 1.6
+        circle.stroke()
+
+        let glyph = "#" as NSString
+        let font = NSFont.monospacedSystemFont(ofSize: size * 0.5, weight: .semibold)
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: font,
+            .foregroundColor: Constants.toolbarAnnotationIconColor
+        ]
+        let glyphSize = glyph.size(withAttributes: attributes)
+        let glyphPoint = CGPoint(
+            x: (size - glyphSize.width) / 2,
+            y: (size - glyphSize.height) / 2 - 1
+        )
+        glyph.draw(at: glyphPoint, withAttributes: attributes)
+
+        image.unlockFocus()
+        image.isTemplate = false
+        return image
     }
 
     private static func windowSize(for image: NSImage) -> NSSize {
