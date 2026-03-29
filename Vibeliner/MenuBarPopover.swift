@@ -26,19 +26,16 @@ struct MenuBarPopover: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            header
-
             if showsSetupSection {
-                sectionDivider
                 readinessSection
+                sectionDivider
             }
 
             if let issue = appState.lastIssue {
-                sectionDivider
                 issueSection(issue)
+                sectionDivider
             }
 
-            sectionDivider
             recentCapturesSection
             sectionDivider
             utilitySection
@@ -46,7 +43,7 @@ struct MenuBarPopover: View {
             hotkeySection
             sectionDivider
 
-            Button("Quit Vibeliner") {
+            Button("Quit vibeliner") {
                 NSApp.terminate(nil)
             }
             .buttonStyle(.plain)
@@ -56,20 +53,6 @@ struct MenuBarPopover: View {
         .padding(16)
         .frame(width: 352)
         .fixedSize(horizontal: false, vertical: true)
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Vibeliner")
-                    .font(.system(size: 18, weight: .semibold))
-                Text(appState.setupSummary.readinessTitle)
-                    .font(.system(size: 12, weight: .medium))
-                    .foregroundStyle(appState.setupSummary.isReadyToCapture ? .green : .orange)
-            }
-
-            Spacer()
-        }
     }
 
     private var readinessSection: some View {
@@ -200,7 +183,7 @@ struct MenuBarPopover: View {
             sectionTitle("Recent Captures")
 
             if appState.recentCaptures.isEmpty {
-                Text("No captures yet. Use the hotkey or Capture now to create your first packaged screenshot.")
+                Text("no captures yet")
                     .font(.system(size: 12))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
