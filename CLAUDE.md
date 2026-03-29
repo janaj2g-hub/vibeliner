@@ -70,11 +70,33 @@ If you touch prompt/export semantics, screenshot-path insertion, or annotation m
 
 ## Tech stack
 
-- **Language:** Swift 5.9+
+- **Language:** Swift 5 language mode in Xcode (`SWIFT_VERSION = 5.0`); currently built on this machine with Apple Swift 6.3 / Xcode 26.4
 - **Frameworks:** AppKit + SwiftUI, macOS 14+
 - **Build:** `xcodebuild -project Vibeliner.xcodeproj -scheme Vibeliner build`
 - **Run:** `open /Users/jongrossman/Documents/vibeliner/V1/vibeliner/dist/Vibeliner.app` for the latest repo-local app, or run from Xcode
 - **Dependencies:** KeyboardShortcuts (Sindre Sorhus), ArgumentParser (Apple, CLI only)
+
+## Technical background
+
+### Product contract
+- Vibeliner is a capture-to-prompt pipeline, not an AI-in-the-loop app; the core product artifact is a saved capture folder containing `screenshot.png`, `prompt.md`, and `meta.json`
+- The screenshot is the primary source of truth; prompt text exists to frame the screenshot and the numbered annotations, not to restate everything visible on screen
+- Saved prompts use a relative screenshot path, while clipboard output resolves that path to an absolute path so pasting works from arbitrary working directories
+
+### Capture model
+- For v1, Vibeliner intentionally uses file-based `/usr/sbin/screencapture -i -x <path>` rather than a custom capture stack
+- The real capture authority is the child-process result plus screenshot-file materialization; setup and permission state are advisory diagnostics only
+- Keep cancellation, true capture failure, and post-capture export failure as separate states in code and in UX
+
+### App lifecycle
+- Vibeliner is a menu bar app by default and should behave like a lightweight accessory app outside explicit app-owned UI flows
+- Promote into a normal foreground app only when Vibeliner-owned windows or alerts need focus, then drop back when that flow ends
+- When debugging behavior differences, prefer launching `dist/Vibeliner.app` after a build rather than assuming the Xcode Run copy matches normal app behavior
+
+### Export and annotation semantics
+- Numbered badges are the user's explicit discussion points; attached note text is the primary explanation when present
+- Exported screenshots bake in marks and badge numbers, but note text lives in `prompt.md` rather than the image
+- If you change prompt wording, screenshot-path handling, or annotation meaning, update `docs/ANNOTATION_PROMPTING.md` in the same change
 
 ## Architecture
 
