@@ -8,6 +8,7 @@ struct MenuBarPopover: View {
     let startCapture: () -> Void
     let onCopyCapturePrompt: (CaptureRecord) -> Bool
     let openPromptSettings: () -> Void
+    let openAboutSettings: () -> Void
     let openCapturesFolder: () -> Void
     let openScreenRecordingSettings: () -> Void
     let dismissIssue: () -> Void
@@ -42,6 +43,14 @@ struct MenuBarPopover: View {
             sectionDivider
             hotkeySection
             sectionDivider
+
+            Button {
+                openAboutSettings()
+            } label: {
+                menuRowLabel("About vibeliner", systemImage: "info.circle")
+            }
+            .buttonStyle(.plain)
+            .padding(.bottom, 10)
 
             Button("Quit vibeliner") {
                 NSApp.terminate(nil)

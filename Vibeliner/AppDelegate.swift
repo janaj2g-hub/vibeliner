@@ -95,7 +95,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 self?.copyCapturePrompt(for: record) ?? false
             },
             openPromptSettings: { [weak self] in
-                self?.showPromptSettings()
+                self?.showSettings(for: .promptSettings)
+            },
+            openAboutSettings: { [weak self] in
+                self?.showSettings(for: .about)
             },
             openCapturesFolder: { [weak self] in
                 self?.openCapturesFolder()
@@ -287,11 +290,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         editorController = controller
     }
 
-    private func showPromptSettings() {
+    private func showSettings(for tab: SettingsTab) {
         closeMenuPanel()
         beginInteractiveSession()
 
-        PromptSettingsPanelPresenter.show { [weak self] in
+        PromptSettingsPanelPresenter.show(initialTab: tab) { [weak self] in
             Task { @MainActor [weak self] in
                 self?.appState.refresh(autoRepairStorage: true)
                 self?.endInteractiveSession()
