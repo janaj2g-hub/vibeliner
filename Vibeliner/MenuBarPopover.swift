@@ -269,10 +269,6 @@ struct MenuBarPopover: View {
                 Spacer()
                 KeyboardShortcuts.Recorder(for: .captureScreen)
             }
-
-            Text("The hotkey uses macOS’s native region selection UI.")
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
         }
     }
 

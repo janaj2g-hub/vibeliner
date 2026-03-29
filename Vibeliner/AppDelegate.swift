@@ -413,6 +413,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         positionMenuPanel(panel, relativeTo: button)
         installMenuDismissMonitors()
         panel.orderFrontRegardless()
+        panel.makeFirstResponder(nil)
     }
 
     private func closeMenuPanel() {
