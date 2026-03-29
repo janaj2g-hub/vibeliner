@@ -343,7 +343,6 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         finalizeActiveTextField()
         selectedAnnotationIndex = nil
 
-        let clamped = clamp(point)
         activeShapeTool = currentTool
         let tool = activeShapeTool ?? currentTool
         switch tool {
