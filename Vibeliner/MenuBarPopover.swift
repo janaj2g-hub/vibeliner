@@ -62,13 +62,6 @@ struct MenuBarPopover: View {
             }
 
             Spacer()
-
-            Button(appState.isCaptureInProgress ? "Capturing..." : "Capture now") {
-                startCapture()
-            }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.small)
-            .disabled(appState.isCaptureInProgress)
         }
     }
 
@@ -182,6 +175,14 @@ struct MenuBarPopover: View {
     private var utilitySection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("ACTIONS")
+
+            Button {
+                startCapture()
+            } label: {
+                Label(appState.isCaptureInProgress ? "Capturing..." : "Capture now", systemImage: "camera.viewfinder")
+            }
+            .buttonStyle(.plain)
+            .disabled(appState.isCaptureInProgress)
 
             Button {
                 openPromptSettings()
