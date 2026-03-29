@@ -317,11 +317,23 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return false
         }
 
+        let runtimeIdentity = AppRuntimeIdentity.current()
+        if !runtimeIdentity.isSupportedRuntimeCopy {
+            appState.refresh(autoRepairStorage: true)
+            presentIssue(unsupportedRuntimeIssue(runtimeIdentity))
+            return false
+        }
+
         let liveScreenRecordingState = ScreenRecordingPermissionState.current()
         appState.refresh(
             autoRepairStorage: true,
             screenRecordingState: liveScreenRecordingState
         )
+
+        guard liveScreenRecordingState.isAuthorized else {
+            presentIssue(ScreenRecordingPermissionState.notGranted.issue, offersScreenRecordingShortcut: true)
+            return false
+        }
 
         appState.clearIssue()
         return true
@@ -747,6 +759,18 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             message: "macOS now appears to allow Screen Recording for vibeliner.",
             recoverySuggestion: "Quit and reopen the app, then try your capture again so the updated permission applies cleanly.",
             technicalDetails: nil
+        )
+    }
+
+    private func unsupportedRuntimeIssue(_ runtimeIdentity: AppRuntimeIdentity) -> UserFacingIssue {
+        let message = "This app copy is not the supported screenshot-capture runtime."
+        let recoverySuggestion = "\(runtimeIdentity.canonicalLaunchGuidance) Current app path: \(runtimeIdentity.appBundlePath)"
+
+        return UserFacingIssue(
+            title: "Launch the canonical app copy",
+            message: message,
+            recoverySuggestion: recoverySuggestion,
+            technicalDetails: "runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
         )
     }
 
