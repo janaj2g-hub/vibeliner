@@ -325,11 +325,22 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
             return
         }
 
-        // Finalize any open text field first
+        let clamped = clamp(point)
+        if let index = annotationIndex(near: clamped) {
+            if activeAnnotationIndex == index, let activeTextField {
+                window?.makeFirstResponder(activeTextField)
+                return
+            }
+
+            finalizeActiveTextField()
+            selectedAnnotationIndex = index
+            showTextField(for: index)
+            return
+        }
+
+        // Finalize any open text field first before starting a new annotation.
         finalizeActiveTextField()
         selectedAnnotationIndex = nil
-
-        let clamped = clamp(point)
 
         switch currentTool {
         case .freehand:
@@ -491,7 +502,14 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     }
 
     func finalizeActiveTextField() {
+        finalizeActiveTextField(matching: activeTextField)
+    }
+
+    private func finalizeActiveTextField(matching matchingField: NSTextField?) {
         guard let textField = activeTextField, let index = activeAnnotationIndex else { return }
+        if let matchingField, matchingField !== textField {
+            return
+        }
         if index < annotations.count {
             annotations[index].note = textField.stringValue
         }
@@ -502,7 +520,14 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     }
 
     private func cancelActiveTextField() {
+        cancelActiveTextField(matching: activeTextField)
+    }
+
+    private func cancelActiveTextField(matching matchingField: NSTextField?) {
         guard let textField = activeTextField, let index = activeAnnotationIndex else { return }
+        if let matchingField, matchingField !== textField {
+            return
+        }
         if index < annotations.count {
             annotations[index].note = ""
         }
@@ -531,6 +556,8 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     }
 
     func controlTextDidEndEditing(_ obj: Notification) {
+        guard let endedField = obj.object as? NSTextField else { return }
+        guard endedField === activeTextField else { return }
         // Loss of focus — finalize
         DispatchQueue.main.async { [weak self] in
             self?.finalizeActiveTextField()
