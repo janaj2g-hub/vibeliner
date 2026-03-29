@@ -1,15 +1,37 @@
 import AppKit
+import KeyboardShortcuts
 import SwiftUI
 
+enum SettingsTab: String, CaseIterable, Identifiable {
+    case about
+    case hotkey
+    case promptSettings
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .about:
+            "About vibeliner"
+        case .hotkey:
+            "Hotkey"
+        case .promptSettings:
+            "Prompt Settings"
+        }
+    }
+}
+
 struct PromptSettingsView: View {
+    @State private var selectedTab: SettingsTab
     @State private var preambleSingle: String
     @State private var preambleBatch: String
 
     private let defaults = VibelinerConfig()
     private let onClose: () -> Void
 
-    init(onClose: @escaping () -> Void) {
+    init(initialTab: SettingsTab, onClose: @escaping () -> Void) {
         let config = Config.shared
+        _selectedTab = State(initialValue: initialTab)
         _preambleSingle = State(initialValue: config.preambleSingle)
         _preambleBatch = State(initialValue: config.preambleBatch)
         self.onClose = onClose
@@ -18,10 +40,91 @@ struct PromptSettingsView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             header
+
+            Picker("Settings section", selection: $selectedTab) {
+                ForEach(SettingsTab.allCases) { tab in
+                    Text(tab.title).tag(tab)
+                }
+            }
+            .pickerStyle(.segmented)
+
+            Group {
+                switch selectedTab {
+                case .about:
+                    aboutTab
+                case .hotkey:
+                    hotkeyTab
+                case .promptSettings:
+                    promptSettingsTab
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        }
+        .padding(16)
+        .frame(width: 560, height: 460)
+        .background(Color(nsColor: NSColor(calibratedWhite: 0.13, alpha: 1.0)))
+    }
+
+    private var header: some View {
+        HStack(alignment: .firstTextBaseline) {
+            Text("vibeliner")
+                .font(.system(size: 15, weight: .bold))
+            Spacer()
+            Button("Done") {
+                onClose()
+            }
+            .buttonStyle(.plain)
+            .foregroundStyle(.blue)
+        }
+    }
+
+    private var aboutTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("About vibeliner")
+                .font(.system(size: 15, weight: .bold))
+
+            Text("Capture, annotate, and package screenshots for AI coding tools.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            aboutRow(label: "Version", value: appVersion)
+            aboutRow(label: "Capture folder", value: Config.shared.config.saveDir)
+            aboutRow(label: "Workflow", value: "Native macOS region capture, lightweight annotations, prompt export")
+
+            Spacer()
+        }
+    }
+
+    private var hotkeyTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Hotkey")
+                .font(.system(size: 15, weight: .bold))
+
+            Text("Choose the shortcut that starts a region capture from anywhere.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+
+            HStack {
+                Text("Capture shortcut")
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+                KeyboardShortcuts.Recorder(for: .captureScreen)
+            }
+
+            Spacer()
+        }
+    }
+
+    private var promptSettingsTab: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Prompt Settings")
+                .font(.system(size: 15, weight: .bold))
+
             tokenGuidance
             preambleSection(
                 title: "Single capture preamble",
-                helper: "Use \(PromptBuilder.screenshotPathToken) to place the screenshot path yourself. If you omit it, Vibeliner appends a separate screenshot line automatically.",
+                helper: "Use \(PromptBuilder.screenshotPathToken) to place the screenshot path yourself. If you omit it, vibeliner appends a separate screenshot line automatically.",
                 text: $preambleSingle,
                 resetAction: { preambleSingle = defaults.preambleSingle }
             )
@@ -31,6 +134,7 @@ struct PromptSettingsView: View {
                 text: $preambleBatch,
                 resetAction: { preambleBatch = defaults.preambleBatch }
             )
+
             HStack {
                 Spacer()
                 Button("Save") {
@@ -40,22 +144,6 @@ struct PromptSettingsView: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
-        }
-        .padding(16)
-        .frame(width: 540)
-        .background(Color(nsColor: NSColor(calibratedWhite: 0.13, alpha: 1.0)))
-    }
-
-    private var header: some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text("Prompt settings")
-                .font(.system(size: 14, weight: .bold))
-            Spacer()
-            Button("Done") {
-                onClose()
-            }
-            .buttonStyle(.plain)
-            .foregroundStyle(.blue)
         }
     }
 
@@ -76,6 +164,17 @@ struct PromptSettingsView: View {
             Text("Saved prompt.md files keep a relative screenshot path (\(PromptBuilder.savedScreenshotReference)). Copy for LLM resolves that path to an absolute screenshot path so pasting works from any Claude Code or Cursor working directory.")
                 .font(.system(size: 11))
                 .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func aboutRow(label: String, value: String) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(label)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(.secondary)
+            Text(value)
+                .font(.system(size: 12))
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -134,6 +233,13 @@ struct PromptSettingsView: View {
             text.wrappedValue += " \(PromptBuilder.screenshotPathToken)"
         }
     }
+
+    private var appVersion: String {
+        let info = Bundle.main.infoDictionary
+        let shortVersion = info?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let buildNumber = info?["CFBundleVersion"] as? String ?? "1"
+        return "\(shortVersion) (\(buildNumber))"
+    }
 }
 
 enum PromptSettingsPanelPresenter {
@@ -152,17 +258,17 @@ enum PromptSettingsPanelPresenter {
     private static var controller: NSWindowController?
     private static var closeObserver: CloseObserver?
 
-    static func show(onClose: @escaping () -> Void) {
+    static func show(initialTab: SettingsTab, onClose: @escaping () -> Void) {
         Config.shared.reload()
         controller?.close()
 
         let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 430),
+            contentRect: NSRect(x: 0, y: 0, width: 560, height: 460),
             styleMask: [.titled, .closable, .fullSizeContentView],
             backing: .buffered,
             defer: false
         )
-        panel.title = "Prompt settings"
+        panel.title = initialTab.title
         panel.titlebarAppearsTransparent = true
         panel.titleVisibility = .hidden
         panel.isFloatingPanel = true
@@ -179,7 +285,7 @@ enum PromptSettingsPanelPresenter {
         let controller = NSWindowController(window: panel)
         panel.delegate = closeObserver
         panel.contentView = NSHostingView(
-            rootView: PromptSettingsView {
+            rootView: PromptSettingsView(initialTab: initialTab) {
                 controller.close()
             }
         )
@@ -187,5 +293,7 @@ enum PromptSettingsPanelPresenter {
         Self.closeObserver = closeObserver
         Self.controller = controller
         controller.showWindow(nil)
+        controller.window?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
