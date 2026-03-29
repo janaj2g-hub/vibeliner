@@ -2,6 +2,7 @@ import AppKit
 
 enum Constants {
     static let annotationRed = NSColor(red: 0.937, green: 0.267, blue: 0.267, alpha: 1.0)
+    static let toolbarAnnotationIconColor = annotationRed
     static let badgeRadius: CGFloat = 12
     static let strokeWidth: CGFloat = 2.5
     static let badgeOutlineColor = NSColor.white.withAlphaComponent(0.8)
