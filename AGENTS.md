@@ -62,6 +62,8 @@ Use these when updating ticket status:
 
 Vibeliner is a native macOS menu bar app that captures, annotates, and packages screenshots for AI coding tools. See `docs/PRODUCT_VISION.md` for the full product description.
 
+If you touch prompt/export semantics, screenshot-path insertion, or annotation meaning, also read `docs/ANNOTATION_PROMPTING.md` first.
+
 ## Tech stack
 
 - **Language:** Swift 5.9+
@@ -154,3 +156,4 @@ Notes:
 - MacShot (github.com/sw33tLie/macshot) — study patterns only, do NOT copy GPL code
 - KeyboardShortcuts (github.com/sindresorhus/KeyboardShortcuts)
 - Apple docs: NSView, NSPanel, NSBezierPath, Core Graphics
+- `docs/ANNOTATION_PROMPTING.md` — source of truth for annotation semantics and the annotated-screenshot prompt contract
