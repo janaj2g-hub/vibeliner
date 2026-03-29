@@ -7,37 +7,7 @@ private struct AnnotationDragState {
     var hasExceededThreshold: Bool
 }
 
-private final class InlineNoteTextFieldCell: NSTextFieldCell {
-    var textInsets = NSSize(width: 12, height: 8)
-
-    override func drawingRect(forBounds rect: NSRect) -> NSRect {
-        adjustedRect(forBounds: rect)
-    }
-
-    override func titleRect(forBounds rect: NSRect) -> NSRect {
-        adjustedRect(forBounds: rect)
-    }
-
-    override func select(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate anObject: Any?, start selStart: Int, length selLength: Int) {
-        super.select(withFrame: adjustedRect(forBounds: rect), in: controlView, editor: textObj, delegate: anObject, start: selStart, length: selLength)
-    }
-
-    override func edit(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate anObject: Any?, event theEvent: NSEvent?) {
-        super.edit(withFrame: adjustedRect(forBounds: rect), in: controlView, editor: textObj, delegate: anObject, event: theEvent)
-    }
-
-    private func adjustedRect(forBounds rect: NSRect) -> NSRect {
-        let insetRect = rect.insetBy(dx: textInsets.width, dy: textInsets.height)
-        let naturalSize = cellSize(forBounds: NSRect(origin: .zero, size: NSSize(width: insetRect.width, height: .greatestFiniteMagnitude)))
-        guard naturalSize.height < insetRect.height else {
-            return insetRect
-        }
-        let originY = insetRect.origin.y + floor((insetRect.height - naturalSize.height) / 2)
-        return NSRect(x: insetRect.origin.x, y: originY, width: insetRect.width, height: naturalSize.height)
-    }
-}
-
-class AnnotationCanvas: NSView, NSTextFieldDelegate {
+class AnnotationCanvas: NSView, NSTextViewDelegate {
     private let noteOffsetX: CGFloat = 22
     private let noteHorizontalPadding: CGFloat = 12
     private let noteVerticalPadding: CGFloat = 8
@@ -68,8 +38,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     var onAnnotationsChanged: (() -> Void)?
 
     // Inline text field state
-    private var activeTextField: NSTextField?
+    private var activeEditorContainer: NSView?
+    private var activeTextView: NSTextView?
     private var activeAnnotationIndex: Int?
+    private var activeEditorShowsPlaceholder = false
     private var isActivatingTextField = false
     private var selectedAnnotationIndex: Int?
     private var hoveredBadgeIndex: Int? {
@@ -93,7 +65,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override var acceptsFirstResponder: Bool { true }
 
     var isEditingInlineText: Bool {
-        activeTextField != nil
+        activeTextView != nil
     }
 
     // MARK: - Drawing
@@ -418,9 +390,9 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         }
 
         if let badgeIndex = badgeAnnotationIndex(near: clamped) {
-            if activeAnnotationIndex == badgeIndex, let activeTextField {
+            if activeAnnotationIndex == badgeIndex, let activeTextView {
                 selectedAnnotationIndex = badgeIndex
-                window?.makeFirstResponder(activeTextField)
+                window?.makeFirstResponder(activeTextView)
                 return
             }
 
@@ -615,93 +587,126 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         guard annotationIndex >= 0 && annotationIndex < annotations.count else { return }
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
-        let textField = NSTextField(frame: fieldRect)
-        let cell = InlineNoteTextFieldCell()
-        cell.textInsets = NSSize(width: noteHorizontalPadding, height: noteVerticalPadding)
-        textField.cell = cell
-        textField.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-        textField.textColor = Constants.inlineNoteTextColor
-        textField.backgroundColor = Constants.inlineNoteBackgroundColor
-        textField.alignment = .center
-        textField.isBordered = false
-        textField.isBezeled = false
-        textField.focusRingType = .none
-        textField.wantsLayer = true
-        textField.layer?.cornerRadius = noteCornerRadius
-        textField.layer?.masksToBounds = true
-        textField.placeholderString = notePlaceholder
-        textField.delegate = self
-        textField.isEditable = true
-        textField.isSelectable = true
-        textField.stringValue = annotation.note
-        if let cell = textField.cell as? NSTextFieldCell {
-            cell.wraps = true
-            cell.isScrollable = false
-            cell.usesSingleLineMode = false
-            cell.lineBreakMode = .byWordWrapping
+        let container = NSView(frame: fieldRect)
+        container.wantsLayer = true
+        container.layer?.backgroundColor = Constants.inlineNoteBackgroundColor.cgColor
+        container.layer?.cornerRadius = noteCornerRadius
+        container.layer?.masksToBounds = true
+
+        let scrollView = NSScrollView(frame: container.bounds)
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = false
+        scrollView.hasHorizontalScroller = false
+        scrollView.borderType = .noBorder
+        scrollView.autoresizingMask = [.width, .height]
+
+        let textRect = NSRect(
+            x: noteHorizontalPadding,
+            y: noteVerticalPadding,
+            width: container.bounds.width - (noteHorizontalPadding * 2),
+            height: container.bounds.height - (noteVerticalPadding * 2)
+        )
+        let textView = NSTextView(frame: textRect)
+        textView.drawsBackground = false
+        textView.delegate = self
+        textView.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+        textView.textColor = Constants.inlineNoteTextColor
+        textView.insertionPointColor = Constants.inlineNoteTextColor
+        textView.alignment = .center
+        textView.isRichText = false
+        textView.importsGraphics = false
+        textView.isHorizontallyResizable = false
+        textView.isVerticallyResizable = true
+        textView.textContainerInset = NSSize(width: 0, height: 0)
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.containerSize = NSSize(
+            width: textRect.width,
+            height: .greatestFiniteMagnitude
+        )
+        textView.textContainer?.lineFragmentPadding = 0
+        textView.maxSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
+        textView.minSize = NSSize(width: textRect.width, height: 0)
+
+        let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmedNote.isEmpty {
+            activeEditorShowsPlaceholder = true
+            textView.string = notePlaceholder
+            textView.textColor = Constants.inlineNoteTextColor.withAlphaComponent(0.55)
+        } else {
+            activeEditorShowsPlaceholder = false
+            textView.string = annotation.note
+            textView.textColor = Constants.inlineNoteTextColor
         }
-        textField.maximumNumberOfLines = 0
+
+        scrollView.documentView = textView
+        container.addSubview(scrollView)
 
         // Remove any existing text field
-        activeTextField?.removeFromSuperview()
+        activeEditorContainer?.removeFromSuperview()
 
-        activeTextField = textField
+        activeEditorContainer = container
+        activeTextView = textView
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
 
-        addSubview(textField)
+        addSubview(container)
 
-        DispatchQueue.main.async { [weak self, weak textField] in
-            guard let self, let textField, self.activeTextField === textField else { return }
+        DispatchQueue.main.async { [weak self, weak textView] in
+            guard let self, let textView, self.activeTextView === textView else { return }
             self.window?.makeKeyAndOrderFront(nil)
-            let becameFirstResponder = self.window?.makeFirstResponder(textField) ?? false
+            let becameFirstResponder = self.window?.makeFirstResponder(textView) ?? false
             if becameFirstResponder {
-                textField.selectText(nil)
+                textView.setSelectedRange(NSRange(location: 0, length: textView.string.count))
             }
-            self.resizeActiveTextField()
+            self.resizeActiveEditor()
             self.isActivatingTextField = false
         }
     }
 
     func finalizeActiveTextField() {
-        finalizeActiveTextField(matching: activeTextField)
+        finalizeActiveTextField(matching: activeTextView)
     }
 
-    private func finalizeActiveTextField(matching matchingField: NSTextField?) {
-        guard let textField = activeTextField, let index = activeAnnotationIndex else { return }
-        if let matchingField, matchingField !== textField {
+    private func finalizeActiveTextField(matching matchingView: NSTextView?) {
+        guard let textView = activeTextView, let container = activeEditorContainer, let index = activeAnnotationIndex else { return }
+        if let matchingView, matchingView !== textView {
             return
         }
         if index < annotations.count {
-            annotations[index].note = textField.stringValue
+            let note = activeEditorShowsPlaceholder ? "" : textView.string
+            annotations[index].note = note
         }
-        textField.removeFromSuperview()
-        activeTextField = nil
+        container.removeFromSuperview()
+        activeEditorContainer = nil
+        activeTextView = nil
         activeAnnotationIndex = nil
+        activeEditorShowsPlaceholder = false
         needsDisplay = true
     }
 
     private func cancelActiveTextField() {
-        cancelActiveTextField(matching: activeTextField)
+        cancelActiveTextField(matching: activeTextView)
     }
 
-    private func cancelActiveTextField(matching matchingField: NSTextField?) {
-        guard let textField = activeTextField, let index = activeAnnotationIndex else { return }
-        if let matchingField, matchingField !== textField {
+    private func cancelActiveTextField(matching matchingView: NSTextView?) {
+        guard let textView = activeTextView, let container = activeEditorContainer, let index = activeAnnotationIndex else { return }
+        if let matchingView, matchingView !== textView {
             return
         }
         if index < annotations.count {
             annotations[index].note = ""
         }
-        textField.removeFromSuperview()
-        activeTextField = nil
+        container.removeFromSuperview()
+        activeEditorContainer = nil
+        activeTextView = nil
         activeAnnotationIndex = nil
+        activeEditorShowsPlaceholder = false
         needsDisplay = true
     }
 
-    // MARK: - NSTextFieldDelegate
+    // MARK: - NSTextViewDelegate
 
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+    func textView(_ textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
         if commandSelector == #selector(insertNewline(_:)) {
             // Enter key — finalize
             finalizeActiveTextField()
@@ -717,20 +722,23 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         return false
     }
 
-    func controlTextDidEndEditing(_ obj: Notification) {
-        guard let endedField = obj.object as? NSTextField else { return }
-        guard endedField === activeTextField else { return }
+    func textDidEndEditing(_ notification: Notification) {
+        guard let endedView = notification.object as? NSTextView else { return }
+        guard endedView === activeTextView else { return }
         guard !isActivatingTextField else { return }
-        // Loss of focus — finalize
         DispatchQueue.main.async { [weak self] in
             self?.finalizeActiveTextField()
         }
     }
 
-    func controlTextDidChange(_ obj: Notification) {
-        guard let changedField = obj.object as? NSTextField else { return }
-        guard changedField === activeTextField else { return }
-        resizeActiveTextField()
+    func textDidChange(_ notification: Notification) {
+        guard let changedView = notification.object as? NSTextView else { return }
+        guard changedView === activeTextView else { return }
+        if activeEditorShowsPlaceholder {
+            activeEditorShowsPlaceholder = false
+            changedView.textColor = Constants.inlineNoteTextColor
+        }
+        resizeActiveEditor()
     }
 
     // MARK: - Undo
@@ -935,13 +943,32 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         )
     }
 
-    private func resizeActiveTextField() {
-        guard let activeTextField, let activeAnnotationIndex, activeAnnotationIndex < annotations.count else {
+    private func resizeActiveEditor() {
+        guard
+            let activeEditorContainer,
+            let activeTextView,
+            let activeAnnotationIndex,
+            activeAnnotationIndex < annotations.count
+        else {
             return
         }
         var annotation = annotations[activeAnnotationIndex]
-        annotation.note = activeTextField.stringValue
-        activeTextField.frame = noteRect(for: annotation)
+        annotation.note = activeEditorShowsPlaceholder ? "" : activeTextView.string
+        let frame = noteRect(for: annotation)
+        activeEditorContainer.frame = frame
+        if let scrollView = activeEditorContainer.subviews.first as? NSScrollView {
+            scrollView.frame = activeEditorContainer.bounds
+            let textRect = NSRect(
+                x: noteHorizontalPadding,
+                y: noteVerticalPadding,
+                width: activeEditorContainer.bounds.width - (noteHorizontalPadding * 2),
+                height: activeEditorContainer.bounds.height - (noteVerticalPadding * 2)
+            )
+            activeTextView.frame = textRect
+            activeTextView.textContainer?.containerSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
+            activeTextView.maxSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
+            activeTextView.minSize = NSSize(width: textRect.width, height: 0)
+        }
     }
 
     private func centeredParagraphStyle(using paragraphStyle: NSMutableParagraphStyle = NSMutableParagraphStyle()) -> NSMutableParagraphStyle {
