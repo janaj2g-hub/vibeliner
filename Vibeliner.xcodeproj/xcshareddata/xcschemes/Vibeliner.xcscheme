@@ -10,7 +10,7 @@
             ActionType = "Xcode.IDEStandardExecutionActionsCore.ExecutionActionType.ShellScriptAction">
             <ActionContent
                title = "Copy App To Repo Dist"
-               scriptText = "set -euo pipefail&#10;&#10;DEST_DIR=&quot;${SRCROOT}/dist&quot;&#10;DEST_APP=&quot;${DEST_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;SOURCE_APP=&quot;${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;SIGNING_IDENTITY=&quot;${EXPANDED_CODE_SIGN_IDENTITY:--}&quot;&#10;&#10;mkdir -p &quot;${DEST_DIR}&quot;&#10;rm -rf &quot;${DEST_APP}&quot;&#10;ditto &quot;${SOURCE_APP}&quot; &quot;${DEST_APP}&quot;&#10;/usr/bin/codesign --force --deep --sign &quot;${SIGNING_IDENTITY}&quot; --timestamp=none --generate-entitlement-der &quot;${DEST_APP}&quot;&#10;">
+               scriptText = "set -euo pipefail&#10;&#10;DEST_DIR=&quot;${SRCROOT}/dist&quot;&#10;DEST_APP=&quot;${DEST_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;SOURCE_APP=&quot;${TARGET_BUILD_DIR}/${FULL_PRODUCT_NAME}&quot;&#10;&#10;mkdir -p &quot;${DEST_DIR}&quot;&#10;rm -rf &quot;${DEST_APP}&quot;&#10;ditto &quot;${SOURCE_APP}&quot; &quot;${DEST_APP}&quot;&#10;">
                <EnvironmentBuildable>
                   <BuildableReference
                      BuildableIdentifier = "primary"

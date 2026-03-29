@@ -23,4 +23,9 @@ struct Annotation: Identifiable {
         self.note = note
         self.startPoint = points.first ?? .zero
     }
+
+    mutating func translate(by delta: CGPoint) {
+        points = points.map { CGPoint(x: $0.x + delta.x, y: $0.y + delta.y) }
+        startPoint = points.first ?? startPoint
+    }
 }

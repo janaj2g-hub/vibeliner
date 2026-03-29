@@ -6,6 +6,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     case about
     case hotkey
     case promptSettings
+    case general
 
     var id: String { rawValue }
 
@@ -17,6 +18,8 @@ enum SettingsTab: String, CaseIterable, Identifiable {
             "Hotkey"
         case .promptSettings:
             "Prompt Settings"
+        case .general:
+            "General"
         }
     }
 }
@@ -25,20 +28,31 @@ struct PromptSettingsView: View {
     @State private var selectedTab: SettingsTab
     @State private var preambleSingle: String
     @State private var preambleBatch: String
+    @State private var currentSaveDir: String
 
     private let defaults = VibelinerConfig()
+    private let openCapturesFolder: () -> Void
+    private let pickCapturesFolder: () -> Bool
     private let onClose: () -> Void
 
-    init(initialTab: SettingsTab, onClose: @escaping () -> Void) {
+    init(
+        initialTab: SettingsTab,
+        openCapturesFolder: @escaping () -> Void,
+        pickCapturesFolder: @escaping () -> Bool,
+        onClose: @escaping () -> Void
+    ) {
         let config = Config.shared
         _selectedTab = State(initialValue: initialTab)
         _preambleSingle = State(initialValue: config.preambleSingle)
         _preambleBatch = State(initialValue: config.preambleBatch)
+        _currentSaveDir = State(initialValue: config.config.saveDir)
+        self.openCapturesFolder = openCapturesFolder
+        self.pickCapturesFolder = pickCapturesFolder
         self.onClose = onClose
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 14) {
             header
 
             Picker("Settings section", selection: $selectedTab) {
@@ -47,6 +61,7 @@ struct PromptSettingsView: View {
                 }
             }
             .pickerStyle(.segmented)
+            .labelsHidden()
 
             Group {
                 switch selectedTab {
@@ -56,9 +71,13 @@ struct PromptSettingsView: View {
                     hotkeyTab
                 case .promptSettings:
                     promptSettingsTab
+                case .general:
+                    generalTab
                 }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+            .padding(16)
+            .background(contentContainerBackground)
         }
         .padding(16)
         .frame(width: 560, height: 460)
@@ -69,13 +88,24 @@ struct PromptSettingsView: View {
         HStack(alignment: .firstTextBaseline) {
             Text("vibeliner")
                 .font(.system(size: 15, weight: .bold))
+
             Spacer()
+
             Button("Done") {
                 onClose()
             }
             .buttonStyle(.plain)
             .foregroundStyle(.blue)
         }
+    }
+
+    private var contentContainerBackground: some View {
+        RoundedRectangle(cornerRadius: 12, style: .continuous)
+            .fill(Color(nsColor: NSColor(calibratedWhite: 0.16, alpha: 1.0)))
+            .overlay(
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .stroke(Color.white.opacity(0.06), lineWidth: 1)
+            )
     }
 
     private var aboutTab: some View {
@@ -89,7 +119,13 @@ struct PromptSettingsView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             aboutRow(label: "Version", value: appVersion)
-            aboutRow(label: "Capture folder", value: Config.shared.config.saveDir)
+            aboutRow(label: "Bundle ID", value: bundleIdentifier)
+            aboutRow(label: "Current run copy", value: runCopyStatus)
+            aboutRow(label: "Current app path", value: appBundlePath)
+            if let expectedDistAppPath {
+                aboutRow(label: "Recommended TCC app path", value: expectedDistAppPath)
+            }
+            aboutRow(label: "Capture folder", value: currentSaveDir)
             aboutRow(label: "Workflow", value: "Native macOS region capture, lightweight annotations, prompt export")
 
             Spacer()
@@ -117,23 +153,28 @@ struct PromptSettingsView: View {
     }
 
     private var promptSettingsTab: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Prompt Settings")
-                .font(.system(size: 15, weight: .bold))
+        VStack(alignment: .leading, spacing: 12) {
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    Text("Prompt Settings")
+                        .font(.system(size: 15, weight: .bold))
 
-            tokenGuidance
-            preambleSection(
-                title: "Single capture preamble",
-                helper: PromptBuilder.singlePreambleGuidance,
-                text: $preambleSingle,
-                resetAction: { preambleSingle = defaults.preambleSingle }
-            )
-            preambleSection(
-                title: "Batch preamble",
-                helper: PromptBuilder.batchPreambleGuidance,
-                text: $preambleBatch,
-                resetAction: { preambleBatch = defaults.preambleBatch }
-            )
+                    tokenGuidance
+                    preambleSection(
+                        title: "Single capture preamble",
+                        helper: PromptBuilder.singlePreambleGuidance,
+                        text: $preambleSingle,
+                        resetAction: { preambleSingle = defaults.preambleSingle }
+                    )
+                    preambleSection(
+                        title: "Batch preamble",
+                        helper: PromptBuilder.batchPreambleGuidance,
+                        text: $preambleBatch,
+                        resetAction: { preambleBatch = defaults.preambleBatch }
+                    )
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
 
             HStack {
                 Spacer()
@@ -144,6 +185,49 @@ struct PromptSettingsView: View {
                 }
                 .buttonStyle(.borderedProminent)
             }
+        }
+    }
+
+    private var generalTab: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("General")
+                .font(.system(size: 15, weight: .bold))
+
+            Text("General settings is the home for broader app preferences such as capture-folder controls and other non-prompt configuration.")
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Capture folder")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(.primary)
+
+                Text(currentSaveDir)
+                    .font(.system(size: 12))
+                    .fixedSize(horizontal: false, vertical: true)
+
+                HStack(spacing: 8) {
+                    Button("Open Folder") {
+                        openCapturesFolder()
+                    }
+                    .buttonStyle(.bordered)
+
+                    Button("Choose Folder") {
+                        if pickCapturesFolder() {
+                            refreshSaveDir()
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+                }
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(Color(nsColor: NSColor(calibratedWhite: 0.18, alpha: 1.0)))
+            )
+
+            Spacer()
         }
     }
 
@@ -240,6 +324,44 @@ struct PromptSettingsView: View {
         let buildNumber = info?["CFBundleVersion"] as? String ?? "1"
         return "\(shortVersion) (\(buildNumber))"
     }
+
+    private var bundleIdentifier: String {
+        Bundle.main.bundleIdentifier ?? "unknown"
+    }
+
+    private var appBundlePath: String {
+        Bundle.main.bundleURL.standardizedFileURL.path
+    }
+
+    private var expectedDistAppPath: String? {
+        guard
+            let sourceRoot = Bundle.main.object(forInfoDictionaryKey: "VBLSourceRoot") as? String,
+            !sourceRoot.isEmpty
+        else {
+            return nil
+        }
+
+        return URL(fileURLWithPath: sourceRoot)
+            .appendingPathComponent("dist/Vibeliner.app")
+            .standardizedFileURL
+            .path
+    }
+
+    private var runCopyStatus: String {
+        if let expectedDistAppPath, appBundlePath == expectedDistAppPath {
+            return "Running the repo-local dist app. Use this copy for the most stable Screen Recording/TCC testing."
+        }
+
+        if appBundlePath.contains("/DerivedData/") {
+            return "Running the Xcode DerivedData app. Screen Recording approval for dist/Vibeliner.app will not apply to this copy."
+        }
+
+        return "Running a non-dist app copy. Make sure macOS Screen Recording approval was granted to this exact path."
+    }
+
+    private func refreshSaveDir() {
+        currentSaveDir = Config.shared.config.saveDir
+    }
 }
 
 enum PromptSettingsPanelPresenter {
@@ -258,7 +380,12 @@ enum PromptSettingsPanelPresenter {
     private static var controller: NSWindowController?
     private static var closeObserver: CloseObserver?
 
-    static func show(initialTab: SettingsTab, onClose: @escaping () -> Void) {
+    static func show(
+        initialTab: SettingsTab,
+        openCapturesFolder: @escaping () -> Void,
+        pickCapturesFolder: @escaping () -> Bool,
+        onClose: @escaping () -> Void
+    ) {
         Config.shared.reload()
         controller?.close()
 
@@ -285,7 +412,11 @@ enum PromptSettingsPanelPresenter {
         let controller = NSWindowController(window: panel)
         panel.delegate = closeObserver
         panel.contentView = NSHostingView(
-            rootView: PromptSettingsView(initialTab: initialTab) {
+            rootView: PromptSettingsView(
+                initialTab: initialTab,
+                openCapturesFolder: openCapturesFolder,
+                pickCapturesFolder: pickCapturesFolder
+            ) {
                 controller.close()
             }
         )

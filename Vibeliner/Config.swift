@@ -193,6 +193,11 @@ class Config {
         }
     }
 
+    func updateSaveDirectory(to path: String) {
+        config.saveDir = path
+        save()
+    }
+
     // MARK: - TOML Parser (simple key = value)
 
     private func parse(_ contents: String) -> VibelinerConfig {

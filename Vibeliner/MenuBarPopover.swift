@@ -2,14 +2,42 @@ import AppKit
 import KeyboardShortcuts
 import SwiftUI
 
+private struct InteractiveMenuRow<Content: View>: View {
+    let isEnabled: Bool
+    let action: () -> Void
+    @ViewBuilder let content: () -> Content
+
+    @State private var isHovered = false
+
+    var body: some View {
+        Button(action: action) {
+            content()
+                .padding(.horizontal, 10)
+                .padding(.vertical, 7)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                        .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)
+                )
+        }
+        .buttonStyle(.plain)
+        .disabled(!isEnabled)
+        .onHover { hovering in
+            isHovered = isEnabled && hovering
+        }
+    }
+}
+
 struct MenuBarPopover: View {
     @ObservedObject var appState: AppState
 
     let startCapture: () -> Void
     let onCopyCapturePrompt: (CaptureRecord) -> Bool
+    let openGeneralSettings: () -> Void
     let openPromptSettings: () -> Void
     let openAboutSettings: () -> Void
     let openCapturesFolder: () -> Void
+    let requestScreenRecordingAccess: () -> Void
     let openScreenRecordingSettings: () -> Void
     let dismissIssue: () -> Void
 
@@ -22,7 +50,18 @@ struct MenuBarPopover: View {
     }()
 
     private var showsSetupSection: Bool {
-        !appState.setupSummary.screenRecordingAuthorized || !appState.setupSummary.storageStatus.isReady
+        let setupNeedsScreenRecording = !appState.setupSummary.screenRecordingAuthorized
+        let setupNeedsStorage = !appState.setupSummary.storageStatus.isReady
+
+        if setupNeedsStorage {
+            return true
+        }
+
+        guard setupNeedsScreenRecording else {
+            return false
+        }
+
+        return !(appState.lastIssue?.isScreenRecordingRelated ?? false)
     }
 
     var body: some View {
@@ -44,58 +83,58 @@ struct MenuBarPopover: View {
             hotkeySection
             sectionDivider
 
-            Button {
-                openAboutSettings()
-            } label: {
+            InteractiveMenuRow(isEnabled: true, action: openAboutSettings) {
                 menuRowLabel("About vibeliner", systemImage: "info.circle")
             }
-            .buttonStyle(.plain)
-            .padding(.bottom, 10)
 
-            Button("Quit vibeliner") {
-                NSApp.terminate(nil)
+            InteractiveMenuRow(isEnabled: true, action: { NSApp.terminate(nil) }) {
+                Text("Quit vibeliner")
+                    .font(.system(size: 12))
+                    .foregroundStyle(.primary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .buttonStyle(.plain)
-            .font(.system(size: 12))
-            .padding(.top, 10)
         }
-        .padding(16)
-        .frame(width: 352)
+        .padding(14)
+        .frame(width: 320)
         .fixedSize(horizontal: false, vertical: true)
     }
 
     private var readinessSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             sectionTitle("Setup")
 
             VStack(alignment: .leading, spacing: 0) {
-                Text("Setup required")
-                    .font(.system(size: 14, weight: .semibold))
+                Text(appState.setupSummary.setupHeading)
+                    .font(.system(size: 13, weight: .semibold))
                     .foregroundStyle(.orange)
-                    .padding(.bottom, 12)
+                    .padding(.bottom, 8)
+
+                if !appState.setupSummary.screenRecordingAuthorized {
+                    readinessRow(
+                        symbol: "1",
+                        title: "Screen Recording permission",
+                        isReady: false,
+                        detail: compactReadinessDetail(for: appState.setupSummary.screenRecordingDetail),
+                        actionTitle: "Grant Access",
+                        action: requestScreenRecordingAccess
+                    )
+                }
+
+                if !appState.setupSummary.screenRecordingAuthorized && !appState.setupSummary.storageStatus.isReady {
+                    sectionDivider
+                        .padding(.vertical, 10)
+                }
 
                 readinessRow(
-                    symbol: appState.setupSummary.screenRecordingAuthorized ? "checkmark" : "1",
-                    title: "Screen Recording permission",
-                    isReady: appState.setupSummary.screenRecordingAuthorized,
-                    detail: appState.setupSummary.screenRecordingDetail,
-                    actionTitle: appState.setupSummary.screenRecordingAuthorized ? nil : "Open Settings",
-                    action: openScreenRecordingSettings
-                )
-
-                sectionDivider
-                    .padding(.vertical, 10)
-
-                readinessRow(
-                    symbol: appState.setupSummary.storageStatus.isReady ? "checkmark" : "2",
+                    symbol: appState.setupSummary.storageStatus.isReady ? "checkmark" : (!appState.setupSummary.screenRecordingAuthorized ? "2" : "1"),
                     title: "Captures folder",
                     isReady: appState.setupSummary.storageStatus.isReady,
-                    detail: appState.setupSummary.storageStatus.detail,
+                    detail: compactReadinessDetail(for: appState.setupSummary.storageStatus.detail),
                     actionTitle: "Open Folder",
                     action: openCapturesFolder
                 )
             }
-            .padding(14)
+            .padding(12)
             .background(sectionCardBackground)
             .overlay(sectionCardBorder)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -116,7 +155,7 @@ struct MenuBarPopover: View {
         Rectangle()
             .fill(Color(nsColor: .separatorColor).opacity(0.35))
             .frame(height: 1)
-            .padding(.vertical, 14)
+            .padding(.vertical, 10)
     }
 
     private func menuRowLabel(_ title: String, systemImage: String) -> some View {
@@ -159,11 +198,21 @@ struct MenuBarPopover: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundStyle(.orange)
                 Spacer()
-                Button("Dismiss") {
-                    dismissIssue()
+                HStack(spacing: 10) {
+                    if issue.showsScreenRecordingSettingsAction {
+                        Button("Open Settings") {
+                            openScreenRecordingSettings()
+                        }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 11))
+                    }
+
+                    Button("Dismiss") {
+                        dismissIssue()
+                    }
+                    .buttonStyle(.plain)
+                    .font(.system(size: 11))
                 }
-                .buttonStyle(.plain)
-                .font(.system(size: 11))
             }
 
             Text(issue.message)
@@ -188,7 +237,7 @@ struct MenuBarPopover: View {
     }
 
     private var recentCapturesSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             sectionTitle("Recent Captures")
 
             if appState.recentCaptures.isEmpty {
@@ -198,9 +247,7 @@ struct MenuBarPopover: View {
                     .fixedSize(horizontal: false, vertical: true)
             } else {
                 ForEach(appState.recentCaptures, id: \.id) { record in
-                    Button {
-                        copyCapturePrompt(for: record)
-                    } label: {
+                    InteractiveMenuRow(isEnabled: true, action: { copyCapturePrompt(for: record) }) {
                         HStack(alignment: .center, spacing: 10) {
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(displaySlug(for: record.slug))
@@ -223,44 +270,36 @@ struct MenuBarPopover: View {
                                     .transition(.opacity)
                             }
                         }
-                        .contentShape(Rectangle())
                     }
-                    .buttonStyle(.plain)
                 }
             }
         }
     }
 
     private var utilitySection: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 6) {
             sectionTitle("Actions")
 
-            Button {
-                startCapture()
-            } label: {
+            InteractiveMenuRow(isEnabled: !appState.isCaptureInProgress, action: startCapture) {
                 menuRowLabel(appState.isCaptureInProgress ? "Capturing..." : "Capture now", systemImage: "camera.viewfinder")
             }
-            .buttonStyle(.plain)
-            .disabled(appState.isCaptureInProgress)
 
-            Button {
-                openPromptSettings()
-            } label: {
+            InteractiveMenuRow(isEnabled: true, action: openPromptSettings) {
                 menuRowLabel("Prompt settings", systemImage: "slider.horizontal.3")
             }
-            .buttonStyle(.plain)
 
-            Button {
-                openCapturesFolder()
-            } label: {
+            InteractiveMenuRow(isEnabled: true, action: openGeneralSettings) {
+                menuRowLabel("General settings", systemImage: "gearshape")
+            }
+
+            InteractiveMenuRow(isEnabled: true, action: openCapturesFolder) {
                 menuRowLabel("Open captures folder", systemImage: "folder")
             }
-            .buttonStyle(.plain)
         }
     }
 
     private var hotkeySection: some View {
-        VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 6) {
             sectionTitle("Hotkey")
 
             HStack {
@@ -319,7 +358,7 @@ struct MenuBarPopover: View {
                 }
 
                 Text(detail)
-                    .font(.system(size: 12))
+                    .font(.system(size: 11))
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
             }
@@ -330,10 +369,25 @@ struct MenuBarPopover: View {
         Text(title)
             .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(.secondary)
+            .padding(.horizontal, 10)
     }
 
     private func displaySlug(for slug: String) -> String {
         guard slug.count > 25 else { return slug }
         return String(slug.prefix(25)) + "..."
+    }
+
+    private func compactReadinessDetail(for detail: String) -> String {
+        if detail.hasPrefix("Ready at ") || detail.hasPrefix("Created captures folder at ") {
+            return detail
+                .replacingOccurrences(of: "Created captures folder at ", with: "")
+                .replacingOccurrences(of: "Ready at ", with: "")
+        }
+
+        return detail
+            .replacingOccurrences(of: "The captures folder does not exist yet.", with: "Missing.")
+            .replacingOccurrences(of: "The save directory path points to a file, not a folder.", with: "Path points to a file.")
+            .replacingOccurrences(of: "Vibeliner could not create the captures folder at ", with: "Could not create ")
+            .replacingOccurrences(of: "Vibeliner cannot write to the captures folder at ", with: "Cannot write to ")
     }
 }

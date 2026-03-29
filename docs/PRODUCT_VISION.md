@@ -16,7 +16,7 @@ Solo developers shipping with AI coding tools. They deploy, visually review thei
 
 ## User flow
 
-0. **Setup:** On first launch, the menu bar popover shows whether Screen Recording is granted, whether the captures folder is writable, and whether Vibeliner is ready to capture. "Open captures folder" creates the folder if it doesn't exist yet.
+0. **Setup:** On first launch, the menu bar popover shows advisory Screen Recording status and whether the captures folder is writable. "Open captures folder" creates the folder if it doesn't exist yet. Setup copy helps the user orient themselves, but the real v1 capture authority is still the result of the native `screencapture` flow.
 1. **Capture:** Hit `Cmd+Shift+6` (configurable). Vibeliner uses the native macOS region-selection UX via `screencapture`.
 2. **Annotate:** A borderless floating editor opens with the captured image. Scribble, draw arrows, circle things. Every mark automatically gets the next number (①, ②, ③) and an inline text input appears at the mark's start point. Type a note ("padding too tight"), hit Enter — it collapses to just the circled number.
 3. **Export:** Hit "Copy for LLM" (or Cmd+C). Vibeliner saves a folder with the annotated screenshot + prompt.md + meta.json, and copies a prompt to the clipboard that references the real screenshot with an absolute file path.
@@ -95,7 +95,7 @@ vibeliner clean             # delete old captures
 
 - Swift 5.9+, AppKit + SwiftUI, macOS 14+
 - AppKit for editor window and screen capture, SwiftUI for menu bar popover and settings
-- `screencapture -i` with file output for capture (v1 — native macOS region selection)
+- `screencapture -i` with file output for capture (v1 — native macOS region selection; the tool exit/file result is the real capture authority)
 - `KeyboardShortcuts` package by Sindre Sorhus for global hotkey
 - Core Graphics / NSBezierPath for annotation canvas
 - ~10 source files, one custom NSView subclass for the canvas

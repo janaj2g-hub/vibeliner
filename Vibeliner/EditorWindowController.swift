@@ -1,5 +1,11 @@
 import AppKit
 
+private final class DraggableToolbarView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+}
+
 class EditorWindowController: NSWindowController, NSWindowDelegate {
     var onCaptureSaved: ((CaptureRecord) -> Void)?
     var onClose: (() -> Void)?
@@ -30,7 +36,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         panel.hidesOnDeactivate = false
         panel.titlebarAppearsTransparent = true
         panel.titleVisibility = .hidden
-        panel.isMovableByWindowBackground = true
+        panel.isMovableByWindowBackground = false
         panel.appearance = NSAppearance(named: .darkAqua)
         panel.backgroundColor = .black
         panel.center()
@@ -52,7 +58,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         let toolbarHeight: CGFloat = 40
         let contentView = NSView(frame: NSRect(origin: .zero, size: size))
 
-        let toolbar = NSView(frame: NSRect(
+        let toolbar = DraggableToolbarView(frame: NSRect(
             x: 0,
             y: size.height - toolbarHeight,
             width: size.width,
@@ -191,7 +197,9 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func makeIconButton(symbolName: String, size: CGFloat, target: AnyObject, action: Selector, tintColor: NSColor) -> NSButton {
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)
+        let configuration = NSImage.SymbolConfiguration(pointSize: size * 0.5, weight: .medium)
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)?
+            .withSymbolConfiguration(configuration)
         return makeIconButton(image: image, size: size, target: target, action: action, tintColor: tintColor)
     }
 
@@ -266,8 +274,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             if tool == canvas.currentTool {
                 button.layer?.backgroundColor = accentBlue.withAlphaComponent(0.35).cgColor
                 button.layer?.cornerRadius = 6
-                button.layer?.borderWidth = 1
-                button.layer?.borderColor = Constants.annotationRed.withAlphaComponent(0.7).cgColor
+                button.layer?.borderWidth = 0
                 button.contentTintColor = Constants.toolbarAnnotationIconColor
             } else {
                 button.layer?.backgroundColor = nil
@@ -546,24 +553,29 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         let image = NSImage(size: NSSize(width: size, height: size))
         image.lockFocus()
 
-        let bounds = NSRect(x: 0, y: 0, width: size, height: size)
-        let circleRect = bounds.insetBy(dx: 3, dy: 3)
+        let circleDiameter = size * 0.72
+        let circleRect = NSRect(
+            x: (size - circleDiameter) / 2,
+            y: (size - circleDiameter) / 2,
+            width: circleDiameter,
+            height: circleDiameter
+        )
 
         Constants.toolbarAnnotationIconColor.setStroke()
         let circle = NSBezierPath(ovalIn: circleRect)
-        circle.lineWidth = 1.6
+        circle.lineWidth = 1.5
         circle.stroke()
 
         let glyph = "#" as NSString
-        let font = NSFont.monospacedSystemFont(ofSize: size * 0.5, weight: .semibold)
+        let font = NSFont.systemFont(ofSize: size * 0.42, weight: .bold)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: Constants.toolbarAnnotationIconColor
         ]
         let glyphSize = glyph.size(withAttributes: attributes)
         let glyphPoint = CGPoint(
-            x: (size - glyphSize.width) / 2,
-            y: (size - glyphSize.height) / 2 - 1
+            x: round((size - glyphSize.width) / 2),
+            y: round((size - glyphSize.height) / 2) - 0.5
         )
         glyph.draw(at: glyphPoint, withAttributes: attributes)
 

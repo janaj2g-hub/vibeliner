@@ -1,5 +1,12 @@
 import AppKit
 
+private struct AnnotationDragState {
+    let index: Int
+    let initialPoint: CGPoint
+    var lastPoint: CGPoint
+    var hasExceededThreshold: Bool
+}
+
 class AnnotationCanvas: NSView, NSTextFieldDelegate {
     var backgroundImage: NSImage? {
         didSet { needsDisplay = true }
@@ -39,6 +46,10 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     private var shapeStartPoint: CGPoint?
     private var activeShapeTool: AnnotationType?
     private var trackingArea: NSTrackingArea?
+    private var annotationDragState: AnnotationDragState?
+
+    private let annotationDragThreshold: CGFloat = 4
+    private let shapeHitTolerance: CGFloat = 12
 
     override var acceptsFirstResponder: Bool { true }
 
@@ -327,21 +338,29 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         }
 
         let clamped = clamp(point)
-        if let index = annotationIndex(near: clamped) {
+        if let index = annotationIndex(at: clamped) {
             if activeAnnotationIndex == index, let activeTextField {
+                selectedAnnotationIndex = index
                 window?.makeFirstResponder(activeTextField)
                 return
             }
 
             finalizeActiveTextField()
             selectedAnnotationIndex = index
-            showTextField(for: index)
+            annotationDragState = AnnotationDragState(
+                index: index,
+                initialPoint: clamped,
+                lastPoint: clamped,
+                hasExceededThreshold: false
+            )
+            needsDisplay = true
             return
         }
 
         // Finalize any open text field first before starting a new annotation.
         finalizeActiveTextField()
         selectedAnnotationIndex = nil
+        annotationDragState = nil
 
         activeShapeTool = currentTool
         let tool = activeShapeTool ?? currentTool
@@ -357,6 +376,32 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override func mouseDragged(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
+
+        if var dragState = annotationDragState {
+            let movementFromStart = hypot(
+                clamped.x - dragState.initialPoint.x,
+                clamped.y - dragState.initialPoint.y
+            )
+            if !dragState.hasExceededThreshold {
+                guard movementFromStart >= annotationDragThreshold else {
+                    return
+                }
+                dragState.hasExceededThreshold = true
+            }
+
+            let delta = CGPoint(
+                x: clamped.x - dragState.lastPoint.x,
+                y: clamped.y - dragState.lastPoint.y
+            )
+            if dragState.index < annotations.count {
+                annotations[dragState.index].translate(by: delta)
+            }
+            dragState.lastPoint = clamped
+            annotationDragState = dragState
+            needsDisplay = true
+            return
+        }
+
         let tool = activeShapeTool ?? currentTool
 
         switch tool {
@@ -374,6 +419,19 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override func mouseUp(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
+
+        if let dragState = annotationDragState {
+            selectedAnnotationIndex = dragState.index
+            annotationDragState = nil
+            if !dragState.hasExceededThreshold {
+                DispatchQueue.main.async { [weak self] in
+                    self?.showTextField(for: dragState.index)
+                }
+            }
+            needsDisplay = true
+            return
+        }
+
         let tool = activeShapeTool ?? currentTool
 
         let annotation: Annotation
@@ -427,7 +485,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     }
 
     private func handleDoubleClick(at point: CGPoint) {
-        if let index = annotationIndex(near: point) {
+        if let index = annotationIndex(at: point) {
             selectedAnnotationIndex = index
             finalizeActiveTextField()
             showTextField(for: index)
@@ -436,7 +494,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
-        hoveredBadgeIndex = annotationIndex(near: point)
+        hoveredBadgeIndex = badgeAnnotationIndex(near: point)
     }
 
     override func mouseExited(with event: NSEvent) {
@@ -497,6 +555,8 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         textField.layer?.masksToBounds = true
         textField.placeholderString = "Describe issue..."
         textField.delegate = self
+        textField.isEditable = true
+        textField.isSelectable = true
         textField.stringValue = annotation.note
 
         // Remove any existing text field
@@ -607,7 +667,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     override func rightMouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
 
-        if let index = annotationIndex(near: point) {
+        if let index = annotationIndex(at: point) {
             selectedAnnotationIndex = index
             let annotation = annotations[index]
                 let menu = NSMenu()
@@ -676,14 +736,90 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
     // MARK: - Helpers
 
-    private func annotationIndex(near point: CGPoint) -> Int? {
-        for (index, annotation) in annotations.enumerated() {
+    private func badgeAnnotationIndex(near point: CGPoint) -> Int? {
+        for (index, annotation) in annotations.enumerated().reversed() {
             let distance = hypot(annotation.startPoint.x - point.x, annotation.startPoint.y - point.y)
             if distance <= Constants.badgeHitRadius {
                 return index
             }
         }
         return nil
+    }
+
+    private func annotationIndex(at point: CGPoint) -> Int? {
+        for (index, annotation) in annotations.enumerated().reversed() {
+            if annotationContainsPoint(annotation, point: point) {
+                return index
+            }
+        }
+        return nil
+    }
+
+    private func annotationContainsPoint(_ annotation: Annotation, point: CGPoint) -> Bool {
+        if badgeContainsPoint(annotation.startPoint, point: point) {
+            return true
+        }
+
+        switch annotation.type {
+        case .freehand:
+            return polylineContainsPoint(annotation.points, point: point, tolerance: shapeHitTolerance)
+        case .arrow:
+            guard annotation.points.count >= 2 else { return false }
+            return lineSegmentContainsPoint(
+                start: annotation.points[0],
+                end: annotation.points[1],
+                point: point,
+                tolerance: shapeHitTolerance
+            )
+        case .circle:
+            guard annotation.points.count >= 2 else { return false }
+            let center = annotation.points[0]
+            let edge = annotation.points[1]
+            let radius = max(5, hypot(edge.x - center.x, edge.y - center.y))
+            let distance = hypot(point.x - center.x, point.y - center.y)
+            return abs(distance - radius) <= shapeHitTolerance
+        }
+    }
+
+    private func badgeContainsPoint(_ badgeCenter: CGPoint, point: CGPoint) -> Bool {
+        hypot(badgeCenter.x - point.x, badgeCenter.y - point.y) <= Constants.badgeHitRadius
+    }
+
+    private func polylineContainsPoint(_ points: [CGPoint], point: CGPoint, tolerance: CGFloat) -> Bool {
+        guard !points.isEmpty else { return false }
+        if points.count == 1 {
+            return hypot(points[0].x - point.x, points[0].y - point.y) <= tolerance
+        }
+
+        for segmentStartIndex in 0..<(points.count - 1) {
+            if lineSegmentContainsPoint(
+                start: points[segmentStartIndex],
+                end: points[segmentStartIndex + 1],
+                point: point,
+                tolerance: tolerance
+            ) {
+                return true
+            }
+        }
+
+        return false
+    }
+
+    private func lineSegmentContainsPoint(start: CGPoint, end: CGPoint, point: CGPoint, tolerance: CGFloat) -> Bool {
+        distanceFromPoint(point, toLineSegmentFrom: start, to: end) <= tolerance
+    }
+
+    private func distanceFromPoint(_ point: CGPoint, toLineSegmentFrom start: CGPoint, to end: CGPoint) -> CGFloat {
+        let dx = end.x - start.x
+        let dy = end.y - start.y
+
+        if dx == 0 && dy == 0 {
+            return hypot(point.x - start.x, point.y - start.y)
+        }
+
+        let t = max(0, min(1, ((point.x - start.x) * dx + (point.y - start.y) * dy) / (dx * dx + dy * dy)))
+        let projection = CGPoint(x: start.x + t * dx, y: start.y + t * dy)
+        return hypot(point.x - projection.x, point.y - projection.y)
     }
 
     private func cursorForCurrentLocation() -> NSCursor {

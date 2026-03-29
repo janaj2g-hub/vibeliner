@@ -11,6 +11,7 @@ struct CaptureFailure: LocalizedError {
     let message: String
     let recoverySuggestion: String
     let technicalDetails: String?
+    let screenRecordingState: ScreenRecordingPermissionState?
 
     var errorDescription: String? {
         "\(message) \(recoverySuggestion)"
@@ -19,10 +20,13 @@ struct CaptureFailure: LocalizedError {
 
 class CaptureManager {
     static let shared = CaptureManager()
+    private let filePollInterval: UInt64 = 50_000_000
+    private let fileMaterializationDeadline: UInt64 = 1_000_000_000
 
     private init() {}
 
     func captureRegion() async -> CaptureOutcome {
+        let runtimeIdentity = CaptureRuntimeIdentity.current()
         let captureURL = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString)
             .appendingPathExtension("png")
@@ -32,24 +36,29 @@ class CaptureManager {
         }
 
         let result = await runScreenCapture(to: captureURL)
-        let trimmedError = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
-        let fileExists = FileManager.default.fileExists(atPath: captureURL.path)
+        let fileStatus = await waitForCaptureFile(at: captureURL)
 
         guard result.exitCode == 0 else {
-            if !fileExists && trimmedError.isEmpty {
+            if isUserCancelled(result: result, fileStatus: fileStatus) {
                 return .cancelled
             }
 
-            return .failure(classifyFailure(stderr: trimmedError, outputURL: captureURL))
+            return .failure(classifyFailure(result: result, fileStatus: fileStatus, outputURL: captureURL))
         }
 
-        guard fileExists else {
+        guard fileStatus.isMaterialized else {
             return .failure(
                 CaptureFailure(
                     title: "Capture failed",
-                    message: "macOS finished the capture flow, but Vibeliner did not receive a screenshot file.",
-                    recoverySuggestion: "Try the capture again. If it keeps failing, relaunch Vibeliner and confirm Screen Recording is enabled for Vibeliner in System Settings.",
-                    technicalDetails: trimmedError.isEmpty ? nil : trimmedError
+                    message: "macOS finished the capture flow, but vibeliner did not receive a screenshot file.",
+                    recoverySuggestion: "Try the capture again. If it keeps failing, reopen vibeliner and try once more.",
+                    technicalDetails: diagnosticSummary(
+                        result: result,
+                        fileStatus: fileStatus,
+                        outputURL: captureURL,
+                        runtimeIdentity: runtimeIdentity
+                    ),
+                    screenRecordingState: nil
                 )
             )
         }
@@ -58,9 +67,15 @@ class CaptureManager {
             return .failure(
                 CaptureFailure(
                     title: "Capture failed",
-                    message: "Vibeliner captured a file, but macOS could not load it as an image.",
+                    message: "vibeliner received a screenshot file, but macOS could not load it as an image.",
                     recoverySuggestion: "Try the capture again. If the problem continues, relaunch Vibeliner and retry from the menu bar.",
-                    technicalDetails: trimmedError.isEmpty ? nil : trimmedError
+                    technicalDetails: diagnosticSummary(
+                        result: result,
+                        fileStatus: fileStatus,
+                        outputURL: captureURL,
+                        runtimeIdentity: runtimeIdentity
+                    ),
+                    screenRecordingState: nil
                 )
             )
         }
@@ -90,22 +105,86 @@ class CaptureManager {
         }
     }
 
-    private func classifyFailure(stderr: String, outputURL: URL) -> CaptureFailure {
-        if stderr.contains("could not create image from rect") {
+    private func waitForCaptureFile(at outputURL: URL) async -> CaptureFileStatus {
+        let deadline = DispatchTime.now().uptimeNanoseconds + fileMaterializationDeadline
+
+        while DispatchTime.now().uptimeNanoseconds < deadline {
+            let status = CaptureFileStatus(url: outputURL)
+            if status.isMaterialized {
+                return status
+            }
+
+            try? await Task.sleep(nanoseconds: filePollInterval)
+        }
+
+        return CaptureFileStatus(url: outputURL)
+    }
+
+    private func isUserCancelled(
+        result: (exitCode: Int32, standardError: String),
+        fileStatus: CaptureFileStatus
+    ) -> Bool {
+        result.exitCode == 1 &&
+            result.standardError.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !fileStatus.exists
+    }
+
+    private func classifyFailure(
+        result: (exitCode: Int32, standardError: String),
+        fileStatus: CaptureFileStatus,
+        outputURL: URL
+    ) -> CaptureFailure {
+        let stderr = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+        let runtimeIdentity = CaptureRuntimeIdentity.current()
+        let diagnostics = diagnosticSummary(
+            result: result,
+            fileStatus: fileStatus,
+            outputURL: outputURL,
+            runtimeIdentity: runtimeIdentity
+        )
+        let loweredError = stderr.lowercased()
+
+        if loweredError.contains("declined tcc") || loweredError.contains("permission") || loweredError.contains("not authorized") {
+            let issue = runtimeIdentity.isLikelyRunningWrongAppCopy
+                ? UserFacingIssue(
+                    title: "Screen Recording blocked for this app copy",
+                    message: "macOS blocked Screen Recording for the Vibeliner bundle that is currently running.",
+                    recoverySuggestion: runtimeIdentity.runCopyRecoverySuggestion,
+                    technicalDetails: nil,
+                    showsScreenRecordingSettingsAction: true
+                )
+                : ScreenRecordingPermissionState.notGranted.issue
             return CaptureFailure(
-                title: "Capture blocked by macOS",
-                message: "macOS could not turn the selected region into an image.",
-                recoverySuggestion: "Make sure Screen Recording is enabled for Vibeliner, then fully quit and reopen the app before trying again.",
-                technicalDetails: stderr
+                title: issue.title,
+                message: issue.message,
+                recoverySuggestion: issue.recoverySuggestion ?? "Enable Screen Recording for vibeliner, then quit and reopen it.",
+                technicalDetails: diagnostics,
+                screenRecordingState: .notGranted
             )
         }
 
-        if stderr.localizedCaseInsensitiveContains("permission") {
+        if stderr.contains("could not create image from rect") {
+            let recoverySuggestion = runtimeIdentity.isLikelyRunningWrongAppCopy
+                ? runtimeIdentity.runCopyRecoverySuggestion
+                : "Try the capture again. If it keeps failing, quit and reopen vibeliner, then retry from the menu bar."
             return CaptureFailure(
-                title: "Screen Recording permission needed",
-                message: "Vibeliner does not currently have the macOS permission needed to capture the screen.",
-                recoverySuggestion: "Enable Vibeliner under System Settings > Privacy & Security > Screen Recording, then quit and reopen Vibeliner.",
-                technicalDetails: stderr
+                title: "Capture failed",
+                message: runtimeIdentity.isLikelyRunningWrongAppCopy
+                    ? "macOS started the region capture UI, but the running Vibeliner app copy may not match the bundle Screen Recording was approved for."
+                    : "macOS started the region capture UI, but it did not produce an image for the selected area.",
+                recoverySuggestion: recoverySuggestion,
+                technicalDetails: diagnostics,
+                screenRecordingState: nil
+            )
+        }
+
+        if result.exitCode != 0 && stderr.isEmpty {
+            return CaptureFailure(
+                title: "Capture failed",
+                message: "macOS ended the capture flow without returning a screenshot.",
+                recoverySuggestion: "Try the capture again. If it keeps failing, reopen vibeliner and retry from the menu bar.",
+                technicalDetails: diagnostics,
+                screenRecordingState: nil
             )
         }
 
@@ -114,15 +193,105 @@ class CaptureManager {
                 title: "Capture failed",
                 message: "macOS did not complete the region capture.",
                 recoverySuggestion: "Try again. If it keeps failing, relaunch Vibeliner and retry the capture from the menu bar.",
-                technicalDetails: "No screenshot was written to \(outputURL.path)."
+                technicalDetails: diagnostics,
+                screenRecordingState: nil
             )
         }
 
         return CaptureFailure(
             title: "Capture failed",
             message: "macOS returned an error while capturing the selected region.",
-            recoverySuggestion: "Try again. If it keeps failing, relaunch Vibeliner and confirm Screen Recording is enabled for Vibeliner.",
-            technicalDetails: stderr
+            recoverySuggestion: "Try again. If it keeps failing, relaunch vibeliner and retry the capture from the menu bar.",
+            technicalDetails: diagnostics,
+            screenRecordingState: nil
+        )
+    }
+
+    private func diagnosticSummary(
+        result: (exitCode: Int32, standardError: String),
+        fileStatus: CaptureFileStatus,
+        outputURL: URL,
+        runtimeIdentity: CaptureRuntimeIdentity
+    ) -> String {
+        let stderr = result.standardError.trimmingCharacters(in: .whitespacesAndNewlines)
+        let stderrSummary = stderr.isEmpty ? "<empty>" : stderr
+        let fileSizeSummary = fileStatus.size.map(String.init) ?? "nil"
+        let expectedDistPath = runtimeIdentity.expectedDistAppPath ?? "nil"
+        return "exitCode=\(result.exitCode); fileExists=\(fileStatus.exists); fileSize=\(fileSizeSummary); outputURL=\(outputURL.path); stderr=\(stderrSummary); bundleID=\(runtimeIdentity.bundleIdentifier); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(expectedDistPath); runCopy=\(runtimeIdentity.runCopyLabel)"
+    }
+}
+
+private struct CaptureFileStatus {
+    let exists: Bool
+    let size: UInt64?
+
+    var isMaterialized: Bool {
+        exists && (size ?? 0) > 0
+    }
+
+    init(url: URL) {
+        if let attributes = try? FileManager.default.attributesOfItem(atPath: url.path),
+           let fileSize = attributes[.size] as? NSNumber {
+            exists = true
+            size = fileSize.uint64Value
+        } else {
+            exists = false
+            size = nil
+        }
+    }
+}
+
+private struct CaptureRuntimeIdentity {
+    let bundleIdentifier: String
+    let appBundlePath: String
+    let expectedDistAppPath: String?
+
+    var isRunningDerivedDataCopy: Bool {
+        appBundlePath.contains("/DerivedData/")
+    }
+
+    var isLikelyRunningWrongAppCopy: Bool {
+        guard let expectedDistAppPath else {
+            return isRunningDerivedDataCopy
+        }
+
+        return isRunningDerivedDataCopy || appBundlePath != expectedDistAppPath
+    }
+
+    var runCopyLabel: String {
+        if let expectedDistAppPath, appBundlePath == expectedDistAppPath {
+            return "dist"
+        }
+
+        if isRunningDerivedDataCopy {
+            return "derivedData"
+        }
+
+        return "other"
+    }
+
+    var runCopyRecoverySuggestion: String {
+        if let expectedDistAppPath {
+            return "Authorize the exact app copy you are running in Screen Recording, or rebuild and launch \(expectedDistAppPath), then quit and reopen vibeliner before retrying."
+        }
+
+        return "Authorize the exact app copy you are running in Screen Recording, then quit and reopen vibeliner before retrying."
+    }
+
+    static func current() -> Self {
+        let bundle = Bundle.main
+        let sourceRoot = bundle.object(forInfoDictionaryKey: "VBLSourceRoot") as? String
+        let expectedDistAppPath = sourceRoot.map {
+            URL(fileURLWithPath: $0)
+                .appendingPathComponent("dist/Vibeliner.app")
+                .standardizedFileURL
+                .path
+        }
+
+        return CaptureRuntimeIdentity(
+            bundleIdentifier: bundle.bundleIdentifier ?? "unknown",
+            appBundlePath: bundle.bundleURL.standardizedFileURL.path,
+            expectedDistAppPath: expectedDistAppPath
         )
     }
 }

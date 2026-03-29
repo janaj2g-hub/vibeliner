@@ -12,8 +12,10 @@ Work comes as Linear ticket IDs (e.g., `VIB-2`, `VIB-3`). You have Linear MCP ac
 3. Update the ticket status to **"AI Coder is implementing"**
 4. Execute the tasks
 5. Run the build command
-6. Post a **verification comment** on the ticket (see format below)
-7. Update the ticket status to **"In Review"**
+6. Commit the finished ticket work with the Linear ticket ID in the commit message
+7. Push the branch to GitHub and open or update the pull request to `main`
+8. Post a **verification comment** on the ticket (see format below)
+9. Update the ticket status to **"In Review"**
 
 **Batch prompts** list multiple ticket IDs. Execute them in order. Read each ticket's latest prompt comment.
 
@@ -35,6 +37,7 @@ After completing a ticket, post a comment on the Linear ticket with this format:
 ```
 
 Every line from the prompt's **Verification** section must appear with a Pass or Fail. If anything fails, still move to In Review — the reviewer decides next steps.
+Do not treat the ticket as complete until the code is built, committed, pushed, and the PR is updated.
 
 ## Linear status IDs (vibeliner team)
 
@@ -53,6 +56,7 @@ Use these when updating ticket status:
 - After completing a ticket and verifying the build, commit your changes with the Linear ticket ID in the commit message, push the branch to `origin`, and open or update a pull request back to `main` unless the user explicitly asks for a different flow.
 - Treat a normal Claude Code implementation run as incomplete until code changes are built, committed, and pushed to GitHub, unless the user explicitly asks for a local-only or no-git pass.
 - For batch Linear work, complete this full cycle for each ticket in order: implement, build, verify, commit, push, and update or open the pull request before moving to the next ticket.
+- After each ticket prompt in a batch, stop only after the branch has been pushed and the PR state is current. Do not leave a ticket half-finished locally while moving to the next one.
 - Include the Linear ticket ID in branch names, commit messages, and PR titles whenever possible.
 - Never force-push `main` or rewrite shared history. Only rewrite your own feature branch if the user explicitly asks for it.
 - If the repository is not yet initialized locally, initialize it, ensure `origin` points at the GitHub repo above, and push `main` before starting ticket branches.
@@ -91,6 +95,26 @@ Vibeliner/
     └── VibeLinerCLI.swift          # vibeliner list/copy/send/clean
 ```
 
+### Component overview
+- `AppDelegate` owns menu bar lifecycle, hotkey registration, and capture/editor orchestration
+- `CaptureManager` is the capture boundary; it invokes `screencapture`, interprets outcomes, and should remain the source of truth for capture success/failure
+- `CaptureStore` owns on-disk capture folders and artifact naming; keep path layout decisions centralized there
+- `AnnotationCanvas` owns interaction state, drawing, hit-testing, and annotation editing behavior
+- `EditorWindowController` owns the floating editor window shell and toolbar wiring around the canvas
+- SwiftUI views (`MenuBarPopover`, `PromptSettingsView`) should stay focused on settings and lightweight presentation, not capture/editor business logic
+
+### Coordinate rules
+- Be explicit about coordinate spaces whenever editing annotation or export code: distinguish image-space, canvas/view-space, and output-pixel coordinates
+- Do not mix raw view points with persisted annotation geometry without converting through a single canonical mapping
+- Keep screenshot-to-export mapping consistent with the displayed image rect; avoid ad hoc offsets or scale factors sprinkled across files
+- If annotations are transferred between views or windows, shift coordinates at the transfer boundary and keep the stored model internally consistent afterward
+- When positioning AppKit text-editing subviews on top of the canvas, convert model coordinates back into view coordinates instead of storing view-relative points in the model
+
+### Interaction state
+- Treat selection, annotation editing, and export as distinct modes with explicit transitions rather than overlapping boolean flags where possible
+- Keep toolbar actions consistent with the active mode; actions that mutate annotations should operate on the current canvas state, not infer hidden state from window chrome
+- Keyboard shortcuts that mirror toolbar actions, such as copy/export, should go through the same implementation path to avoid behavior drift
+
 ## Conventions
 
 ### Code style
@@ -125,6 +149,13 @@ Vibeliner/
 - Copy for LLM = save + clipboard + "Copied" toast. Window stays open.
 - Cmd+C (when no text field focused) = same as Copy for LLM
 
+### Concurrency & threading
+- UI state, AppKit drawing, and window/controller lifecycle belong on the main thread
+- File IO, prompt generation, and other non-UI work may happen off-main, but marshal results back to the main thread before mutating UI-observed state
+- If a type or helper touches SwiftUI/AppKit rendering APIs, keep actor isolation explicit and prefer `@MainActor` where appropriate
+- Avoid introducing background work that races capture-folder creation, prompt writing, or export finalization
+- Favor one clear ownership path for async work instead of duplicating capture/export side effects across callers
+
 ### What NOT to do
 - Do not use ScreenCaptureKit — use file-based `screencapture -i` for v1
 - Do not copy GPL code from MacShot — rewrite from scratch
@@ -149,6 +180,7 @@ Notes:
 - The shared `Vibeliner` scheme copies the built app to `dist/Vibeliner.app` on every successful app build.
 - Treat `dist/Vibeliner.app` as the canonical bundle for manual testing outside Xcode.
 - Xcode's Run button still launches the DerivedData app, not `dist/Vibeliner.app`.
+- For Screen Recording / TCC debugging, authorize the same bundle path the app reports in About. Prefer `dist/Vibeliner.app` for stable local testing.
 - `dist/` is ignored by git; do not commit the built `.app` bundle.
 
 ## Reference
