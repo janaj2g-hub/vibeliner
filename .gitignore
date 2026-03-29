@@ -16,5 +16,8 @@ Packages/
 *.swp
 *~
 
+# Repo-local build convenience output
+dist/
+
 # Vibeliner local data (don't commit user captures)
 # ~/.vibeliner/ is in the home directory, not the repo

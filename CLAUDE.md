@@ -67,7 +67,7 @@ Vibeliner is a native macOS menu bar app that captures, annotates, and packages 
 - **Language:** Swift 5.9+
 - **Frameworks:** AppKit + SwiftUI, macOS 14+
 - **Build:** `xcodebuild -project Vibeliner.xcodeproj -scheme Vibeliner build`
-- **Run:** `open build/Release/Vibeliner.app` or run from Xcode
+- **Run:** `open /Users/jongrossman/Documents/vibeliner/V1/vibeliner/dist/Vibeliner.app` for the latest repo-local app, or run from Xcode
 - **Dependencies:** KeyboardShortcuts (Sindre Sorhus), ArgumentParser (Apple, CLI only)
 
 ## Architecture
@@ -114,6 +114,7 @@ Vibeliner/
 - Config: `~/.vibeliner/config.toml`
 - Captures: `~/.vibeliner/captures/` (configurable via `save_dir`)
 - Each capture: `YYYY-MM-dd_HHmmss_[slug]/screenshot.png + prompt.md + meta.json`
+- Repo-local runnable app: `dist/Vibeliner.app` after a successful app build
 
 ### Editor window
 - Borderless floating NSPanel — no traffic lights, no title bar
@@ -135,9 +136,18 @@ Vibeliner/
 # Build the app
 xcodebuild -project Vibeliner.xcodeproj -scheme Vibeliner build
 
+# Open the latest repo-local app bundle produced by the build phase
+open /Users/jongrossman/Documents/vibeliner/V1/vibeliner/dist/Vibeliner.app
+
 # Build the CLI (after CLI target exists)
 xcodebuild -project Vibeliner.xcodeproj -scheme vibeliner-cli build
 ```
+
+Notes:
+- The shared `Vibeliner` scheme copies the built app to `dist/Vibeliner.app` on every successful app build.
+- Treat `dist/Vibeliner.app` as the canonical bundle for manual testing outside Xcode.
+- Xcode's Run button still launches the DerivedData app, not `dist/Vibeliner.app`.
+- `dist/` is ignored by git; do not commit the built `.app` bundle.
 
 ## Reference
 

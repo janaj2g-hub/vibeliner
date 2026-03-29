@@ -6,6 +6,35 @@ Log of architectural decisions and failed approaches. Claude Code, Codex, and fu
 
 ## Decisions
 
+### 2026-03-29: Always copy the built app into a repo-local `dist` folder after every app build
+**Decision:** The shared `Vibeliner` scheme now includes a build post-action that copies the final built bundle into `dist/Vibeliner.app` inside the repo on every successful app build.
+
+**Why:** Running Vibeliner outside Xcode is important for testing menu bar behavior, permission prompts, and general macOS integration. The default Xcode output lives in DerivedData, which is correct for Xcode but inconvenient for normal use and confusing for non-Xcode workflows. The user wanted a repo-local app bundle that is always refreshed by the build itself, without requiring a manual terminal copy step after every LLM-driven implementation pass.
+
+This solves a real workflow problem:
+- LLM runs already build before handing work back.
+- The user should be able to open a stable repo-local `.app` directly from Finder.
+- We should not require "find DerivedData" or "run `cp -R ...`" after every push or verification pass.
+
+**What changed:**
+- The shared `Vibeliner` scheme now has a `Copy App To Repo Dist` build post-action.
+- The script copies `$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)` to `$(SRCROOT)/dist/$(FULL_PRODUCT_NAME)` using `ditto`.
+- After copying, the script re-signs the repo-local bundle so `dist/Vibeliner.app` is launchable outside Xcode.
+- The destination is recreated on each build so the repo-local app reflects the latest successful build.
+- The script runs after the build completes, so the automation works whether the build is started from Xcode or `xcodebuild` without racing the final packaging and signing steps.
+
+**Source-control contract:** `dist/` is a local convenience artifact, not source code. It is intentionally ignored in `.gitignore` so normal commits and GitHub pushes do not pick up the built `.app` bundle. Future LLMs should not remove this ignore rule unless the product deliberately decides to ship checked-in binaries.
+
+**Trade-off:** Builds now perform one additional copy step, which slightly increases build time and writes a large local bundle into the repo workspace. This is acceptable because the main benefit is predictable app launching outside Xcode.
+
+**Known limitation:** This automation depends on the shared `Vibeliner` scheme. If someone builds the raw target without using the shared scheme, `dist/Vibeliner.app` will not refresh.
+
+**Important behavior note:** Xcode's Run button still launches the DerivedData app bundle, not `dist/Vibeliner.app`. The repo-local `dist` app is for manual launch outside Xcode after the build completes.
+
+**Why this matters for future LLMs:** If you are debugging "works in Xcode, behaves differently outside Xcode," use `dist/Vibeliner.app` as the canonical local app bundle for manual smoke testing. Do not assume the user wants to hunt through DerivedData.
+
+**Revisit when:** The project adopts a dedicated packaging/release process or a separate staging app path that replaces `dist/`.
+
 ### 2026-03-28: Keep native macOS capture UX, but switch to file-based `screencapture -i`
 **Decision:** Vibeliner still uses the `screencapture` CLI for v1 region selection, but the capture pipeline now writes directly to a temporary file and loads that file into the app. We do not use clipboard handoff for the main capture path.
 
@@ -190,6 +219,15 @@ The most suspicious pattern was synchronous creation/removal of `NSTextField` su
 ---
 
 ## Failed approaches
+
+### 2026-03-29: Copying `dist/Vibeliner.app` from a target build phase
+**Ticket / workstream:** Local app packaging workflow
+
+**Approach:** Add a shell-script build phase directly to the `Vibeliner` target that copied `$(TARGET_BUILD_DIR)/$(FULL_PRODUCT_NAME)` into `dist/`.
+
+**Failure:** The script could run before the final app bundle was fully packaged and signed, which made the repo-local bundle stale or incomplete. It also forced a target-level script-sandbox exception just to write the nested `.app` bundle into the repo.
+
+**Lesson:** For repo-local app packaging, copy from a scheme post-action that runs after the final build output exists. Do not assume a target build phase sees the finished app product.
 
 ### 2026-03-28: Treating every non-success capture as "cancelled"
 **Ticket / workstream:** Product-stability and OS-integration hardening

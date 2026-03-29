@@ -168,9 +168,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configurePopover() {
-        popover.contentSize = NSSize(width: 340, height: 460)
+        if #available(macOS 13.0, *) {
+            popoverController.sizingOptions = [.preferredContentSize]
+        }
         popover.behavior = .transient
         popover.contentViewController = popoverController
+        popover.contentSize = popoverController.preferredContentSize
     }
 
     private func configureDefaultHotkeyIfNeeded() {
@@ -329,6 +332,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func openScreenRecordingSettings() {
+        activateInteractiveApp()
+
+        let isAuthorized: Bool
+        if CGPreflightScreenCaptureAccess() {
+            isAuthorized = true
+        } else {
+            isAuthorized = CGRequestScreenCaptureAccess()
+        }
+
+        appState.refresh(autoRepairStorage: true)
+
+        guard !isAuthorized else {
+            return
+        }
+
         guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") else {
             return
         }
