@@ -8,6 +8,13 @@ private struct AnnotationDragState {
 }
 
 class AnnotationCanvas: NSView, NSTextFieldDelegate {
+    private let noteOffsetX: CGFloat = 22
+    private let noteHorizontalPadding: CGFloat = 10
+    private let noteVerticalPadding: CGFloat = 5
+    private let noteCornerRadius: CGFloat = 8
+    private let noteMaxWidth: CGFloat = 240
+    private let noteMinWidth: CGFloat = 150
+
     var backgroundImage: NSImage? {
         didSet { needsDisplay = true }
     }
@@ -32,6 +39,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     // Inline text field state
     private var activeTextField: NSTextField?
     private var activeAnnotationIndex: Int?
+    private var isActivatingTextField = false
     private var selectedAnnotationIndex: Int?
     private var hoveredBadgeIndex: Int? {
         didSet {
@@ -95,6 +103,9 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
                 drawBadgeHoverRing(at: annotation.startPoint)
             }
             drawBadge(number: annotation.number, at: annotation.startPoint)
+            if activeAnnotationIndex != index {
+                drawNoteOverlay(for: annotation)
+            }
         }
     }
 
@@ -244,24 +255,19 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         let circle = NSBezierPath(ovalIn: badgeRect)
         circle.fill()
 
-        Constants.badgeOutlineColor.setStroke()
-        circle.lineWidth = 1
-        circle.stroke()
-
         // White number text, smaller font for 2+ digits
         let fontSize: CGFloat = number >= 10 ? 12 : 14
-        let font = NSFont.boldSystemFont(ofSize: fontSize)
+        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
         let text = "\(number)" as NSString
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .center
         let attrs: [NSAttributedString.Key: Any] = [
             .font: font,
-            .foregroundColor: Constants.badgeTextColor
+            .foregroundColor: Constants.badgeTextColor,
+            .paragraphStyle: paragraphStyle
         ]
-        let textSize = text.size(withAttributes: attrs)
-        let textPoint = CGPoint(
-            x: point.x - textSize.width / 2,
-            y: point.y - textSize.height / 2
-        )
-        text.draw(at: textPoint, withAttributes: attrs)
+        let textRect = badgeRect.offsetBy(dx: 0, dy: number >= 10 ? -0.5 : 0.5)
+        text.draw(in: textRect, withAttributes: attrs)
     }
 
     private func drawBadgeHoverRing(at point: CGPoint) {
@@ -277,6 +283,28 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         ring.lineWidth = 2
         Constants.badgeHoverRingColor.setStroke()
         ring.stroke()
+    }
+
+    private func drawNoteOverlay(for annotation: Annotation) {
+        let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !note.isEmpty else { return }
+
+        let rect = noteRect(for: annotation)
+        let path = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius, yRadius: noteCornerRadius)
+        Constants.inlineNoteBackgroundColor.withAlphaComponent(0.5).setFill()
+        path.fill()
+
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+            .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.5),
+            .paragraphStyle: paragraphStyle
+        ]
+
+        let textRect = rect.insetBy(dx: noteHorizontalPadding, dy: noteVerticalPadding - 1)
+        (note as NSString).draw(in: textRect, withAttributes: attributes)
     }
 
     // MARK: - Render Annotated Image
@@ -338,6 +366,13 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         }
 
         let clamped = clamp(point)
+        if let noteIndex = noteAnnotationIndex(at: clamped) {
+            selectedAnnotationIndex = noteIndex
+            finalizeActiveTextField()
+            showTextField(for: noteIndex)
+            return
+        }
+
         if let index = annotationIndex(at: clamped) {
             if activeAnnotationIndex == index, let activeTextField {
                 selectedAnnotationIndex = index
@@ -528,23 +563,9 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     private func showTextField(for annotationIndex: Int) {
         guard annotationIndex >= 0 && annotationIndex < annotations.count else { return }
         let annotation = annotations[annotationIndex]
-        let badgeCenter = annotation.startPoint
-
-        let fieldWidth: CGFloat = 250
-        let fieldHeight: CGFloat = 24
-        let offset: CGFloat = 30
-
-        // Position: right of badge, or left if near right edge
-        let xPos: CGFloat
-        if badgeCenter.x + offset + fieldWidth > bounds.width - 10 {
-            xPos = badgeCenter.x - offset - fieldWidth
-        } else {
-            xPos = badgeCenter.x + offset
-        }
-        let yPos = badgeCenter.y - fieldHeight / 2
-
-        let textField = NSTextField(frame: NSRect(x: xPos, y: yPos, width: fieldWidth, height: fieldHeight))
-        textField.font = NSFont.systemFont(ofSize: 12)
+        let fieldRect = noteRect(for: annotation)
+        let textField = NSTextField(frame: fieldRect)
+        textField.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         textField.textColor = Constants.inlineNoteTextColor
         textField.backgroundColor = Constants.inlineNoteBackgroundColor
         textField.isBordered = false
@@ -564,12 +585,18 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
         activeTextField = textField
         activeAnnotationIndex = annotationIndex
+        isActivatingTextField = true
 
         addSubview(textField)
 
         DispatchQueue.main.async { [weak self, weak textField] in
             guard let self, let textField, self.activeTextField === textField else { return }
-            self.window?.makeFirstResponder(textField)
+            self.window?.makeKeyAndOrderFront(nil)
+            let becameFirstResponder = self.window?.makeFirstResponder(textField) ?? false
+            if becameFirstResponder {
+                textField.selectText(nil)
+            }
+            self.isActivatingTextField = false
         }
     }
 
@@ -630,6 +657,7 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
     func controlTextDidEndEditing(_ obj: Notification) {
         guard let endedField = obj.object as? NSTextField else { return }
         guard endedField === activeTextField else { return }
+        guard !isActivatingTextField else { return }
         // Loss of focus — finalize
         DispatchQueue.main.async { [weak self] in
             self?.finalizeActiveTextField()
@@ -755,8 +783,24 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
         return nil
     }
 
+    private func noteAnnotationIndex(at point: CGPoint) -> Int? {
+        for (index, annotation) in annotations.enumerated().reversed() {
+            let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !note.isEmpty else { continue }
+            if noteRect(for: annotation).contains(point) {
+                return index
+            }
+        }
+        return nil
+    }
+
     private func annotationContainsPoint(_ annotation: Annotation, point: CGPoint) -> Bool {
         if badgeContainsPoint(annotation.startPoint, point: point) {
+            return true
+        }
+
+        let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty && noteRect(for: annotation).contains(point) {
             return true
         }
 
@@ -783,6 +827,43 @@ class AnnotationCanvas: NSView, NSTextFieldDelegate {
 
     private func badgeContainsPoint(_ badgeCenter: CGPoint, point: CGPoint) -> Bool {
         hypot(badgeCenter.x - point.x, badgeCenter.y - point.y) <= Constants.badgeHitRadius
+    }
+
+    private func noteRect(for annotation: Annotation) -> NSRect {
+        let note = annotation.note.isEmpty ? "Describe issue..." : annotation.note
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.lineBreakMode = .byWordWrapping
+
+        let attributes: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+            .paragraphStyle: paragraphStyle
+        ]
+
+        let constraintRect = NSRect(x: 0, y: 0, width: noteMaxWidth - (noteHorizontalPadding * 2), height: .greatestFiniteMagnitude)
+        let measuredRect = (note as NSString).boundingRect(
+            with: constraintRect.size,
+            options: [.usesLineFragmentOrigin, .usesFontLeading],
+            attributes: attributes
+        )
+        let width = min(
+            max(noteMinWidth, ceil(measuredRect.width) + (noteHorizontalPadding * 2)),
+            noteMaxWidth
+        )
+        let height = ceil(measuredRect.height) + (noteVerticalPadding * 2)
+        let proposedX = annotation.startPoint.x + noteOffsetX
+        let x: CGFloat
+        if proposedX + width > bounds.width {
+            x = annotation.startPoint.x - noteOffsetX - width
+        } else {
+            x = proposedX
+        }
+
+        return NSRect(
+            x: x,
+            y: annotation.startPoint.y - (height / 2),
+            width: width,
+            height: max(20, height)
+        )
     }
 
     private func polylineContainsPoint(_ points: [CGPoint], point: CGPoint, tolerance: CGFloat) -> Bool {

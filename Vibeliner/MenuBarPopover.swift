@@ -59,18 +59,8 @@ struct MenuBarPopover: View {
     }
 
     private var showsSetupSection: Bool {
-        let setupNeedsScreenRecording = !appState.setupSummary.screenRecordingAuthorized
         let setupNeedsStorage = !appState.setupSummary.storageStatus.isReady
-
-        if setupNeedsStorage {
-            return true
-        }
-
-        guard setupNeedsScreenRecording else {
-            return false
-        }
-
-        return !(appState.lastIssue?.isScreenRecordingRelated ?? false)
+        return setupNeedsStorage
     }
 
     private var needsStorageSetup: Bool {
@@ -124,18 +114,6 @@ struct MenuBarPopover: View {
 
     private var setupActionsSection: some View {
         VStack(alignment: .leading, spacing: 2) {
-            if showsSetupSection {
-                InteractiveMenuRow(isEnabled: true, action: requestScreenRecordingAccess) {
-                    menuRowLabel(
-                        "Grant Screen Recording Access",
-                        systemImage: "display",
-                        trailingText: nil,
-                        showsChevron: true,
-                        accentColor: .orange
-                    )
-                }
-            }
-
             if needsStorageSetup {
                 InteractiveMenuRow(isEnabled: true, action: openCapturesFolder) {
                     menuRowLabel(

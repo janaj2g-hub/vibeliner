@@ -6,7 +6,14 @@ private final class DraggableToolbarView: NSView {
     }
 }
 
+private final class EditorPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 class EditorWindowController: NSWindowController, NSWindowDelegate {
+    private static let toolbarHeight: CGFloat = 40
+
     var onCaptureSaved: ((CaptureRecord) -> Void)?
     var onClose: (() -> Void)?
     var onError: ((UserFacingIssue) -> Void)?
@@ -25,7 +32,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         capturedImage = image
 
         let windowSize = EditorWindowController.windowSize(for: image)
-        let panel = NSPanel(
+        let panel = EditorPanel(
             contentRect: NSRect(origin: .zero, size: windowSize),
             styleMask: [.borderless, .resizable, .fullSizeContentView],
             backing: .buffered,
@@ -55,7 +62,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func setupContent(in panel: NSPanel, size: NSSize) {
-        let toolbarHeight: CGFloat = 40
+        let toolbarHeight = Self.toolbarHeight
         let contentView = NSView(frame: NSRect(origin: .zero, size: size))
 
         let toolbar = DraggableToolbarView(frame: NSRect(
@@ -586,24 +593,24 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     private static func windowSize(for image: NSImage) -> NSSize {
         guard let screen = NSScreen.main else {
-            return NSSize(width: 800, height: 600)
+            return NSSize(width: 800, height: 600 + toolbarHeight)
         }
 
         let maxWidth = screen.visibleFrame.width * 0.8
-        let maxHeight = screen.visibleFrame.height * 0.8
+        let maxCanvasHeight = max(200, screen.visibleFrame.height * 0.8 - toolbarHeight)
         let imageSize = image.size
 
-        if imageSize.width <= maxWidth && imageSize.height <= maxHeight {
-            return imageSize
+        if imageSize.width <= maxWidth && imageSize.height <= maxCanvasHeight {
+            return NSSize(width: imageSize.width, height: imageSize.height + toolbarHeight)
         }
 
         let widthRatio = maxWidth / imageSize.width
-        let heightRatio = maxHeight / imageSize.height
+        let heightRatio = maxCanvasHeight / imageSize.height
         let scale = min(widthRatio, heightRatio)
 
         return NSSize(
             width: imageSize.width * scale,
-            height: imageSize.height * scale
+            height: imageSize.height * scale + toolbarHeight
         )
     }
 }

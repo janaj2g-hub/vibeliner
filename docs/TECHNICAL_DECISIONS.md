@@ -386,6 +386,32 @@ The panel looked present, but user interaction inside it was no longer trustwort
 
 **Why this matters for future LLMs:** `CGPreflightScreenCaptureAccess()` is useful for UI state, but it is not enough to replace the actual behavior of `screencapture`. Treat preflight as diagnosis, not final proof.
 
+### 2026-03-29: Screen Recording preflight can stay false even when System Settings shows Vibeliner as enabled
+**Ticket / workstream:** Post-VIB-78 capture debugging and live machine verification
+
+**Context:** After the earlier permission-flow cleanup, the app was launched from the repo-local `dist/Vibeliner.app`, macOS System Settings showed `Vibeliner` enabled in Screen & System Audio Recording, and capture still did not work. The menu continued to imply that Screen Recording was missing.
+
+**What actually happened:**
+- The machine-level permission was real. The user could see `Vibeliner` enabled in System Settings.
+- `CGPreflightScreenCaptureAccess()` still behaved like a false negative for the running process.
+- The app had drifted back into treating that preflight result as truth in two places:
+  - the capture-readiness path had briefly used it as a hard blocker
+  - the menu setup UI still used it to show Screen Recording as unresolved
+- That created a misleading product state:
+  - the OS said the app was enabled
+  - the app UI said permission was missing
+  - the real capture path was harder to trust because the menu looked unauthorised before a real attempt
+
+**What changed:**
+- `ensureReadyForCapture()` no longer blocks solely because `CGPreflightScreenCaptureAccess()` reports `false`.
+- The top-level menu no longer shows a Screen Recording setup row based only on preflight state.
+- `CaptureManager` now treats `screencapture` plus screenshot-file materialization as the real authority and logs the full runtime diagnostic summary for permission-like failures.
+- If macOS denies the capture while the app still appears enabled, the app now reports a mismatch-style runtime failure instead of collapsing everything into the generic "permission needed" copy.
+
+**Why this worked:** The failing architecture was not "permission is missing." It was "the app trusted advisory preflight too much." Once the app stopped presenting preflight as authoritative and returned control to the real `screencapture` result, capture worked again on the affected machine.
+
+**Why this matters for future LLMs:** If the user shows you System Settings with Vibeliner enabled, believe that evidence. Do not re-explain Screen Recording basics or push the user back into permission setup loops unless a fresh `screencapture` attempt proves macOS is still blocking the capture. UI setup state and live capture authority are different things.
+
 ### 2026-03-29: The custom menu must dismiss on geometry, not window identity
 **Ticket / workstream:** Post-VIB-57 menu regression repair
 

@@ -1,4 +1,5 @@
 import AppKit
+import OSLog
 
 enum CaptureOutcome {
     case success(NSImage)
@@ -22,6 +23,7 @@ class CaptureManager {
     static let shared = CaptureManager()
     private let filePollInterval: UInt64 = 50_000_000
     private let fileMaterializationDeadline: UInt64 = 1_000_000_000
+    private let logger = Logger(subsystem: "com.jongrossman.vibeliner", category: "Capture")
 
     private init() {}
 
@@ -145,6 +147,19 @@ class CaptureManager {
         let loweredError = stderr.lowercased()
 
         if loweredError.contains("declined tcc") || loweredError.contains("permission") || loweredError.contains("not authorized") {
+            let livePermissionState = ScreenRecordingPermissionState.current()
+            logger.error("Capture permission-like failure: \(diagnostics, privacy: .public)")
+
+            if livePermissionState.isAuthorized && !runtimeIdentity.isLikelyRunningWrongAppCopy {
+                return CaptureFailure(
+                    title: "Screen Recording mismatch",
+                    message: "macOS denied the capture even though Vibeliner appears enabled in Screen Recording settings.",
+                    recoverySuggestion: "Turn Vibeliner off and back on in System Settings > Privacy & Security > Screen & System Audio Recording, then quit and reopen Vibeliner before retrying.",
+                    technicalDetails: diagnostics,
+                    screenRecordingState: nil
+                )
+            }
+
             let issue = runtimeIdentity.isLikelyRunningWrongAppCopy
                 ? UserFacingIssue(
                     title: "Screen Recording blocked for this app copy",
@@ -164,6 +179,7 @@ class CaptureManager {
         }
 
         if stderr.contains("could not create image from rect") {
+            logger.error("Capture rect failure: \(diagnostics, privacy: .public)")
             let recoverySuggestion = runtimeIdentity.isLikelyRunningWrongAppCopy
                 ? runtimeIdentity.runCopyRecoverySuggestion
                 : "Try the capture again. If it keeps failing, quit and reopen vibeliner, then retry from the menu bar."
@@ -179,6 +195,7 @@ class CaptureManager {
         }
 
         if result.exitCode != 0 && stderr.isEmpty {
+            logger.error("Capture empty-stderr failure: \(diagnostics, privacy: .public)")
             return CaptureFailure(
                 title: "Capture failed",
                 message: "macOS ended the capture flow without returning a screenshot.",
@@ -189,6 +206,7 @@ class CaptureManager {
         }
 
         if stderr.isEmpty {
+            logger.error("Capture generic empty-error failure: \(diagnostics, privacy: .public)")
             return CaptureFailure(
                 title: "Capture failed",
                 message: "macOS did not complete the region capture.",
@@ -198,6 +216,7 @@ class CaptureManager {
             )
         }
 
+        logger.error("Capture stderr failure: \(diagnostics, privacy: .public)")
         return CaptureFailure(
             title: "Capture failed",
             message: "macOS returned an error while capturing the selected region.",

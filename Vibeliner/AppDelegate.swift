@@ -331,14 +331,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             screenRecordingState: liveScreenRecordingState
         )
 
-        guard liveScreenRecordingState.isAuthorized else {
-            presentIssue(
-                screenRecordingPermissionIssue(runtimeIdentity: runtimeIdentity),
-                offersScreenRecordingShortcut: true
-            )
-            return false
-        }
-
         guard !requiresScreenRecordingRelaunch else {
             presentIssue(screenRecordingRelaunchIssue())
             return false
@@ -781,16 +773,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             message: message,
             recoverySuggestion: recoverySuggestion,
             technicalDetails: "runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
-        )
-    }
-
-    private func screenRecordingPermissionIssue(runtimeIdentity: AppRuntimeIdentity) -> UserFacingIssue {
-        UserFacingIssue(
-            title: "Screen Recording permission needed",
-            message: "The canonical Vibeliner app copy is not currently authorized to record the screen.",
-            recoverySuggestion: "Enable Screen Recording for this app copy in System Settings, then continue with the relaunch flow if macOS changes permission state. \(runtimeIdentity.canonicalLaunchGuidance)",
-            technicalDetails: "category=permissionBlocked; runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")",
-            showsScreenRecordingSettingsAction: true
         )
     }
 
