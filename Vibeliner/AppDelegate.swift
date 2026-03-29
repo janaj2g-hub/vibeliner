@@ -332,7 +332,10 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
 
         guard liveScreenRecordingState.isAuthorized else {
-            presentIssue(ScreenRecordingPermissionState.notGranted.issue, offersScreenRecordingShortcut: true)
+            presentIssue(
+                screenRecordingPermissionIssue(runtimeIdentity: runtimeIdentity),
+                offersScreenRecordingShortcut: true
+            )
             return false
         }
 
@@ -765,7 +768,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             title: "Relaunch required before capture",
             message: "Screen Recording permission changed, but this running process cannot safely resume capture until it restarts.",
             recoverySuggestion: "Relaunch into the canonical app copy before trying capture again. \(runtimeIdentity.canonicalLaunchGuidance)",
-            technicalDetails: nil
+            technicalDetails: "category=relaunchRequired; runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
         )
     }
 
@@ -778,6 +781,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             message: message,
             recoverySuggestion: recoverySuggestion,
             technicalDetails: "runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
+        )
+    }
+
+    private func screenRecordingPermissionIssue(runtimeIdentity: AppRuntimeIdentity) -> UserFacingIssue {
+        UserFacingIssue(
+            title: "Screen Recording permission needed",
+            message: "The canonical Vibeliner app copy is not currently authorized to record the screen.",
+            recoverySuggestion: "Enable Screen Recording for this app copy in System Settings, then continue with the relaunch flow if macOS changes permission state. \(runtimeIdentity.canonicalLaunchGuidance)",
+            technicalDetails: "category=permissionBlocked; runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")",
+            showsScreenRecordingSettingsAction: true
         )
     }
 

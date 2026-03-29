@@ -9,6 +9,20 @@ Use this checklist when debugging Screen Recording, `screencapture`, or app-copy
 - Treat `dist/Vibeliner.app` as the only supported local runtime for Screen Recording authorization and manual capture verification.
 - Do not use the Xcode DerivedData app as the reference runtime for capture testing.
 
+## Expected blocked states
+
+- Unsupported runtime copy:
+  The app should block capture before `screencapture` runs and tell you to relaunch the canonical `dist/Vibeliner.app` copy.
+
+- Permission blocked:
+  The app should block capture before `screencapture` runs and identify Screen Recording as missing for the canonical running bundle.
+
+- Relaunch required:
+  After a permission grant is detected, the stale process should not continue into capture. The app should relaunch the canonical bundle or clearly report that relaunch is still required.
+
+- Actual capture failure:
+  Only after the app is running from the canonical authorized runtime should `screencapture`-level failures appear as true capture failures.
+
 ## Manual matrix
 
 - First run, permission missing:
