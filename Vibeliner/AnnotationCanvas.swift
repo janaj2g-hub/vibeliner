@@ -587,6 +587,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         guard annotationIndex >= 0 && annotationIndex < annotations.count else { return }
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
+        let paragraphStyle = centeredParagraphStyle()
         let container = NSView(frame: fieldRect)
         container.wantsLayer = true
         container.layer?.backgroundColor = Constants.inlineNoteBackgroundColor.cgColor
@@ -612,7 +613,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         textView.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         textView.textColor = Constants.inlineNoteTextColor
         textView.insertionPointColor = Constants.inlineNoteTextColor
-        textView.alignment = .center
         textView.isRichText = false
         textView.importsGraphics = false
         textView.isHorizontallyResizable = false
@@ -626,16 +626,33 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         textView.textContainer?.lineFragmentPadding = 0
         textView.maxSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
         textView.minSize = NSSize(width: textRect.width, height: 0)
+        textView.typingAttributes = [
+            .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+            .foregroundColor: Constants.inlineNoteTextColor,
+            .paragraphStyle: paragraphStyle
+        ]
 
         let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedNote.isEmpty {
             activeEditorShowsPlaceholder = true
-            textView.string = notePlaceholder
-            textView.textColor = Constants.inlineNoteTextColor.withAlphaComponent(0.55)
+            textView.textStorage?.setAttributedString(NSAttributedString(
+                string: notePlaceholder,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                    .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.55),
+                    .paragraphStyle: paragraphStyle
+                ]
+            ))
         } else {
             activeEditorShowsPlaceholder = false
-            textView.string = annotation.note
-            textView.textColor = Constants.inlineNoteTextColor
+            textView.textStorage?.setAttributedString(NSAttributedString(
+                string: annotation.note,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                    .foregroundColor: Constants.inlineNoteTextColor,
+                    .paragraphStyle: paragraphStyle
+                ]
+            ))
         }
 
         scrollView.documentView = textView
@@ -736,8 +753,25 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         guard changedView === activeTextView else { return }
         if activeEditorShowsPlaceholder {
             activeEditorShowsPlaceholder = false
-            changedView.textColor = Constants.inlineNoteTextColor
+            let replacement = changedView.string == notePlaceholder ? "" : changedView.string
+            changedView.textStorage?.setAttributedString(NSAttributedString(
+                string: replacement,
+                attributes: [
+                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                    .foregroundColor: Constants.inlineNoteTextColor,
+                    .paragraphStyle: centeredParagraphStyle()
+                ]
+            ))
+            changedView.setSelectedRange(NSRange(location: replacement.count, length: 0))
         }
+        changedView.textStorage?.addAttributes(
+            [
+                .font: NSFont.systemFont(ofSize: 11, weight: .medium),
+                .foregroundColor: Constants.inlineNoteTextColor,
+                .paragraphStyle: centeredParagraphStyle()
+            ],
+            range: NSRange(location: 0, length: changedView.string.utf16.count)
+        )
         resizeActiveEditor()
     }
 
