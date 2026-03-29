@@ -20,10 +20,17 @@ struct MenuBarPopover: View {
         return formatter
     }()
 
+    private var showsSetupSection: Bool {
+        !appState.setupSummary.screenRecordingAuthorized || !appState.setupSummary.storageStatus.isReady
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             header
-            setupSection
+
+            if showsSetupSection {
+                readinessSection
+            }
 
             if let issue = appState.lastIssue {
                 issueSection(issue)
@@ -45,10 +52,13 @@ struct MenuBarPopover: View {
     }
 
     private var header: some View {
-        HStack(alignment: .center, spacing: 8) {
-            VStack(alignment: .leading, spacing: 0) {
+        HStack(alignment: .firstTextBaseline, spacing: 8) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text("Vibeliner")
                     .font(.system(size: 14, weight: .bold))
+                Text(appState.setupSummary.readinessTitle)
+                    .font(.system(size: 11, weight: .medium))
+                    .foregroundStyle(appState.setupSummary.isReadyToCapture ? .green : .orange)
             }
 
             Spacer()
@@ -62,40 +72,34 @@ struct MenuBarPopover: View {
         }
     }
 
-    private var setupSection: some View {
+    private var readinessSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionTitle("SETUP")
 
-            VStack(alignment: .leading, spacing: 12) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(appState.setupSummary.isReadyToCapture ? "Setup complete" : "Setup required")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(appState.setupSummary.isReadyToCapture ? .green : .orange)
-                    Spacer()
-                }
+            readinessRow(
+                title: "Screen Recording",
+                isReady: appState.setupSummary.screenRecordingAuthorized,
+                detail: appState.setupSummary.screenRecordingDetail,
+                actionTitle: appState.setupSummary.screenRecordingAuthorized ? nil : "Open Settings",
+                action: openScreenRecordingSettings
+            )
 
-                setupStep(
-                    number: 1,
-                    title: "Screen Recording permission",
-                    isComplete: appState.setupSummary.screenRecordingAuthorized,
-                    detail: appState.setupSummary.screenRecordingDetail,
-                    actionTitle: appState.setupSummary.screenRecordingAuthorized ? nil : "Open Settings",
-                    action: openScreenRecordingSettings
-                )
+            readinessRow(
+                title: "Captures folder",
+                isReady: appState.setupSummary.storageStatus.isReady,
+                detail: appState.setupSummary.storageStatus.detail,
+                actionTitle: "Open Folder",
+                action: openCapturesFolder
+            )
 
-                setupStep(
-                    number: 2,
-                    title: "Captures folder",
-                    isComplete: appState.setupSummary.storageStatus.isReady,
-                    detail: appState.setupSummary.storageStatus.detail,
-                    actionTitle: "Open Folder",
-                    action: openCapturesFolder
-                )
-            }
-            .padding(12)
-            .background(
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(nsColor: NSColor.windowBackgroundColor))
+            readinessRow(
+                title: "Ready to capture",
+                isReady: appState.setupSummary.isReadyToCapture,
+                detail: appState.setupSummary.isReadyToCapture
+                    ? "The hotkey can open the native region capture UI."
+                    : "Finish the setup items above before capturing.",
+                actionTitle: nil,
+                action: {}
             )
         }
     }
@@ -231,54 +235,41 @@ struct MenuBarPopover: View {
         }
     }
 
-    private func setupStep(
-        number: Int,
+    private func readinessRow(
         title: String,
-        isComplete: Bool,
+        isReady: Bool,
         detail: String,
         actionTitle: String?,
         action: @escaping () -> Void
     ) -> some View {
-        HStack(alignment: .top, spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(isComplete ? Color.green.opacity(0.18) : Color.orange.opacity(0.22))
-                    .frame(width: 24, height: 24)
-                if isComplete {
-                    Image(systemName: "checkmark")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.green)
-                } else {
-                    Text("\(number)")
-                        .font(.system(size: 12, weight: .bold))
-                        .foregroundStyle(.orange)
-                }
-            }
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline) {
+                Label(title, systemImage: isReady ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(isReady ? .green : .orange)
 
-            VStack(alignment: .leading, spacing: 4) {
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(title)
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundStyle(.primary)
+                Spacer()
 
-                    Spacer()
-
-                    if let actionTitle, !isComplete {
-                        Button(actionTitle) {
-                            action()
-                        }
-                        .buttonStyle(.plain)
-                        .font(.system(size: 11))
-                        .foregroundStyle(.blue)
+                if let actionTitle {
+                    Button(actionTitle) {
+                        action()
                     }
-                }
-
-                Text(detail)
+                    .buttonStyle(.plain)
                     .font(.system(size: 11))
-                    .foregroundStyle(.secondary)
-                    .fixedSize(horizontal: false, vertical: true)
+                    .foregroundStyle(.blue)
+                }
             }
+
+            Text(detail)
+                .font(.system(size: 11))
+                .foregroundStyle(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
         }
+        .padding(10)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color(nsColor: NSColor.windowBackgroundColor))
+        )
     }
 
     private func sectionTitle(_ title: String) -> some View {
