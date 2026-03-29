@@ -25,29 +25,36 @@ struct MenuBarPopover: View {
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
+        VStack(alignment: .leading, spacing: 0) {
             header
 
             if showsSetupSection {
+                sectionDivider
                 readinessSection
             }
 
             if let issue = appState.lastIssue {
+                sectionDivider
                 issueSection(issue)
             }
 
+            sectionDivider
             recentCapturesSection
+            sectionDivider
             utilitySection
+            sectionDivider
             hotkeySection
+            sectionDivider
 
             Button("Quit Vibeliner") {
                 NSApp.terminate(nil)
             }
             .buttonStyle(.plain)
             .font(.system(size: 12))
+            .padding(.top, 10)
         }
-        .padding(14)
-        .frame(width: 340)
+        .padding(16)
+        .frame(width: 352)
         .fixedSize(horizontal: false, vertical: true)
     }
 
@@ -55,9 +62,9 @@ struct MenuBarPopover: View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Vibeliner")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: 18, weight: .semibold))
                 Text(appState.setupSummary.readinessTitle)
-                    .font(.system(size: 11, weight: .medium))
+                    .font(.system(size: 12, weight: .medium))
                     .foregroundStyle(appState.setupSummary.isReadyToCapture ? .green : .orange)
             }
 
@@ -67,33 +74,89 @@ struct MenuBarPopover: View {
 
     private var readinessSection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("SETUP")
+            sectionTitle("Setup")
 
-            readinessRow(
-                title: "Screen Recording",
-                isReady: appState.setupSummary.screenRecordingAuthorized,
-                detail: appState.setupSummary.screenRecordingDetail,
-                actionTitle: appState.setupSummary.screenRecordingAuthorized ? nil : "Open Settings",
-                action: openScreenRecordingSettings
-            )
+            VStack(alignment: .leading, spacing: 0) {
+                Text("Setup required")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(.orange)
+                    .padding(.bottom, 12)
 
-            readinessRow(
-                title: "Captures folder",
-                isReady: appState.setupSummary.storageStatus.isReady,
-                detail: appState.setupSummary.storageStatus.detail,
-                actionTitle: "Open Folder",
-                action: openCapturesFolder
-            )
+                readinessRow(
+                    symbol: appState.setupSummary.screenRecordingAuthorized ? "checkmark" : "1",
+                    title: "Screen Recording permission",
+                    isReady: appState.setupSummary.screenRecordingAuthorized,
+                    detail: appState.setupSummary.screenRecordingDetail,
+                    actionTitle: appState.setupSummary.screenRecordingAuthorized ? nil : "Open Settings",
+                    action: openScreenRecordingSettings
+                )
 
-            readinessRow(
-                title: "Ready to capture",
-                isReady: appState.setupSummary.isReadyToCapture,
-                detail: appState.setupSummary.isReadyToCapture
-                    ? "The hotkey can open the native region capture UI."
-                    : "Finish the setup items above before capturing.",
-                actionTitle: nil,
-                action: {}
-            )
+                sectionDivider
+                    .padding(.vertical, 10)
+
+                readinessRow(
+                    symbol: appState.setupSummary.storageStatus.isReady ? "checkmark" : "2",
+                    title: "Captures folder",
+                    isReady: appState.setupSummary.storageStatus.isReady,
+                    detail: appState.setupSummary.storageStatus.detail,
+                    actionTitle: "Open Folder",
+                    action: openCapturesFolder
+                )
+            }
+            .padding(14)
+            .background(sectionCardBackground)
+            .overlay(sectionCardBorder)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+    }
+
+    private var sectionCardBackground: some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .fill(Color.white.opacity(0.05))
+    }
+
+    private var sectionCardBorder: some View {
+        RoundedRectangle(cornerRadius: 16, style: .continuous)
+            .stroke(Color.white.opacity(0.06), lineWidth: 1)
+    }
+
+    private var sectionDivider: some View {
+        Rectangle()
+            .fill(Color(nsColor: .separatorColor).opacity(0.35))
+            .frame(height: 1)
+            .padding(.vertical, 14)
+    }
+
+    private func menuRowLabel(_ title: String, systemImage: String) -> some View {
+        HStack(spacing: 10) {
+            Image(systemName: systemImage)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundStyle(.primary)
+                .frame(width: 18)
+
+            Text(title)
+                .font(.system(size: 13))
+
+            Spacer()
+        }
+        .contentShape(Rectangle())
+    }
+
+    private func iconBadge(symbol: String, isReady: Bool) -> some View {
+        ZStack {
+            Circle()
+                .fill(isReady ? Color.green.opacity(0.2) : Color.white.opacity(0.08))
+                .frame(width: 28, height: 28)
+
+            if symbol == "checkmark" {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(.green)
+            } else {
+                Text(symbol)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.orange)
+            }
         }
     }
 
@@ -124,13 +187,17 @@ struct MenuBarPopover: View {
         .padding(10)
         .background(
             RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: NSColor.windowBackgroundColor))
+                .fill(Color.white.opacity(0.05))
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.orange.opacity(0.18), lineWidth: 1)
         )
     }
 
     private var recentCapturesSection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("RECENT CAPTURES")
+            sectionTitle("Recent Captures")
 
             if appState.recentCaptures.isEmpty {
                 Text("No captures yet. Use the hotkey or Capture now to create your first packaged screenshot.")
@@ -174,12 +241,12 @@ struct MenuBarPopover: View {
 
     private var utilitySection: some View {
         VStack(alignment: .leading, spacing: 10) {
-            sectionTitle("ACTIONS")
+            sectionTitle("Actions")
 
             Button {
                 startCapture()
             } label: {
-                Label(appState.isCaptureInProgress ? "Capturing..." : "Capture now", systemImage: "camera.viewfinder")
+                menuRowLabel(appState.isCaptureInProgress ? "Capturing..." : "Capture now", systemImage: "camera.viewfinder")
             }
             .buttonStyle(.plain)
             .disabled(appState.isCaptureInProgress)
@@ -187,23 +254,22 @@ struct MenuBarPopover: View {
             Button {
                 openPromptSettings()
             } label: {
-                Label("Prompt settings", systemImage: "slider.horizontal.3")
+                menuRowLabel("Prompt settings", systemImage: "slider.horizontal.3")
             }
             .buttonStyle(.plain)
 
             Button {
                 openCapturesFolder()
             } label: {
-                Label("Open captures folder", systemImage: "folder")
+                menuRowLabel("Open captures folder", systemImage: "folder")
             }
             .buttonStyle(.plain)
         }
-        .font(.system(size: 12))
     }
 
     private var hotkeySection: some View {
         VStack(alignment: .leading, spacing: 8) {
-            sectionTitle("HOTKEY")
+            sectionTitle("Hotkey")
 
             HStack {
                 Text("Change hotkey")
@@ -237,45 +303,44 @@ struct MenuBarPopover: View {
     }
 
     private func readinessRow(
+        symbol: String,
         title: String,
         isReady: Bool,
         detail: String,
         actionTitle: String?,
         action: @escaping () -> Void
     ) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            HStack(alignment: .firstTextBaseline) {
-                Label(title, systemImage: isReady ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundStyle(isReady ? .green : .orange)
+        HStack(alignment: .top, spacing: 12) {
+            iconBadge(symbol: symbol, isReady: isReady)
 
-                Spacer()
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
 
-                if let actionTitle {
-                    Button(actionTitle) {
-                        action()
+                    Spacer()
+
+                    if let actionTitle {
+                        Button(actionTitle) {
+                            action()
+                        }
+                        .buttonStyle(.plain)
+                        .font(.system(size: 12))
+                        .foregroundStyle(.blue)
                     }
-                    .buttonStyle(.plain)
-                    .font(.system(size: 11))
-                    .foregroundStyle(.blue)
                 }
-            }
 
-            Text(detail)
-                .font(.system(size: 11))
-                .foregroundStyle(.secondary)
-                .fixedSize(horizontal: false, vertical: true)
+                Text(detail)
+                    .font(.system(size: 12))
+                    .foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
         }
-        .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(Color(nsColor: NSColor.windowBackgroundColor))
-        )
     }
 
     private func sectionTitle(_ title: String) -> some View {
         Text(title)
-            .font(.system(size: 11, weight: .semibold))
+            .font(.system(size: 12, weight: .semibold))
             .foregroundStyle(.secondary)
     }
 

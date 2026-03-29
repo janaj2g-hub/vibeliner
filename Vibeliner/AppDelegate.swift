@@ -72,11 +72,18 @@ final class AppState: ObservableObject {
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private final class MenuPanel: NSPanel {
+        override var canBecomeKey: Bool { true }
+        override var canBecomeMain: Bool { false }
+    }
+
     private var statusItem: NSStatusItem!
-    private let popover = NSPopover()
     private let appState = AppState()
     private var editorController: EditorWindowController?
     private var activeInteractiveSessions = 0
+    private var menuPanel: MenuPanel?
+    private var localEventMonitor: Any?
+    private var globalEventMonitor: Any?
 
     private lazy var popoverController = NSHostingController(
         rootView: MenuBarPopover(
@@ -118,12 +125,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         appState.refresh(autoRepairStorage: true)
 
-        if popover.isShown {
-            popover.performClose(nil)
+        if isMenuVisible {
+            closeMenuPanel()
             return
         }
 
-        popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+        showMenuPanel(relativeTo: button)
     }
 
     func startCapture() {
@@ -135,7 +142,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !appState.isCaptureInProgress else { return }
 
-        popover.performClose(nil)
+        closeMenuPanel()
         appState.refresh(autoRepairStorage: true)
 
         guard ensureReadyForCapture() else {
@@ -171,9 +178,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if #available(macOS 13.0, *) {
             popoverController.sizingOptions = [.preferredContentSize]
         }
-        popover.behavior = .transient
-        popover.contentViewController = popoverController
-        popover.contentSize = popoverController.preferredContentSize
+        _ = ensureMenuPanel()
     }
 
     private func configureDefaultHotkeyIfNeeded() {
@@ -283,7 +288,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func showPromptSettings() {
-        popover.performClose(nil)
+        closeMenuPanel()
         beginInteractiveSession()
 
         PromptSettingsPanelPresenter.show { [weak self] in
@@ -337,6 +342,159 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
 
         NSWorkspace.shared.open(url)
+    }
+
+    private var isMenuVisible: Bool {
+        menuPanel?.isVisible == true
+    }
+
+    private func ensureMenuPanel() -> MenuPanel {
+        if let menuPanel {
+            return menuPanel
+        }
+
+        let panel = MenuPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 340, height: 420),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered,
+            defer: false
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.level = .statusBar
+        panel.hidesOnDeactivate = true
+        panel.isReleasedWhenClosed = false
+        panel.collectionBehavior = [.transient, .moveToActiveSpace, .ignoresCycle]
+        panel.animationBehavior = .utilityWindow
+
+        let rootView = NSView()
+        rootView.translatesAutoresizingMaskIntoConstraints = false
+
+        let effectView = NSVisualEffectView()
+        effectView.material = .menu
+        effectView.blendingMode = .withinWindow
+        effectView.state = .active
+        effectView.translatesAutoresizingMaskIntoConstraints = false
+        effectView.wantsLayer = true
+        effectView.layer?.cornerRadius = 16
+        effectView.layer?.cornerCurve = .continuous
+        effectView.layer?.masksToBounds = true
+
+        let hostedView = popoverController.view
+        hostedView.translatesAutoresizingMaskIntoConstraints = false
+
+        panel.contentView = rootView
+        rootView.addSubview(effectView)
+        effectView.addSubview(hostedView)
+
+        NSLayoutConstraint.activate([
+            effectView.leadingAnchor.constraint(equalTo: rootView.leadingAnchor),
+            effectView.trailingAnchor.constraint(equalTo: rootView.trailingAnchor),
+            effectView.topAnchor.constraint(equalTo: rootView.topAnchor),
+            effectView.bottomAnchor.constraint(equalTo: rootView.bottomAnchor),
+
+            hostedView.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
+            hostedView.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
+            hostedView.topAnchor.constraint(equalTo: effectView.topAnchor),
+            hostedView.bottomAnchor.constraint(equalTo: effectView.bottomAnchor),
+        ])
+
+        menuPanel = panel
+        return panel
+    }
+
+    private func showMenuPanel(relativeTo button: NSStatusBarButton) {
+        let panel = ensureMenuPanel()
+        updateMenuPanelSize(panel)
+        positionMenuPanel(panel, relativeTo: button)
+        installMenuDismissMonitors()
+        panel.orderFrontRegardless()
+    }
+
+    private func closeMenuPanel() {
+        menuPanel?.orderOut(nil)
+        removeMenuDismissMonitors()
+    }
+
+    private func updateMenuPanelSize(_ panel: MenuPanel) {
+        popoverController.view.layoutSubtreeIfNeeded()
+        let fittingSize = popoverController.view.fittingSize
+        panel.setContentSize(NSSize(width: fittingSize.width, height: fittingSize.height))
+    }
+
+    private func positionMenuPanel(_ panel: MenuPanel, relativeTo button: NSStatusBarButton) {
+        guard
+            let window = button.window,
+            let screen = window.screen ?? NSScreen.main
+        else {
+            return
+        }
+
+        let buttonFrameInWindow = button.convert(button.bounds, to: nil)
+        let buttonFrameOnScreen = window.convertToScreen(buttonFrameInWindow)
+        let panelSize = panel.frame.size
+        let visibleFrame = screen.visibleFrame.insetBy(dx: 8, dy: 8)
+
+        var origin = NSPoint(
+            x: buttonFrameOnScreen.maxX - panelSize.width,
+            y: buttonFrameOnScreen.minY - panelSize.height - 6
+        )
+
+        origin.x = min(max(origin.x, visibleFrame.minX), visibleFrame.maxX - panelSize.width)
+        origin.y = max(visibleFrame.minY, origin.y)
+
+        panel.setFrameOrigin(origin)
+    }
+
+    private func installMenuDismissMonitors() {
+        guard localEventMonitor == nil, globalEventMonitor == nil else {
+            return
+        }
+
+        localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown]) { [weak self] event in
+            self?.handleMenuEvent(event)
+            return event
+        }
+
+        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.closeMenuPanel()
+            }
+        }
+    }
+
+    private func removeMenuDismissMonitors() {
+        if let localEventMonitor {
+            NSEvent.removeMonitor(localEventMonitor)
+            self.localEventMonitor = nil
+        }
+
+        if let globalEventMonitor {
+            NSEvent.removeMonitor(globalEventMonitor)
+            self.globalEventMonitor = nil
+        }
+    }
+
+    private func handleMenuEvent(_ event: NSEvent) {
+        guard isMenuVisible else {
+            return
+        }
+
+        if event.type == .keyDown, event.keyCode == 53 {
+            closeMenuPanel()
+            return
+        }
+
+        guard
+            event.type == .leftMouseDown || event.type == .rightMouseDown || event.type == .otherMouseDown,
+            let eventWindow = event.window,
+            eventWindow !== menuPanel
+        else {
+            return
+        }
+
+        closeMenuPanel()
     }
 
     private func beginInteractiveSession() {
