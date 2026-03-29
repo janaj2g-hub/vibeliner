@@ -168,9 +168,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     private func configurePopover() {
-        popover.contentSize = NSSize(width: 340, height: 460)
+        if #available(macOS 13.0, *) {
+            popoverController.sizingOptions = [.preferredContentSize]
+        }
         popover.behavior = .transient
         popover.contentViewController = popoverController
+        popover.contentSize = popoverController.preferredContentSize
     }
 
     private func configureDefaultHotkeyIfNeeded() {

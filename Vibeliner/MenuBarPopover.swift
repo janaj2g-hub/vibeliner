@@ -20,29 +20,35 @@ struct MenuBarPopover: View {
         return formatter
     }()
 
+    private var showsSetupSection: Bool {
+        !appState.setupSummary.screenRecordingAuthorized || !appState.setupSummary.storageStatus.isReady
+    }
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 14) {
-                header
+        VStack(alignment: .leading, spacing: 14) {
+            header
+
+            if showsSetupSection {
                 readinessSection
-
-                if let issue = appState.lastIssue {
-                    issueSection(issue)
-                }
-
-                recentCapturesSection
-                utilitySection
-                hotkeySection
-
-                Button("Quit Vibeliner") {
-                    NSApp.terminate(nil)
-                }
-                .buttonStyle(.plain)
-                .font(.system(size: 12))
             }
-            .padding(14)
+
+            if let issue = appState.lastIssue {
+                issueSection(issue)
+            }
+
+            recentCapturesSection
+            utilitySection
+            hotkeySection
+
+            Button("Quit Vibeliner") {
+                NSApp.terminate(nil)
+            }
+            .buttonStyle(.plain)
+            .font(.system(size: 12))
         }
-        .frame(width: 340, height: 460)
+        .padding(14)
+        .frame(width: 340)
+        .fixedSize(horizontal: false, vertical: true)
     }
 
     private var header: some View {
