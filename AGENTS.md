@@ -51,6 +51,8 @@ Use these when updating ticket status:
 - Use GitHub for source control. The canonical remote is `https://github.com/janaj2g-hub/vibeliner.git`.
 - Do not work directly on `main` for ticket implementation. Create a feature branch first, preferably `codex/<ticket-id>-short-slug`.
 - After completing a ticket and verifying the build, commit your changes with the Linear ticket ID in the commit message, push the branch to `origin`, and open or update a pull request back to `main` unless the user explicitly asks for a different flow.
+- Treat a normal Codex implementation run as incomplete until code changes are built, committed, and pushed to GitHub, unless the user explicitly asks for a local-only or no-git pass.
+- For batch Linear work, complete this full cycle for each ticket in order: implement, build, verify, commit, push, and update or open the pull request before moving to the next ticket.
 - Include the Linear ticket ID in branch names, commit messages, and PR titles whenever possible.
 - Never force-push `main` or rewrite shared history. Only rewrite your own feature branch if the user explicitly asks for it.
 - If the repository is not yet initialized locally, initialize it, ensure `origin` points at the GitHub repo above, and push `main` before starting ticket branches.
