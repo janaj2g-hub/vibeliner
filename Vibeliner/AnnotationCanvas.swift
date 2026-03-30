@@ -84,10 +84,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     private var activeBadgeView: ActiveBadgeView?
     private var activeAnnotationIndex: Int?
     private var isActivatingTextField = false
-    private var selectedAnnotationIndex: Int?
-    private var hoveredBadgeIndex: Int? {
+    var selectedAnnotationIndex: Int?
+    private var hoveredAnnotationIndex: Int? {
         didSet {
-            guard hoveredBadgeIndex != oldValue else { return }
+            guard hoveredAnnotationIndex != oldValue else { return }
             needsDisplay = true
             window?.invalidateCursorRects(for: self)
             updateCursor()
@@ -147,9 +147,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         // Draw badges on top of strokes
         for (index, annotation) in annotations.enumerated() {
-            if index == hoveredBadgeIndex {
-                drawBadgeHoverRing(at: annotation.startPoint)
+            let isHovered = index == hoveredAnnotationIndex
+            let isSelected = index == selectedAnnotationIndex
+
+            if (isHovered || isSelected) {
+                drawSelectionOutline(for: annotation)
             }
+
             if activeAnnotationIndex != index {
                 drawNoteOverlay(for: annotation)
                 drawBadge(number: annotation.number, at: annotation.startPoint)
@@ -344,6 +348,32 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         ring.lineWidth = 2
         Constants.badgeHoverRingColor.setStroke()
         ring.stroke()
+    }
+
+    private func drawSelectionOutline(for annotation: Annotation) {
+        let outlineColor = Constants.annotationRed
+        outlineColor.setStroke()
+
+        // Badge outline
+        let badgeOutlineRadius = Constants.badgeRadius + 3
+        let badgeOutlineRect = NSRect(
+            x: annotation.startPoint.x - badgeOutlineRadius,
+            y: annotation.startPoint.y - badgeOutlineRadius,
+            width: badgeOutlineRadius * 2,
+            height: badgeOutlineRadius * 2
+        )
+        let badgeOutline = NSBezierPath(ovalIn: badgeOutlineRect)
+        badgeOutline.lineWidth = 2
+        badgeOutline.stroke()
+
+        // Note box outline (if note text exists)
+        let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !note.isEmpty {
+            let rect = noteRect(for: annotation).insetBy(dx: -1, dy: -1)
+            let noteOutline = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius + 1, yRadius: noteCornerRadius + 1)
+            noteOutline.lineWidth = 2
+            noteOutline.stroke()
+        }
     }
 
     private func drawNoteOverlay(for annotation: Annotation) {
@@ -603,11 +633,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
-        hoveredBadgeIndex = badgeAnnotationIndex(near: point)
+        hoveredAnnotationIndex = badgeAnnotationIndex(near: point) ?? annotationIndex(at: point)
     }
 
     override func mouseExited(with event: NSEvent) {
-        hoveredBadgeIndex = nil
+        hoveredAnnotationIndex = nil
     }
 
     override func updateTrackingAreas() {
@@ -1182,7 +1212,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         if isEditingInlineText {
             return .iBeam
         }
-        if hoveredBadgeIndex != nil {
+        if hoveredAnnotationIndex != nil {
             return .pointingHand
         }
         return isToolArmed ? .crosshair : .arrow
