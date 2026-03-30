@@ -141,10 +141,14 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
                 drawPurpleOverlay(for: annotation)
             }
 
+            // Always draw the badge — even when the text field is open for this annotation
+            drawBadge(number: annotation.number, at: layout.badgeCenter)
+
+            // Only draw the static note overlay if this annotation does NOT have an active text field
+            // (the live NSTextView replaces it)
             if activeAnnotationIndex != index {
                 let isActive = isHovered || isSelected
                 drawNoteOverlay(for: annotation, isActive: isActive)
-                drawBadge(number: annotation.number, at: layout.badgeCenter)
             }
         }
     }
@@ -449,6 +453,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         let opacity: CGFloat = isActive ? 1.0 : 0.5
         let rect = noteRect(for: annotation)
+        print("DEBUG drawNoteOverlay: noteRect=\(rect), annotation.startPoint=\(annotation.startPoint)")
         let path = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius, yRadius: noteCornerRadius)
         Constants.inlineNoteBackgroundColor.withAlphaComponent(opacity).setFill()
         path.fill()
@@ -794,6 +799,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         guard annotationIndex >= 0 && annotationIndex < annotations.count else { return }
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
+        print("DEBUG showTextField: noteRect=\(fieldRect), badgeCenter=\(annotation.startPoint), canvasBounds=\(bounds), isFlipped=\(isFlipped)")
         let paragraphStyle = noteParagraphStyle()
         let container = FlippedContainerView(frame: fieldRect)
         container.wantsLayer = true
@@ -899,6 +905,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         }
         if index < annotations.count {
             annotations[index].note = textView.string
+            print("DEBUG finalize: index=\(index), note='\(textView.string)', startPoint=\(annotations[index].startPoint), bounds=\(bounds)")
         }
         container.removeFromSuperview()
         activeEditorContainer = nil
