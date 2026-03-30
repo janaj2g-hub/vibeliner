@@ -6,6 +6,29 @@ Log of architectural decisions and failed approaches. Claude Code, Codex, and fu
 
 ## Decisions
 
+### 2026-03-30: Replace custom NSPanel menu with native NSMenu
+**Decision:** The menu bar dropdown is now a standard `NSMenu` with `NSMenuItem` items and `NSMenuDelegate` for dynamic content. The custom `MenuPanel` (NSPanel subclass) and `MenuBarPopover` (SwiftUI view) have been deleted.
+
+**Why:** The codebase audit identified the custom menu panel as the #1 fragile area in the codebase. It required ~200 lines of custom dismiss logic (local and global event monitors with geometry-based hit testing), ~100 lines of panel construction (NSHostingController, NSVisualEffectView, corner radius, positioning), and had a documented history of interaction regressions (see "Dismissing the custom menu panel based on event window identity alone" in Failed Approaches). Native `NSMenu` handles all of this automatically.
+
+**What was removed:**
+- `MenuBarPopover.swift` (286 lines) — SwiftUI menu content view
+- `MenuPanel` private NSPanel subclass in AppDelegate
+- All panel construction, positioning, and sizing code
+- Local and global event monitors for dismiss with geometry-based hit testing
+- `AppSetupSummary` struct and `ObservableObject` conformance on `AppState` (only consumed by the deleted SwiftUI menu)
+
+**What replaced it:**
+- `buildMenu() -> NSMenu` with static items: Capture Now, Preferences..., About, Quit
+- `NSMenuDelegate.menuNeedsUpdate(_:)` for dynamic content: Recent Captures submenu and Screen Recording advisory status
+- Tagged dynamic items that are stripped and rebuilt on each menu open
+
+**Net impact:** ~500 lines removed, ~80 lines of NSMenu construction added. The menu now looks and behaves like a native macOS status menu.
+
+**Why this matters for future LLMs:** Do not reintroduce a custom panel for the menu bar dropdown. The native `NSMenu` pattern handles dismiss, keyboard navigation, accessibility, and appearance automatically. If dynamic content needs to go beyond what `NSMenuItem` can display, consider using `NSMenuItem.view` for custom views inside individual items rather than replacing the entire menu with a custom panel.
+
+**Revisit when:** The menu needs rich interactive content (e.g., inline capture preview, drag-and-drop) that cannot be expressed as `NSMenuItem` items or custom views within them.
+
 ### 2026-03-29: Always copy the built app into a repo-local `dist` folder after every app build
 **Decision:** The shared `Vibeliner` scheme now includes a build post-action that copies the final built bundle into `dist/Vibeliner.app` inside the repo on every successful app build.
 

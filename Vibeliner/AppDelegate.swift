@@ -43,15 +43,6 @@ enum ScreenRecordingPermissionState {
         self == .authorized
     }
 
-    var setupDetail: String {
-        switch self {
-        case .authorized:
-            return "Appears enabled."
-        case .notGranted:
-            return "Grant access, or enable it in System Settings."
-        }
-    }
-
     var issue: UserFacingIssue {
         switch self {
         case .authorized:
@@ -81,47 +72,13 @@ enum ScreenRecordingPermissionState {
     }
 }
 
-struct AppSetupSummary {
-    let screenRecordingState: ScreenRecordingPermissionState
-    let storageStatus: CaptureStore.StorageStatus
-
-    var screenRecordingAuthorized: Bool {
-        screenRecordingState.isAuthorized
-    }
-
-    var screenRecordingDetail: String {
-        screenRecordingState.setupDetail
-    }
-
-    var isReadyToCapture: Bool {
-        storageStatus.isReady
-    }
-
-    var setupHeading: String {
-        storageStatus.isReady ? "Finish setup" : "Setup required"
-    }
-}
-
 @MainActor
-final class AppState: ObservableObject {
-    @Published private(set) var setupSummary: AppSetupSummary
-    @Published private(set) var recentCaptures: [CaptureRecord] = []
-    @Published var isCaptureInProgress = false
-    @Published var lastIssue: UserFacingIssue?
+final class AppState {
+    var isCaptureInProgress = false
+    var lastIssue: UserFacingIssue?
 
-    init() {
-        let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: true)
-        setupSummary = AppState.makeSetupSummary(storageStatus: storageStatus)
-        refresh(autoRepairStorage: true)
-    }
-
-    func refresh(autoRepairStorage: Bool, screenRecordingState: ScreenRecordingPermissionState? = nil) {
-        let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: autoRepairStorage)
-        setupSummary = AppState.makeSetupSummary(
-            storageStatus: storageStatus,
-            screenRecordingState: screenRecordingState
-        )
-        recentCaptures = Array(CaptureStore.shared.list().prefix(5))
+    func refresh(autoRepairStorage: Bool) {
+        _ = CaptureStore.shared.prepareSaveDirectory(autoRepair: autoRepairStorage)
     }
 
     func presentIssue(_ issue: UserFacingIssue) {
@@ -131,22 +88,11 @@ final class AppState: ObservableObject {
     func clearIssue() {
         lastIssue = nil
     }
-
-    private static func makeSetupSummary(
-        storageStatus: CaptureStore.StorageStatus,
-        screenRecordingState: ScreenRecordingPermissionState? = nil
-    ) -> AppSetupSummary {
-        return AppSetupSummary(
-            screenRecordingState: screenRecordingState ?? ScreenRecordingPermissionState.current(),
-            storageStatus: storageStatus
-        )
-    }
 }
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private static let dynamicItemTag = 9000
-    private static let recentCapturesTag = 9001
 
     private var statusItem: NSStatusItem!
     private let appState = AppState()
@@ -170,10 +116,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if pendingScreenRecordingRemediationRefresh {
             pendingScreenRecordingRemediationRefresh = false
             let refreshedState = ScreenRecordingPermissionState.current()
-            appState.refresh(
-                autoRepairStorage: true,
-                screenRecordingState: refreshedState
-            )
+            appState.refresh(autoRepairStorage: true)
             if refreshedState.isAuthorized {
                 handleAuthorizedScreenRecordingGrant()
             }
@@ -387,11 +330,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             return false
         }
 
-        let liveScreenRecordingState = ScreenRecordingPermissionState.current()
-        appState.refresh(
-            autoRepairStorage: true,
-            screenRecordingState: liveScreenRecordingState
-        )
+        appState.refresh(autoRepairStorage: true)
 
         guard !requiresScreenRecordingRelaunch else {
             presentIssue(screenRecordingRelaunchIssue())
@@ -410,10 +349,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         switch outcome {
         case .success(let image):
             appState.clearIssue()
-            appState.refresh(
-                autoRepairStorage: true,
-                screenRecordingState: .authorized
-            )
+            appState.refresh(autoRepairStorage: true)
             beginInteractiveSession()
             presentEditor(with: image)
         case .cancelled:
@@ -586,11 +522,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         activateInteractiveApp()
 
         let isAuthorized = CGRequestScreenCaptureAccess()
-        let refreshedState: ScreenRecordingPermissionState = isAuthorized ? .authorized : .notGranted
-        appState.refresh(
-            autoRepairStorage: true,
-            screenRecordingState: refreshedState
-        )
+        appState.refresh(autoRepairStorage: true)
 
         if isAuthorized {
             handleAuthorizedScreenRecordingGrant()
