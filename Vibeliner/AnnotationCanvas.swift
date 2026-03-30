@@ -1062,12 +1062,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     }
 
     private func noteContentRect(for rect: NSRect) -> NSRect {
-        let leftInset = noteHorizontalPadding + Constants.badgeRadius + noteBadgeInset
+        let leftInset = noteHorizontalPadding + (Constants.badgeRadius * 2) + noteBadgeInset
+        let topInset = noteVerticalPadding + Constants.badgeRadius + 2
         return NSRect(
             x: leftInset,
             y: noteVerticalPadding,
             width: rect.width - leftInset - noteHorizontalPadding,
-            height: rect.height - noteVerticalPadding * 2
+            height: rect.height - topInset - noteVerticalPadding
         )
     }
 
