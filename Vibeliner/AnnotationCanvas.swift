@@ -40,8 +40,8 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     // Inline text field state
     private var activeEditorContainer: NSView?
     private var activeTextView: NSTextView?
+    private var activePlaceholderLabel: NSTextField?
     private var activeAnnotationIndex: Int?
-    private var activeEditorShowsPlaceholder = false
     private var isActivatingTextField = false
     private var selectedAnnotationIndex: Int?
     private var hoveredBadgeIndex: Int? {
@@ -636,19 +636,21 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             .paragraphStyle: paragraphStyle
         ]
 
+        let placeholderLabel = NSTextField(labelWithString: notePlaceholder)
+        placeholderLabel.frame = textRect
+        placeholderLabel.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+        placeholderLabel.textColor = Constants.inlineNoteTextColor.withAlphaComponent(0.55)
+        placeholderLabel.alignment = .center
+        placeholderLabel.lineBreakMode = .byWordWrapping
+        placeholderLabel.maximumNumberOfLines = 0
+        placeholderLabel.autoresizingMask = [.width, .height]
+
         let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedNote.isEmpty {
-            activeEditorShowsPlaceholder = true
-            textView.textStorage?.setAttributedString(NSAttributedString(
-                string: notePlaceholder,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
-                    .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.55),
-                    .paragraphStyle: paragraphStyle
-                ]
-            ))
+            textView.string = ""
+            placeholderLabel.isHidden = false
         } else {
-            activeEditorShowsPlaceholder = false
+            placeholderLabel.isHidden = true
             textView.textStorage?.setAttributedString(NSAttributedString(
                 string: annotation.note,
                 attributes: [
@@ -661,12 +663,14 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         scrollView.documentView = textView
         container.addSubview(scrollView)
+        container.addSubview(placeholderLabel)
 
         // Remove any existing text field
         activeEditorContainer?.removeFromSuperview()
 
         activeEditorContainer = container
         activeTextView = textView
+        activePlaceholderLabel = placeholderLabel
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
 
@@ -676,7 +680,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             guard let self, let textView, self.activeTextView === textView else { return }
             self.window?.makeKeyAndOrderFront(nil)
             let becameFirstResponder = self.window?.makeFirstResponder(textView) ?? false
-            if becameFirstResponder {
+            if becameFirstResponder, !textView.string.isEmpty {
                 textView.setSelectedRange(NSRange(location: 0, length: textView.string.count))
             }
             self.resizeActiveEditor()
@@ -694,14 +698,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             return
         }
         if index < annotations.count {
-            let note = activeEditorShowsPlaceholder ? "" : textView.string
-            annotations[index].note = note
+            annotations[index].note = textView.string
         }
         container.removeFromSuperview()
         activeEditorContainer = nil
         activeTextView = nil
+        activePlaceholderLabel = nil
         activeAnnotationIndex = nil
-        activeEditorShowsPlaceholder = false
         needsDisplay = true
     }
 
@@ -720,8 +723,8 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         container.removeFromSuperview()
         activeEditorContainer = nil
         activeTextView = nil
+        activePlaceholderLabel = nil
         activeAnnotationIndex = nil
-        activeEditorShowsPlaceholder = false
         needsDisplay = true
     }
 
@@ -755,19 +758,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     func textDidChange(_ notification: Notification) {
         guard let changedView = notification.object as? NSTextView else { return }
         guard changedView === activeTextView else { return }
-        if activeEditorShowsPlaceholder {
-            activeEditorShowsPlaceholder = false
-            let replacement = changedView.string == notePlaceholder ? "" : changedView.string
-            changedView.textStorage?.setAttributedString(NSAttributedString(
-                string: replacement,
-                attributes: [
-                    .font: NSFont.systemFont(ofSize: 11, weight: .medium),
-                    .foregroundColor: Constants.inlineNoteTextColor,
-                    .paragraphStyle: centeredParagraphStyle()
-                ]
-            ))
-            changedView.setSelectedRange(NSRange(location: replacement.count, length: 0))
-        }
         changedView.textStorage?.addAttributes(
             [
                 .font: NSFont.systemFont(ofSize: 11, weight: .medium),
@@ -776,6 +766,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             ],
             range: NSRange(location: 0, length: changedView.string.utf16.count)
         )
+        updatePlaceholderVisibility()
         resizeActiveEditor()
     }
 
@@ -981,11 +972,12 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         )
         let width = textWidth + (noteHorizontalPadding * 2)
         let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
-        let x = annotation.startPoint.x + noteOffsetX
+        let x = annotation.startPoint.x
+        let y = annotation.startPoint.y - (noteMinHeight / 2)
 
         return NSRect(
             x: x,
-            y: annotation.startPoint.y - (height / 2),
+            y: y,
             width: width,
             height: height
         )
@@ -1001,7 +993,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             return
         }
         var annotation = annotations[activeAnnotationIndex]
-        annotation.note = activeEditorShowsPlaceholder ? "" : activeTextView.string
+        annotation.note = activeTextView.string
         let frame = noteRect(for: annotation)
         activeEditorContainer.frame = frame
         if let scrollView = activeEditorContainer.subviews.first as? NSScrollView {
@@ -1017,6 +1009,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             activeTextView.maxSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
             activeTextView.minSize = NSSize(width: textRect.width, height: 0)
         }
+        activePlaceholderLabel?.frame = NSRect(
+            x: noteHorizontalPadding,
+            y: noteVerticalPadding,
+            width: activeEditorContainer.bounds.width - (noteHorizontalPadding * 2),
+            height: activeEditorContainer.bounds.height - (noteVerticalPadding * 2)
+        )
+        updatePlaceholderVisibility()
     }
 
     private func centeredParagraphStyle(using paragraphStyle: NSMutableParagraphStyle = NSMutableParagraphStyle()) -> NSMutableParagraphStyle {
@@ -1033,6 +1032,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             return -0.45
         }
         return 0
+    }
+
+    private func updatePlaceholderVisibility() {
+        activePlaceholderLabel?.isHidden = !(activeTextView?.string.isEmpty ?? true)
     }
 
     private func handleInlineEditorKeyEvent(_ event: NSEvent) -> Bool {
