@@ -6,72 +6,6 @@ extension KeyboardShortcuts.Name {
     static let captureScreen = Self("captureScreen")
 }
 
-struct UserFacingIssue: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
-    let recoverySuggestion: String?
-    let technicalDetails: String?
-    let showsScreenRecordingSettingsAction: Bool
-
-    init(
-        title: String,
-        message: String,
-        recoverySuggestion: String?,
-        technicalDetails: String?,
-        showsScreenRecordingSettingsAction: Bool = false
-    ) {
-        self.title = title
-        self.message = message
-        self.recoverySuggestion = recoverySuggestion
-        self.technicalDetails = technicalDetails
-        self.showsScreenRecordingSettingsAction = showsScreenRecordingSettingsAction
-    }
-}
-
-extension UserFacingIssue {
-    var isScreenRecordingRelated: Bool {
-        showsScreenRecordingSettingsAction || title.localizedCaseInsensitiveContains("screen recording")
-    }
-}
-
-enum ScreenRecordingPermissionState {
-    case authorized
-    case notGranted
-
-    var isAuthorized: Bool {
-        self == .authorized
-    }
-
-    var issue: UserFacingIssue {
-        switch self {
-        case .authorized:
-            return UserFacingIssue(
-                title: "Screen Recording ready",
-                message: "vibeliner can use Screen Recording.",
-                recoverySuggestion: nil,
-                technicalDetails: nil
-            )
-        case .notGranted:
-            return UserFacingIssue(
-                title: "Screen Recording permission needed",
-                message: "vibeliner cannot start a region capture until macOS allows it to record the screen.",
-                recoverySuggestion: "Enable vibeliner in System Settings > Privacy & Security > Screen & System Audio Recording, then quit and reopen vibeliner.",
-                technicalDetails: nil,
-                showsScreenRecordingSettingsAction: true
-            )
-        }
-    }
-
-    var offersOpenSettingsShortcut: Bool {
-        self != .authorized
-    }
-
-    static func current() -> Self {
-        CGPreflightScreenCaptureAccess() ? .authorized : .notGranted
-    }
-}
-
 @MainActor
 final class AppState {
     var isCaptureInProgress = false
@@ -131,19 +65,16 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     func menuNeedsUpdate(_ menu: NSMenu) {
         appState.refresh(autoRepairStorage: true)
 
-        // Remove all dynamic items
         menu.items
             .filter { $0.tag == Self.dynamicItemTag }
             .forEach { menu.removeItem($0) }
 
-        // Find the first separator (after Capture Now) to insert dynamic items before it
         guard let firstSeparatorIndex = menu.items.firstIndex(where: { $0.isSeparatorItem }) else {
             return
         }
 
         var insertIndex = firstSeparatorIndex
 
-        // Screen Recording status (advisory, only when not granted)
         if !CGPreflightScreenCaptureAccess() {
             let statusItem = NSMenuItem(title: "Screen Recording: Not Granted", action: nil, keyEquivalent: "")
             statusItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Warning")
@@ -164,7 +95,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             insertIndex += 1
         }
 
-        // Recent Captures submenu — insert after the first separator
         let recentCapturesIndex = insertIndex + 1
         let recentItem = NSMenuItem(title: "Recent Captures", action: nil, keyEquivalent: "")
         recentItem.image = NSImage(systemSymbolName: "clock.arrow.circlepath", accessibilityDescription: "Recent")
@@ -207,7 +137,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     }
 
     @objc private func openScreenRecordingSettingsAction() {
-        openScreenRecordingSettings()
+        activateInteractiveApp()
+        pendingScreenRecordingRemediationRefresh = true
+        PermissionCoordinator.openScreenRecordingSettings()
     }
 
     // MARK: - Status Item & Menu
@@ -247,8 +179,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Vibeliner")
         button.image?.isTemplate = true
 
-        let menu = buildMenu()
-        statusItem.menu = menu
+        statusItem.menu = buildMenu()
     }
 
     private func buildMenu() -> NSMenu {
@@ -313,27 +244,26 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func ensureReadyForCapture() -> Bool {
         let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: true)
         if !storageStatus.isReady {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Captures folder unavailable",
                 message: storageStatus.detail,
                 recoverySuggestion: storageStatus.remediation,
                 technicalDetails: nil
-            )
-            presentIssue(issue)
+            ))
             return false
         }
 
         let runtimeIdentity = AppRuntimeIdentity.current()
         if !runtimeIdentity.isSupportedRuntimeCopy {
             appState.refresh(autoRepairStorage: true)
-            presentIssue(unsupportedRuntimeIssue(runtimeIdentity))
+            presentIssue(PermissionCoordinator.unsupportedRuntimeIssue(runtimeIdentity))
             return false
         }
 
         appState.refresh(autoRepairStorage: true)
 
         guard !requiresScreenRecordingRelaunch else {
-            presentIssue(screenRecordingRelaunchIssue())
+            presentIssue(PermissionCoordinator.screenRecordingRelaunchIssue())
             return false
         }
 
@@ -436,13 +366,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             appState.clearIssue()
             appState.refresh(autoRepairStorage: true)
         } catch {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Could not open captures folder",
                 message: error.localizedDescription,
                 recoverySuggestion: "Fix the save_dir setting in \(Config.shared.configFilePath), then try again.",
                 technicalDetails: nil
-            )
-            presentIssue(issue)
+            ))
         }
     }
 
@@ -462,13 +391,12 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
         let storageStatus = CaptureStore.shared.prepareSaveDirectory(at: selectedURL, autoRepair: true)
         guard storageStatus.isReady else {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Could not use capture folder",
                 message: storageStatus.detail,
                 recoverySuggestion: storageStatus.remediation,
                 technicalDetails: nil
-            )
-            presentIssue(issue)
+            ))
             return false
         }
 
@@ -488,51 +416,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
             appState.refresh(autoRepairStorage: true)
             return true
         } catch {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Could not copy capture",
                 message: "Vibeliner could not load the saved prompt for \(record.id).",
                 recoverySuggestion: "Open the capture folder and confirm prompt.md and screenshot.png still exist.",
                 technicalDetails: error.localizedDescription
-            )
-            presentIssue(issue)
+            ))
             return false
         }
-    }
-
-    // MARK: - Screen Recording
-
-    private func openScreenRecordingSettings() {
-        activateInteractiveApp()
-
-        appState.refresh(autoRepairStorage: true)
-        pendingScreenRecordingRemediationRefresh = true
-
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") else {
-            pendingScreenRecordingRemediationRefresh = false
-            return
-        }
-
-        guard NSWorkspace.shared.open(url) else {
-            pendingScreenRecordingRemediationRefresh = false
-            return
-        }
-    }
-
-    private func requestScreenRecordingAccess() {
-        activateInteractiveApp()
-
-        let isAuthorized = CGRequestScreenCaptureAccess()
-        appState.refresh(autoRepairStorage: true)
-
-        if isAuthorized {
-            handleAuthorizedScreenRecordingGrant()
-            return
-        }
-
-        presentIssue(
-            ScreenRecordingPermissionState.notGranted.issue,
-            offersScreenRecordingShortcut: true
-        )
     }
 
     // MARK: - Activation Policy
@@ -547,7 +438,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     private func endInteractiveSession() {
         activeInteractiveSessions = max(0, activeInteractiveSessions - 1)
-
         restoreAccessoryModeIfIdle()
     }
 
@@ -555,7 +445,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         if NSApp.activationPolicy() != .regular {
             NSApp.setActivationPolicy(.regular)
         }
-
         NSApp.activate(ignoringOtherApps: true)
     }
 
@@ -563,7 +452,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard activeInteractiveSessions == 0 else {
             return
         }
-
         if NSApp.activationPolicy() != .accessory {
             NSApp.setActivationPolicy(.accessory)
         }
@@ -571,58 +459,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     // MARK: - Issue Handling
 
-    private func screenRecordingRelaunchIssue() -> UserFacingIssue {
-        let runtimeIdentity = AppRuntimeIdentity.current()
-        return UserFacingIssue(
-            title: "Relaunch required before capture",
-            message: "Screen Recording permission changed, but this running process cannot safely resume capture until it restarts.",
-            recoverySuggestion: "Relaunch into the canonical app copy before trying capture again. \(runtimeIdentity.canonicalLaunchGuidance)",
-            technicalDetails: "category=relaunchRequired; runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
-        )
-    }
-
-    private func unsupportedRuntimeIssue(_ runtimeIdentity: AppRuntimeIdentity) -> UserFacingIssue {
-        let message = "This app copy is not the supported screenshot-capture runtime."
-        let recoverySuggestion = "\(runtimeIdentity.canonicalLaunchGuidance) Current app path: \(runtimeIdentity.appBundlePath)"
-
-        return UserFacingIssue(
-            title: "Launch the canonical app copy",
-            message: message,
-            recoverySuggestion: recoverySuggestion,
-            technicalDetails: "runCopy=\(runtimeIdentity.runCopyLabel); appPath=\(runtimeIdentity.appBundlePath); expectedDistPath=\(runtimeIdentity.expectedDistAppPath ?? "nil")"
-        )
-    }
-
     private func handleAuthorizedScreenRecordingGrant() {
         requiresScreenRecordingRelaunch = true
 
-        if relaunchIntoCanonicalAppIfPossible() {
+        if PermissionCoordinator.relaunchIntoCanonicalAppIfPossible() {
             return
         }
 
-        presentIssue(screenRecordingRelaunchIssue())
-    }
-
-    @discardableResult
-    private func relaunchIntoCanonicalAppIfPossible() -> Bool {
-        let runtimeIdentity = AppRuntimeIdentity.current()
-        guard let canonicalAppURL = runtimeIdentity.canonicalAppURL else {
-            return false
-        }
-
-        guard FileManager.default.fileExists(atPath: canonicalAppURL.path) else {
-            return false
-        }
-
-        guard NSWorkspace.shared.open(canonicalAppURL) else {
-            return false
-        }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
-            NSApp.terminate(nil)
-        }
-
-        return true
+        presentIssue(PermissionCoordinator.screenRecordingRelaunchIssue())
     }
 
     private func presentIssue(_ issue: UserFacingIssue, offersScreenRecordingShortcut: Bool = false) {
@@ -630,36 +474,14 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         guard !offersScreenRecordingShortcut else {
             return
         }
-        showAlert(for: issue, offersScreenRecordingShortcut: offersScreenRecordingShortcut)
-    }
 
-    private func showAlert(for issue: UserFacingIssue, offersScreenRecordingShortcut: Bool) {
         let shouldRestoreAccessoryMode = activeInteractiveSessions == 0
         activateInteractiveApp()
 
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        alert.messageText = issue.title
-
-        var details: [String] = [issue.message]
-        if let recoverySuggestion = issue.recoverySuggestion, !recoverySuggestion.isEmpty {
-            details.append(recoverySuggestion)
-        }
-        if let technicalDetails = issue.technicalDetails,
-           !technicalDetails.isEmpty,
-           issue.title.contains("Could not") {
-            details.append("Details: \(technicalDetails)")
-        }
-        alert.informativeText = details.joined(separator: "\n\n")
-
-        alert.addButton(withTitle: "OK")
-        if offersScreenRecordingShortcut {
-            alert.addButton(withTitle: "Open Screen Recording Settings")
-        }
-
-        let response = alert.runModal()
-        if offersScreenRecordingShortcut, response == .alertSecondButtonReturn {
-            openScreenRecordingSettings()
+        let userWantsSettings = AlertPresenter.showAlert(for: issue, offersScreenRecordingShortcut: offersScreenRecordingShortcut)
+        if userWantsSettings {
+            pendingScreenRecordingRemediationRefresh = true
+            PermissionCoordinator.openScreenRecordingSettings()
         }
 
         if shouldRestoreAccessoryMode {
@@ -667,4 +489,3 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
         }
     }
 }
-

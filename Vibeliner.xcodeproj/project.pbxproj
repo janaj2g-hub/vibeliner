@@ -20,6 +20,8 @@ B10000000000000000000004 /* Config.swift in Sources */ = {isa = PBXBuildFile; fi
 		B1000000000000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* SettingsView.swift */; };
 		B1000000000000000000000D /* AppRuntimeIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000E /* AppRuntimeIdentity.swift */; };
 		B1000000000000000000000E /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000F /* PromptBuilder.swift */; };
+		B1000000000000000000000F /* AlertPresenter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000010 /* AlertPresenter.swift */; };
+		B10000000000000000000010 /* PermissionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000011 /* PermissionCoordinator.swift */; };
 		B20000000000000000000001 /* VibeLinerCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000002 /* VibeLinerCLI.swift */; };
 		B20000000000000000000002 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* Config.swift */; };
 		B20000000000000000000003 /* CaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000007 /* CaptureStore.swift */; };
@@ -43,6 +45,8 @@ F10000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFi
 		F1000000000000000000000D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1000000000000000000000E /* AppRuntimeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntimeIdentity.swift; sourceTree = "<group>"; };
 		F1000000000000000000000F /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
+		F10000000000000000000010 /* AlertPresenter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertPresenter.swift; sourceTree = "<group>"; };
+		F10000000000000000000011 /* PermissionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionCoordinator.swift; sourceTree = "<group>"; };
 		F20000000000000000000001 /* vibeliner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vibeliner; sourceTree = BUILT_PRODUCTS_DIR; };
 		F20000000000000000000002 /* VibeLinerCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeLinerCLI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -90,6 +94,8 @@ F10000000000000000000006 /* Config.swift */,
 				F1000000000000000000000D /* SettingsView.swift */,
 				F1000000000000000000000E /* AppRuntimeIdentity.swift */,
 				F1000000000000000000000F /* PromptBuilder.swift */,
+				F10000000000000000000010 /* AlertPresenter.swift */,
+				F10000000000000000000011 /* PermissionCoordinator.swift */,
 				G20000000000000000000001 /* CLI */,
 				F10000000000000000000004 /* Info.plist */,
 			);
@@ -215,6 +221,8 @@ B10000000000000000000004 /* Config.swift in Sources */,
 				B1000000000000000000000C /* SettingsView.swift in Sources */,
 				B1000000000000000000000D /* AppRuntimeIdentity.swift in Sources */,
 				B1000000000000000000000E /* PromptBuilder.swift in Sources */,
+				B1000000000000000000000F /* AlertPresenter.swift in Sources */,
+				B10000000000000000000010 /* PermissionCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
