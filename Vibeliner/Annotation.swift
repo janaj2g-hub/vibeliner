@@ -15,8 +15,9 @@ struct Annotation: Identifiable {
     var note: String
     var startPoint: CGPoint
     var rotationAngle: CGFloat
+    var textBoxOffset: CGPoint
 
-    init(number: Int, type: AnnotationType, points: [CGPoint], note: String = "", rotationAngle: CGFloat = 0) {
+    init(number: Int, type: AnnotationType, points: [CGPoint], note: String = "", rotationAngle: CGFloat = 0, textBoxOffset: CGPoint = .zero) {
         self.id = UUID()
         self.number = number
         self.type = type
@@ -24,6 +25,7 @@ struct Annotation: Identifiable {
         self.note = note
         self.startPoint = points.first ?? .zero
         self.rotationAngle = rotationAngle
+        self.textBoxOffset = textBoxOffset
     }
 
     mutating func translate(by delta: CGPoint) {

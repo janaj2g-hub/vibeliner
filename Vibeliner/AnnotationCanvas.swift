@@ -74,7 +74,9 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     private var annotationDragState: AnnotationDragState?
 
     private let annotationDragThreshold: CGFloat = 4
+    private let textBoxDragThreshold: CGFloat = 3
     private let shapeHitTolerance: CGFloat = 12
+    private var textBoxDragState: (annotationIndex: Int, initialMousePoint: CGPoint, initialOffset: CGPoint, hasDragged: Bool)?
 
     override var acceptsFirstResponder: Bool { true }
 
@@ -522,6 +524,21 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         }
 
         let clamped = clamp(point)
+
+        // Text box drag: if clicking on a note box that's already selected, and not editing text, start drag
+        if !isToolArmed, activeTextView == nil,
+           let noteIndex = noteAnnotationIndex(at: clamped),
+           noteIndex == selectedAnnotationIndex {
+            let annotation = annotations[noteIndex]
+            textBoxDragState = (
+                annotationIndex: noteIndex,
+                initialMousePoint: clamped,
+                initialOffset: annotation.textBoxOffset,
+                hasDragged: false
+            )
+            return
+        }
+
         if let noteIndex = noteAnnotationIndex(at: clamped) {
             selectedAnnotationIndex = noteIndex
             finalizeActiveTextField()
@@ -580,6 +597,25 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
 
+        // Text box drag
+        if var tbDrag = textBoxDragState {
+            let distance = hypot(clamped.x - tbDrag.initialMousePoint.x, clamped.y - tbDrag.initialMousePoint.y)
+            if !tbDrag.hasDragged && distance < textBoxDragThreshold {
+                return
+            }
+            tbDrag.hasDragged = true
+            let badgeCenter = annotations[tbDrag.annotationIndex].startPoint
+            let newOffset = CGPoint(
+                x: tbDrag.initialOffset.x + (clamped.x - tbDrag.initialMousePoint.x),
+                y: tbDrag.initialOffset.y + (clamped.y - tbDrag.initialMousePoint.y)
+            )
+            annotations[tbDrag.annotationIndex].textBoxOffset = newOffset
+            textBoxDragState = tbDrag
+            _ = badgeCenter // suppress unused warning
+            needsDisplay = true
+            return
+        }
+
         if var dragState = annotationDragState {
             let movementFromStart = hypot(
                 clamped.x - dragState.initialPoint.x,
@@ -622,6 +658,17 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     override func mouseUp(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         let clamped = clamp(point)
+
+        // End text box drag
+        if let tbDrag = textBoxDragState {
+            textBoxDragState = nil
+            if !tbDrag.hasDragged {
+                // Click without drag — open text editor
+                showTextField(for: tbDrag.annotationIndex)
+            }
+            needsDisplay = true
+            return
+        }
 
         if let dragState = annotationDragState {
             selectedAnnotationIndex = dragState.index
@@ -1130,18 +1177,24 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let width = textWidth + (noteHorizontalPadding * 2)
         let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
 
-        // Text box is BESIDE the badge with 8px gap, vertically centered
+        // If user has dragged text box, use custom offset from badge center
         let badgeCenter = annotation.startPoint
-        let isRightEdge = badgeCenter.x > bounds.width * 0.7
-
         let x: CGFloat
-        if isRightEdge {
-            x = badgeCenter.x - Constants.badgeRadius - 8 - width
-        } else {
-            x = badgeCenter.x + Constants.badgeRadius + 8
-        }
+        let y: CGFloat
 
-        let y = badgeCenter.y - height / 2
+        if annotation.textBoxOffset != .zero {
+            x = badgeCenter.x + annotation.textBoxOffset.x
+            y = badgeCenter.y + annotation.textBoxOffset.y
+        } else {
+            // Auto-position: BESIDE the badge with 8px gap, vertically centered
+            let isRightEdge = badgeCenter.x > bounds.width * 0.7
+            if isRightEdge {
+                x = badgeCenter.x - Constants.badgeRadius - 8 - width
+            } else {
+                x = badgeCenter.x + Constants.badgeRadius + 8
+            }
+            y = badgeCenter.y - height / 2
+        }
 
         return NSRect(
             x: x,
