@@ -278,7 +278,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         }
 
         for (tool, button) in toolButtons {
-            if tool == canvas.currentTool {
+            if canvas.isToolArmed && tool == canvas.currentTool {
                 button.layer?.backgroundColor = accentBlue.withAlphaComponent(0.35).cgColor
                 button.layer?.cornerRadius = 6
                 button.layer?.borderWidth = 0
@@ -296,6 +296,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     @objc private func toolSelected(_ sender: NSButton) {
         canvas.finalizeActiveTextField()
         canvas.currentTool = toolForTag(sender.tag)
+        canvas.isToolArmed = true
         updateToolHighlight()
     }
 

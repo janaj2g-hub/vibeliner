@@ -32,6 +32,14 @@ private final class ActiveBadgeView: NSView {
     }
 }
 
+private final class FlippedContainerView: NSView {
+    override var isFlipped: Bool { true }
+}
+
+private final class FlippedTextView: NSTextView {
+    override var isFlipped: Bool { true }
+}
+
 class AnnotationCanvas: NSView, NSTextViewDelegate {
     private let noteHorizontalPadding: CGFloat = 12
     private let noteVerticalPadding: CGFloat = 10
@@ -54,6 +62,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     var currentTool: AnnotationType = .freehand {
         didSet {
             needsDisplay = true
+            window?.invalidateCursorRects(for: self)
+            onToolChanged?(currentTool)
+        }
+    }
+    var isToolArmed = false {
+        didSet {
+            guard isToolArmed != oldValue else { return }
             window?.invalidateCursorRects(for: self)
             onToolChanged?(currentTool)
         }
@@ -451,6 +466,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         selectedAnnotationIndex = nil
         annotationDragState = nil
 
+        guard isToolArmed else {
+            needsDisplay = true
+            return
+        }
+
         activeShapeTool = currentTool
         let tool = activeShapeTool ?? currentTool
         switch tool {
@@ -564,6 +584,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         annotations.append(annotation)
         resetInProgressShapeState()
+        isToolArmed = false
         needsDisplay = true
 
         // Show inline text field for the new annotation
@@ -619,7 +640,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
         let paragraphStyle = noteParagraphStyle()
-        let container = NSView(frame: fieldRect)
+        let container = FlippedContainerView(frame: fieldRect)
         container.wantsLayer = true
         container.layer?.backgroundColor = Constants.inlineNoteBackgroundColor.cgColor
         container.layer?.cornerRadius = noteCornerRadius
@@ -633,7 +654,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         scrollView.autoresizingMask = [.width, .height]
 
         let textRect = noteContentRect(for: container.bounds)
-        let textView = NSTextView(frame: textRect)
+        let textView = FlippedTextView(frame: textRect)
         textView.drawsBackground = false
         textView.delegate = self
         textView.font = NSFont.systemFont(ofSize: 11, weight: .medium)
@@ -670,12 +691,12 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let badgeSize = Constants.badgeRadius * 2
         let badgeView = ActiveBadgeView(frame: NSRect(
             x: 0,
-            y: container.bounds.height - badgeSize,
+            y: 0,
             width: badgeSize,
             height: badgeSize
         ))
         badgeView.number = annotation.number
-        badgeView.autoresizingMask = [.maxXMargin, .minYMargin]
+        badgeView.autoresizingMask = [.maxXMargin, .maxYMargin]
 
         let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedNote.isEmpty {
@@ -707,6 +728,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeBadgeView = badgeView
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
+        isToolArmed = false
 
         addSubview(container)
 
@@ -878,12 +900,15 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             switch characters {
             case "1":
                 currentTool = .freehand
+                isToolArmed = true
                 return
             case "2":
                 currentTool = .arrow
+                isToolArmed = true
                 return
             case "3":
                 currentTool = .circle
+                isToolArmed = true
                 return
             default:
                 break
@@ -1046,7 +1071,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             let badgeSize = Constants.badgeRadius * 2
             activeBadgeView.frame = NSRect(
                 x: 0,
-                y: activeEditorContainer.bounds.height - badgeSize,
+                y: 0,
                 width: badgeSize,
                 height: badgeSize
             )
@@ -1062,11 +1087,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     }
 
     private func noteContentRect(for rect: NSRect) -> NSRect {
-        let leftInset = noteHorizontalPadding + (Constants.badgeRadius * 2) + noteBadgeInset
-        let topInset = noteVerticalPadding + Constants.badgeRadius + 2
+        let leftInset = noteHorizontalPadding + (Constants.badgeRadius * 2) + noteBadgeInset + 4
+        let topInset = noteVerticalPadding + Constants.badgeRadius + 6
         return NSRect(
             x: leftInset,
-            y: noteVerticalPadding,
+            y: topInset,
             width: rect.width - leftInset - noteHorizontalPadding,
             height: rect.height - topInset - noteVerticalPadding
         )
@@ -1147,10 +1172,13 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     }
 
     private func cursorForCurrentLocation() -> NSCursor {
+        if isEditingInlineText {
+            return .iBeam
+        }
         if hoveredBadgeIndex != nil {
             return .pointingHand
         }
-        return .crosshair
+        return isToolArmed ? .crosshair : .arrow
     }
 
     private func updateCursor() {
