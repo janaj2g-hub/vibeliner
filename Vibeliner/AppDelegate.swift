@@ -1,7 +1,6 @@
 import AppKit
 import CoreGraphics
 import KeyboardShortcuts
-import SwiftUI
 
 extension KeyboardShortcuts.Name {
     static let captureScreen = Self("captureScreen")
@@ -145,71 +144,22 @@ final class AppState: ObservableObject {
 }
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    private final class MenuPanel: NSPanel {
-        override var canBecomeKey: Bool { true }
-        override var canBecomeMain: Bool { false }
-    }
-
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private var statusItem: NSStatusItem!
     private let appState = AppState()
     private var editorController: EditorWindowController?
     private var activeInteractiveSessions = 0
-    private var menuPanel: MenuPanel?
-    private var localEventMonitor: Any?
-    private var globalEventMonitor: Any?
     private var pendingScreenRecordingRemediationRefresh = false
     private var requiresScreenRecordingRelaunch = false
-
-    private lazy var popoverController = NSHostingController(
-        rootView: MenuBarPopover(
-            appState: appState,
-            startCapture: { [weak self] in
-                self?.startCapture()
-            },
-            onCopyCapturePrompt: { [weak self] record in
-                self?.copyCapturePrompt(for: record) ?? false
-            },
-            openGeneralSettings: { [weak self] in
-                self?.showSettings(for: .general)
-            },
-            openHotkeySettings: { [weak self] in
-                self?.showSettings(for: .hotkey)
-            },
-            openPromptSettings: { [weak self] in
-                self?.showSettings(for: .promptSettings)
-            },
-            openAboutSettings: { [weak self] in
-                self?.showSettings(for: .about)
-            },
-            openCapturesFolder: { [weak self] in
-                self?.openCapturesFolder()
-            },
-            requestScreenRecordingAccess: { [weak self] in
-                self?.requestScreenRecordingAccess()
-            },
-            openScreenRecordingSettings: { [weak self] in
-                self?.openScreenRecordingSettings()
-            },
-            dismissIssue: { [weak self] in
-                self?.appState.clearIssue()
-            }
-        )
-    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         configureStatusItem()
-        configurePopover()
         configureDefaultHotkeyIfNeeded()
         registerHotkeyHandler()
 
         appState.refresh(autoRepairStorage: true)
-    }
-
-    func applicationDidResignActive(_ notification: Notification) {
-        closeMenuPanel()
     }
 
     func applicationDidBecomeActive(_ notification: Notification) {
@@ -229,20 +179,15 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         appState.refresh(autoRepairStorage: true)
     }
 
-    @objc func togglePopover() {
-        guard let button = statusItem.button else { return }
+    // MARK: - NSMenuDelegate
 
+    func menuNeedsUpdate(_ menu: NSMenu) {
         appState.refresh(autoRepairStorage: true)
-
-        if isMenuVisible {
-            closeMenuPanel()
-            return
-        }
-
-        showMenuPanel(relativeTo: button)
     }
 
-    func startCapture() {
+    // MARK: - Status Item & Menu
+
+    @objc func startCapture() {
         if let existingWindow = editorController?.window, existingWindow.isVisible {
             activateInteractiveApp()
             existingWindow.makeKeyAndOrderFront(nil)
@@ -250,8 +195,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
 
         guard !appState.isCaptureInProgress else { return }
-
-        closeMenuPanel()
 
         guard ensureReadyForCapture() else {
             return
@@ -278,16 +221,51 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
         button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Vibeliner")
         button.image?.isTemplate = true
-        button.action = #selector(togglePopover)
-        button.target = self
+
+        let menu = buildMenu()
+        statusItem.menu = menu
     }
 
-    private func configurePopover() {
-        if #available(macOS 13.0, *) {
-            popoverController.sizingOptions = [.preferredContentSize]
-        }
-        _ = ensureMenuPanel()
+    private func buildMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.delegate = self
+
+        let captureItem = NSMenuItem(title: "Capture Now", action: #selector(startCapture), keyEquivalent: "")
+        captureItem.image = NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "Capture")
+        captureItem.target = self
+        menu.addItem(captureItem)
+
+        menu.addItem(.separator())
+
+        let prefsItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
+        prefsItem.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Preferences")
+        prefsItem.target = self
+        prefsItem.keyEquivalentModifierMask = .command
+        menu.addItem(prefsItem)
+
+        let aboutItem = NSMenuItem(title: "About Vibeliner", action: #selector(openAbout), keyEquivalent: "")
+        aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(title: "Quit Vibeliner", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quitItem.keyEquivalentModifierMask = .command
+        menu.addItem(quitItem)
+
+        return menu
     }
+
+    @objc private func openPreferences() {
+        showSettings(for: .general)
+    }
+
+    @objc private func openAbout() {
+        showSettings(for: .about)
+    }
+
+    // MARK: - Hotkey
 
     private func configureDefaultHotkeyIfNeeded() {
         guard KeyboardShortcuts.getShortcut(for: .captureScreen) == nil else {
@@ -304,6 +282,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
         }
     }
+
+    // MARK: - Capture
 
     private func ensureReadyForCapture() -> Bool {
         let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: true)
@@ -385,6 +365,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 
+    // MARK: - Editor
+
     private func presentEditor(with image: NSImage) {
         activateInteractiveApp()
 
@@ -413,8 +395,9 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         editorController = controller
     }
 
+    // MARK: - Settings
+
     private func showSettings(for tab: SettingsTab) {
-        closeMenuPanel()
         beginInteractiveSession()
 
         PromptSettingsPanelPresenter.show(
@@ -477,7 +460,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         return true
     }
 
-    private func copyCapturePrompt(for record: CaptureRecord) -> Bool {
+    func copyCapturePrompt(for record: CaptureRecord) -> Bool {
         do {
             let promptText = try CaptureStore.shared.clipboardPrompt(for: record)
             let pasteboard = NSPasteboard.general
@@ -497,6 +480,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             return false
         }
     }
+
+    // MARK: - Screen Recording
 
     private func openScreenRecordingSettings() {
         activateInteractiveApp()
@@ -536,191 +521,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         )
     }
 
-    private var isMenuVisible: Bool {
-        menuPanel?.isVisible == true
-    }
-
-    private func ensureMenuPanel() -> MenuPanel {
-        if let menuPanel {
-            return menuPanel
-        }
-
-        let panel = MenuPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 320, height: 420),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .statusBar
-        panel.hidesOnDeactivate = false
-        panel.isReleasedWhenClosed = false
-        panel.collectionBehavior = [.transient, .moveToActiveSpace, .ignoresCycle]
-        panel.animationBehavior = .utilityWindow
-        panel.delegate = self
-
-        let rootView = NSView()
-        rootView.translatesAutoresizingMaskIntoConstraints = false
-
-        let effectView = NSVisualEffectView()
-        effectView.material = .menu
-        effectView.blendingMode = .withinWindow
-        effectView.state = .active
-        effectView.translatesAutoresizingMaskIntoConstraints = false
-        effectView.wantsLayer = true
-        effectView.layer?.cornerRadius = 16
-        effectView.layer?.cornerCurve = .continuous
-        effectView.layer?.masksToBounds = true
-
-        let hostedView = popoverController.view
-        hostedView.translatesAutoresizingMaskIntoConstraints = false
-
-        panel.contentView = rootView
-        rootView.addSubview(effectView)
-        effectView.addSubview(hostedView)
-
-        NSLayoutConstraint.activate([
-            effectView.leadingAnchor.constraint(equalTo: rootView.leadingAnchor),
-            effectView.trailingAnchor.constraint(equalTo: rootView.trailingAnchor),
-            effectView.topAnchor.constraint(equalTo: rootView.topAnchor),
-            effectView.bottomAnchor.constraint(equalTo: rootView.bottomAnchor),
-
-            hostedView.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
-            hostedView.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
-            hostedView.topAnchor.constraint(equalTo: effectView.topAnchor),
-            hostedView.bottomAnchor.constraint(equalTo: effectView.bottomAnchor),
-        ])
-
-        menuPanel = panel
-        return panel
-    }
-
-    private func showMenuPanel(relativeTo button: NSStatusBarButton) {
-        let panel = ensureMenuPanel()
-        updateMenuPanelSize(panel)
-        positionMenuPanel(panel, relativeTo: button)
-        installMenuDismissMonitors()
-        panel.orderFrontRegardless()
-        panel.makeFirstResponder(nil)
-    }
-
-    private func closeMenuPanel() {
-        menuPanel?.orderOut(nil)
-        removeMenuDismissMonitors()
-    }
-
-    private func updateMenuPanelSize(_ panel: MenuPanel) {
-        let preferredSize = popoverController.preferredContentSize
-        let measuredSize: NSSize
-
-        if preferredSize.width > 0, preferredSize.height > 0 {
-            measuredSize = preferredSize
-        } else {
-            measuredSize = popoverController.view.fittingSize
-        }
-
-        panel.setContentSize(NSSize(width: measuredSize.width, height: measuredSize.height))
-    }
-
-    private func positionMenuPanel(_ panel: MenuPanel, relativeTo button: NSStatusBarButton) {
-        guard
-            let window = button.window,
-            let screen = window.screen ?? NSScreen.main
-        else {
-            return
-        }
-
-        let buttonFrameInWindow = button.convert(button.bounds, to: nil)
-        let buttonFrameOnScreen = window.convertToScreen(buttonFrameInWindow)
-        let panelSize = panel.frame.size
-        let visibleFrame = screen.visibleFrame.insetBy(dx: 8, dy: 8)
-
-        var origin = NSPoint(
-            x: buttonFrameOnScreen.minX,
-            y: buttonFrameOnScreen.minY - panelSize.height - 6
-        )
-
-        origin.x = min(max(origin.x, visibleFrame.minX), visibleFrame.maxX - panelSize.width)
-        origin.y = max(visibleFrame.minY, origin.y)
-
-        panel.setFrameOrigin(origin)
-    }
-
-    private func installMenuDismissMonitors() {
-        guard localEventMonitor == nil, globalEventMonitor == nil else {
-            return
-        }
-
-        localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown]) { [weak self] event in
-            self?.handleMenuEvent(event)
-            return event
-        }
-
-        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] event in
-            Task { @MainActor [weak self] in
-                self?.handleGlobalMenuEvent(event)
-            }
-        }
-    }
-
-    private func removeMenuDismissMonitors() {
-        if let localEventMonitor {
-            NSEvent.removeMonitor(localEventMonitor)
-            self.localEventMonitor = nil
-        }
-
-        if let globalEventMonitor {
-            NSEvent.removeMonitor(globalEventMonitor)
-            self.globalEventMonitor = nil
-        }
-    }
-
-    private func handleMenuEvent(_ event: NSEvent) {
-        guard isMenuVisible else {
-            return
-        }
-
-        if event.type == .keyDown, event.keyCode == 53 {
-            closeMenuPanel()
-            return
-        }
-
-        guard event.type == .leftMouseDown || event.type == .rightMouseDown || event.type == .otherMouseDown else {
-            return
-        }
-
-        if shouldDismissMenu(forScreenLocation: currentScreenLocation(for: event)) {
-            closeMenuPanel()
-        }
-    }
-
-    private func handleGlobalMenuEvent(_ event: NSEvent) {
-        guard isMenuVisible else {
-            return
-        }
-
-        if shouldDismissMenu(forScreenLocation: currentScreenLocation(for: event)) {
-            closeMenuPanel()
-        }
-    }
-
-    private func currentScreenLocation(for event: NSEvent) -> NSPoint {
-        if event.window == nil {
-            return event.locationInWindow
-        }
-
-        return NSEvent.mouseLocation
-    }
-
-    private func shouldDismissMenu(forScreenLocation screenLocation: NSPoint) -> Bool {
-        guard let panel = menuPanel else {
-            return false
-        }
-
-        return !panel.frame.contains(screenLocation)
-    }
+    // MARK: - Activation Policy
 
     private func beginInteractiveSession() {
         activeInteractiveSessions += 1
@@ -753,6 +554,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             NSApp.setActivationPolicy(.accessory)
         }
     }
+
+    // MARK: - Issue Handling
 
     private func screenRecordingRelaunchIssue() -> UserFacingIssue {
         let runtimeIdentity = AppRuntimeIdentity.current()
@@ -850,3 +653,4 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         }
     }
 }
+
