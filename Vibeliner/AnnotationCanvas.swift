@@ -15,6 +15,13 @@ private final class FlippedTextView: NSTextView {
     override var isFlipped: Bool { true }
 }
 
+struct AnnotationLayout {
+    let badgeCenter: CGPoint
+    let badgeRadius: CGFloat
+    let textBoxFrame: NSRect
+    let textBoxOnLeft: Bool
+}
+
 class AnnotationCanvas: NSView, NSTextViewDelegate {
     private let noteHorizontalPadding: CGFloat = 12
     private let noteVerticalPadding: CGFloat = 10
@@ -120,8 +127,9 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             }
         }
 
-        // Draw badges on top of strokes
+        // Draw badges and text boxes on top of strokes
         for (index, annotation) in annotations.enumerated() {
+            let layout = layoutForAnnotation(annotation)
             let isHovered = index == hoveredAnnotationIndex
             let isSelected = index == selectedAnnotationIndex
 
@@ -136,7 +144,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             if activeAnnotationIndex != index {
                 let isActive = isHovered || isSelected
                 drawNoteOverlay(for: annotation, isActive: isActive)
-                drawBadge(number: annotation.number, at: annotation.startPoint)
+                drawBadge(number: annotation.number, at: layout.badgeCenter)
             }
         }
     }
@@ -331,14 +339,15 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     }
 
     private func drawSelectionOutline(for annotation: Annotation) {
+        let layout = layoutForAnnotation(annotation)
         let outlineColor = Constants.annotationRed
         outlineColor.setStroke()
 
-        // Badge outline
-        let badgeOutlineRadius = Constants.badgeRadius + 3
+        // Badge outline — separate circle around the badge
+        let badgeOutlineRadius = layout.badgeRadius + 3
         let badgeOutlineRect = NSRect(
-            x: annotation.startPoint.x - badgeOutlineRadius,
-            y: annotation.startPoint.y - badgeOutlineRadius,
+            x: layout.badgeCenter.x - badgeOutlineRadius,
+            y: layout.badgeCenter.y - badgeOutlineRadius,
             width: badgeOutlineRadius * 2,
             height: badgeOutlineRadius * 2
         )
@@ -346,10 +355,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         badgeOutline.lineWidth = 2
         badgeOutline.stroke()
 
-        // Note box outline (if note text exists)
+        // Note box outline — separate rect around the text box (if note text exists)
         let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if !note.isEmpty {
-            let rect = noteRect(for: annotation).insetBy(dx: -1, dy: -1)
+            let rect = layout.textBoxFrame.insetBy(dx: -1, dy: -1)
             let noteOutline = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius + 1, yRadius: noteCornerRadius + 1)
             noteOutline.lineWidth = 2
             noteOutline.stroke()
@@ -500,7 +509,8 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         // Draw badges (need manual scale for font/circle sizing)
         for annotation in annotations {
-            drawBadge(number: annotation.number, at: annotation.startPoint)
+            let layout = layoutForAnnotation(annotation)
+            drawBadge(number: annotation.number, at: layout.badgeCenter)
         }
 
         // Restore transform
@@ -1149,59 +1159,66 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         hypot(badgeCenter.x - point.x, badgeCenter.y - point.y) <= Constants.badgeHitRadius
     }
 
-    private func noteRect(for annotation: Annotation) -> NSRect {
+    // MARK: - Layout (single source of truth)
+
+    /// The ONLY function that computes badge and text box positions.
+    /// All drawing, text field creation, resizing, and hit-testing must go through this.
+    func layoutForAnnotation(_ annotation: Annotation) -> AnnotationLayout {
+        let badgeCenter = annotation.startPoint
+        let radius = Constants.badgeRadius
+        let gap: CGFloat = 8
+
+        // Measure text box size from note content
         let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? notePlaceholder
             : annotation.note
-        let paragraphStyle = noteParagraphStyle()
-
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
-            .paragraphStyle: paragraphStyle
+            .paragraphStyle: noteParagraphStyle()
         ]
-
         let minTextWidth = ceil((notePlaceholder as NSString).size(withAttributes: attributes).width)
         let measuredSingleLineWidth = ceil((note as NSString).size(withAttributes: attributes).width)
         let textWidth = min(max(minTextWidth, measuredSingleLineWidth), noteMaxTextWidth)
-        let constraintRect = NSRect(
-            x: 0,
-            y: 0,
-            width: textWidth,
-            height: .greatestFiniteMagnitude
-        )
         let measuredRect = (note as NSString).boundingRect(
-            with: constraintRect.size,
+            with: NSSize(width: textWidth, height: .greatestFiniteMagnitude),
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes
         )
-        let width = textWidth + (noteHorizontalPadding * 2)
-        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
+        let tbWidth = textWidth + (noteHorizontalPadding * 2)
+        let tbHeight = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
 
-        // If user has dragged text box, use custom offset from badge center
-        let badgeCenter = annotation.startPoint
-        let x: CGFloat
-        let y: CGFloat
+        // Compute text box origin
+        let tbX: CGFloat
+        let tbY: CGFloat
+        let isRightEdge: Bool
 
         if annotation.textBoxOffset != .zero {
-            x = badgeCenter.x + annotation.textBoxOffset.x
-            y = badgeCenter.y + annotation.textBoxOffset.y
+            // User has dragged the text box — use custom offset
+            tbX = badgeCenter.x + annotation.textBoxOffset.x
+            tbY = badgeCenter.y + annotation.textBoxOffset.y
+            isRightEdge = annotation.textBoxOffset.x < 0
         } else {
             // Auto-position: BESIDE the badge with 8px gap, vertically centered
-            let isRightEdge = badgeCenter.x > bounds.width * 0.7
+            isRightEdge = badgeCenter.x > bounds.width * 0.7
             if isRightEdge {
-                x = badgeCenter.x - Constants.badgeRadius - 8 - width
+                tbX = badgeCenter.x - radius - gap - tbWidth
             } else {
-                x = badgeCenter.x + Constants.badgeRadius + 8
+                tbX = badgeCenter.x + radius + gap
             }
-            y = badgeCenter.y - height / 2
+            tbY = badgeCenter.y - tbHeight / 2
         }
 
-        return NSRect(
-            x: x,
-            y: y,
-            width: width,
-            height: height
+        return AnnotationLayout(
+            badgeCenter: badgeCenter,
+            badgeRadius: radius,
+            textBoxFrame: NSRect(x: tbX, y: tbY, width: tbWidth, height: tbHeight),
+            textBoxOnLeft: isRightEdge
         )
+    }
+
+    /// Convenience: returns just the text box frame. All callers go through layoutForAnnotation.
+    private func noteRect(for annotation: Annotation) -> NSRect {
+        layoutForAnnotation(annotation).textBoxFrame
     }
 
     private func resizeActiveEditor() {
