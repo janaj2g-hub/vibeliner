@@ -7,14 +7,39 @@ private struct AnnotationDragState {
     var hasExceededThreshold: Bool
 }
 
+private final class ActiveBadgeView: NSView {
+    var number: Int = 1 {
+        didSet { needsDisplay = true }
+    }
+
+    override var isOpaque: Bool { false }
+
+    override func draw(_ dirtyRect: NSRect) {
+        let rect = bounds.insetBy(dx: 0.5, dy: 0.5)
+        Constants.annotationRed.setFill()
+        NSBezierPath(ovalIn: rect).fill()
+
+        let fontSize: CGFloat = number >= 10 ? 12 : 15
+        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
+        let text = NSAttributedString(string: "\(number)", attributes: [
+            .font: font,
+            .foregroundColor: Constants.badgeTextColor
+        ])
+        let size = text.size()
+        let x = floor(bounds.midX - (size.width / 2))
+        let y = floor(bounds.midY - (size.height / 2) + (number >= 10 ? -0.5 : 0))
+        text.draw(in: NSRect(x: x, y: y, width: ceil(size.width), height: ceil(size.height)))
+    }
+}
+
 class AnnotationCanvas: NSView, NSTextViewDelegate {
-    private let noteOffsetX: CGFloat = 22
     private let noteHorizontalPadding: CGFloat = 12
-    private let noteVerticalPadding: CGFloat = 8
+    private let noteVerticalPadding: CGFloat = 10
     private let noteCornerRadius: CGFloat = 8
     private let noteMaxTextWidth: CGFloat = 176
     private let noteMinHeight: CGFloat = 30
     private let notePlaceholder = "Describe issue..."
+    private let noteBadgeInset: CGFloat = 10
 
     var backgroundImage: NSImage? {
         didSet { needsDisplay = true }
@@ -41,6 +66,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     private var activeEditorContainer: NSView?
     private var activeTextView: NSTextView?
     private var activePlaceholderLabel: NSTextField?
+    private var activeBadgeView: ActiveBadgeView?
     private var activeAnnotationIndex: Int?
     private var isActivatingTextField = false
     private var selectedAnnotationIndex: Int?
@@ -109,9 +135,9 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             if index == hoveredBadgeIndex {
                 drawBadgeHoverRing(at: annotation.startPoint)
             }
-            drawBadge(number: annotation.number, at: annotation.startPoint)
             if activeAnnotationIndex != index {
                 drawNoteOverlay(for: annotation)
+                drawBadge(number: annotation.number, at: annotation.startPoint)
             }
         }
     }
@@ -315,15 +341,16 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         path.fill()
 
         let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .left
         paragraphStyle.lineBreakMode = .byWordWrapping
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
             .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.5),
-            .paragraphStyle: centeredParagraphStyle(using: paragraphStyle)
+            .paragraphStyle: paragraphStyle
         ]
 
-        let textRect = rect.insetBy(dx: noteHorizontalPadding, dy: noteVerticalPadding)
+        let textRect = noteContentRect(for: rect)
         (note as NSString).draw(in: textRect, withAttributes: attributes)
     }
 
@@ -591,7 +618,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         guard annotationIndex >= 0 && annotationIndex < annotations.count else { return }
         let annotation = annotations[annotationIndex]
         let fieldRect = noteRect(for: annotation)
-        let paragraphStyle = centeredParagraphStyle()
+        let paragraphStyle = noteParagraphStyle()
         let container = NSView(frame: fieldRect)
         container.wantsLayer = true
         container.layer?.backgroundColor = Constants.inlineNoteBackgroundColor.cgColor
@@ -605,12 +632,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         scrollView.borderType = .noBorder
         scrollView.autoresizingMask = [.width, .height]
 
-        let textRect = NSRect(
-            x: noteHorizontalPadding,
-            y: noteVerticalPadding,
-            width: container.bounds.width - (noteHorizontalPadding * 2),
-            height: container.bounds.height - (noteVerticalPadding * 2)
-        )
+        let textRect = noteContentRect(for: container.bounds)
         let textView = NSTextView(frame: textRect)
         textView.drawsBackground = false
         textView.delegate = self
@@ -640,10 +662,20 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         placeholderLabel.frame = textRect
         placeholderLabel.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         placeholderLabel.textColor = Constants.inlineNoteTextColor.withAlphaComponent(0.55)
-        placeholderLabel.alignment = .center
+        placeholderLabel.alignment = .left
         placeholderLabel.lineBreakMode = .byWordWrapping
         placeholderLabel.maximumNumberOfLines = 0
         placeholderLabel.autoresizingMask = [.width, .height]
+
+        let badgeSize = Constants.badgeRadius * 2
+        let badgeView = ActiveBadgeView(frame: NSRect(
+            x: 0,
+            y: container.bounds.height - badgeSize,
+            width: badgeSize,
+            height: badgeSize
+        ))
+        badgeView.number = annotation.number
+        badgeView.autoresizingMask = [.maxXMargin, .minYMargin]
 
         let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedNote.isEmpty {
@@ -664,6 +696,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         scrollView.documentView = textView
         container.addSubview(scrollView)
         container.addSubview(placeholderLabel)
+        container.addSubview(badgeView)
 
         // Remove any existing text field
         activeEditorContainer?.removeFromSuperview()
@@ -671,6 +704,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = container
         activeTextView = textView
         activePlaceholderLabel = placeholderLabel
+        activeBadgeView = badgeView
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
 
@@ -704,6 +738,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = nil
         activeTextView = nil
         activePlaceholderLabel = nil
+        activeBadgeView = nil
         activeAnnotationIndex = nil
         needsDisplay = true
     }
@@ -724,6 +759,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = nil
         activeTextView = nil
         activePlaceholderLabel = nil
+        activeBadgeView = nil
         activeAnnotationIndex = nil
         needsDisplay = true
     }
@@ -762,7 +798,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             [
                 .font: NSFont.systemFont(ofSize: 11, weight: .medium),
                 .foregroundColor: Constants.inlineNoteTextColor,
-                .paragraphStyle: centeredParagraphStyle()
+                .paragraphStyle: noteParagraphStyle()
             ],
             range: NSRange(location: 0, length: changedView.string.utf16.count)
         )
@@ -949,7 +985,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? notePlaceholder
             : annotation.note
-        let paragraphStyle = centeredParagraphStyle()
+        let paragraphStyle = noteParagraphStyle()
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
@@ -970,10 +1006,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes
         )
-        let width = textWidth + (noteHorizontalPadding * 2)
-        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
-        let x = annotation.startPoint.x
-        let y = annotation.startPoint.y - (noteMinHeight / 2)
+        let leftInset = noteHorizontalPadding + Constants.badgeRadius + noteBadgeInset
+        let width = textWidth + leftInset + noteHorizontalPadding
+        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2) + Constants.badgeRadius)
+        let x = annotation.startPoint.x - Constants.badgeRadius
+        let y = annotation.startPoint.y - height + Constants.badgeRadius
 
         return NSRect(
             x: x,
@@ -998,30 +1035,40 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer.frame = frame
         if let scrollView = activeEditorContainer.subviews.first as? NSScrollView {
             scrollView.frame = activeEditorContainer.bounds
-            let textRect = NSRect(
-                x: noteHorizontalPadding,
-                y: noteVerticalPadding,
-                width: activeEditorContainer.bounds.width - (noteHorizontalPadding * 2),
-                height: activeEditorContainer.bounds.height - (noteVerticalPadding * 2)
-            )
+            let textRect = noteContentRect(for: activeEditorContainer.bounds)
             activeTextView.frame = textRect
             activeTextView.textContainer?.containerSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
             activeTextView.maxSize = NSSize(width: textRect.width, height: .greatestFiniteMagnitude)
             activeTextView.minSize = NSSize(width: textRect.width, height: 0)
         }
-        activePlaceholderLabel?.frame = NSRect(
-            x: noteHorizontalPadding,
-            y: noteVerticalPadding,
-            width: activeEditorContainer.bounds.width - (noteHorizontalPadding * 2),
-            height: activeEditorContainer.bounds.height - (noteVerticalPadding * 2)
-        )
+        activePlaceholderLabel?.frame = noteContentRect(for: activeEditorContainer.bounds)
+        if let activeBadgeView {
+            let badgeSize = Constants.badgeRadius * 2
+            activeBadgeView.frame = NSRect(
+                x: 0,
+                y: activeEditorContainer.bounds.height - badgeSize,
+                width: badgeSize,
+                height: badgeSize
+            )
+        }
         updatePlaceholderVisibility()
     }
 
-    private func centeredParagraphStyle(using paragraphStyle: NSMutableParagraphStyle = NSMutableParagraphStyle()) -> NSMutableParagraphStyle {
-        paragraphStyle.alignment = .center
+    private func noteParagraphStyle() -> NSMutableParagraphStyle {
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.alignment = .left
         paragraphStyle.lineBreakMode = .byWordWrapping
         return paragraphStyle
+    }
+
+    private func noteContentRect(for rect: NSRect) -> NSRect {
+        let leftInset = noteHorizontalPadding + Constants.badgeRadius + noteBadgeInset
+        return NSRect(
+            x: leftInset,
+            y: noteVerticalPadding,
+            width: rect.width - leftInset - noteHorizontalPadding,
+            height: rect.height - noteVerticalPadding * 2
+        )
     }
 
     private func badgeOpticalOffsetX(for number: Int) -> CGFloat {
