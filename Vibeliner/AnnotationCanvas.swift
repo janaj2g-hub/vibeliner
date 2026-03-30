@@ -155,7 +155,8 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             }
 
             if activeAnnotationIndex != index {
-                drawNoteOverlay(for: annotation)
+                let isActive = isHovered || isSelected
+                drawNoteOverlay(for: annotation, isActive: isActive)
                 drawBadge(number: annotation.number, at: annotation.startPoint)
             }
         }
@@ -376,14 +377,22 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         }
     }
 
-    private func drawNoteOverlay(for annotation: Annotation) {
+    private func drawNoteOverlay(for annotation: Annotation, isActive: Bool = false) {
         let note = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !note.isEmpty else { return }
 
+        let opacity: CGFloat = isActive ? 1.0 : 0.5
         let rect = noteRect(for: annotation)
         let path = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius, yRadius: noteCornerRadius)
-        Constants.inlineNoteBackgroundColor.setFill()
+        Constants.inlineNoteBackgroundColor.withAlphaComponent(opacity).setFill()
         path.fill()
+
+        if isActive {
+            Constants.annotationRed.setStroke()
+            let borderPath = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius, yRadius: noteCornerRadius)
+            borderPath.lineWidth = 1.5
+            borderPath.stroke()
+        }
 
         let paragraphStyle = NSMutableParagraphStyle()
         paragraphStyle.alignment = .left
@@ -391,7 +400,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
-            .foregroundColor: Constants.inlineNoteTextColor,
+            .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(opacity),
             .paragraphStyle: paragraphStyle
         ]
 
@@ -674,6 +683,8 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         container.layer?.backgroundColor = Constants.inlineNoteBackgroundColor.cgColor
         container.layer?.cornerRadius = noteCornerRadius
         container.layer?.masksToBounds = true
+        container.layer?.borderColor = Constants.annotationRed.cgColor
+        container.layer?.borderWidth = 1.5
 
         let scrollView = NSScrollView(frame: container.bounds)
         scrollView.drawsBackground = false
