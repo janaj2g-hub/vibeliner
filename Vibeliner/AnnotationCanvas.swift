@@ -584,7 +584,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         annotations.append(annotation)
         resetInProgressShapeState()
-        isToolArmed = false
         needsDisplay = true
 
         // Show inline text field for the new annotation
@@ -728,7 +727,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeBadgeView = badgeView
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
-        isToolArmed = false
 
         addSubview(container)
 
@@ -912,6 +910,15 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
                 return
             default:
                 break
+            }
+        }
+
+        // Escape de-arms the active tool
+        if modifiers == [], event.keyCode == 53 {
+            if isToolArmed {
+                isToolArmed = false
+                needsDisplay = true
+                return
             }
         }
 

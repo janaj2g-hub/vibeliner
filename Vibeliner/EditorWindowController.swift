@@ -95,6 +95,10 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         contentView.addSubview(canvas)
         panel.initialFirstResponder = canvas
 
+        // Auto-arm freehand tool on editor open
+        canvas.currentTool = .freehand
+        canvas.isToolArmed = true
+
         panel.contentView = contentView
         updateToolHighlight()
     }
@@ -295,8 +299,14 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     @objc private func toolSelected(_ sender: NSButton) {
         canvas.finalizeActiveTextField()
-        canvas.currentTool = toolForTag(sender.tag)
-        canvas.isToolArmed = true
+        let selectedTool = toolForTag(sender.tag)
+        if canvas.isToolArmed && canvas.currentTool == selectedTool {
+            // Toggle off if clicking the already-armed tool
+            canvas.isToolArmed = false
+        } else {
+            canvas.currentTool = selectedTool
+            canvas.isToolArmed = true
+        }
         updateToolHighlight()
     }
 
