@@ -24,7 +24,7 @@ enum SettingsTab: String, CaseIterable, Identifiable {
     }
 }
 
-struct PromptSettingsView: View {
+struct SettingsView: View {
     @State private var selectedTab: SettingsTab
     @State private var preambleSingle: String
     @State private var preambleBatch: String
@@ -346,7 +346,7 @@ struct PromptSettingsView: View {
     }
 }
 
-enum PromptSettingsPanelPresenter {
+enum SettingsPanelPresenter {
     private final class CloseObserver: NSObject, NSWindowDelegate {
         let onClose: () -> Void
 
@@ -394,7 +394,7 @@ enum PromptSettingsPanelPresenter {
         let controller = NSWindowController(window: panel)
         panel.delegate = closeObserver
         panel.contentView = NSHostingView(
-            rootView: PromptSettingsView(
+            rootView: SettingsView(
                 initialTab: initialTab,
                 openCapturesFolder: openCapturesFolder,
                 pickCapturesFolder: pickCapturesFolder

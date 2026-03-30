@@ -418,7 +418,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
     private func showSettings(for tab: SettingsTab) {
         beginInteractiveSession()
 
-        PromptSettingsPanelPresenter.show(
+        SettingsPanelPresenter.show(
             initialTab: tab,
             openCapturesFolder: { [weak self] in self?.openCapturesFolder() },
             pickCapturesFolder: { [weak self] in self?.pickCapturesFolder() ?? false }

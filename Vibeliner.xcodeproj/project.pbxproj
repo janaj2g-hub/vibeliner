@@ -17,13 +17,15 @@ B10000000000000000000004 /* Config.swift in Sources */ = {isa = PBXBuildFile; fi
 		B10000000000000000000009 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* Annotation.swift */; };
 		B1000000000000000000000A /* AnnotationCanvas.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000B /* AnnotationCanvas.swift */; };
 		B1000000000000000000000B /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000C /* Constants.swift */; };
-		B1000000000000000000000C /* PromptSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* PromptSettingsView.swift */; };
+		B1000000000000000000000C /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000D /* SettingsView.swift */; };
 		B1000000000000000000000D /* AppRuntimeIdentity.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000E /* AppRuntimeIdentity.swift */; };
+		B1000000000000000000000E /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000F /* PromptBuilder.swift */; };
 		B20000000000000000000001 /* VibeLinerCLI.swift in Sources */ = {isa = PBXBuildFile; fileRef = F20000000000000000000002 /* VibeLinerCLI.swift */; };
 		B20000000000000000000002 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000006 /* Config.swift */; };
 		B20000000000000000000003 /* CaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000000000000000000007 /* CaptureStore.swift */; };
 		B20000000000000000000004 /* Annotation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000A /* Annotation.swift */; };
 		B20000000000000000000005 /* ArgumentParser in Frameworks */ = {isa = PBXBuildFile; productRef = D20000000000000000000001 /* ArgumentParser */; };
+		B20000000000000000000006 /* PromptBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1000000000000000000000F /* PromptBuilder.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,8 +40,9 @@ F10000000000000000000004 /* Info.plist */ = {isa = PBXFileReference; lastKnownFi
 		F1000000000000000000000A /* Annotation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Annotation.swift; sourceTree = "<group>"; };
 		F1000000000000000000000B /* AnnotationCanvas.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationCanvas.swift; sourceTree = "<group>"; };
 		F1000000000000000000000C /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
-		F1000000000000000000000D /* PromptSettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptSettingsView.swift; sourceTree = "<group>"; };
+		F1000000000000000000000D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1000000000000000000000E /* AppRuntimeIdentity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRuntimeIdentity.swift; sourceTree = "<group>"; };
+		F1000000000000000000000F /* PromptBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptBuilder.swift; sourceTree = "<group>"; };
 		F20000000000000000000001 /* vibeliner */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = vibeliner; sourceTree = BUILT_PRODUCTS_DIR; };
 		F20000000000000000000002 /* VibeLinerCLI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VibeLinerCLI.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -84,8 +87,9 @@ F10000000000000000000006 /* Config.swift */,
 				F1000000000000000000000A /* Annotation.swift */,
 				F1000000000000000000000B /* AnnotationCanvas.swift */,
 				F1000000000000000000000C /* Constants.swift */,
-				F1000000000000000000000D /* PromptSettingsView.swift */,
+				F1000000000000000000000D /* SettingsView.swift */,
 				F1000000000000000000000E /* AppRuntimeIdentity.swift */,
+				F1000000000000000000000F /* PromptBuilder.swift */,
 				G20000000000000000000001 /* CLI */,
 				F10000000000000000000004 /* Info.plist */,
 			);
@@ -208,8 +212,9 @@ B10000000000000000000004 /* Config.swift in Sources */,
 				B10000000000000000000009 /* Annotation.swift in Sources */,
 				B1000000000000000000000A /* AnnotationCanvas.swift in Sources */,
 				B1000000000000000000000B /* Constants.swift in Sources */,
-				B1000000000000000000000C /* PromptSettingsView.swift in Sources */,
+				B1000000000000000000000C /* SettingsView.swift in Sources */,
 				B1000000000000000000000D /* AppRuntimeIdentity.swift in Sources */,
+				B1000000000000000000000E /* PromptBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -221,6 +226,7 @@ B10000000000000000000004 /* Config.swift in Sources */,
 				B20000000000000000000002 /* Config.swift in Sources */,
 				B20000000000000000000003 /* CaptureStore.swift in Sources */,
 				B20000000000000000000004 /* Annotation.swift in Sources */,
+				B20000000000000000000006 /* PromptBuilder.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
