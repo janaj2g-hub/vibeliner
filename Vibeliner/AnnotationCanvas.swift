@@ -154,6 +154,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
                 drawSelectionOutline(for: annotation)
             }
 
+            if isSelected {
+                drawSelectionHandles(for: annotation)
+            }
+
             if activeAnnotationIndex != index {
                 let isActive = isHovered || isSelected
                 drawNoteOverlay(for: annotation, isActive: isActive)
@@ -375,6 +379,52 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             noteOutline.lineWidth = 2
             noteOutline.stroke()
         }
+    }
+
+    private func drawSelectionHandles(for annotation: Annotation) {
+        switch annotation.type {
+        case .arrow:
+            guard annotation.points.count >= 2 else { return }
+            drawHandle(at: annotation.points[0])
+            drawHandle(at: annotation.points[1])
+        case .circle:
+            guard annotation.points.count >= 2 else { return }
+            drawHandle(at: annotation.points[1])
+        case .freehand:
+            guard annotation.points.count > 1 else { return }
+            let xs = annotation.points.map { $0.x }
+            let ys = annotation.points.map { $0.y }
+            guard let minX = xs.min(), let maxX = xs.max(),
+                  let minY = ys.min(), let maxY = ys.max() else { return }
+            let boundingRect = NSRect(
+                x: minX - 4,
+                y: minY - 4,
+                width: (maxX - minX) + 8,
+                height: (maxY - minY) + 8
+            )
+            let dashPath = NSBezierPath(rect: boundingRect)
+            dashPath.lineWidth = 1
+            let pattern: [CGFloat] = [4, 3]
+            dashPath.setLineDash(pattern, count: 2, phase: 0)
+            Constants.annotationRed.setStroke()
+            dashPath.stroke()
+        }
+    }
+
+    private func drawHandle(at point: CGPoint) {
+        let handleSize: CGFloat = 6
+        let handleRect = NSRect(
+            x: point.x - handleSize / 2,
+            y: point.y - handleSize / 2,
+            width: handleSize,
+            height: handleSize
+        )
+        NSColor.white.setFill()
+        let handle = NSBezierPath(rect: handleRect)
+        handle.fill()
+        Constants.annotationRed.setStroke()
+        handle.lineWidth = 1
+        handle.stroke()
     }
 
     private func drawNoteOverlay(for annotation: Annotation, isActive: Bool = false) {
