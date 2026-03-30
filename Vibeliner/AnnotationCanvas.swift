@@ -7,31 +7,6 @@ private struct AnnotationDragState {
     var hasExceededThreshold: Bool
 }
 
-private final class ActiveBadgeView: NSView {
-    var number: Int = 1 {
-        didSet { needsDisplay = true }
-    }
-
-    override var isOpaque: Bool { false }
-
-    override func draw(_ dirtyRect: NSRect) {
-        let rect = bounds.insetBy(dx: 0.5, dy: 0.5)
-        Constants.annotationRed.setFill()
-        NSBezierPath(ovalIn: rect).fill()
-
-        let fontSize: CGFloat = number >= 10 ? 9 : 11
-        let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
-        let text = NSAttributedString(string: "\(number)", attributes: [
-            .font: font,
-            .foregroundColor: Constants.badgeTextColor
-        ])
-        let size = text.size()
-        let x = floor(bounds.midX - (size.width / 2))
-        let y = floor(bounds.midY - (size.height / 2) + (number >= 10 ? -0.5 : 0))
-        text.draw(in: NSRect(x: x, y: y, width: ceil(size.width), height: ceil(size.height)))
-    }
-}
-
 private final class FlippedContainerView: NSView {
     override var isFlipped: Bool { true }
 }
@@ -47,7 +22,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     private let noteMaxTextWidth: CGFloat = 176
     private let noteMinHeight: CGFloat = 30
     private let notePlaceholder = "Describe issue..."
-    private let noteBadgeInset: CGFloat = 10
 
     var backgroundImage: NSImage? {
         didSet { needsDisplay = true }
@@ -81,7 +55,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     private var activeEditorContainer: NSView?
     private var activeTextView: NSTextView?
     private var activePlaceholderLabel: NSTextField?
-    private var activeBadgeView: ActiveBadgeView?
     private var activeAnnotationIndex: Int?
     private var isActivatingTextField = false
     var selectedAnnotationIndex: Int?
@@ -783,16 +756,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         placeholderLabel.maximumNumberOfLines = 0
         placeholderLabel.autoresizingMask = [.width, .height]
 
-        let badgeSize = Constants.badgeRadius * 2
-        let badgeView = ActiveBadgeView(frame: NSRect(
-            x: 0,
-            y: 0,
-            width: badgeSize,
-            height: badgeSize
-        ))
-        badgeView.number = annotation.number
-        badgeView.autoresizingMask = [.maxXMargin, .maxYMargin]
-
         let trimmedNote = annotation.note.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmedNote.isEmpty {
             textView.string = ""
@@ -812,7 +775,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         scrollView.documentView = textView
         container.addSubview(scrollView)
         container.addSubview(placeholderLabel)
-        container.addSubview(badgeView)
 
         // Remove any existing text field
         activeEditorContainer?.removeFromSuperview()
@@ -820,7 +782,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = container
         activeTextView = textView
         activePlaceholderLabel = placeholderLabel
-        activeBadgeView = badgeView
         activeAnnotationIndex = annotationIndex
         isActivatingTextField = true
 
@@ -854,7 +815,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = nil
         activeTextView = nil
         activePlaceholderLabel = nil
-        activeBadgeView = nil
+
         activeAnnotationIndex = nil
         needsDisplay = true
     }
@@ -875,7 +836,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         activeEditorContainer = nil
         activeTextView = nil
         activePlaceholderLabel = nil
-        activeBadgeView = nil
+
         activeAnnotationIndex = nil
         needsDisplay = true
     }
@@ -1134,26 +1095,21 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             options: [.usesLineFragmentOrigin, .usesFontLeading],
             attributes: attributes
         )
-        let leftInset = noteHorizontalPadding + Constants.badgeRadius + noteBadgeInset
-        let width = textWidth + leftInset + noteHorizontalPadding
-        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2) + Constants.badgeRadius)
+        let width = textWidth + (noteHorizontalPadding * 2)
+        let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2))
 
-        // Smart left/right positioning: if badge is in rightmost 30%, place text box on the left
-        let badgeX = annotation.startPoint.x
-        let isRightEdge = badgeX > bounds.width * 0.7
+        // Text box is BESIDE the badge with 8px gap, vertically centered
+        let badgeCenter = annotation.startPoint
+        let isRightEdge = badgeCenter.x > bounds.width * 0.7
 
         let x: CGFloat
         if isRightEdge {
-            // Position to the left of the badge
-            x = badgeX + Constants.badgeRadius - width
+            x = badgeCenter.x - Constants.badgeRadius - 8 - width
         } else {
-            // Default: position to the right of the badge
-            x = badgeX - Constants.badgeRadius
+            x = badgeCenter.x + Constants.badgeRadius + 8
         }
 
-        // Position above the badge, clamped so top doesn't go above canvas
-        var y = annotation.startPoint.y - height + Constants.badgeRadius
-        y = max(0, y)
+        let y = badgeCenter.y - height / 2
 
         return NSRect(
             x: x,
@@ -1185,15 +1141,6 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             activeTextView.minSize = NSSize(width: textRect.width, height: 0)
         }
         activePlaceholderLabel?.frame = noteContentRect(for: activeEditorContainer.bounds)
-        if let activeBadgeView {
-            let badgeSize = Constants.badgeRadius * 2
-            activeBadgeView.frame = NSRect(
-                x: 0,
-                y: 0,
-                width: badgeSize,
-                height: badgeSize
-            )
-        }
         updatePlaceholderVisibility()
     }
 
@@ -1205,13 +1152,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     }
 
     private func noteContentRect(for rect: NSRect) -> NSRect {
-        let leftInset = noteHorizontalPadding + (Constants.badgeRadius * 2) + noteBadgeInset + 4
-        let topInset = noteVerticalPadding + Constants.badgeRadius + 6
         return NSRect(
-            x: leftInset,
-            y: topInset,
-            width: rect.width - leftInset - noteHorizontalPadding,
-            height: rect.height - topInset - noteVerticalPadding
+            x: noteHorizontalPadding,
+            y: noteVerticalPadding,
+            width: rect.width - (noteHorizontalPadding * 2),
+            height: rect.height - (noteVerticalPadding * 2)
         )
     }
 
