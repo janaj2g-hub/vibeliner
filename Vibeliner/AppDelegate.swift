@@ -145,12 +145,16 @@ final class AppState: ObservableObject {
 
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    private static let dynamicItemTag = 9000
+    private static let recentCapturesTag = 9001
+
     private var statusItem: NSStatusItem!
     private let appState = AppState()
     private var editorController: EditorWindowController?
     private var activeInteractiveSessions = 0
     private var pendingScreenRecordingRemediationRefresh = false
     private var requiresScreenRecordingRelaunch = false
+    private var recentCaptureRecords: [CaptureRecord] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
@@ -183,6 +187,84 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
 
     func menuNeedsUpdate(_ menu: NSMenu) {
         appState.refresh(autoRepairStorage: true)
+
+        // Remove all dynamic items
+        menu.items
+            .filter { $0.tag == Self.dynamicItemTag }
+            .forEach { menu.removeItem($0) }
+
+        // Find the first separator (after Capture Now) to insert dynamic items before it
+        guard let firstSeparatorIndex = menu.items.firstIndex(where: { $0.isSeparatorItem }) else {
+            return
+        }
+
+        var insertIndex = firstSeparatorIndex
+
+        // Screen Recording status (advisory, only when not granted)
+        if !CGPreflightScreenCaptureAccess() {
+            let statusItem = NSMenuItem(title: "Screen Recording: Not Granted", action: nil, keyEquivalent: "")
+            statusItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Warning")
+            statusItem.isEnabled = false
+            statusItem.tag = Self.dynamicItemTag
+            menu.insertItem(statusItem, at: insertIndex)
+            insertIndex += 1
+
+            let openSettingsItem = NSMenuItem(title: "Open System Settings...", action: #selector(openScreenRecordingSettingsAction), keyEquivalent: "")
+            openSettingsItem.target = self
+            openSettingsItem.tag = Self.dynamicItemTag
+            menu.insertItem(openSettingsItem, at: insertIndex)
+            insertIndex += 1
+
+            let sep = NSMenuItem.separator()
+            sep.tag = Self.dynamicItemTag
+            menu.insertItem(sep, at: insertIndex)
+            insertIndex += 1
+        }
+
+        // Recent Captures submenu — insert after the first separator
+        let recentCapturesIndex = insertIndex + 1
+        let recentItem = NSMenuItem(title: "Recent Captures", action: nil, keyEquivalent: "")
+        recentItem.image = NSImage(systemSymbolName: "clock.arrow.circlepath", accessibilityDescription: "Recent")
+        recentItem.tag = Self.dynamicItemTag
+
+        let submenu = NSMenu()
+        recentCaptureRecords = Array(CaptureStore.shared.list().prefix(5))
+
+        if recentCaptureRecords.isEmpty {
+            let emptyItem = NSMenuItem(title: "No recent captures", action: nil, keyEquivalent: "")
+            emptyItem.isEnabled = false
+            submenu.addItem(emptyItem)
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            for (index, record) in recentCaptureRecords.enumerated() {
+                let displaySlug = record.slug.count > 30 ? String(record.slug.prefix(30)) + "..." : record.slug
+                let dateStr = formatter.string(from: record.created)
+                let title = displaySlug.isEmpty ? dateStr : "\(displaySlug) — \(dateStr)"
+                let captureItem = NSMenuItem(title: title, action: #selector(copyRecentCapture(_:)), keyEquivalent: "")
+                captureItem.target = self
+                captureItem.tag = index
+                submenu.addItem(captureItem)
+            }
+        }
+
+        recentItem.submenu = submenu
+        menu.insertItem(recentItem, at: recentCapturesIndex)
+
+        let recentSep = NSMenuItem.separator()
+        recentSep.tag = Self.dynamicItemTag
+        menu.insertItem(recentSep, at: recentCapturesIndex + 1)
+    }
+
+    @objc private func copyRecentCapture(_ sender: NSMenuItem) {
+        let index = sender.tag
+        guard index >= 0, index < recentCaptureRecords.count else { return }
+        copyCapturePrompt(for: recentCaptureRecords[index])
+    }
+
+    @objc private func openScreenRecordingSettingsAction() {
+        openScreenRecordingSettings()
     }
 
     // MARK: - Status Item & Menu
