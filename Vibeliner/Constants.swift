@@ -12,9 +12,9 @@ enum Constants {
     static let badgeHitRadius: CGFloat = 11
     static let inlineNoteTextColor = NSColor.white
     static let inlineNoteBackgroundColor = NSColor(
-        red: 0.235,
-        green: 0.055,
-        blue: 0.078,
-        alpha: 0.9
+        red: 0.498,
+        green: 0.114,
+        blue: 0.114,
+        alpha: 1.0
     )
 }

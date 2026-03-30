@@ -43,7 +43,7 @@ private final class FlippedTextView: NSTextView {
 class AnnotationCanvas: NSView, NSTextViewDelegate {
     private let noteHorizontalPadding: CGFloat = 12
     private let noteVerticalPadding: CGFloat = 10
-    private let noteCornerRadius: CGFloat = 8
+    private let noteCornerRadius: CGFloat = 6
     private let noteMaxTextWidth: CGFloat = 176
     private let noteMinHeight: CGFloat = 30
     private let notePlaceholder = "Describe issue..."
@@ -382,7 +382,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         let rect = noteRect(for: annotation)
         let path = NSBezierPath(roundedRect: rect, xRadius: noteCornerRadius, yRadius: noteCornerRadius)
-        Constants.inlineNoteBackgroundColor.withAlphaComponent(0.5).setFill()
+        Constants.inlineNoteBackgroundColor.setFill()
         path.fill()
 
         let paragraphStyle = NSMutableParagraphStyle()
@@ -391,7 +391,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         let attributes: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 11, weight: .medium),
-            .foregroundColor: Constants.inlineNoteTextColor.withAlphaComponent(0.5),
+            .foregroundColor: Constants.inlineNoteTextColor,
             .paragraphStyle: paragraphStyle
         ]
 
