@@ -19,7 +19,7 @@ private final class ActiveBadgeView: NSView {
         Constants.annotationRed.setFill()
         NSBezierPath(ovalIn: rect).fill()
 
-        let fontSize: CGFloat = number >= 10 ? 12 : 15
+        let fontSize: CGFloat = number >= 10 ? 9 : 11
         let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
         let text = NSAttributedString(string: "\(number)", attributes: [
             .font: font,
@@ -311,7 +311,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
         // White number text, smaller font for 2+ digits
         let isDoubleDigit = number >= 10
-        let fontSize: CGFloat = isDoubleDigit ? 12 : 15
+        let fontSize: CGFloat = isDoubleDigit ? 9 : 11
         let font = NSFont.monospacedDigitSystemFont(ofSize: fontSize, weight: .bold)
         let text = NSAttributedString(string: "\(number)", attributes: [
             .font: font,
@@ -1106,10 +1106,10 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
 
     private func badgeOpticalOffsetX(for number: Int) -> CGFloat {
         if number == 3 {
-            return -0.8
+            return -0.5
         }
         if number >= 10 {
-            return -0.45
+            return -0.3
         }
         return 0
     }
