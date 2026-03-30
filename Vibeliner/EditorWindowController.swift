@@ -161,7 +161,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         toolbar.addSubview(undoButton)
 
         let copyButton = makeTextButton(
-            title: "Copy for LLM",
+            title: "Copy for LLM (⌘C)",
             backgroundColor: accentBlue,
             textColor: .white,
             target: self,
@@ -341,7 +341,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             pasteboard.setString(promptText, forType: .string)
-            showToast("Copied")
+            showToast("Prompt copied")
             updateToolHighlight()
         } catch {
             presentError(
