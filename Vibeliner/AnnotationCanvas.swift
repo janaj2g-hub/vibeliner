@@ -128,7 +128,7 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
             }
 
             if isSelected {
-                drawSelectionHandles(for: annotation)
+                drawPurpleOverlay(for: annotation)
             }
 
             if activeAnnotationIndex != index {
@@ -354,50 +354,82 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         }
     }
 
-    private func drawSelectionHandles(for annotation: Annotation) {
+    private static let purpleOverlayColor = NSColor(red: 0.545, green: 0.361, blue: 0.965, alpha: 0.6)
+    private static let purpleBorderColor = NSColor(red: 0.545, green: 0.361, blue: 0.965, alpha: 1.0)
+
+    private func drawPurpleOverlay(for annotation: Annotation) {
+        let purple = Self.purpleOverlayColor
+
         switch annotation.type {
         case .arrow:
             guard annotation.points.count >= 2 else { return }
-            drawHandle(at: annotation.points[0])
-            drawHandle(at: annotation.points[1])
+            purple.setStroke()
+            let path = NSBezierPath()
+            path.lineWidth = 2
+            path.lineCapStyle = .round
+            path.move(to: annotation.points[0])
+            path.line(to: annotation.points[1])
+            path.stroke()
+            drawControlPoint(at: annotation.points[0])
+            drawControlPoint(at: annotation.points[1])
+
         case .circle:
             guard annotation.points.count >= 2 else { return }
-            drawHandle(at: annotation.points[1])
+            let center = annotation.points[0]
+            let edge = annotation.points[1]
+            let radius = max(5, hypot(edge.x - center.x, edge.y - center.y))
+            let rect = NSRect(
+                x: center.x - radius,
+                y: center.y - radius,
+                width: radius * 2,
+                height: radius * 2
+            )
+            purple.setStroke()
+            let path = NSBezierPath(ovalIn: rect)
+            path.lineWidth = 2
+            path.stroke()
+            drawControlPoint(at: center)
+            drawControlPoint(at: edge)
+
         case .freehand:
             guard annotation.points.count > 1 else { return }
-            let xs = annotation.points.map { $0.x }
-            let ys = annotation.points.map { $0.y }
-            guard let minX = xs.min(), let maxX = xs.max(),
-                  let minY = ys.min(), let maxY = ys.max() else { return }
-            let boundingRect = NSRect(
-                x: minX - 4,
-                y: minY - 4,
-                width: (maxX - minX) + 8,
-                height: (maxY - minY) + 8
-            )
-            let dashPath = NSBezierPath(rect: boundingRect)
-            dashPath.lineWidth = 1
-            let pattern: [CGFloat] = [4, 3]
-            dashPath.setLineDash(pattern, count: 2, phase: 0)
-            Constants.annotationRed.setStroke()
-            dashPath.stroke()
+            purple.setStroke()
+            let path = NSBezierPath()
+            path.lineWidth = 2
+            path.lineCapStyle = .round
+            path.lineJoinStyle = .round
+            path.move(to: annotation.points[0])
+            for point in annotation.points.dropFirst() {
+                path.line(to: point)
+            }
+            path.stroke()
+
+            // Show control points at every 5th point (or all if fewer than 10)
+            let stride = annotation.points.count < 10 ? 1 : 5
+            for i in Swift.stride(from: 0, to: annotation.points.count, by: stride) {
+                drawControlPoint(at: annotation.points[i])
+            }
+            // Always show the last point
+            if let last = annotation.points.last, stride > 1 {
+                drawControlPoint(at: last)
+            }
         }
     }
 
-    private func drawHandle(at point: CGPoint) {
-        let handleSize: CGFloat = 6
-        let handleRect = NSRect(
-            x: point.x - handleSize / 2,
-            y: point.y - handleSize / 2,
-            width: handleSize,
-            height: handleSize
+    private func drawControlPoint(at point: CGPoint) {
+        let size: CGFloat = 6
+        let rect = NSRect(
+            x: point.x - size / 2,
+            y: point.y - size / 2,
+            width: size,
+            height: size
         )
         NSColor.white.setFill()
-        let handle = NSBezierPath(rect: handleRect)
-        handle.fill()
-        Constants.annotationRed.setStroke()
-        handle.lineWidth = 1
-        handle.stroke()
+        let circle = NSBezierPath(ovalIn: rect)
+        circle.fill()
+        Self.purpleBorderColor.setStroke()
+        circle.lineWidth = 1.5
+        circle.stroke()
     }
 
     private func drawNoteOverlay(for annotation: Annotation, isActive: Bool = false) {
