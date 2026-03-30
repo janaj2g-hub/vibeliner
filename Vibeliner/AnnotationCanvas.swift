@@ -652,6 +652,11 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
 
+        // Allow text fields to overflow canvas bounds
+        if let layer {
+            layer.masksToBounds = false
+        }
+
         if let trackingArea {
             removeTrackingArea(trackingArea)
         }
@@ -1082,8 +1087,23 @@ class AnnotationCanvas: NSView, NSTextViewDelegate {
         let leftInset = noteHorizontalPadding + Constants.badgeRadius + noteBadgeInset
         let width = textWidth + leftInset + noteHorizontalPadding
         let height = max(noteMinHeight, ceil(measuredRect.height) + (noteVerticalPadding * 2) + Constants.badgeRadius)
-        let x = annotation.startPoint.x - Constants.badgeRadius
-        let y = annotation.startPoint.y - height + Constants.badgeRadius
+
+        // Smart left/right positioning: if badge is in rightmost 30%, place text box on the left
+        let badgeX = annotation.startPoint.x
+        let isRightEdge = badgeX > bounds.width * 0.7
+
+        let x: CGFloat
+        if isRightEdge {
+            // Position to the left of the badge
+            x = badgeX + Constants.badgeRadius - width
+        } else {
+            // Default: position to the right of the badge
+            x = badgeX - Constants.badgeRadius
+        }
+
+        // Position above the badge, clamped so top doesn't go above canvas
+        var y = annotation.startPoint.y - height + Constants.badgeRadius
+        y = max(0, y)
 
         return NSRect(
             x: x,
