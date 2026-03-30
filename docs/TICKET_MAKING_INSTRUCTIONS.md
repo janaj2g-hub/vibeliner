@@ -106,6 +106,8 @@ Use the prompt comment template from [docs/LINEAR_CONVENTIONS.md](/Users/jongros
 - GitHub workflow — branch, commit, push, and PR expectations
 - Verification — binary pass/fail assertions ending with ` :`
 
+Prompt comments should explicitly say that the ticket is not complete until the branch is built, committed, pushed, and the PR is opened or updated.
+
 ### Step 7: Move to Prompt Ready
 After posting the prompt comment:
 
@@ -137,10 +139,12 @@ For normal code-changing runs, treat the task as incomplete until the build is v
 For batch Linear work, complete the full cycle for each ticket in order before starting the next ticket:
 1. Implement
 2. Build
-3. Verify
-4. Commit
-5. Push
-6. Open or update the PR
+3. Commit
+4. Push
+5. Open or update the PR
+6. Verify and post the verification comment
+
+Do not let an agent move on to the next ticket in the batch while the current ticket is still only local and unpushed.
 
 ### Step 10: User reports results
 The user tests the implementation and tells you the result:
@@ -180,6 +184,7 @@ Recommended prompt language for execution tickets:
 5. Commit with the ticket ID in the message.
 6. Push the branch to `origin`.
 7. Open or update the pull request to `main`.
+8. Treat the ticket as incomplete until the push succeeds and the PR is current.
 ```
 
 ---

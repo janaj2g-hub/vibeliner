@@ -84,7 +84,10 @@ class CaptureStore {
     // MARK: - Storage Preparation
 
     func prepareSaveDirectory(autoRepair: Bool = true) -> StorageStatus {
-        let url = baseDirURL
+        prepareSaveDirectory(at: baseDirURL, autoRepair: autoRepair)
+    }
+
+    func prepareSaveDirectory(at url: URL, autoRepair: Bool = true) -> StorageStatus {
         var isDirectory: ObjCBool = false
         var createdDirectory = false
 

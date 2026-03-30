@@ -1,6 +1,19 @@
 import AppKit
 
+private final class DraggableToolbarView: NSView {
+    override func mouseDown(with event: NSEvent) {
+        window?.performDrag(with: event)
+    }
+}
+
+private final class EditorPanel: NSPanel {
+    override var canBecomeKey: Bool { true }
+    override var canBecomeMain: Bool { true }
+}
+
 class EditorWindowController: NSWindowController, NSWindowDelegate {
+    private static let toolbarHeight: CGFloat = 40
+
     var onCaptureSaved: ((CaptureRecord) -> Void)?
     var onClose: (() -> Void)?
     var onError: ((UserFacingIssue) -> Void)?
@@ -19,7 +32,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         capturedImage = image
 
         let windowSize = EditorWindowController.windowSize(for: image)
-        let panel = NSPanel(
+        let panel = EditorPanel(
             contentRect: NSRect(origin: .zero, size: windowSize),
             styleMask: [.borderless, .resizable, .fullSizeContentView],
             backing: .buffered,
@@ -30,7 +43,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         panel.hidesOnDeactivate = false
         panel.titlebarAppearsTransparent = true
         panel.titleVisibility = .hidden
-        panel.isMovableByWindowBackground = true
+        panel.isMovableByWindowBackground = false
         panel.appearance = NSAppearance(named: .darkAqua)
         panel.backgroundColor = .black
         panel.center()
@@ -49,10 +62,10 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func setupContent(in panel: NSPanel, size: NSSize) {
-        let toolbarHeight: CGFloat = 40
+        let toolbarHeight = Self.toolbarHeight
         let contentView = NSView(frame: NSRect(origin: .zero, size: size))
 
-        let toolbar = NSView(frame: NSRect(
+        let toolbar = DraggableToolbarView(frame: NSRect(
             x: 0,
             y: size.height - toolbarHeight,
             width: size.width,
@@ -148,7 +161,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         toolbar.addSubview(undoButton)
 
         let copyButton = makeTextButton(
-            title: "Copy for LLM",
+            title: "Copy for LLM (⌘C)",
             backgroundColor: accentBlue,
             textColor: .white,
             target: self,
@@ -191,7 +204,9 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func makeIconButton(symbolName: String, size: CGFloat, target: AnyObject, action: Selector, tintColor: NSColor) -> NSButton {
-        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)
+        let configuration = NSImage.SymbolConfiguration(pointSize: size * 0.5, weight: .medium)
+        let image = NSImage(systemSymbolName: symbolName, accessibilityDescription: symbolName)?
+            .withSymbolConfiguration(configuration)
         return makeIconButton(image: image, size: size, target: target, action: action, tintColor: tintColor)
     }
 
@@ -263,11 +278,10 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         }
 
         for (tool, button) in toolButtons {
-            if tool == canvas.currentTool {
+            if canvas.isToolArmed && tool == canvas.currentTool {
                 button.layer?.backgroundColor = accentBlue.withAlphaComponent(0.35).cgColor
                 button.layer?.cornerRadius = 6
-                button.layer?.borderWidth = 1
-                button.layer?.borderColor = Constants.annotationRed.withAlphaComponent(0.7).cgColor
+                button.layer?.borderWidth = 0
                 button.contentTintColor = Constants.toolbarAnnotationIconColor
             } else {
                 button.layer?.backgroundColor = nil
@@ -282,6 +296,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     @objc private func toolSelected(_ sender: NSButton) {
         canvas.finalizeActiveTextField()
         canvas.currentTool = toolForTag(sender.tag)
+        canvas.isToolArmed = true
         updateToolHighlight()
     }
 
@@ -326,7 +341,7 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
             let pasteboard = NSPasteboard.general
             pasteboard.clearContents()
             pasteboard.setString(promptText, forType: .string)
-            showToast("Copied")
+            showToast("Prompt copied")
             updateToolHighlight()
         } catch {
             presentError(
@@ -338,8 +353,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func menuUndoAction(_ sender: Any?) {
-        if isTextEditingActive() {
-            _ = window?.firstResponder?.tryToPerform(Selector(("undo:")), with: sender)
+        if let activeTextView = activeTextEditingView() {
+            activeTextView.undoManager?.undo()
             return
         }
 
@@ -347,8 +362,8 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     @objc private func menuCopyAction(_ sender: Any?) {
-        if isTextEditingActive() {
-            _ = window?.firstResponder?.tryToPerform(#selector(NSText.copy(_:)), with: sender)
+        if let activeTextView = activeTextEditingView() {
+            _ = activeTextView.tryToPerform(#selector(NSText.copy(_:)), with: sender)
             return
         }
 
@@ -481,15 +496,27 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
     }
 
     private func isTextEditingActive() -> Bool {
-        guard let firstResponder = window?.firstResponder else {
-            return false
-        }
-
-        if let textView = firstResponder as? NSTextView, textView.isFieldEditor {
+        if activeTextEditingView() != nil {
             return true
         }
 
-        return firstResponder is NSText
+        return false
+    }
+
+    private func activeTextEditingView() -> NSTextView? {
+        if let textView = canvas.activeEditingTextView {
+            return textView
+        }
+
+        guard let firstResponder = window?.firstResponder else {
+            return nil
+        }
+
+        if let textView = firstResponder as? NSTextView {
+            return textView
+        }
+
+        return nil
     }
 
     func windowWillClose(_ notification: Notification) {
@@ -546,24 +573,29 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
         let image = NSImage(size: NSSize(width: size, height: size))
         image.lockFocus()
 
-        let bounds = NSRect(x: 0, y: 0, width: size, height: size)
-        let circleRect = bounds.insetBy(dx: 3, dy: 3)
+        let circleDiameter = size * 0.72
+        let circleRect = NSRect(
+            x: (size - circleDiameter) / 2,
+            y: (size - circleDiameter) / 2,
+            width: circleDiameter,
+            height: circleDiameter
+        )
 
         Constants.toolbarAnnotationIconColor.setStroke()
         let circle = NSBezierPath(ovalIn: circleRect)
-        circle.lineWidth = 1.6
+        circle.lineWidth = 1.5
         circle.stroke()
 
         let glyph = "#" as NSString
-        let font = NSFont.monospacedSystemFont(ofSize: size * 0.5, weight: .semibold)
+        let font = NSFont.systemFont(ofSize: size * 0.42, weight: .bold)
         let attributes: [NSAttributedString.Key: Any] = [
             .font: font,
             .foregroundColor: Constants.toolbarAnnotationIconColor
         ]
         let glyphSize = glyph.size(withAttributes: attributes)
         let glyphPoint = CGPoint(
-            x: (size - glyphSize.width) / 2,
-            y: (size - glyphSize.height) / 2 - 1
+            x: round((size - glyphSize.width) / 2),
+            y: round((size - glyphSize.height) / 2) - 0.5
         )
         glyph.draw(at: glyphPoint, withAttributes: attributes)
 
@@ -574,24 +606,24 @@ class EditorWindowController: NSWindowController, NSWindowDelegate {
 
     private static func windowSize(for image: NSImage) -> NSSize {
         guard let screen = NSScreen.main else {
-            return NSSize(width: 800, height: 600)
+            return NSSize(width: 800, height: 600 + toolbarHeight)
         }
 
         let maxWidth = screen.visibleFrame.width * 0.8
-        let maxHeight = screen.visibleFrame.height * 0.8
+        let maxCanvasHeight = max(200, screen.visibleFrame.height * 0.8 - toolbarHeight)
         let imageSize = image.size
 
-        if imageSize.width <= maxWidth && imageSize.height <= maxHeight {
-            return imageSize
+        if imageSize.width <= maxWidth && imageSize.height <= maxCanvasHeight {
+            return NSSize(width: imageSize.width, height: imageSize.height + toolbarHeight)
         }
 
         let widthRatio = maxWidth / imageSize.width
-        let heightRatio = maxHeight / imageSize.height
+        let heightRatio = maxCanvasHeight / imageSize.height
         let scale = min(widthRatio, heightRatio)
 
         return NSSize(
             width: imageSize.width * scale,
-            height: imageSize.height * scale
+            height: imageSize.height * scale + toolbarHeight
         )
     }
 }

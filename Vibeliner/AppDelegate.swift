@@ -1,51 +1,18 @@
 import AppKit
 import CoreGraphics
 import KeyboardShortcuts
-import SwiftUI
 
 extension KeyboardShortcuts.Name {
     static let captureScreen = Self("captureScreen")
 }
 
-struct UserFacingIssue: Identifiable {
-    let id = UUID()
-    let title: String
-    let message: String
-    let recoverySuggestion: String?
-    let technicalDetails: String?
-}
-
-struct AppSetupSummary {
-    let screenRecordingAuthorized: Bool
-    let screenRecordingDetail: String
-    let storageStatus: CaptureStore.StorageStatus
-
-    var isReadyToCapture: Bool {
-        screenRecordingAuthorized && storageStatus.isReady
-    }
-
-    var readinessTitle: String {
-        isReadyToCapture ? "Ready to capture" : "Setup required"
-    }
-}
-
 @MainActor
-final class AppState: ObservableObject {
-    @Published private(set) var setupSummary: AppSetupSummary
-    @Published private(set) var recentCaptures: [CaptureRecord] = []
-    @Published var isCaptureInProgress = false
-    @Published var lastIssue: UserFacingIssue?
-
-    init() {
-        let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: true)
-        setupSummary = AppState.makeSetupSummary(storageStatus: storageStatus)
-        refresh(autoRepairStorage: true)
-    }
+final class AppState {
+    var isCaptureInProgress = false
+    var lastIssue: UserFacingIssue?
 
     func refresh(autoRepairStorage: Bool) {
-        let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: autoRepairStorage)
-        setupSummary = AppState.makeSetupSummary(storageStatus: storageStatus)
-        recentCaptures = Array(CaptureStore.shared.list().prefix(5))
+        _ = CaptureStore.shared.prepareSaveDirectory(autoRepair: autoRepairStorage)
     }
 
     func presentIssue(_ issue: UserFacingIssue) {
@@ -55,88 +22,129 @@ final class AppState: ObservableObject {
     func clearIssue() {
         lastIssue = nil
     }
-
-    private static func makeSetupSummary(storageStatus: CaptureStore.StorageStatus) -> AppSetupSummary {
-        let screenRecordingAuthorized = CGPreflightScreenCaptureAccess()
-        let screenRecordingDetail = screenRecordingAuthorized
-            ? "macOS Screen Recording access is enabled."
-            : "Enable Screen Recording for Vibeliner in System Settings, then quit and reopen the app."
-
-        return AppSetupSummary(
-            screenRecordingAuthorized: screenRecordingAuthorized,
-            screenRecordingDetail: screenRecordingDetail,
-            storageStatus: storageStatus
-        )
-    }
 }
 
 @MainActor
-class AppDelegate: NSObject, NSApplicationDelegate {
-    private final class MenuPanel: NSPanel {
-        override var canBecomeKey: Bool { true }
-        override var canBecomeMain: Bool { false }
-    }
+class AppDelegate: NSObject, NSApplicationDelegate, NSMenuDelegate {
+    private static let dynamicItemTag = 9000
 
     private var statusItem: NSStatusItem!
     private let appState = AppState()
     private var editorController: EditorWindowController?
     private var activeInteractiveSessions = 0
-    private var menuPanel: MenuPanel?
-    private var localEventMonitor: Any?
-    private var globalEventMonitor: Any?
-
-    private lazy var popoverController = NSHostingController(
-        rootView: MenuBarPopover(
-            appState: appState,
-            startCapture: { [weak self] in
-                self?.startCapture()
-            },
-            onCopyCapturePrompt: { [weak self] record in
-                self?.copyCapturePrompt(for: record) ?? false
-            },
-            openPromptSettings: { [weak self] in
-                self?.showSettings(for: .promptSettings)
-            },
-            openAboutSettings: { [weak self] in
-                self?.showSettings(for: .about)
-            },
-            openCapturesFolder: { [weak self] in
-                self?.openCapturesFolder()
-            },
-            openScreenRecordingSettings: { [weak self] in
-                self?.openScreenRecordingSettings()
-            },
-            dismissIssue: { [weak self] in
-                self?.appState.clearIssue()
-            }
-        )
-    )
+    private var pendingScreenRecordingRemediationRefresh = false
+    private var requiresScreenRecordingRelaunch = false
+    private var recentCaptureRecords: [CaptureRecord] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSApp.setActivationPolicy(.accessory)
 
         configureStatusItem()
-        configurePopover()
         configureDefaultHotkeyIfNeeded()
         registerHotkeyHandler()
 
         appState.refresh(autoRepairStorage: true)
     }
 
-    @objc func togglePopover() {
-        guard let button = statusItem.button else { return }
-
-        appState.refresh(autoRepairStorage: true)
-
-        if isMenuVisible {
-            closeMenuPanel()
+    func applicationDidBecomeActive(_ notification: Notification) {
+        if pendingScreenRecordingRemediationRefresh {
+            pendingScreenRecordingRemediationRefresh = false
+            let refreshedState = ScreenRecordingPermissionState.current()
+            appState.refresh(autoRepairStorage: true)
+            if refreshedState.isAuthorized {
+                handleAuthorizedScreenRecordingGrant()
+            }
             return
         }
 
-        showMenuPanel(relativeTo: button)
+        appState.refresh(autoRepairStorage: true)
     }
 
-    func startCapture() {
+    // MARK: - NSMenuDelegate
+
+    func menuNeedsUpdate(_ menu: NSMenu) {
+        appState.refresh(autoRepairStorage: true)
+
+        menu.items
+            .filter { $0.tag == Self.dynamicItemTag }
+            .forEach { menu.removeItem($0) }
+
+        guard let firstSeparatorIndex = menu.items.firstIndex(where: { $0.isSeparatorItem }) else {
+            return
+        }
+
+        var insertIndex = firstSeparatorIndex
+
+        if !CGPreflightScreenCaptureAccess() {
+            let statusItem = NSMenuItem(title: "Screen Recording: Not Granted", action: nil, keyEquivalent: "")
+            statusItem.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Warning")
+            statusItem.isEnabled = false
+            statusItem.tag = Self.dynamicItemTag
+            menu.insertItem(statusItem, at: insertIndex)
+            insertIndex += 1
+
+            let openSettingsItem = NSMenuItem(title: "Open System Settings...", action: #selector(openScreenRecordingSettingsAction), keyEquivalent: "")
+            openSettingsItem.target = self
+            openSettingsItem.tag = Self.dynamicItemTag
+            menu.insertItem(openSettingsItem, at: insertIndex)
+            insertIndex += 1
+
+            let sep = NSMenuItem.separator()
+            sep.tag = Self.dynamicItemTag
+            menu.insertItem(sep, at: insertIndex)
+            insertIndex += 1
+        }
+
+        let recentCapturesIndex = insertIndex + 1
+        let recentItem = NSMenuItem(title: "Recent Captures", action: nil, keyEquivalent: "")
+        recentItem.image = NSImage(systemSymbolName: "clock.arrow.circlepath", accessibilityDescription: "Recent")
+        recentItem.tag = Self.dynamicItemTag
+
+        let submenu = NSMenu()
+        recentCaptureRecords = Array(CaptureStore.shared.list().prefix(5))
+
+        if recentCaptureRecords.isEmpty {
+            let emptyItem = NSMenuItem(title: "No recent captures", action: nil, keyEquivalent: "")
+            emptyItem.isEnabled = false
+            submenu.addItem(emptyItem)
+        } else {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            for (index, record) in recentCaptureRecords.enumerated() {
+                let displaySlug = record.slug.count > 30 ? String(record.slug.prefix(30)) + "..." : record.slug
+                let dateStr = formatter.string(from: record.created)
+                let title = displaySlug.isEmpty ? dateStr : "\(displaySlug) — \(dateStr)"
+                let captureItem = NSMenuItem(title: title, action: #selector(copyRecentCapture(_:)), keyEquivalent: "")
+                captureItem.target = self
+                captureItem.tag = index
+                submenu.addItem(captureItem)
+            }
+        }
+
+        recentItem.submenu = submenu
+        menu.insertItem(recentItem, at: recentCapturesIndex)
+
+        let recentSep = NSMenuItem.separator()
+        recentSep.tag = Self.dynamicItemTag
+        menu.insertItem(recentSep, at: recentCapturesIndex + 1)
+    }
+
+    @objc private func copyRecentCapture(_ sender: NSMenuItem) {
+        let index = sender.tag
+        guard index >= 0, index < recentCaptureRecords.count else { return }
+        copyCapturePrompt(for: recentCaptureRecords[index])
+    }
+
+    @objc private func openScreenRecordingSettingsAction() {
+        activateInteractiveApp()
+        pendingScreenRecordingRemediationRefresh = true
+        PermissionCoordinator.openScreenRecordingSettings()
+    }
+
+    // MARK: - Status Item & Menu
+
+    @objc func startCapture() {
         if let existingWindow = editorController?.window, existingWindow.isVisible {
             activateInteractiveApp()
             existingWindow.makeKeyAndOrderFront(nil)
@@ -145,15 +153,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         guard !appState.isCaptureInProgress else { return }
 
-        closeMenuPanel()
-        appState.refresh(autoRepairStorage: true)
-
         guard ensureReadyForCapture() else {
             return
         }
 
+        restoreAccessoryModeIfIdle()
         appState.isCaptureInProgress = true
-        beginInteractiveSession()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             guard let self else { return }
@@ -173,16 +178,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         button.image = NSImage(systemSymbolName: "circle.dashed", accessibilityDescription: "Vibeliner")
         button.image?.isTemplate = true
-        button.action = #selector(togglePopover)
-        button.target = self
+
+        statusItem.menu = buildMenu()
     }
 
-    private func configurePopover() {
-        if #available(macOS 13.0, *) {
-            popoverController.sizingOptions = [.preferredContentSize]
-        }
-        _ = ensureMenuPanel()
+    private func buildMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.delegate = self
+
+        let captureItem = NSMenuItem(title: "Capture Now", action: #selector(startCapture), keyEquivalent: "")
+        captureItem.image = NSImage(systemSymbolName: "camera.viewfinder", accessibilityDescription: "Capture")
+        captureItem.target = self
+        menu.addItem(captureItem)
+
+        menu.addItem(.separator())
+
+        let prefsItem = NSMenuItem(title: "Preferences...", action: #selector(openPreferences), keyEquivalent: ",")
+        prefsItem.image = NSImage(systemSymbolName: "gearshape", accessibilityDescription: "Preferences")
+        prefsItem.target = self
+        prefsItem.keyEquivalentModifierMask = .command
+        menu.addItem(prefsItem)
+
+        let aboutItem = NSMenuItem(title: "About Vibeliner", action: #selector(openAbout), keyEquivalent: "")
+        aboutItem.image = NSImage(systemSymbolName: "info.circle", accessibilityDescription: "About")
+        aboutItem.target = self
+        menu.addItem(aboutItem)
+
+        menu.addItem(.separator())
+
+        let quitItem = NSMenuItem(title: "Quit Vibeliner", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
+        quitItem.keyEquivalentModifierMask = .command
+        menu.addItem(quitItem)
+
+        return menu
     }
+
+    @objc private func openPreferences() {
+        showSettings(for: .general)
+    }
+
+    @objc private func openAbout() {
+        showSettings(for: .about)
+    }
+
+    // MARK: - Hotkey
 
     private func configureDefaultHotkeyIfNeeded() {
         guard KeyboardShortcuts.getShortcut(for: .captureScreen) == nil else {
@@ -200,38 +239,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
+    // MARK: - Capture
+
     private func ensureReadyForCapture() -> Bool {
         let storageStatus = CaptureStore.shared.prepareSaveDirectory(autoRepair: true)
         if !storageStatus.isReady {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Captures folder unavailable",
                 message: storageStatus.detail,
                 recoverySuggestion: storageStatus.remediation,
                 technicalDetails: nil
-            )
-            presentIssue(issue)
+            ))
             return false
         }
 
-        if CGPreflightScreenCaptureAccess() {
-            return true
+        let runtimeIdentity = AppRuntimeIdentity.current()
+        if !runtimeIdentity.isSupportedRuntimeCopy {
+            appState.refresh(autoRepairStorage: true)
+            presentIssue(PermissionCoordinator.unsupportedRuntimeIssue(runtimeIdentity))
+            return false
         }
 
-        activateInteractiveApp()
-        _ = CGRequestScreenCaptureAccess()
         appState.refresh(autoRepairStorage: true)
 
-        guard CGPreflightScreenCaptureAccess() else {
-            let issue = UserFacingIssue(
-                title: "Screen Recording permission needed",
-                message: "Vibeliner cannot start a region capture until macOS allows it to record the screen.",
-                recoverySuggestion: "Enable Vibeliner in System Settings > Privacy & Security > Screen Recording, then quit and reopen Vibeliner.",
-                technicalDetails: nil
-            )
-            presentIssue(issue, offersScreenRecordingShortcut: true)
+        guard !requiresScreenRecordingRelaunch else {
+            presentIssue(PermissionCoordinator.screenRecordingRelaunchIssue())
             return false
         }
 
+        appState.clearIssue()
         return true
     }
 
@@ -243,24 +279,41 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         switch outcome {
         case .success(let image):
             appState.clearIssue()
+            appState.refresh(autoRepairStorage: true)
+            beginInteractiveSession()
             presentEditor(with: image)
         case .cancelled:
-            endInteractiveSession()
             appState.refresh(autoRepairStorage: true)
+            restoreAccessoryModeIfIdle()
         case .failure(let failure):
-            endInteractiveSession()
-
-            let issue = UserFacingIssue(
-                title: failure.title,
-                message: failure.message,
-                recoverySuggestion: failure.recoverySuggestion,
-                technicalDetails: failure.technicalDetails
-            )
-            let offersScreenRecordingShortcut = failure.title.contains("Screen Recording") || failure.title.contains("macOS")
+            let issue: UserFacingIssue
+            let offersScreenRecordingShortcut: Bool
+            if let permissionState = failure.screenRecordingState {
+                let baseIssue = permissionState.issue
+                issue = UserFacingIssue(
+                    title: baseIssue.title,
+                    message: baseIssue.message,
+                    recoverySuggestion: baseIssue.recoverySuggestion,
+                    technicalDetails: failure.technicalDetails,
+                    showsScreenRecordingSettingsAction: baseIssue.showsScreenRecordingSettingsAction
+                )
+                offersScreenRecordingShortcut = permissionState.offersOpenSettingsShortcut
+            } else {
+                issue = UserFacingIssue(
+                    title: failure.title,
+                    message: failure.message,
+                    recoverySuggestion: failure.recoverySuggestion,
+                    technicalDetails: failure.technicalDetails
+                )
+                offersScreenRecordingShortcut = failure.title.contains("Screen Recording") || failure.title.contains("macOS")
+            }
             presentIssue(issue, offersScreenRecordingShortcut: offersScreenRecordingShortcut)
             appState.refresh(autoRepairStorage: true)
+            restoreAccessoryModeIfIdle()
         }
     }
+
+    // MARK: - Editor
 
     private func presentEditor(with image: NSImage) {
         activateInteractiveApp()
@@ -290,11 +343,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         editorController = controller
     }
 
+    // MARK: - Settings
+
     private func showSettings(for tab: SettingsTab) {
-        closeMenuPanel()
         beginInteractiveSession()
 
-        PromptSettingsPanelPresenter.show(initialTab: tab) { [weak self] in
+        SettingsPanelPresenter.show(
+            initialTab: tab,
+            openCapturesFolder: { [weak self] in self?.openCapturesFolder() },
+            pickCapturesFolder: { [weak self] in self?.pickCapturesFolder() ?? false }
+        ) { [weak self] in
             Task { @MainActor [weak self] in
                 self?.appState.refresh(autoRepairStorage: true)
                 self?.endInteractiveSession()
@@ -308,17 +366,47 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             appState.clearIssue()
             appState.refresh(autoRepairStorage: true)
         } catch {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Could not open captures folder",
                 message: error.localizedDescription,
                 recoverySuggestion: "Fix the save_dir setting in \(Config.shared.configFilePath), then try again.",
                 technicalDetails: nil
-            )
-            presentIssue(issue)
+            ))
         }
     }
 
-    private func copyCapturePrompt(for record: CaptureRecord) -> Bool {
+    private func pickCapturesFolder() -> Bool {
+        let panel = NSOpenPanel()
+        panel.canChooseFiles = false
+        panel.canChooseDirectories = true
+        panel.canCreateDirectories = true
+        panel.allowsMultipleSelection = false
+        panel.directoryURL = Config.shared.saveDirectoryURL
+        panel.prompt = "Choose Folder"
+        panel.message = "Choose where new vibeliner captures should be saved."
+
+        guard panel.runModal() == .OK, let selectedURL = panel.url?.standardizedFileURL else {
+            return false
+        }
+
+        let storageStatus = CaptureStore.shared.prepareSaveDirectory(at: selectedURL, autoRepair: true)
+        guard storageStatus.isReady else {
+            presentIssue(UserFacingIssue(
+                title: "Could not use capture folder",
+                message: storageStatus.detail,
+                recoverySuggestion: storageStatus.remediation,
+                technicalDetails: nil
+            ))
+            return false
+        }
+
+        Config.shared.updateSaveDirectory(to: selectedURL.path)
+        appState.clearIssue()
+        appState.refresh(autoRepairStorage: true)
+        return true
+    }
+
+    func copyCapturePrompt(for record: CaptureRecord) -> Bool {
         do {
             let promptText = try CaptureStore.shared.clipboardPrompt(for: record)
             let pasteboard = NSPasteboard.general
@@ -328,193 +416,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             appState.refresh(autoRepairStorage: true)
             return true
         } catch {
-            let issue = UserFacingIssue(
+            presentIssue(UserFacingIssue(
                 title: "Could not copy capture",
                 message: "Vibeliner could not load the saved prompt for \(record.id).",
                 recoverySuggestion: "Open the capture folder and confirm prompt.md and screenshot.png still exist.",
                 technicalDetails: error.localizedDescription
-            )
-            presentIssue(issue)
+            ))
             return false
         }
     }
 
-    private func openScreenRecordingSettings() {
-        activateInteractiveApp()
-
-        let isAuthorized: Bool
-        if CGPreflightScreenCaptureAccess() {
-            isAuthorized = true
-        } else {
-            isAuthorized = CGRequestScreenCaptureAccess()
-        }
-
-        appState.refresh(autoRepairStorage: true)
-
-        guard !isAuthorized else {
-            return
-        }
-
-        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") else {
-            return
-        }
-
-        NSWorkspace.shared.open(url)
-    }
-
-    private var isMenuVisible: Bool {
-        menuPanel?.isVisible == true
-    }
-
-    private func ensureMenuPanel() -> MenuPanel {
-        if let menuPanel {
-            return menuPanel
-        }
-
-        let panel = MenuPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 340, height: 420),
-            styleMask: [.borderless, .nonactivatingPanel],
-            backing: .buffered,
-            defer: false
-        )
-        panel.isOpaque = false
-        panel.backgroundColor = .clear
-        panel.hasShadow = true
-        panel.level = .statusBar
-        panel.hidesOnDeactivate = true
-        panel.isReleasedWhenClosed = false
-        panel.collectionBehavior = [.transient, .moveToActiveSpace, .ignoresCycle]
-        panel.animationBehavior = .utilityWindow
-
-        let rootView = NSView()
-        rootView.translatesAutoresizingMaskIntoConstraints = false
-
-        let effectView = NSVisualEffectView()
-        effectView.material = .menu
-        effectView.blendingMode = .withinWindow
-        effectView.state = .active
-        effectView.translatesAutoresizingMaskIntoConstraints = false
-        effectView.wantsLayer = true
-        effectView.layer?.cornerRadius = 16
-        effectView.layer?.cornerCurve = .continuous
-        effectView.layer?.masksToBounds = true
-
-        let hostedView = popoverController.view
-        hostedView.translatesAutoresizingMaskIntoConstraints = false
-
-        panel.contentView = rootView
-        rootView.addSubview(effectView)
-        effectView.addSubview(hostedView)
-
-        NSLayoutConstraint.activate([
-            effectView.leadingAnchor.constraint(equalTo: rootView.leadingAnchor),
-            effectView.trailingAnchor.constraint(equalTo: rootView.trailingAnchor),
-            effectView.topAnchor.constraint(equalTo: rootView.topAnchor),
-            effectView.bottomAnchor.constraint(equalTo: rootView.bottomAnchor),
-
-            hostedView.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
-            hostedView.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
-            hostedView.topAnchor.constraint(equalTo: effectView.topAnchor),
-            hostedView.bottomAnchor.constraint(equalTo: effectView.bottomAnchor),
-        ])
-
-        menuPanel = panel
-        return panel
-    }
-
-    private func showMenuPanel(relativeTo button: NSStatusBarButton) {
-        let panel = ensureMenuPanel()
-        updateMenuPanelSize(panel)
-        positionMenuPanel(panel, relativeTo: button)
-        installMenuDismissMonitors()
-        panel.orderFrontRegardless()
-        panel.makeFirstResponder(nil)
-    }
-
-    private func closeMenuPanel() {
-        menuPanel?.orderOut(nil)
-        removeMenuDismissMonitors()
-    }
-
-    private func updateMenuPanelSize(_ panel: MenuPanel) {
-        popoverController.view.layoutSubtreeIfNeeded()
-        let fittingSize = popoverController.view.fittingSize
-        panel.setContentSize(NSSize(width: fittingSize.width, height: fittingSize.height))
-    }
-
-    private func positionMenuPanel(_ panel: MenuPanel, relativeTo button: NSStatusBarButton) {
-        guard
-            let window = button.window,
-            let screen = window.screen ?? NSScreen.main
-        else {
-            return
-        }
-
-        let buttonFrameInWindow = button.convert(button.bounds, to: nil)
-        let buttonFrameOnScreen = window.convertToScreen(buttonFrameInWindow)
-        let panelSize = panel.frame.size
-        let visibleFrame = screen.visibleFrame.insetBy(dx: 8, dy: 8)
-
-        var origin = NSPoint(
-            x: buttonFrameOnScreen.maxX - panelSize.width,
-            y: buttonFrameOnScreen.minY - panelSize.height - 6
-        )
-
-        origin.x = min(max(origin.x, visibleFrame.minX), visibleFrame.maxX - panelSize.width)
-        origin.y = max(visibleFrame.minY, origin.y)
-
-        panel.setFrameOrigin(origin)
-    }
-
-    private func installMenuDismissMonitors() {
-        guard localEventMonitor == nil, globalEventMonitor == nil else {
-            return
-        }
-
-        localEventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown, .keyDown]) { [weak self] event in
-            self?.handleMenuEvent(event)
-            return event
-        }
-
-        globalEventMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown, .otherMouseDown]) { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.closeMenuPanel()
-            }
-        }
-    }
-
-    private func removeMenuDismissMonitors() {
-        if let localEventMonitor {
-            NSEvent.removeMonitor(localEventMonitor)
-            self.localEventMonitor = nil
-        }
-
-        if let globalEventMonitor {
-            NSEvent.removeMonitor(globalEventMonitor)
-            self.globalEventMonitor = nil
-        }
-    }
-
-    private func handleMenuEvent(_ event: NSEvent) {
-        guard isMenuVisible else {
-            return
-        }
-
-        if event.type == .keyDown, event.keyCode == 53 {
-            closeMenuPanel()
-            return
-        }
-
-        guard
-            event.type == .leftMouseDown || event.type == .rightMouseDown || event.type == .otherMouseDown,
-            let eventWindow = event.window,
-            eventWindow !== menuPanel
-        else {
-            return
-        }
-
-        closeMenuPanel()
-    }
+    // MARK: - Activation Policy
 
     private func beginInteractiveSession() {
         activeInteractiveSessions += 1
@@ -526,50 +438,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func endInteractiveSession() {
         activeInteractiveSessions = max(0, activeInteractiveSessions - 1)
-
-        if activeInteractiveSessions == 0 {
-            NSApp.setActivationPolicy(.accessory)
-        }
+        restoreAccessoryModeIfIdle()
     }
 
     private func activateInteractiveApp() {
         if NSApp.activationPolicy() != .regular {
             NSApp.setActivationPolicy(.regular)
         }
-
         NSApp.activate(ignoringOtherApps: true)
+    }
+
+    private func restoreAccessoryModeIfIdle() {
+        guard activeInteractiveSessions == 0 else {
+            return
+        }
+        if NSApp.activationPolicy() != .accessory {
+            NSApp.setActivationPolicy(.accessory)
+        }
+    }
+
+    // MARK: - Issue Handling
+
+    private func handleAuthorizedScreenRecordingGrant() {
+        requiresScreenRecordingRelaunch = true
+
+        if PermissionCoordinator.relaunchIntoCanonicalAppIfPossible() {
+            return
+        }
+
+        presentIssue(PermissionCoordinator.screenRecordingRelaunchIssue())
     }
 
     private func presentIssue(_ issue: UserFacingIssue, offersScreenRecordingShortcut: Bool = false) {
         appState.presentIssue(issue)
-        showAlert(for: issue, offersScreenRecordingShortcut: offersScreenRecordingShortcut)
-    }
+        guard !offersScreenRecordingShortcut else {
+            return
+        }
 
-    private func showAlert(for issue: UserFacingIssue, offersScreenRecordingShortcut: Bool) {
         let shouldRestoreAccessoryMode = activeInteractiveSessions == 0
         activateInteractiveApp()
 
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        alert.messageText = issue.title
-
-        var details: [String] = [issue.message]
-        if let recoverySuggestion = issue.recoverySuggestion, !recoverySuggestion.isEmpty {
-            details.append(recoverySuggestion)
-        }
-        if let technicalDetails = issue.technicalDetails, !technicalDetails.isEmpty {
-            details.append("Details: \(technicalDetails)")
-        }
-        alert.informativeText = details.joined(separator: "\n\n")
-
-        alert.addButton(withTitle: "OK")
-        if offersScreenRecordingShortcut {
-            alert.addButton(withTitle: "Open Screen Recording Settings")
-        }
-
-        let response = alert.runModal()
-        if offersScreenRecordingShortcut, response == .alertSecondButtonReturn {
-            openScreenRecordingSettings()
+        let userWantsSettings = AlertPresenter.showAlert(for: issue, offersScreenRecordingShortcut: offersScreenRecordingShortcut)
+        if userWantsSettings {
+            pendingScreenRecordingRemediationRefresh = true
+            PermissionCoordinator.openScreenRecordingSettings()
         }
 
         if shouldRestoreAccessoryMode {
