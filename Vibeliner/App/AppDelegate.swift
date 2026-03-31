@@ -8,9 +8,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()
         setupMenuBarIcon()
+
+        HotkeyManager.shared.onHotkeyPressed = {
+            print("Capture triggered")
+        }
+        HotkeyManager.shared.register()
     }
 
     func applicationWillTerminate(_ notification: Notification) {
+        HotkeyManager.shared.unregister()
     }
 
     private func setupMenuBarIcon() {

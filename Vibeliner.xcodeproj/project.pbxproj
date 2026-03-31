@@ -11,6 +11,7 @@
 		A10000010000000000000002 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* DesignTokens.swift */; };
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
 		A10000010000000000000004 /* CapturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* CapturesManager.swift */; };
+		A10000010000000000000005 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HotkeyManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -32,6 +33,7 @@
 		A20000010000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
+		A20000010000000000000006 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -60,6 +62,7 @@
 				A40000010000000000000003 /* App */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
+				A40000010000000000000006 /* Hotkey */,
 				A20000010000000000000003 /* Info.plist */,
 			);
 			path = Vibeliner;
@@ -88,6 +91,14 @@
 				A20000010000000000000005 /* CapturesManager.swift */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000006 /* Hotkey */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000006 /* HotkeyManager.swift */,
+			);
+			path = Hotkey;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000010 /* Products */ = {
@@ -172,6 +183,7 @@
 				A10000010000000000000002 /* DesignTokens.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
+				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
