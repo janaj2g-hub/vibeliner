@@ -6,8 +6,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let screenshotImage: NSImage
     private let toolbarView: ToolbarView
     private let statusPill: StatusPillView
+    let annotationStore = AnnotationStore()
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
+    private var storeObserver: Any?
 
     init(image: NSImage, on screen: NSScreen) {
         self.screenshotImage = image
@@ -80,6 +82,21 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let pillY = bottomGap - statusPill.frame.height
         statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
         container.addSubview(statusPill)
+
+        // Observe annotation changes
+        storeObserver = NotificationCenter.default.addObserver(
+            forName: .annotationsDidChange, object: annotationStore, queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.toolbarView.updateAnnotationCount(self.annotationStore.count)
+            self.statusPill.updateNoteCount(self.annotationStore.count)
+        }
+    }
+
+    deinit {
+        if let observer = storeObserver {
+            NotificationCenter.default.removeObserver(observer)
+        }
     }
 
     override var canBecomeKey: Bool { true }

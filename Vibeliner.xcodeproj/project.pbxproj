@@ -24,20 +24,9 @@
 		A1000001000000000000000F /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* ToolbarView.swift */; };
 		A10000010000000000000010 /* StatusPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* StatusPillView.swift */; };
 		A10000010000000000000011 /* PinCounterIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* PinCounterIcon.swift */; };
+		A10000010000000000000012 /* AnnotationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* AnnotationModel.swift */; };
+		A10000010000000000000013 /* AnnotationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* AnnotationStore.swift */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXCopyFilesBuildPhase section */
-		A50000010000000000000001 /* Copy App to dist */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = "$(SRCROOT)/dist";
-			dstSubfolderSpec = 0;
-			files = (
-			);
-			name = "Copy App to dist";
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		A20000010000000000000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -55,10 +44,12 @@
 		A2000001000000000000000D /* EditorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPanel.swift; sourceTree = "<group>"; };
 		A2000001000000000000000E /* ScreenshotCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotCanvasView.swift; sourceTree = "<group>"; };
 		A2000001000000000000000F /* ToolButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolButton.swift; sourceTree = "<group>"; };
+		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000011 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
 		A20000010000000000000012 /* StatusPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusPillView.swift; sourceTree = "<group>"; };
 		A20000010000000000000013 /* PinCounterIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinCounterIcon.swift; sourceTree = "<group>"; };
-		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A20000010000000000000014 /* AnnotationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModel.swift; sourceTree = "<group>"; };
+		A20000010000000000000015 /* AnnotationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,7 +63,7 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		A40000010000000000000001 /* Root */ = {
+		A40000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000002 /* Vibeliner */,
@@ -84,6 +75,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000003 /* App */,
+				A40000010000000000000009 /* Annotations */,
 				A40000010000000000000007 /* Capture */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
@@ -120,17 +112,21 @@
 			path = Config;
 			sourceTree = "<group>";
 		};
-		A40000010000000000000008 /* Editor */ = {
+		A40000010000000000000006 /* Hotkey */ = {
 			isa = PBXGroup;
 			children = (
-				A2000001000000000000000D /* EditorPanel.swift */,
-				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
-				A2000001000000000000000F /* ToolButton.swift */,
-				A20000010000000000000011 /* ToolbarView.swift */,
-				A20000010000000000000012 /* StatusPillView.swift */,
-				A20000010000000000000013 /* PinCounterIcon.swift */,
+				A20000010000000000000006 /* HotkeyManager.swift */,
 			);
-			path = Editor;
+			path = Hotkey;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000009 /* Annotations */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000014 /* AnnotationModel.swift */,
+				A20000010000000000000015 /* AnnotationStore.swift */,
+			);
+			path = Annotations;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000007 /* Capture */ = {
@@ -145,12 +141,17 @@
 			path = Capture;
 			sourceTree = "<group>";
 		};
-		A40000010000000000000006 /* Hotkey */ = {
+		A40000010000000000000008 /* Editor */ = {
 			isa = PBXGroup;
 			children = (
-				A20000010000000000000006 /* HotkeyManager.swift */,
+				A2000001000000000000000D /* EditorPanel.swift */,
+				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
+				A2000001000000000000000F /* ToolButton.swift */,
+				A20000010000000000000011 /* ToolbarView.swift */,
+				A20000010000000000000012 /* StatusPillView.swift */,
+				A20000010000000000000013 /* PinCounterIcon.swift */,
 			);
-			path = Hotkey;
+			path = Editor;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000010 /* Products */ = {
@@ -189,7 +190,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1520;
-				LastUpgradeCheck = 1520;
+				LastUpgradeCheck = 2640;
 			};
 			buildConfigurationList = A80000010000000000000001 /* Build configuration list for PBXProject "Vibeliner" */;
 			compatibilityVersion = "Xcode 14.0";
@@ -199,7 +200,7 @@
 				en,
 				Base,
 			);
-			mainGroup = A40000010000000000000001 /* Root */;
+			mainGroup = A40000010000000000000001;
 			productRefGroup = A40000010000000000000010 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -248,6 +249,8 @@
 				A1000001000000000000000F /* ToolbarView.swift in Sources */,
 				A10000010000000000000010 /* StatusPillView.swift in Sources */,
 				A10000010000000000000011 /* PinCounterIcon.swift in Sources */,
+				A10000010000000000000012 /* AnnotationModel.swift in Sources */,
+				A10000010000000000000013 /* AnnotationStore.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,9 +289,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -307,6 +312,7 @@
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
@@ -344,9 +350,11 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
@@ -358,6 +366,7 @@
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 			};
 			name = Release;
@@ -369,6 +378,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Vibeliner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -390,6 +400,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
+				DEAD_CODE_STRIPPING = YES;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Vibeliner/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -426,7 +437,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
 	};
 	rootObject = A60000010000000000000000 /* Project object */;
 }

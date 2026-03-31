@@ -1,9 +1,5 @@
 import AppKit
 
-enum AnnotationToolType: Int, CaseIterable {
-    case pin = 0, arrow, rectangle, circle, freehand
-}
-
 protocol ToolbarDelegate: AnyObject {
     func toolbarDidSelectTool(_ tool: AnnotationToolType)
     func toolbarDidRequestClose()
