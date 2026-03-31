@@ -18,6 +18,12 @@
 		A10000010000000000000009 /* DimensionLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A /* DimensionLabelView.swift */; };
 		A1000001000000000000000A /* ScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000B /* ScreenCapture.swift */; };
 		A1000001000000000000000B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000C /* main.swift */; };
+		A1000001000000000000000C /* EditorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000D /* EditorPanel.swift */; };
+		A1000001000000000000000D /* ScreenshotCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E /* ScreenshotCanvasView.swift */; };
+		A1000001000000000000000E /* ToolButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* ToolButton.swift */; };
+		A1000001000000000000000F /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* ToolbarView.swift */; };
+		A10000010000000000000010 /* StatusPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* StatusPillView.swift */; };
+		A10000010000000000000011 /* PinCounterIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* PinCounterIcon.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +52,12 @@
 		A2000001000000000000000A /* DimensionLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionLabelView.swift; sourceTree = "<group>"; };
 		A2000001000000000000000B /* ScreenCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapture.swift; sourceTree = "<group>"; };
 		A2000001000000000000000C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		A2000001000000000000000D /* EditorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPanel.swift; sourceTree = "<group>"; };
+		A2000001000000000000000E /* ScreenshotCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotCanvasView.swift; sourceTree = "<group>"; };
+		A2000001000000000000000F /* ToolButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolButton.swift; sourceTree = "<group>"; };
+		A20000010000000000000011 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
+		A20000010000000000000012 /* StatusPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusPillView.swift; sourceTree = "<group>"; };
+		A20000010000000000000013 /* PinCounterIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinCounterIcon.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -75,6 +87,7 @@
 				A40000010000000000000007 /* Capture */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
+				A40000010000000000000008 /* Editor */,
 				A40000010000000000000006 /* Hotkey */,
 				A20000010000000000000003 /* Info.plist */,
 			);
@@ -105,6 +118,19 @@
 				A20000010000000000000005 /* CapturesManager.swift */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000008 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				A2000001000000000000000D /* EditorPanel.swift */,
+				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
+				A2000001000000000000000F /* ToolButton.swift */,
+				A20000010000000000000011 /* ToolbarView.swift */,
+				A20000010000000000000012 /* StatusPillView.swift */,
+				A20000010000000000000013 /* PinCounterIcon.swift */,
+			);
+			path = Editor;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000007 /* Capture */ = {
@@ -216,6 +242,12 @@
 				A10000010000000000000009 /* DimensionLabelView.swift in Sources */,
 				A1000001000000000000000A /* ScreenCapture.swift in Sources */,
 				A1000001000000000000000B /* main.swift in Sources */,
+				A1000001000000000000000C /* EditorPanel.swift in Sources */,
+				A1000001000000000000000D /* ScreenshotCanvasView.swift in Sources */,
+				A1000001000000000000000E /* ToolButton.swift in Sources */,
+				A1000001000000000000000F /* ToolbarView.swift in Sources */,
+				A10000010000000000000010 /* StatusPillView.swift in Sources */,
+				A10000010000000000000011 /* PinCounterIcon.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -64,6 +64,33 @@ enum DesignTokens {
     /// rgba(255, 87, 87, 0.15) — trash button hover
     static let trashHoverBg = NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.15)
 
+    /// rgba(255, 255, 255, 0.4) — default icon stroke
+    static let iconDefault = NSColor(white: 1.0, alpha: 0.4)
+
+    /// rgba(255, 255, 255, 0.8) — hover icon stroke
+    static let iconHover = NSColor(white: 1.0, alpha: 0.8)
+
+    /// rgba(255, 255, 255, 0.08) — button hover bg
+    static let buttonHoverBg = NSColor(white: 1.0, alpha: 0.08)
+
+    /// rgba(175, 169, 236, 0.2) — active tool bg
+    static let toolActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
+
+    /// rgba(175, 169, 236, 0.6) — inactive pin icon
+    static let purpleLightInactive = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.6)
+
+    /// rgba(175, 169, 236, 0.25) — toggle active bg
+    static let toggleActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.25)
+
+    /// rgba(255, 255, 255, 0.06) — toggle bg
+    static let toggleBg = NSColor(white: 1.0, alpha: 0.06)
+
+    /// rgba(255, 255, 255, 0.3) — toggle inactive text
+    static let toggleInactiveText = NSColor(white: 1.0, alpha: 0.3)
+
+    /// #FF5F57 — close icon hover color
+    static let closeIconHover = NSColor(red: 255/255, green: 95/255, blue: 87/255, alpha: 1.0)
+
     // MARK: - Dimensions
 
     /// 18px badge diameter (radius 9)
