@@ -9,6 +9,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     let annotationStore = AnnotationStore()
     private(set) var undoRedoManager: UndoRedoManager!
     private var canvasOverlay: CanvasView?
+    private let pinTool = PinTool()
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
     private var storeObserver: Any?
@@ -79,6 +80,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Undo/redo manager
         self.undoRedoManager = UndoRedoManager(store: annotationStore)
 
+        // Wire pin tool
+        pinTool.editorPanel = self
+        canvas.activeTool = pinTool
+        canvas.undoManager_ = undoRedoManager
+
         // Toolbar centered above canvas
         let toolbarX = (totalWidth - toolbarView.frame.width) / 2
         let toolbarY = bottomGap + dh + toolbarGap - DesignTokens.toolbarHeight
@@ -140,7 +146,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     // MARK: - ToolbarDelegate
 
     func toolbarDidSelectTool(_ tool: AnnotationToolType) {
-        print("Tool selected: \(tool)")
+        switch tool {
+        case .pin:
+            canvasOverlay?.activeTool = pinTool
+        default:
+            // Other tools will be added in future tickets
+            canvasOverlay?.activeTool = nil
+        }
     }
 
     func toolbarDidRequestClose() {

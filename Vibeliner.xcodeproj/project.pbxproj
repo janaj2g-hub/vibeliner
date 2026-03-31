@@ -28,6 +28,8 @@
 		A10000010000000000000013 /* AnnotationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* AnnotationStore.swift */; };
 		A10000010000000000000014 /* UndoRedoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* UndoRedoManager.swift */; };
 		A10000010000000000000015 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* CanvasView.swift */; };
+		A10000010000000000000016 /* PinTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* PinTool.swift */; };
+		A10000010000000000000017 /* PinRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* PinRenderer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +56,8 @@
 		A20000010000000000000015 /* AnnotationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationStore.swift; sourceTree = "<group>"; };
 		A20000010000000000000016 /* UndoRedoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoRedoManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000017 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
+		A20000010000000000000018 /* PinTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinTool.swift; sourceTree = "<group>"; };
+		A20000010000000000000019 /* PinRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -124,12 +128,30 @@
 			path = Hotkey;
 			sourceTree = "<group>";
 		};
+		A4000001000000000000000A /* Tools */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000018 /* PinTool.swift */,
+			);
+			path = Tools;
+			sourceTree = "<group>";
+		};
+		A4000001000000000000000B /* Renderers */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000019 /* PinRenderer.swift */,
+			);
+			path = Renderers;
+			sourceTree = "<group>";
+		};
 		A40000010000000000000009 /* Annotations */ = {
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000014 /* AnnotationModel.swift */,
 				A20000010000000000000015 /* AnnotationStore.swift */,
 				A20000010000000000000016 /* UndoRedoManager.swift */,
+				A4000001000000000000000A /* Tools */,
+				A4000001000000000000000B /* Renderers */,
 			);
 			path = Annotations;
 			sourceTree = "<group>";
@@ -259,6 +281,8 @@
 				A10000010000000000000013 /* AnnotationStore.swift in Sources */,
 				A10000010000000000000014 /* UndoRedoManager.swift in Sources */,
 				A10000010000000000000015 /* CanvasView.swift in Sources */,
+				A10000010000000000000016 /* PinTool.swift in Sources */,
+				A10000010000000000000017 /* PinRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -301,7 +325,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -362,7 +386,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
