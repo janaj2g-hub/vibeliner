@@ -14,6 +14,8 @@ final class CrosshairView: NSView {
 
     override var acceptsFirstResponder: Bool { true }
 
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
