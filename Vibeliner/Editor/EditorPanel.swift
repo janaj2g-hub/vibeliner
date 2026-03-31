@@ -7,6 +7,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let toolbarView: ToolbarView
     private let statusPill: StatusPillView
     let annotationStore = AnnotationStore()
+    private(set) var undoRedoManager: UndoRedoManager!
+    private var canvasOverlay: CanvasView?
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
     private var storeObserver: Any?
@@ -68,6 +70,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let canvasX = (totalWidth - dw) / 2
         canvasView.frame = NSRect(x: canvasX, y: bottomGap, width: dw, height: dh)
         container.addSubview(canvasView)
+
+        // Annotation canvas overlay
+        let canvas = CanvasView(frame: NSRect(x: 0, y: 0, width: dw, height: dh), store: annotationStore)
+        canvasView.addSubview(canvas)
+        self.canvasOverlay = canvas
+
+        // Undo/redo manager
+        self.undoRedoManager = UndoRedoManager(store: annotationStore)
 
         // Toolbar centered above canvas
         let toolbarX = (totalWidth - toolbarView.frame.width) / 2
@@ -138,15 +148,17 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestDelete() {
-        print("Delete selected annotation")
+        guard let selected = annotationStore.selectedAnnotation else { return }
+        annotationStore.remove(id: selected.id)
+        undoRedoManager.record(.remove(annotation: selected))
     }
 
     func toolbarDidRequestUndo() {
-        print("Undo")
+        undoRedoManager.undo()
     }
 
     func toolbarDidRequestRedo() {
-        print("Redo")
+        undoRedoManager.redo()
     }
 
     func toolbarDidRequestCopyPrompt() {

@@ -26,6 +26,8 @@
 		A10000010000000000000011 /* PinCounterIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* PinCounterIcon.swift */; };
 		A10000010000000000000012 /* AnnotationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* AnnotationModel.swift */; };
 		A10000010000000000000013 /* AnnotationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* AnnotationStore.swift */; };
+		A10000010000000000000014 /* UndoRedoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* UndoRedoManager.swift */; };
+		A10000010000000000000015 /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* CanvasView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +52,8 @@
 		A20000010000000000000013 /* PinCounterIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinCounterIcon.swift; sourceTree = "<group>"; };
 		A20000010000000000000014 /* AnnotationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000015 /* AnnotationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationStore.swift; sourceTree = "<group>"; };
+		A20000010000000000000016 /* UndoRedoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoRedoManager.swift; sourceTree = "<group>"; };
+		A20000010000000000000017 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CanvasView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -125,6 +129,7 @@
 			children = (
 				A20000010000000000000014 /* AnnotationModel.swift */,
 				A20000010000000000000015 /* AnnotationStore.swift */,
+				A20000010000000000000016 /* UndoRedoManager.swift */,
 			);
 			path = Annotations;
 			sourceTree = "<group>";
@@ -150,6 +155,7 @@
 				A20000010000000000000011 /* ToolbarView.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
 				A20000010000000000000013 /* PinCounterIcon.swift */,
+				A20000010000000000000017 /* CanvasView.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -251,6 +257,8 @@
 				A10000010000000000000011 /* PinCounterIcon.swift in Sources */,
 				A10000010000000000000012 /* AnnotationModel.swift in Sources */,
 				A10000010000000000000013 /* AnnotationStore.swift in Sources */,
+				A10000010000000000000014 /* UndoRedoManager.swift in Sources */,
+				A10000010000000000000015 /* CanvasView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
