@@ -21,6 +21,7 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var copyImageButton: NSView?
+    private var pinCounterIcon: PinCounterIcon?
     private let blurView = NSVisualEffectView()
 
     override init(frame frameRect: NSRect) {
@@ -83,9 +84,25 @@ final class ToolbarView: NSView {
         x = addDivider(at: x)
         x += 10
 
-        // Tool buttons
+        // Pin tool button with counter icon
+        let pinBtn = ToolButton(style: .tool, tooltip: "Pin") { [weak self] rect, color in
+            // Draw nothing — PinCounterIcon overlay handles it
+            _ = self
+        }
+        pinBtn.isActive = (selectedTool == .pin)
+        pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
+        pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
+        addSubview(pinBtn)
+        toolButtons[.pin] = pinBtn
+
+        let pinIcon = PinCounterIcon(frame: NSRect(x: 0, y: 0, width: DesignTokens.toolButtonSize, height: DesignTokens.toolButtonSize))
+        pinIcon.isActive = (selectedTool == .pin)
+        pinBtn.addSubview(pinIcon)
+        self.pinCounterIcon = pinIcon
+        x += DesignTokens.toolButtonSize
+
+        // Other tool buttons
         let toolDefs: [(AnnotationToolType, String, (NSRect, NSColor) -> Void)] = [
-            (.pin, "Pin", ToolbarView.drawPinIcon),
             (.arrow, "Arrow", ToolbarView.drawArrowIcon),
             (.rectangle, "Rectangle", ToolbarView.drawRectIcon),
             (.circle, "Circle", ToolbarView.drawCircleIcon),
@@ -215,7 +232,12 @@ final class ToolbarView: NSView {
     func selectTool(_ tool: AnnotationToolType) {
         selectedTool = tool
         for (t, btn) in toolButtons { btn.isActive = (t == tool) }
+        pinCounterIcon?.isActive = (tool == .pin)
         delegate?.toolbarDidSelectTool(tool)
+    }
+
+    func updateAnnotationCount(_ count: Int) {
+        pinCounterIcon?.count = count
     }
 
     private func updateCopyButtonVisibility(mode: String) {
