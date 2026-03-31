@@ -5,6 +5,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        ConfigManager.shared.load()
+        CapturesManager.shared.ensureBaseFolder()
         setupMenuBarIcon()
     }
 
