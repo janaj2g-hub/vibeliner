@@ -10,6 +10,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private(set) var undoRedoManager: UndoRedoManager!
     private var canvasOverlay: CanvasView?
     private let pinTool = PinTool()
+    private let arrowTool = ArrowTool()
+    private let rectangleTool = RectangleTool()
+    private let circleTool = CircleTool()
+    private let freehandTool = FreehandTool()
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
     private var storeObserver: Any?
@@ -80,8 +84,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Undo/redo manager
         self.undoRedoManager = UndoRedoManager(store: annotationStore)
 
-        // Wire pin tool
+        // Wire tools
         pinTool.editorPanel = self
+        arrowTool.editorPanel = self
+        rectangleTool.editorPanel = self
+        circleTool.editorPanel = self
+        freehandTool.editorPanel = self
         canvas.activeTool = pinTool
         canvas.undoManager_ = undoRedoManager
 
@@ -147,11 +155,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidSelectTool(_ tool: AnnotationToolType) {
         switch tool {
-        case .pin:
-            canvasOverlay?.activeTool = pinTool
-        default:
-            // Other tools will be added in future tickets
-            canvasOverlay?.activeTool = nil
+        case .pin: canvasOverlay?.activeTool = pinTool
+        case .arrow: canvasOverlay?.activeTool = arrowTool
+        case .rectangle: canvasOverlay?.activeTool = rectangleTool
+        case .circle: canvasOverlay?.activeTool = circleTool
+        case .freehand: canvasOverlay?.activeTool = freehandTool
         }
     }
 

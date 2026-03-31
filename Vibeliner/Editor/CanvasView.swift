@@ -96,6 +96,10 @@ final class MarksLayerView: NSView {
     var ghostTool: AnnotationTool?
     private let store: AnnotationStore
     private let pinRenderer = PinRenderer()
+    private let arrowRenderer = ArrowRenderer()
+    private let rectangleRenderer = RectangleRenderer()
+    private let circleRenderer = CircleRenderer()
+    private let freehandRenderer = FreehandRenderer()
 
     init(frame: NSRect, store: AnnotationStore) {
         self.store = store
@@ -108,8 +112,12 @@ final class MarksLayerView: NSView {
         super.draw(dirtyRect)
         guard let context = NSGraphicsContext.current?.cgContext else { return }
 
-        // Draw all pin annotations
+        // Draw all annotations
         pinRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+        arrowRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+        rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+        circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+        freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
 
         // Draw ghost preview
         if let pos = ghostPosition, let tool = ghostTool {
