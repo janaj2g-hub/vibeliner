@@ -65,7 +65,7 @@ final class CaptureCoordinator {
             cleanupAfterCapture()
 
             // Open editor panel
-            let panel = EditorPanel(image: image, on: screen)
+            let panel = EditorPanel(image: image, on: screen, captureFolder: folderURL)
             panel.makeKeyAndOrderFront(nil)
             self.editorPanel = panel
         }

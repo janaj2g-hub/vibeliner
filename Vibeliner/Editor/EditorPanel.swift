@@ -16,9 +16,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let freehandTool = FreehandTool()
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
+    private var captureFolder: URL?
+    private var autoSaveManager: AutoSaveManager?
     private var storeObserver: Any?
 
-    init(image: NSImage, on screen: NSScreen) {
+    init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
         self.screenshotImage = image
         self.canvasView = ScreenshotCanvasView(image: image)
         self.toolbarView = ToolbarView()
@@ -93,6 +95,17 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvas.activeTool = pinTool
         canvas.undoManager_ = undoRedoManager
 
+        // Auto-save
+        self.captureFolder = captureFolder
+        if let folder = captureFolder {
+            autoSaveManager = AutoSaveManager(
+                store: annotationStore,
+                captureFolder: folder,
+                originalImage: image,
+                canvasSize: NSSize(width: dw, height: dh)
+            )
+        }
+
         // Toolbar centered above canvas
         let toolbarX = (totalWidth - toolbarView.frame.width) / 2
         let toolbarY = bottomGap + dh + toolbarGap - DesignTokens.toolbarHeight
@@ -131,6 +144,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let keyCode = event.keyCode
 
         if keyCode == 53 { // Escape
+            autoSaveManager?.saveNow()
             close()
         } else if keyCode >= 18 && keyCode <= 23 && flags.isEmpty {
             // Keys 1-5 for tool switching (keycodes 18=1, 19=2, 20=3, 21=4, 23=5)
@@ -164,6 +178,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestClose() {
+        autoSaveManager?.saveNow()
         close()
     }
 
@@ -182,10 +197,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestCopyPrompt() {
-        print("Copy Prompt")
+        guard let folder = captureFolder else { return }
+        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder)
+        statusPill.showCopied()
     }
 
     func toolbarDidRequestCopyImage() {
-        print("Copy Image")
+        let canvasSize = CGSize(width: displayWidth, height: displayHeight)
+        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)
+        statusPill.showCopied()
     }
 }
