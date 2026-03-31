@@ -10,7 +10,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setupMenuBarIcon()
 
         HotkeyManager.shared.onHotkeyPressed = {
-            print("Capture triggered")
+            CaptureCoordinator.shared.startCapture()
         }
         HotkeyManager.shared.register()
     }

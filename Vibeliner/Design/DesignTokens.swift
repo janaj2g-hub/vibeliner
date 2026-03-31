@@ -52,6 +52,9 @@ enum DesignTokens {
     /// rgba(22, 163, 74, 0.9) — copied state green
     static let copiedGreen = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.9)
 
+    /// rgba(0, 0, 0, 0.5) — capture overlay dim
+    static let dimOverlay = NSColor.black.withAlphaComponent(0.5)
+
     /// rgba(255, 255, 255, 0.08) — divider
     static let dividerColor = NSColor(red: 255/255, green: 255/255, blue: 255/255, alpha: 0.08)
 
@@ -131,6 +134,21 @@ enum DesignTokens {
 
     /// 3px freehand sample interval
     static let freehandSampleInterval: CGFloat = 3
+
+    /// 5px dimension label corner radius
+    static let dimensionLabelCornerRadius: CGFloat = 5
+
+    /// 10px dimension label horizontal padding
+    static let dimensionLabelPaddingH: CGFloat = 10
+
+    /// 24px dimension label height
+    static let dimensionLabelHeight: CGFloat = 24
+
+    /// 10px gap below selection to dimension label
+    static let dimensionLabelGap: CGFloat = 10
+
+    /// 10px minimum selection size
+    static let minimumSelectionSize: CGFloat = 10
 
     // MARK: - Fonts
 

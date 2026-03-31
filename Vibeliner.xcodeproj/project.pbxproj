@@ -12,6 +12,9 @@
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
 		A10000010000000000000004 /* CapturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* CapturesManager.swift */; };
 		A10000010000000000000005 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HotkeyManager.swift */; };
+		A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* CaptureOverlayWindow.swift */; };
+		A10000010000000000000007 /* CrosshairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* CrosshairView.swift */; };
+		A10000010000000000000008 /* CaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* CaptureCoordinator.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -34,6 +37,9 @@
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000006 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		A20000010000000000000007 /* CaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayWindow.swift; sourceTree = "<group>"; };
+		A20000010000000000000008 /* CrosshairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosshairView.swift; sourceTree = "<group>"; };
+		A20000010000000000000009 /* CaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCoordinator.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -60,6 +66,7 @@
 			isa = PBXGroup;
 			children = (
 				A40000010000000000000003 /* App */,
+				A40000010000000000000007 /* Capture */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
 				A40000010000000000000006 /* Hotkey */,
@@ -91,6 +98,16 @@
 				A20000010000000000000005 /* CapturesManager.swift */,
 			);
 			path = Config;
+			sourceTree = "<group>";
+		};
+		A40000010000000000000007 /* Capture */ = {
+			isa = PBXGroup;
+			children = (
+				A20000010000000000000007 /* CaptureOverlayWindow.swift */,
+				A20000010000000000000008 /* CrosshairView.swift */,
+				A20000010000000000000009 /* CaptureCoordinator.swift */,
+			);
+			path = Capture;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000006 /* Hotkey */ = {
@@ -184,6 +201,9 @@
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
 				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
+				A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */,
+				A10000010000000000000007 /* CrosshairView.swift in Sources */,
+				A10000010000000000000008 /* CaptureCoordinator.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
