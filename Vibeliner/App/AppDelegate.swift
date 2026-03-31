@@ -2,6 +2,9 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
+    private var setupWindowController: SetupWindowController?
+    var settingsWindowController: SettingsWindowController?
+    private let popover = NSPopover()
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSLog("AppDelegate launched")
@@ -13,6 +16,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             CaptureCoordinator.shared.startCapture()
         }
         HotkeyManager.shared.register()
+
+        // Show setup window on first launch
+        if !ConfigManager.shared.setupComplete {
+            let setup = SetupWindowController()
+            setup.showWindow(nil)
+            setup.window?.center()
+            setupWindowController = setup
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
@@ -30,7 +41,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func statusItemClicked() {
-        print("Popover triggered")
+        if popover.isShown {
+            popover.performClose(nil)
+        } else {
+            popover.contentViewController = PopoverViewController()
+            popover.appearance = NSAppearance(named: .darkAqua)
+            popover.behavior = .transient
+            if let button = statusItem.button {
+                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+            }
+        }
     }
 
     private func createCrosshairImage() -> NSImage {
