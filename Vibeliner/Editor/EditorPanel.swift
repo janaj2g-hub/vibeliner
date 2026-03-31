@@ -5,6 +5,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let canvasView: ScreenshotCanvasView
     private let screenshotImage: NSImage
     private let toolbarView: ToolbarView
+    private let statusPill: StatusPillView
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
 
@@ -12,6 +13,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.screenshotImage = image
         self.canvasView = ScreenshotCanvasView(image: image)
         self.toolbarView = ToolbarView()
+        self.statusPill = StatusPillView()
 
         // Calculate display size — scale down if larger than screen usable area
         let screenFrame = screen.visibleFrame
@@ -71,6 +73,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         toolbarView.setFrameOrigin(NSPoint(x: toolbarX, y: toolbarY))
         toolbarView.delegate = self
         container.addSubview(toolbarView)
+
+        // Status pill below canvas
+        statusPill.updateDimensions(width: Int(image.size.width), height: Int(image.size.height))
+        let pillX = (totalWidth - statusPill.frame.width) / 2
+        let pillY = bottomGap - statusPill.frame.height
+        statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
+        container.addSubview(statusPill)
     }
 
     override var canBecomeKey: Bool { true }
