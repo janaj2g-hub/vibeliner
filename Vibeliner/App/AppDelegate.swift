@@ -1,10 +1,10 @@
 import AppKit
 
-@main
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        NSLog("AppDelegate launched")
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()
         setupMenuBarIcon()

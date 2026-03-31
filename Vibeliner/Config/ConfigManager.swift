@@ -34,53 +34,65 @@ final class ConfigManager {
 
     func load() {
         queue.sync {
-            let fileManager = FileManager.default
-            let configPath = configFileURL.path
-
-            guard fileManager.fileExists(atPath: configPath) else {
-                save()
-                return
-            }
-
-            guard let contents = try? String(contentsOfFile: configPath, encoding: .utf8) else {
-                return
-            }
-
-            parseToml(contents)
+            loadInternal()
         }
     }
 
     func save() {
         queue.sync {
-            let fileManager = FileManager.default
-            let folderPath = (capturesFolder as NSString).expandingTildeInPath
-
-            if !fileManager.fileExists(atPath: folderPath) {
-                try? fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true)
-            }
-
-            let toml = generateToml()
-            try? toml.write(to: configFileURL, atomically: true, encoding: .utf8)
+            saveInternal()
         }
     }
 
     func reset() {
-        capturesFolder = "~/Documents/vibeliner"
-        hotkey = "cmd+shift+6"
-        copyMode = "app"
-        setupComplete = false
-        tooltipDismissed = false
-        launchAtLogin = false
-        preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
-        footer = "Make the changes and verify they match the design."
-        toolDescriptions = [
-            "pin": "points to a specific issue",
-            "arrow": "points at or between elements",
-            "rectangle": "highlights a region or container",
-            "circle": "calls out a specific element",
-            "freehand": "marks an irregular area"
-        ]
-        save()
+        queue.sync {
+            capturesFolder = "~/Documents/vibeliner"
+            hotkey = "cmd+shift+6"
+            copyMode = "app"
+            setupComplete = false
+            tooltipDismissed = false
+            launchAtLogin = false
+            preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
+            footer = "Make the changes and verify they match the design."
+            toolDescriptions = [
+                "pin": "points to a specific issue",
+                "arrow": "points at or between elements",
+                "rectangle": "highlights a region or container",
+                "circle": "calls out a specific element",
+                "freehand": "marks an irregular area"
+            ]
+            saveInternal()
+        }
+    }
+
+    // MARK: - Internal (must be called within queue.sync)
+
+    private func loadInternal() {
+        let fileManager = FileManager.default
+        let configPath = configFileURL.path
+
+        guard fileManager.fileExists(atPath: configPath) else {
+            saveInternal()
+            return
+        }
+
+        guard let contents = try? String(contentsOfFile: configPath, encoding: .utf8) else {
+            return
+        }
+
+        parseToml(contents)
+    }
+
+    private func saveInternal() {
+        let fileManager = FileManager.default
+        let folderPath = (capturesFolder as NSString).expandingTildeInPath
+
+        if !fileManager.fileExists(atPath: folderPath) {
+            try? fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true)
+        }
+
+        let toml = generateToml()
+        try? toml.write(to: configFileURL, atomically: true, encoding: .utf8)
     }
 
     // MARK: - TOML Parsing
