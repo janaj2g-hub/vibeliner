@@ -36,8 +36,33 @@ final class CaptureCoordinator {
     }
 
     func completeSelection(rect: NSRect) {
-        print("Selection completed: \(rect)")
-        dismissOverlays()
+        // Determine which screen the selection is on
+        let screen = NSScreen.screens.first { $0.frame.intersects(rect) } ?? NSScreen.main ?? NSScreen.screens[0]
+
+        // Hide overlays before capturing so they don't appear in the screenshot
+        for window in overlayWindows {
+            window.orderOut(nil)
+        }
+
+        // Wait one frame for overlays to fully disappear, then capture
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [self] in
+            guard let image = ScreenCapture.captureRegion(rect: rect, on: screen) else {
+                print("Vibeliner: Capture failed")
+                dismissOverlays()
+                return
+            }
+
+            let folderURL = CapturesManager.shared.createCaptureFolder()
+            let screenshotURL = folderURL.appendingPathComponent("screenshot.png")
+
+            if image.savePNG(to: screenshotURL) {
+                print("Captured to \(screenshotURL.path)")
+            } else {
+                print("Vibeliner: Failed to save screenshot")
+            }
+
+            cleanupAfterCapture()
+        }
     }
 
     // MARK: - Mouse handling
@@ -128,6 +153,16 @@ final class CaptureCoordinator {
         let w = abs(a.x - b.x)
         let h = abs(a.y - b.y)
         return NSRect(x: x, y: y, width: w, height: h)
+    }
+
+    private func cleanupAfterCapture() {
+        NSCursor.unhide()
+        removeDimensionLabel()
+        overlayWindows.removeAll()
+        crosshairViews.removeAll()
+        dragStartPoint = nil
+        activeView = nil
+        isCapturing = false
     }
 
     private func dismissOverlays() {

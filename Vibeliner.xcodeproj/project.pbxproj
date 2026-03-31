@@ -16,6 +16,7 @@
 		A10000010000000000000007 /* CrosshairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* CrosshairView.swift */; };
 		A10000010000000000000008 /* CaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* CaptureCoordinator.swift */; };
 		A10000010000000000000009 /* DimensionLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A /* DimensionLabelView.swift */; };
+		A1000001000000000000000A /* ScreenCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000B /* ScreenCapture.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -42,6 +43,7 @@
 		A20000010000000000000008 /* CrosshairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosshairView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* CaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCoordinator.swift; sourceTree = "<group>"; };
 		A2000001000000000000000A /* DimensionLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionLabelView.swift; sourceTree = "<group>"; };
+		A2000001000000000000000B /* ScreenCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCapture.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -109,6 +111,7 @@
 				A20000010000000000000008 /* CrosshairView.swift */,
 				A20000010000000000000009 /* CaptureCoordinator.swift */,
 				A2000001000000000000000A /* DimensionLabelView.swift */,
+				A2000001000000000000000B /* ScreenCapture.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -208,6 +211,7 @@
 				A10000010000000000000007 /* CrosshairView.swift in Sources */,
 				A10000010000000000000008 /* CaptureCoordinator.swift in Sources */,
 				A10000010000000000000009 /* DimensionLabelView.swift in Sources */,
+				A1000001000000000000000A /* ScreenCapture.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

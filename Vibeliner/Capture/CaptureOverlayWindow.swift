@@ -7,8 +7,7 @@ final class CaptureOverlayWindow: NSWindow {
             contentRect: screen.frame,
             styleMask: .borderless,
             backing: .buffered,
-            defer: false,
-            screen: screen
+            defer: false
         )
 
         level = .screenSaver
