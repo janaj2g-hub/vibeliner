@@ -8,6 +8,7 @@ final class CaptureCoordinator {
     private var dimensionLabel: DimensionLabelView?
     private var dragStartPoint: NSPoint?
     private var activeView: CrosshairView?
+    private var editorPanel: EditorPanel?
     private var isCapturing = false
 
     private init() {}
@@ -62,6 +63,11 @@ final class CaptureCoordinator {
             }
 
             cleanupAfterCapture()
+
+            // Open editor panel
+            let panel = EditorPanel(image: image, on: screen)
+            panel.makeKeyAndOrderFront(nil)
+            self.editorPanel = panel
         }
     }
 
