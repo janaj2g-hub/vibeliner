@@ -15,6 +15,7 @@
 		A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* CaptureOverlayWindow.swift */; };
 		A10000010000000000000007 /* CrosshairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* CrosshairView.swift */; };
 		A10000010000000000000008 /* CaptureCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000009 /* CaptureCoordinator.swift */; };
+		A10000010000000000000009 /* DimensionLabelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000A /* DimensionLabelView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,6 +41,7 @@
 		A20000010000000000000007 /* CaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayWindow.swift; sourceTree = "<group>"; };
 		A20000010000000000000008 /* CrosshairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosshairView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* CaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCoordinator.swift; sourceTree = "<group>"; };
+		A2000001000000000000000A /* DimensionLabelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DimensionLabelView.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -106,6 +108,7 @@
 				A20000010000000000000007 /* CaptureOverlayWindow.swift */,
 				A20000010000000000000008 /* CrosshairView.swift */,
 				A20000010000000000000009 /* CaptureCoordinator.swift */,
+				A2000001000000000000000A /* DimensionLabelView.swift */,
 			);
 			path = Capture;
 			sourceTree = "<group>";
@@ -204,6 +207,7 @@
 				A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */,
 				A10000010000000000000007 /* CrosshairView.swift in Sources */,
 				A10000010000000000000008 /* CaptureCoordinator.swift in Sources */,
+				A10000010000000000000009 /* DimensionLabelView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

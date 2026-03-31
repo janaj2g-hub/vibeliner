@@ -5,7 +5,9 @@ final class CaptureCoordinator {
 
     private var overlayWindows: [CaptureOverlayWindow] = []
     private var crosshairViews: [CrosshairView] = []
+    private var dimensionLabel: DimensionLabelView?
     private var dragStartPoint: NSPoint?
+    private var activeView: CrosshairView?
     private var isCapturing = false
 
     private init() {}
@@ -42,8 +44,10 @@ final class CaptureCoordinator {
 
     func handleMouseDown(at point: NSPoint, in view: CrosshairView) {
         dragStartPoint = point
+        activeView = view
         view.isDragging = false
         view.selectionRect = nil
+        removeDimensionLabel()
     }
 
     func handleMouseDragged(to point: NSPoint, in view: CrosshairView) {
@@ -57,6 +61,15 @@ final class CaptureCoordinator {
         for crosshairView in crosshairViews where crosshairView !== view {
             crosshairView.isDragging = true
             crosshairView.selectionRect = rect
+        }
+
+        // Update dimension label
+        let w = Int(rect.width)
+        let h = Int(rect.height)
+        if w > 0 && h > 0 {
+            let label = getOrCreateDimensionLabel(in: view)
+            label.updateDuringDrag(width: w, height: h)
+            label.positionRelativeTo(selectionRect: rect, in: view.bounds)
         }
     }
 
@@ -76,6 +89,9 @@ final class CaptureCoordinator {
             return
         }
 
+        // Update label to final format
+        dimensionLabel?.updateAfterRelease(width: Int(rect.width), height: Int(rect.height))
+
         // Convert to screen coordinates
         guard let window = view.window else {
             cancelCapture()
@@ -85,6 +101,23 @@ final class CaptureCoordinator {
         let windowRect = view.convert(rect, to: nil)
         let screenRect = window.convertToScreen(windowRect)
         completeSelection(rect: screenRect)
+    }
+
+    // MARK: - Dimension label
+
+    private func getOrCreateDimensionLabel(in view: CrosshairView) -> DimensionLabelView {
+        if let existing = dimensionLabel {
+            return existing
+        }
+        let label = DimensionLabelView(frame: .zero)
+        view.addSubview(label)
+        dimensionLabel = label
+        return label
+    }
+
+    private func removeDimensionLabel() {
+        dimensionLabel?.removeFromSuperview()
+        dimensionLabel = nil
     }
 
     // MARK: - Private
@@ -99,6 +132,7 @@ final class CaptureCoordinator {
 
     private func dismissOverlays() {
         NSCursor.unhide()
+        removeDimensionLabel()
 
         for window in overlayWindows {
             window.orderOut(nil)
@@ -106,6 +140,7 @@ final class CaptureCoordinator {
         overlayWindows.removeAll()
         crosshairViews.removeAll()
         dragStartPoint = nil
+        activeView = nil
         isCapturing = false
     }
 }
