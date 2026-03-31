@@ -170,7 +170,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"${SRCROOT}/dist\"\nrm -rf \"${SRCROOT}/dist/Vibeliner.app\"\ncp -R \"${BUILT_PRODUCTS_DIR}/Vibeliner.app\" \"${SRCROOT}/dist/Vibeliner.app\"\n";
+			shellScript = "mkdir -p \"${SRCROOT}/dist\"\nrm -rf \"${SRCROOT}/dist/Vibeliner.app\"\ncp -R \"${BUILT_PRODUCTS_DIR}/Vibeliner.app\" \"${SRCROOT}/dist/Vibeliner.app\"\ncodesign --force --deep --sign - \"${SRCROOT}/dist/Vibeliner.app\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
