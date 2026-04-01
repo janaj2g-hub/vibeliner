@@ -3,10 +3,13 @@ import ServiceManagement
 
 final class GeneralTabView: NSView {
 
-    private let hotkeyDisplay = NSTextField(labelWithString: "⌘ ⇧ 6")
+    private let hotkeyDisplay = NSTextField(labelWithString: "⌘  ⇧  6")
     private let folderPathLabel = NSTextField(labelWithString: "")
     private let loginCheckbox = NSButton(checkboxWithTitle: "Start Vibeliner when you log in", target: nil, action: nil)
-    private var isRecordingHotkey = false
+
+    private let purpleAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+    private let labelWidth: CGFloat = 120
+    private let pad: CGFloat = 28
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -16,90 +19,87 @@ final class GeneralTabView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        let pad: CGFloat = 24
-        var y = frame.height - 50
+        var y = frame.height - 36
 
         // Hotkey row
-        let hotkeyLabel = makeLabel("Capture hotkey", y: y)
-        addSubview(hotkeyLabel)
+        addSubview(makeRowLabel("Capture hotkey", y: y))
 
         hotkeyDisplay.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
-        hotkeyDisplay.textColor = NSColor(white: 0.3, alpha: 1)
+        hotkeyDisplay.textColor = .labelColor
         hotkeyDisplay.wantsLayer = true
-        hotkeyDisplay.layer?.backgroundColor = NSColor(white: 0.96, alpha: 1).cgColor
+        hotkeyDisplay.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
         hotkeyDisplay.layer?.cornerRadius = 8
         hotkeyDisplay.layer?.borderWidth = 1
-        hotkeyDisplay.layer?.borderColor = NSColor(white: 0.88, alpha: 1).cgColor
+        hotkeyDisplay.layer?.borderColor = NSColor.separatorColor.cgColor
         hotkeyDisplay.alignment = .center
-        hotkeyDisplay.frame = NSRect(x: pad + 130, y: y - 2, width: 100, height: 24)
+        hotkeyDisplay.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 100, height: 26)
         addSubview(hotkeyDisplay)
 
-        let changeHotkey = makeLink("Change", action: #selector(changeHotkey))
-        changeHotkey.frame = NSRect(x: pad + 240, y: y, width: 50, height: 20)
+        let changeHotkey = makePurpleLink("Change", action: #selector(changeHotkey))
+        changeHotkey.frame = NSRect(x: pad + labelWidth + 122, y: y + 1, width: 50, height: 20)
         addSubview(changeHotkey)
 
-        y -= 50
-        addDivider(at: y + 16)
+        y -= 52
+        addDivider(at: y + 20)
 
         // Folder row
-        let folderLabel = makeLabel("Captures folder", y: y)
-        addSubview(folderLabel)
+        addSubview(makeRowLabel("Captures folder", y: y))
 
         folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
         folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
-        folderPathLabel.textColor = NSColor(white: 0.3, alpha: 1)
+        folderPathLabel.textColor = .secondaryLabelColor
         folderPathLabel.wantsLayer = true
-        folderPathLabel.layer?.backgroundColor = NSColor(white: 0.96, alpha: 1).cgColor
-        folderPathLabel.layer?.cornerRadius = 4
+        folderPathLabel.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+        folderPathLabel.layer?.cornerRadius = 6
         folderPathLabel.layer?.borderWidth = 1
-        folderPathLabel.layer?.borderColor = NSColor(white: 0.88, alpha: 1).cgColor
-        folderPathLabel.frame = NSRect(x: pad + 130, y: y - 2, width: 240, height: 22)
+        folderPathLabel.layer?.borderColor = NSColor.separatorColor.cgColor
+        folderPathLabel.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 230, height: 24)
         addSubview(folderPathLabel)
 
-        let changeFolder = makeLink("Change", action: #selector(changeFolderClicked))
-        changeFolder.frame = NSRect(x: pad + 380, y: y, width: 50, height: 20)
+        let changeFolder = makePurpleLink("Change", action: #selector(changeFolderClicked))
+        changeFolder.frame = NSRect(x: pad + labelWidth + 252, y: y + 1, width: 50, height: 20)
         addSubview(changeFolder)
 
         let folderHelper = NSTextField(labelWithString: "Screenshots and prompts are saved here.")
-        folderHelper.font = NSFont.systemFont(ofSize: 11)
-        folderHelper.textColor = NSColor(white: 0.53, alpha: 1)
-        folderHelper.frame = NSRect(x: pad + 130, y: y - 22, width: 300, height: 16)
+        folderHelper.font = NSFont.systemFont(ofSize: 12)
+        folderHelper.textColor = .tertiaryLabelColor
+        folderHelper.frame = NSRect(x: pad + labelWidth + 12, y: y - 22, width: 300, height: 16)
         addSubview(folderHelper)
 
         y -= 60
-        addDivider(at: y + 16)
+        addDivider(at: y + 20)
 
         // Login row
-        let loginLabel = makeLabel("Launch at login", y: y)
-        addSubview(loginLabel)
+        addSubview(makeRowLabel("Launch at login", y: y))
 
         loginCheckbox.state = ConfigManager.shared.launchAtLogin ? .on : .off
         loginCheckbox.target = self
         loginCheckbox.action = #selector(loginToggled)
-        loginCheckbox.frame = NSRect(x: pad + 130, y: y - 2, width: 250, height: 20)
+        loginCheckbox.font = NSFont.systemFont(ofSize: 13)
+        loginCheckbox.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 260, height: 20)
         addSubview(loginCheckbox)
     }
 
-    private func makeLabel(_ text: String, y: CGFloat) -> NSTextField {
+    private func makeRowLabel(_ text: String, y: CGFloat) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-        label.textColor = NSColor(white: 0.2, alpha: 1)
-        label.frame = NSRect(x: 24, y: y, width: 120, height: 20)
+        label.font = NSFont.systemFont(ofSize: 13, weight: .regular)
+        label.textColor = .secondaryLabelColor
+        label.frame = NSRect(x: pad, y: y, width: labelWidth, height: 20)
         return label
     }
 
-    private func makeLink(_ text: String, action: Selector) -> NSButton {
+    private func makePurpleLink(_ text: String, action: Selector) -> NSButton {
         let btn = NSButton(title: text, target: self, action: action)
         btn.isBordered = false
         btn.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-        btn.contentTintColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+        btn.contentTintColor = purpleAccent
         return btn
     }
 
     private func addDivider(at y: CGFloat) {
-        let div = NSView(frame: NSRect(x: 24, y: y, width: frame.width - 48, height: 0.5))
+        let div = NSView(frame: NSRect(x: pad, y: y, width: frame.width - pad * 2, height: 0.5))
         div.wantsLayer = true
-        div.layer?.backgroundColor = NSColor(white: 0.94, alpha: 1).cgColor
+        div.layer?.backgroundColor = NSColor.separatorColor.cgColor
         addSubview(div)
     }
 
@@ -127,11 +127,8 @@ final class GeneralTabView: NSView {
         ConfigManager.shared.save()
         if #available(macOS 13.0, *) {
             do {
-                if enabled {
-                    try SMAppService.mainApp.register()
-                } else {
-                    try SMAppService.mainApp.unregister()
-                }
+                if enabled { try SMAppService.mainApp.register() }
+                else { try SMAppService.mainApp.unregister() }
             } catch {
                 print("Vibeliner: Login item registration failed: \(error)")
             }
