@@ -3,7 +3,7 @@ import AppKit
 final class PopoverViewController: NSViewController {
 
     override func loadView() {
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: 210, height: 194))
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 210, height: 220))
         container.wantsLayer = true
         self.view = container
 
@@ -18,41 +18,41 @@ final class PopoverViewController: NSViewController {
         ]
 
         for (title, shortcut, action) in items {
-            y -= 30
+            y -= 34
             let row = makeRow(title: title, shortcut: shortcut, action: action, y: y)
             container.addSubview(row)
         }
 
         // Divider
-        y -= 8
-        let divider = NSView(frame: NSRect(x: 8, y: y, width: 194, height: 0.5))
+        y -= 10
+        let divider = NSView(frame: NSRect(x: 10, y: y, width: 190, height: 0.5))
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = NSColor(white: 1, alpha: 0.06).cgColor
+        divider.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
         container.addSubview(divider)
 
         // Quit
-        y -= 30
+        y -= 34
         let quitRow = makeRow(title: "Quit Vibeliner", shortcut: "⌘Q", action: #selector(quitApp), y: y)
         container.addSubview(quitRow)
     }
 
     private func makeRow(title: String, shortcut: String?, action: Selector, y: CGFloat) -> NSView {
-        let row = HoverRowView(frame: NSRect(x: 4, y: y, width: 202, height: 28))
+        let row = HoverRowView(frame: NSRect(x: 4, y: y, width: 202, height: 32))
         row.target = self
         row.action = action
 
         let label = NSTextField(labelWithString: title)
         label.font = NSFont.systemFont(ofSize: 13)
         label.textColor = NSColor(white: 1, alpha: 0.8)
-        label.frame = NSRect(x: 8, y: 4, width: 140, height: 20)
+        label.frame = NSRect(x: 10, y: 6, width: 130, height: 20)
         row.addSubview(label)
 
         if let sc = shortcut {
             let badge = NSTextField(labelWithString: sc)
-            badge.font = NSFont.monospacedSystemFont(ofSize: 10, weight: .regular)
-            badge.textColor = NSColor(white: 1, alpha: 0.25)
+            badge.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
+            badge.textColor = NSColor(white: 1, alpha: 0.35)
             badge.alignment = .right
-            badge.frame = NSRect(x: 150, y: 4, width: 44, height: 20)
+            badge.frame = NSRect(x: 140, y: 6, width: 54, height: 20)
             row.addSubview(badge)
         }
 
