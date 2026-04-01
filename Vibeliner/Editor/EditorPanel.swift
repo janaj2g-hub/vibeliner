@@ -19,6 +19,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var captureFolder: URL?
     private var autoSaveManager: AutoSaveManager?
     private var storeObserver: Any?
+    private var keyMonitor: Any?
 
     init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
         self.screenshotImage = image
@@ -128,11 +129,20 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.toolbarView.updateAnnotationCount(self.annotationStore.count)
             self.statusPill.updateNoteCount(self.annotationStore.count)
         }
+
+        // Local key monitor for Esc and other shortcuts (nonactivating panel may not get keyDown)
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isVisible else { return event }
+            return self.handleKeyEvent(event) ? nil : event
+        }
     }
 
     deinit {
         if let observer = storeObserver {
             NotificationCenter.default.removeObserver(observer)
+        }
+        if let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
         }
     }
 
@@ -140,29 +150,43 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     override var canBecomeMain: Bool { false }
 
     override func keyDown(with event: NSEvent) {
+        if !handleKeyEvent(event) {
+            super.keyDown(with: event)
+        }
+    }
+
+    private func handleKeyEvent(_ event: NSEvent) -> Bool {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let keyCode = event.keyCode
 
         if keyCode == 53 { // Escape
-            autoSaveManager?.saveNow()
-            close()
+            if let canvas = canvasOverlay, canvas.isEditingNote {
+                canvas.cancelNoteEditing()
+            } else {
+                autoSaveManager?.saveNow()
+                close()
+            }
+            return true
         } else if keyCode >= 18 && keyCode <= 23 && flags.isEmpty {
-            // Keys 1-5 for tool switching (keycodes 18=1, 19=2, 20=3, 21=4, 23=5)
             let keyMap: [UInt16: AnnotationToolType] = [18: .pin, 19: .arrow, 20: .rectangle, 21: .circle, 23: .freehand]
             if let tool = keyMap[keyCode] {
                 toolbarView.selectTool(tool)
+                return true
             }
         } else if flags == .command && event.charactersIgnoringModifiers == "z" {
             toolbarView.delegate?.toolbarDidRequestUndo()
+            return true
         } else if flags == [.command, .shift] && event.charactersIgnoringModifiers == "z" {
             toolbarView.delegate?.toolbarDidRequestRedo()
+            return true
         } else if flags == .command && event.charactersIgnoringModifiers == "c" {
             toolbarView.delegate?.toolbarDidRequestCopyPrompt()
-        } else if keyCode == 51 || keyCode == 117 { // Delete / Forward Delete
+            return true
+        } else if keyCode == 51 || keyCode == 117 {
             toolbarView.delegate?.toolbarDidRequestDelete()
-        } else {
-            super.keyDown(with: event)
+            return true
         }
+        return false
     }
 
     // MARK: - ToolbarDelegate
@@ -183,9 +207,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestDelete() {
-        guard let selected = annotationStore.selectedAnnotation else { return }
-        annotationStore.remove(id: selected.id)
-        undoRedoManager.record(.remove(annotation: selected))
+        // Delete the entire capture folder and close
+        if let folder = captureFolder {
+            try? FileManager.default.removeItem(at: folder)
+        }
+        close()
     }
 
     func toolbarDidRequestUndo() {
