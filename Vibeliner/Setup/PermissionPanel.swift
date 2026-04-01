@@ -6,49 +6,47 @@ final class PermissionPanel: NSView {
     private var pollTimer: Timer?
     private let openButton = NSButton(title: "Open System Settings →", target: nil, action: nil)
     private let descLabel = NSTextField(wrappingLabelWithString: "")
-    private let helperLabel = NSTextField(wrappingLabelWithString: "")
+    private let successLabel = NSTextField(labelWithString: "")
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupView()
-        startPolling()
+        if CGPreflightScreenCaptureAccess() {
+            markComplete()
+        } else {
+            startPolling()
+        }
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
         descLabel.stringValue = "Vibeliner needs screen recording permission to capture screenshots of your running app."
-        descLabel.font = NSFont.systemFont(ofSize: 12)
-        descLabel.textColor = NSColor(white: 0.3, alpha: 1)
+        descLabel.font = NSFont.systemFont(ofSize: 13)
+        descLabel.textColor = NSColor(white: 0.33, alpha: 1)
         descLabel.isEditable = false
         descLabel.isBordered = false
         descLabel.drawsBackground = false
         addSubview(descLabel)
 
         openButton.bezelStyle = .rounded
+        openButton.font = NSFont.systemFont(ofSize: 12, weight: .medium)
         openButton.target = self
         openButton.action = #selector(openSettings)
         addSubview(openButton)
 
-        helperLabel.stringValue = "Toggle Vibeliner on in Privacy & Security → Screen Recording. You may need to restart the app."
-        helperLabel.font = NSFont.systemFont(ofSize: 11)
-        helperLabel.textColor = NSColor(white: 0.5, alpha: 1)
-        helperLabel.isEditable = false
-        helperLabel.isBordered = false
-        helperLabel.drawsBackground = false
-        addSubview(helperLabel)
-
-        if CGPreflightScreenCaptureAccess() {
-            markComplete()
-        }
+        successLabel.font = NSFont.systemFont(ofSize: 12)
+        successLabel.textColor = NSColor(red: 21/255, green: 128/255, blue: 61/255, alpha: 1)
+        successLabel.isHidden = true
+        addSubview(successLabel)
     }
 
     override func layout() {
         super.layout()
         let w = bounds.width
-        descLabel.frame = NSRect(x: 0, y: bounds.height - 50, width: w, height: 40)
-        openButton.frame = NSRect(x: (w - 180) / 2, y: bounds.height - 84, width: 180, height: 28)
-        helperLabel.frame = NSRect(x: 0, y: 0, width: w, height: 40)
+        descLabel.frame = NSRect(x: 0, y: bounds.height - 60, width: w, height: 48)
+        openButton.frame = NSRect(x: 0, y: bounds.height - 90, width: w, height: 28)
+        successLabel.frame = NSRect(x: 0, y: bounds.height - 86, width: w, height: 16)
     }
 
     @objc private func openSettings() {
@@ -69,11 +67,10 @@ final class PermissionPanel: NSView {
         pollTimer?.invalidate()
         pollTimer = nil
         openButton.isHidden = true
-        helperLabel.stringValue = "Vibeliner can now capture your screen."
+        successLabel.stringValue = "Vibeliner can now capture your screen."
+        successLabel.isHidden = false
         setupController?.completeStep1()
     }
 
-    deinit {
-        pollTimer?.invalidate()
-    }
+    deinit { pollTimer?.invalidate() }
 }
