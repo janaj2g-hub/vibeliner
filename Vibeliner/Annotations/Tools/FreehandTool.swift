@@ -40,6 +40,7 @@ final class FreehandTool: AnnotationTool {
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         points.removeAll()
+        canvas.openNoteEditor(for: added)
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
@@ -53,16 +54,11 @@ final class FreehandTool: AnnotationTool {
     // MARK: - Catmull-Rom smoothing
 
     private func catmullRomSmooth(points: [CGPoint], passes: Int, tension: CGFloat) -> [CGPoint] {
-        var result = points
-        for _ in 0..<passes {
-            result = subdivide(result, tension: tension)
-        }
-        return result
-    }
-
-    private func subdivide(_ points: [CGPoint], tension: CGFloat) -> [CGPoint] {
         guard points.count >= 3 else { return points }
-        var result: [CGPoint] = [points[0]]
+
+        // Catmull-Rom interpolation: generate smooth intermediate points
+        var result: [CGPoint] = []
+        let stepsPerSegment = 8
 
         for i in 0..<points.count - 1 {
             let p0 = points[max(0, i - 1)]
@@ -70,12 +66,30 @@ final class FreehandTool: AnnotationTool {
             let p2 = points[min(points.count - 1, i + 1)]
             let p3 = points[min(points.count - 1, i + 2)]
 
-            let mid = CGPoint(
-                x: (p1.x + p2.x) / 2 + tension * ((p2.x - p0.x) - (p3.x - p1.x)) / 16,
-                y: (p1.y + p2.y) / 2 + tension * ((p2.y - p0.y) - (p3.y - p1.y)) / 16
-            )
-            result.append(mid)
-            result.append(p2)
+            for step in 0..<stepsPerSegment {
+                let t = CGFloat(step) / CGFloat(stepsPerSegment)
+                let t2 = t * t
+                let t3 = t2 * t
+
+                let x = tension * (
+                    (2 * p1.x) +
+                    (-p0.x + p2.x) * t +
+                    (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
+                    (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3
+                )
+                let y = tension * (
+                    (2 * p1.y) +
+                    (-p0.y + p2.y) * t +
+                    (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
+                    (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3
+                )
+                result.append(CGPoint(x: x, y: y))
+            }
+        }
+
+        // Add the last point
+        if let last = points.last {
+            result.append(last)
         }
 
         return result

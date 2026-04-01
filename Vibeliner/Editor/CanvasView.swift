@@ -29,7 +29,7 @@ final class CanvasView: NSView {
             forName: .annotationsDidChange, object: store, queue: .main
         ) { [weak self] _ in
             self?.marksLayer.needsDisplay = true
-            self?.notesLayer.needsDisplay = true
+            self?.refreshNotePills()
         }
     }
 
@@ -85,6 +85,94 @@ final class CanvasView: NSView {
         ghostPosition = nil
         marksLayer.ghostPosition = nil
         marksLayer.needsDisplay = true
+    }
+
+    func refreshNotePills() {
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size)
+    }
+
+    private var activeNoteField: NSTextField?
+    private var editingAnnotationId: UUID?
+
+    func openNoteEditor(for annotation: Annotation) {
+        activeNoteField?.removeFromSuperview()
+
+        let pillPos = NotePillRenderer.notePillPosition(for: annotation, canvasSize: bounds.size)
+
+        let textField = NSTextField()
+        textField.font = DesignTokens.noteTextFont
+        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+        textField.backgroundColor = DesignTokens.redNoteBg
+        textField.isBordered = true
+        textField.wantsLayer = true
+        textField.layer?.borderColor = DesignTokens.red.cgColor
+        textField.layer?.borderWidth = 1
+        textField.layer?.cornerRadius = DesignTokens.noteCornerRadius
+        textField.focusRingType = .none
+        textField.frame = NSRect(x: pillPos.x, y: pillPos.y, width: 180, height: DesignTokens.noteHeight)
+        textField.placeholderString = "Add note..."
+        textField.stringValue = annotation.noteText
+        textField.identifier = NSUserInterfaceItemIdentifier("noteEditor")
+
+        let noteDelegate = CanvasNoteFieldDelegate(canvas: self)
+        textField.delegate = noteDelegate
+        textField.target = noteDelegate
+        textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
+
+        notesLayer.addSubview(textField)
+        editingAnnotationId = annotation.id
+        activeNoteField = textField
+
+        // Make the field first responder via the window
+        DispatchQueue.main.async { [weak self, weak textField] in
+            guard let window = self?.window, let tf = textField else { return }
+            window.makeFirstResponder(tf)
+        }
+    }
+
+    func confirmNoteEditing() {
+        guard let id = editingAnnotationId, let field = activeNoteField else { return }
+        store.update(id: id, noteText: field.stringValue)
+        field.removeFromSuperview()
+        activeNoteField = nil
+        editingAnnotationId = nil
+        refreshNotePills()
+    }
+
+    func cancelNoteEditing() {
+        guard let id = editingAnnotationId else { return }
+        // If note text is empty, remove the annotation
+        if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
+            store.remove(id: id)
+        }
+        activeNoteField?.removeFromSuperview()
+        activeNoteField = nil
+        editingAnnotationId = nil
+    }
+
+    var isEditingNote: Bool { activeNoteField != nil }
+}
+
+// MARK: - Note field delegate
+
+final class CanvasNoteFieldDelegate: NSObject, NSTextFieldDelegate {
+    weak var canvas: CanvasView?
+
+    init(canvas: CanvasView) {
+        self.canvas = canvas
+        super.init()
+    }
+
+    @objc func confirmNote(_ sender: NSTextField) {
+        canvas?.confirmNoteEditing()
+    }
+
+    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
+        if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
+            canvas?.cancelNoteEditing()
+            return true
+        }
+        return false
     }
 }
 

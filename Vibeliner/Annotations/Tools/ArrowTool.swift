@@ -34,6 +34,7 @@ final class ArrowTool: AnnotationTool {
         )
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
+        canvas.openNoteEditor(for: added)
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
