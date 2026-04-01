@@ -146,39 +146,30 @@ final class ToolbarView: NSView {
         addSubview(trashBtn)
         x += DesignTokens.iconButtonSize + 10
 
-        // Undo
+        // Undo — use SF Symbol
         let undoBtn = ToolButton(style: .icon, tooltip: "Undo") { rect, color in
-            let path = NSBezierPath()
-            path.move(to: NSPoint(x: rect.maxX - 1, y: rect.maxY - 1))
-            path.appendArc(withCenter: NSPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2 - 1, startAngle: 60, endAngle: 220, clockwise: true)
-            // Arrow tip
-            let endPt = NSPoint(x: rect.midX + (rect.width / 2 - 1) * cos(220 * .pi / 180), y: rect.midY + (rect.width / 2 - 1) * sin(220 * .pi / 180))
-            path.move(to: endPt)
-            path.line(to: NSPoint(x: endPt.x - 3, y: endPt.y + 2))
-            path.move(to: endPt)
-            path.line(to: NSPoint(x: endPt.x + 1, y: endPt.y + 3))
-            path.lineWidth = 1.3
-            color.setStroke()
-            path.stroke()
+            if let img = NSImage(systemSymbolName: "arrow.uturn.backward", accessibilityDescription: "Undo") {
+                let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+                let configured = img.withSymbolConfiguration(config) ?? img
+                let imgSize = configured.size
+                let imgRect = NSRect(x: rect.midX - imgSize.width / 2, y: rect.midY - imgSize.height / 2, width: imgSize.width, height: imgSize.height)
+                configured.draw(in: imgRect)
+            }
         }
         undoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestUndo() }
         undoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(undoBtn)
         x += DesignTokens.iconButtonSize + 1
 
-        // Redo
+        // Redo — use SF Symbol
         let redoBtn = ToolButton(style: .icon, tooltip: "Redo") { rect, color in
-            let path = NSBezierPath()
-            path.move(to: NSPoint(x: rect.minX + 1, y: rect.maxY - 1))
-            path.appendArc(withCenter: NSPoint(x: rect.midX, y: rect.midY), radius: rect.width / 2 - 1, startAngle: 120, endAngle: -40, clockwise: false)
-            let endPt = NSPoint(x: rect.midX + (rect.width / 2 - 1) * cos(-40 * .pi / 180), y: rect.midY + (rect.width / 2 - 1) * sin(-40 * .pi / 180))
-            path.move(to: endPt)
-            path.line(to: NSPoint(x: endPt.x + 3, y: endPt.y + 2))
-            path.move(to: endPt)
-            path.line(to: NSPoint(x: endPt.x - 1, y: endPt.y + 3))
-            path.lineWidth = 1.3
-            color.setStroke()
-            path.stroke()
+            if let img = NSImage(systemSymbolName: "arrow.uturn.forward", accessibilityDescription: "Redo") {
+                let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .medium)
+                let configured = img.withSymbolConfiguration(config) ?? img
+                let imgSize = configured.size
+                let imgRect = NSRect(x: rect.midX - imgSize.width / 2, y: rect.midY - imgSize.height / 2, width: imgSize.width, height: imgSize.height)
+                configured.draw(in: imgRect)
+            }
         }
         redoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestRedo() }
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
@@ -390,10 +381,10 @@ final class CopyPillButton: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
-        layer?.cornerRadius = 12
+        layer?.cornerRadius = 14
         layer?.borderWidth = 1.5
 
-        label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+        label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false

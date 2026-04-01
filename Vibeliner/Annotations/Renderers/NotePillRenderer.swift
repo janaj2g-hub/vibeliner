@@ -4,7 +4,7 @@ final class NotePillRenderer {
 
     static let pillIdentifier = "notePill"
 
-    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize) {
+    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil) {
         // Remove existing note pill subviews
         for subview in view.subviews where subview.identifier?.rawValue == pillIdentifier {
             subview.removeFromSuperview()
@@ -13,8 +13,9 @@ final class NotePillRenderer {
         for annotation in annotations {
             guard !annotation.noteText.isEmpty else { continue }
 
+            let isHovered = (annotation.id == hoveredId)
             let pillPos = notePillPosition(for: annotation, canvasSize: canvasSize)
-            let pill = createNotePill(number: annotation.number, text: annotation.noteText)
+            let pill = createNotePill(number: annotation.number, text: annotation.noteText, isHovered: isHovered)
             pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
             pill.frame.origin = pillPos
             view.addSubview(pill)
@@ -48,7 +49,7 @@ final class NotePillRenderer {
         }
     }
 
-    private static func createNotePill(number: Int, text: String) -> NSView {
+    private static func createNotePill(number: Int, text: String, isHovered: Bool = false) -> NSView {
         let numberStr = "\(number) "
         let fullText = numberStr + text
 
@@ -78,9 +79,15 @@ final class NotePillRenderer {
 
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: pillWidth, height: pillHeight))
         pill.wantsLayer = true
-        pill.layer?.backgroundColor = DesignTokens.redNoteBg.cgColor
-        pill.layer?.borderColor = DesignTokens.redNoteBorder.cgColor
-        pill.layer?.borderWidth = 0.5
+        if isHovered {
+            pill.layer?.backgroundColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor
+            pill.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.30).cgColor
+            pill.layer?.borderWidth = 1
+        } else {
+            pill.layer?.backgroundColor = DesignTokens.redNoteBg.cgColor
+            pill.layer?.borderColor = DesignTokens.redNoteBorder.cgColor
+            pill.layer?.borderWidth = 0.5
+        }
         pill.layer?.cornerRadius = DesignTokens.noteCornerRadius
 
         textField.frame = NSRect(x: padding, y: (pillHeight - textField.frame.height) / 2, width: textField.frame.width, height: textField.frame.height)

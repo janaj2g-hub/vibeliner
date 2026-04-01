@@ -57,7 +57,27 @@ final class CanvasView: NSView {
         activeTool?.mouseMoved(to: point, in: self)
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
+
+        // Hit-test for hover
+        let oldHovered = hoveredAnnotationId
+        hoveredAnnotationId = hitTestAnnotation(at: point)
+        if hoveredAnnotationId != oldHovered {
+            marksLayer.hoveredId = hoveredAnnotationId
+            refreshNotePills()
+        }
+
         marksLayer.needsDisplay = true
+    }
+
+    private func hitTestAnnotation(at point: CGPoint) -> UUID? {
+        for annotation in store.annotations.reversed() {
+            let badgePos = annotation.badgePosition
+            let badgeRadius = DesignTokens.badgeDiameter / 2 + 4 // generous hit target
+            if hypot(point.x - badgePos.x, point.y - badgePos.y) <= badgeRadius {
+                return annotation.id
+            }
+        }
+        return nil
     }
 
     override func mouseDown(with event: NSEvent) {
@@ -88,11 +108,13 @@ final class CanvasView: NSView {
     }
 
     func refreshNotePills() {
-        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size)
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId)
     }
 
     private var activeNoteField: NSTextField?
     private var editingAnnotationId: UUID?
+    private var noteFieldDelegate: CanvasNoteFieldDelegate?
+    private(set) var hoveredAnnotationId: UUID?
 
     func openNoteEditor(for annotation: Annotation) {
         activeNoteField?.removeFromSuperview()
@@ -114,9 +136,10 @@ final class CanvasView: NSView {
         textField.stringValue = annotation.noteText
         textField.identifier = NSUserInterfaceItemIdentifier("noteEditor")
 
-        let noteDelegate = CanvasNoteFieldDelegate(canvas: self)
-        textField.delegate = noteDelegate
-        textField.target = noteDelegate
+        let delegate = CanvasNoteFieldDelegate(canvas: self)
+        self.noteFieldDelegate = delegate
+        textField.delegate = delegate
+        textField.target = delegate
         textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
 
         notesLayer.addSubview(textField)
@@ -132,22 +155,26 @@ final class CanvasView: NSView {
 
     func confirmNoteEditing() {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
-        store.update(id: id, noteText: field.stringValue)
+        let text = field.stringValue
+        store.update(id: id, noteText: text)
         field.removeFromSuperview()
         activeNoteField = nil
         editingAnnotationId = nil
+        noteFieldDelegate = nil
         refreshNotePills()
+        marksLayer.needsDisplay = true
     }
 
     func cancelNoteEditing() {
         guard let id = editingAnnotationId else { return }
-        // If note text is empty, remove the annotation
         if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
             store.remove(id: id)
         }
         activeNoteField?.removeFromSuperview()
         activeNoteField = nil
         editingAnnotationId = nil
+        noteFieldDelegate = nil
+        refreshNotePills()
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
@@ -182,6 +209,7 @@ final class MarksLayerView: NSView {
 
     var ghostPosition: CGPoint?
     var ghostTool: AnnotationTool?
+    var hoveredId: UUID?
     private let store: AnnotationStore
     private let pinRenderer = PinRenderer()
     private let arrowRenderer = ArrowRenderer()
@@ -206,6 +234,14 @@ final class MarksLayerView: NSView {
         rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
         circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
         freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+
+        // Draw hover glow
+        if let hId = hoveredId, let annotation = store.annotations.first(where: { $0.id == hId }) {
+            let bp = annotation.badgePosition
+            let glowRadius = DesignTokens.badgeDiameter / 2 + 6
+            context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.07).cgColor)
+            context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
+        }
 
         // Draw ghost preview
         if let pos = ghostPosition, let tool = ghostTool {
