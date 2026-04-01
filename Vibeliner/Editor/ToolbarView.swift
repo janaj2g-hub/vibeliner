@@ -402,10 +402,10 @@ final class CopyPillButton: NSView {
         addSubview(label)
 
         label.sizeToFit()
-        let w = label.frame.width + 24
-        let h: CGFloat = 26
+        let w = label.frame.width + 28
+        let h: CGFloat = 28
         setFrameSize(NSSize(width: w, height: h))
-        label.frame = NSRect(x: 12, y: (h - label.frame.height) / 2, width: label.frame.width, height: label.frame.height)
+        label.frame = NSRect(x: 14, y: (h - label.frame.height) / 2, width: label.frame.width, height: label.frame.height)
 
         updateColors()
     }
