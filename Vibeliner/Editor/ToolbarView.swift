@@ -111,28 +111,8 @@ final class ToolbarView: NSView {
         toolButtons[.select] = selectBtn
         x += DesignTokens.toolButtonSize
 
-        // VIB-164 (attempt 3): Pin icon — simple NSBezierPath like all other tools. No special cases.
-        // Filled circle (r=3.5) + stake line, 15×15 viewBox, currentColor
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { rect, color in
-            let w = rect.width, h = rect.height
-            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-            }
-            // Filled circle at (7.5, 5), r=3.5
-            let circleCenter = pt(7.5, 5)
-            let r = 3.5 * (w / 15)
-            let circlePath = NSBezierPath(ovalIn: NSRect(x: circleCenter.x - r, y: circleCenter.y - r, width: r * 2, height: r * 2))
-            color.setFill()
-            circlePath.fill()
-            // Stake line from (7.5, 8.5) to (7.5, 13)
-            let stake = NSBezierPath()
-            stake.move(to: pt(7.5, 8.5))
-            stake.line(to: pt(7.5, 13))
-            stake.lineWidth = 1.4
-            stake.lineCapStyle = .round
-            color.setStroke()
-            stake.stroke()
-        }
+        // VIB-164 (attempt 4): Pin icon — uses the shared drawPinIcon, same as settings
+        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)", iconDrawer: ToolbarView.drawPinIcon)
         pinBtn.isActive = (selectedTool == .pin)
         pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
         pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
@@ -372,18 +352,27 @@ final class ToolbarView: NSView {
 
     // MARK: - Icon drawing functions
 
+    /// Pin icon: filled circle + stake, 15×15 viewBox, same pattern as all other tool icons.
+    /// Uses currentColor — no special colors, no counter.
     static func drawPinIcon(_ rect: NSRect, _ color: NSColor) {
-        let cx = rect.midX, cy = rect.midY + 2
-        let r: CGFloat = 5
-        let path = NSBezierPath(ovalIn: NSRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2))
+        let w = rect.width, h = rect.height
+        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+        }
+        // Filled circle at (7.5, 5), r=3.5 in 15×15 viewBox
+        let center = pt(7.5, 5)
+        let r = 3.5 * (w / 15)
+        let circle = NSBezierPath(ovalIn: NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
         color.setFill()
-        path.fill()
-        let line = NSBezierPath()
-        line.move(to: NSPoint(x: cx, y: cy - r))
-        line.line(to: NSPoint(x: cx, y: rect.minY))
-        line.lineWidth = 1.8
+        circle.fill()
+        // Stake line from (7.5, 9) to (7.5, 14)
+        let stake = NSBezierPath()
+        stake.move(to: pt(7.5, 9))
+        stake.line(to: pt(7.5, 14))
+        stake.lineWidth = 1.8 * (w / 15)
+        stake.lineCapStyle = .round
         color.setStroke()
-        line.stroke()
+        stake.stroke()
     }
 
     static func drawArrowIcon(_ rect: NSRect, _ color: NSColor) {

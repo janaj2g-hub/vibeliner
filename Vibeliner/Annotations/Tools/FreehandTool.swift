@@ -28,15 +28,15 @@ final class FreehandTool: AnnotationTool {
             return
         }
 
-        // Prototype-exact pipeline: smooth → downsample → store control points
+        // VIB-177: smooth → store ALL smoothed points (NOT aggressively downsampled)
+        // Downsampling to 10 points made strokes jagged. Store full smoothed set.
         let smoothed = smoothPoints(points, passes: 3)
-        let controlPoints = downsample(smoothed, count: min(10, smoothed.count))
-        let badgePos = controlPoints.first ?? point
+        let badgePos = smoothed.first ?? point
 
         let annotation = Annotation(
             type: .freehand,
             number: 0,
-            position: .freehand(points: controlPoints),
+            position: .freehand(points: smoothed),
             badgePosition: badgePos
         )
         let added = store.add(annotation)
@@ -49,7 +49,9 @@ final class FreehandTool: AnnotationTool {
         guard isDrawing, points.count >= 2 else { return }
         context.saveGState()
         context.setAlpha(0.6)
-        FreehandRenderer.drawFreehandPath(in: context, points: points)
+        // VIB-177: Apply smoothing to ghost preview too for visual consistency
+        let ghostSmoothed = points.count >= 4 ? smoothPoints(points, passes: 1) : points
+        FreehandRenderer.drawFreehandPath(in: context, points: ghostSmoothed)
         context.restoreGState()
     }
 
