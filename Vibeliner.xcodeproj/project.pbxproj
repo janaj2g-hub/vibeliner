@@ -58,6 +58,7 @@
 		A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* FirstUseTooltipView.swift */; };
 		A10000010000000000000032 /* NotePillRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* NotePillRenderer.swift */; };
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
+		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -114,6 +115,7 @@
 		A20000010000000000000033 /* FirstUseTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstUseTooltipView.swift; sourceTree = "<group>"; };
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
+		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -193,6 +195,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000018 /* PinTool.swift */,
+				C20000010000000000000001 /* SelectTool.swift */,
 				A2000001000000000000001A /* ArrowTool.swift */,
 				A2000001000000000000001C /* RectangleTool.swift */,
 				A2000001000000000000001E /* CircleTool.swift */,
@@ -427,6 +430,7 @@
 				A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */,
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
+				C10000010000000000000001 /* SelectTool.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

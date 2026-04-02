@@ -9,6 +9,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     let annotationStore = AnnotationStore()
     private(set) var undoRedoManager: UndoRedoManager!
     private var canvasOverlay: CanvasView?
+    private let selectTool = SelectTool()
     private let pinTool = PinTool()
     private let arrowTool = ArrowTool()
     private let rectangleTool = RectangleTool()
@@ -88,12 +89,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.undoRedoManager = UndoRedoManager(store: annotationStore)
 
         // Wire tools
+        selectTool.editorPanel = self
         pinTool.editorPanel = self
         arrowTool.editorPanel = self
         rectangleTool.editorPanel = self
         circleTool.editorPanel = self
         freehandTool.editorPanel = self
-        canvas.activeTool = pinTool
+        canvas.activeTool = pinTool  // Default to pin tool
         canvas.undoManager_ = undoRedoManager
 
         // Auto-save
@@ -158,19 +160,27 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     private func handleKeyEvent(_ event: NSEvent) -> Bool {
+        // When a note text field is editing, pass ALL key events through
+        // except Escape (cancel) and Enter (confirm, handled by text field delegate).
+        // This ensures backspace, arrow keys, etc. work in the text field.
+        if let canvas = canvasOverlay, canvas.isEditingNote {
+            if event.keyCode == 53 { // Escape
+                canvas.cancelNoteEditing()
+                return true
+            }
+            // Let the text field handle everything else (backspace, typing, etc.)
+            return false
+        }
+
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let keyCode = event.keyCode
 
         if keyCode == 53 { // Escape
-            if let canvas = canvasOverlay, canvas.isEditingNote {
-                canvas.cancelNoteEditing()
-            } else {
-                autoSaveManager?.saveNow()
-                close()
-            }
+            autoSaveManager?.saveNow()
+            close()
             return true
         } else if keyCode >= 18 && keyCode <= 23 && flags.isEmpty {
-            let keyMap: [UInt16: AnnotationToolType] = [18: .pin, 19: .arrow, 20: .rectangle, 21: .circle, 23: .freehand]
+            let keyMap: [UInt16: AnnotationToolType] = [18: .select, 19: .pin, 20: .arrow, 21: .rectangle, 22: .circle, 23: .freehand]
             if let tool = keyMap[keyCode] {
                 toolbarView.selectTool(tool)
                 return true
@@ -182,9 +192,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             toolbarView.delegate?.toolbarDidRequestRedo()
             return true
         } else if flags == .command && event.charactersIgnoringModifiers == "c" {
-            toolbarView.delegate?.toolbarDidRequestCopyPrompt()
-            return true
-        } else if keyCode == 51 || keyCode == 117 {
+            if !(canvasOverlay?.isEditingNote ?? false) {
+                toolbarView.delegate?.toolbarDidRequestCopyPrompt()
+                return true
+            }
+        } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
             toolbarView.delegate?.toolbarDidRequestDelete()
             return true
         }
@@ -195,6 +207,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidSelectTool(_ tool: AnnotationToolType) {
         switch tool {
+        case .select: canvasOverlay?.activeTool = selectTool
         case .pin: canvasOverlay?.activeTool = pinTool
         case .arrow: canvasOverlay?.activeTool = arrowTool
         case .rectangle: canvasOverlay?.activeTool = rectangleTool

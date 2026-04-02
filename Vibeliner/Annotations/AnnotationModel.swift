@@ -2,10 +2,11 @@ import Foundation
 import CoreGraphics
 
 enum AnnotationToolType: Int, CaseIterable {
-    case pin = 0, arrow, rectangle, circle, freehand
+    case select = 0, pin, arrow, rectangle, circle, freehand
 
     var label: String {
         switch self {
+        case .select: return "select"
         case .pin: return "pin"
         case .arrow: return "arrow"
         case .rectangle: return "rectangle"
@@ -13,6 +14,9 @@ enum AnnotationToolType: Int, CaseIterable {
         case .freehand: return "freehand"
         }
     }
+
+    /// Whether this is an annotation-creating tool (vs select)
+    var isDrawingTool: Bool { self != .select }
 }
 
 enum AnnotationPosition {

@@ -56,7 +56,7 @@ final class ToolbarView: NSView {
         addSubview(tintView)
 
         // Build button strip
-        var x: CGFloat = 4
+        var x: CGFloat = 6  // 6px left padding (prototype: paddingLeft: 6)
         let centerY: CGFloat = (DesignTokens.toolbarHeight - DesignTokens.toolButtonSize) / 2
 
         // Close button
@@ -80,8 +80,34 @@ final class ToolbarView: NSView {
         x = addDivider(at: x)
         x += 10
 
+        // Select tool button (pointer/cursor icon)
+        let selectBtn = ToolButton(style: .tool, tooltip: "Select (1)") { rect, color in
+            // Pointer/cursor arrow icon
+            let path = NSBezierPath()
+            let cx = rect.midX - 1
+            let cy = rect.midY
+            path.move(to: NSPoint(x: cx - 4, y: cy + 5))
+            path.line(to: NSPoint(x: cx - 4, y: cy - 6))
+            path.line(to: NSPoint(x: cx + 3, y: cy - 1))
+            path.line(to: NSPoint(x: cx + 6, y: cy - 4))
+            path.line(to: NSPoint(x: cx + 3, y: cy - 4))
+            path.line(to: NSPoint(x: cx + 1, y: cy + 1))
+            path.close()
+            color.setFill()
+            path.fill()
+            color.setStroke()
+            path.lineWidth = 0.5
+            path.stroke()
+        }
+        selectBtn.isActive = (selectedTool == .select)
+        selectBtn.onClick = { [weak self] in self?.selectTool(.select) }
+        selectBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
+        addSubview(selectBtn)
+        toolButtons[.select] = selectBtn
+        x += DesignTokens.toolButtonSize
+
         // Pin tool button with counter icon
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin") { [weak self] rect, color in
+        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { [weak self] rect, color in
             // Draw nothing — PinCounterIcon overlay handles it
             _ = self
         }
@@ -99,10 +125,10 @@ final class ToolbarView: NSView {
 
         // Other tool buttons
         let toolDefs: [(AnnotationToolType, String, (NSRect, NSColor) -> Void)] = [
-            (.arrow, "Arrow", ToolbarView.drawArrowIcon),
-            (.rectangle, "Rectangle", ToolbarView.drawRectIcon),
-            (.circle, "Circle", ToolbarView.drawCircleIcon),
-            (.freehand, "Freehand", ToolbarView.drawFreehandIcon),
+            (.arrow, "Arrow (3)", ToolbarView.drawArrowIcon),
+            (.rectangle, "Rectangle (4)", ToolbarView.drawRectIcon),
+            (.circle, "Circle (5)", ToolbarView.drawCircleIcon),
+            (.freehand, "Freehand (6)", ToolbarView.drawFreehandIcon),
         ]
 
         for (tool, name, drawer) in toolDefs {
@@ -210,7 +236,7 @@ final class ToolbarView: NSView {
         addSubview(copyImageBtn)
         self.copyImageButton = copyImageBtn
         self.copyImagePillButton = copyImageBtn
-        x += copyImageBtn.frame.width + 4
+        x += copyImageBtn.frame.width + 6  // 6px right padding (matches 6px left padding)
 
         // Set total size
         setFrameSize(NSSize(width: x, height: DesignTokens.toolbarHeight))
@@ -437,6 +463,7 @@ final class CopyPillButton: NSView {
     func showCopied() {
         isCopied = true
         label.stringValue = "✓ Copied"
+        centerLabel()
         updateAppearance()
         revertTimer?.invalidate()
         revertTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
@@ -448,7 +475,19 @@ final class CopyPillButton: NSView {
         revertTimer?.invalidate()
         isCopied = false
         label.stringValue = originalTitle
+        centerLabel()
         updateAppearance()
+    }
+
+    private func centerLabel() {
+        label.sizeToFit()
+        let h = frame.height
+        label.frame = NSRect(
+            x: (frame.width - label.frame.width) / 2,
+            y: (h - label.frame.height) / 2,
+            width: label.frame.width,
+            height: label.frame.height
+        )
     }
 
     private func updateAppearance() {
