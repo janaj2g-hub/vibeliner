@@ -12,16 +12,19 @@ final class ScreenCapture {
             return nil
         }
 
-        // VIB-179: Convert to global display coordinates for multi-monitor
-        // CGWindowListCreateImage uses global display space (top-left origin)
-        let screenFrame = screen.frame
-        let mainScreenH = NSScreen.screens.first?.frame.height ?? screenFrame.height
+        // `rect` is already in GLOBAL screen coordinates (bottom-left origin, from
+        // CaptureCoordinator's window.convertToScreen). We only need to flip Y to
+        // CGWindowListCreateImage's top-left origin. Do NOT multiply by backingScaleFactor
+        // — CGWindowListCreateImage takes point coordinates, not pixels.
+        let mainScreenH = NSScreen.screens.first?.frame.height ?? screen.frame.height
+        let flippedY = mainScreenH - rect.origin.y - rect.height
 
-        // Convert from screen-local bottom-left to global top-left
-        let globalX = screenFrame.origin.x + rect.origin.x
-        let globalY = mainScreenH - (screenFrame.origin.y + rect.origin.y + rect.height)
-
-        let cgRect = CGRect(x: globalX, y: globalY, width: rect.width, height: rect.height)
+        let cgRect = CGRect(
+            x: rect.origin.x,
+            y: flippedY,
+            width: rect.width,
+            height: rect.height
+        )
 
         // Capture using CGWindowListCreateImage
         guard let cgImage = CGWindowListCreateImage(
@@ -34,8 +37,9 @@ final class ScreenCapture {
             return captureWithFallback(rect: rect)
         }
 
-        // VIB-179: Set image display size to POINT dimensions (not pixel)
-        // CGWindowListCreateImage with .bestResolution returns 2x pixels on Retina
+        // Set image display size to POINT dimensions (not pixel dimensions).
+        // CGWindowListCreateImage with .bestResolution returns 2x pixels on Retina,
+        // but NSImage should display at point size.
         let image = NSImage(cgImage: cgImage, size: NSSize(width: rect.width, height: rect.height))
         return image
     }
