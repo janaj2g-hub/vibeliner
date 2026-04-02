@@ -21,6 +21,9 @@ final class CanvasView: NSView, NotePillDelegate {
         notesLayer.layer?.masksToBounds = false
 
         super.init(frame: NSRect(origin: .zero, size: frame.size))
+        // VIB-167: CanvasView must not clip notes — only marksLayer clips
+        wantsLayer = true
+        layer?.masksToBounds = false
 
         addSubview(marksLayer)
         addSubview(notesLayer)
