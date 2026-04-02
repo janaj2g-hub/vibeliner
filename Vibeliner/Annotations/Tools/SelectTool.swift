@@ -98,17 +98,61 @@ final class SelectTool: AnnotationTool {
             if part == "aEnd", case .arrow(let start, _) = annotation.position {
                 store.updatePosition(id: id, position: .arrow(start: start, end: point))
             } else if part.hasPrefix("rc:"), case .rectangle(let origin, let size) = annotation.position {
+                // Rectangle corner resize — opposite corner stays fixed
+                // Corner indices: 0=origin, 1=(origin.x+w, origin.y), 2=(origin.x, origin.y+h), 3=(origin.x+w, origin.y+h)
                 let ci = Int(part.dropFirst(3)) ?? 0
                 var nx = origin.x, ny = origin.y, nw = size.width, nh = size.height
                 switch ci {
-                case 0: nx = point.x; ny = point.y; nw = origin.x + size.width - point.x; nh = origin.y + size.height - point.y
-                case 1: ny = point.y; nw = point.x - origin.x; nh = origin.y + size.height - point.y
-                case 2: nx = point.x; nw = origin.x + size.width - point.x; nh = point.y - origin.y
-                case 3: nw = point.x - origin.x; nh = point.y - origin.y
+                case 0: // Dragging origin corner: opposite is (rx+rw, ry+rh)
+                    nx = point.x; ny = point.y
+                    nw = (origin.x + size.width) - point.x
+                    nh = (origin.y + size.height) - point.y
+                case 1: // Dragging (rx+rw, ry): opposite is (rx, ry+rh)
+                    ny = point.y
+                    nw = point.x - origin.x
+                    nh = (origin.y + size.height) - point.y
+                case 2: // Dragging (rx, ry+rh): opposite is (rx+rw, ry)
+                    nx = point.x
+                    nw = (origin.x + size.width) - point.x
+                    nh = point.y - origin.y
+                case 3: // Dragging (rx+rw, ry+rh): opposite is (rx, ry)
+                    nw = point.x - origin.x
+                    nh = point.y - origin.y
                 default: break
                 }
+                // Minimum size 10x10
                 if nw > 10 && nh > 10 {
-                    store.updatePosition(id: id, position: .rectangle(origin: CGPoint(x: nx, y: ny), size: CGSize(width: nw, height: nh)))
+                    let newOrigin = CGPoint(x: nx, y: ny)
+                    let newSize = CGSize(width: nw, height: nh)
+                    store.updatePosition(id: id, position: .rectangle(origin: newOrigin, size: newSize))
+
+                    // Update badge to follow its corner
+                    // Determine which corner the badge is closest to and snap it there
+                    let corners = [
+                        CGPoint(x: nx, y: ny),                   // 0
+                        CGPoint(x: nx + nw, y: ny),              // 1
+                        CGPoint(x: nx, y: ny + nh),              // 2
+                        CGPoint(x: nx + nw, y: ny + nh)          // 3
+                    ]
+                    // Find which corner the badge was originally on (the one NOT being dragged,
+                    // and NOT the two adjacent to the dragged corner — it's the fourth corner
+                    // from the perspective of the original rect)
+                    // Simpler: badge stays at its original corner index. Determine badge corner
+                    // from old position.
+                    let bp = annotation.badgePosition
+                    let oldCorners = [
+                        CGPoint(x: origin.x, y: origin.y),
+                        CGPoint(x: origin.x + size.width, y: origin.y),
+                        CGPoint(x: origin.x, y: origin.y + size.height),
+                        CGPoint(x: origin.x + size.width, y: origin.y + size.height)
+                    ]
+                    var badgeCornerIdx = 0
+                    var minDist = CGFloat.greatestFiniteMagnitude
+                    for (i, c) in oldCorners.enumerated() {
+                        let d = hypot(bp.x - c.x, bp.y - c.y)
+                        if d < minDist { minDist = d; badgeCornerIdx = i }
+                    }
+                    store.updateBadgePosition(id: id, badgePosition: corners[badgeCornerIdx])
                 }
             } else if part == "cR", case .circle(let center, _) = annotation.position {
                 let newRadius = max(10, hypot(point.x - center.x, point.y - center.y))
@@ -165,6 +209,8 @@ final class SelectTool: AnnotationTool {
                     return HitResult(id: annotation.id, part: "aEnd")
                 }
             case .rectangle(let origin, let size):
+                // Corner handles — skip the badge corner (it returns "badge" from the check above)
+                let bp = annotation.badgePosition
                 let corners = [
                     (CGPoint(x: origin.x, y: origin.y), 0),
                     (CGPoint(x: origin.x + size.width, y: origin.y), 1),
@@ -172,10 +218,13 @@ final class SelectTool: AnnotationTool {
                     (CGPoint(x: origin.x + size.width, y: origin.y + size.height), 3)
                 ]
                 for (corner, idx) in corners {
+                    // Skip if this corner is the badge corner
+                    if hypot(corner.x - bp.x, corner.y - bp.y) < 5 { continue }
                     if hypot(point.x - corner.x, point.y - corner.y) < 10 {
                         return HitResult(id: annotation.id, part: "rc:\(idx)")
                     }
                 }
+                // Body containment (±5px)
                 if point.x >= origin.x - 5 && point.x <= origin.x + size.width + 5 &&
                    point.y >= origin.y - 5 && point.y <= origin.y + size.height + 5 {
                     return HitResult(id: annotation.id, part: "body")
