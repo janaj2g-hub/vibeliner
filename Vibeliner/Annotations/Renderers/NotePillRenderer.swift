@@ -56,8 +56,8 @@ final class NotePillRenderer {
     }
 
     /// Convert anchor point + anchor type to AppKit frame origin using ACTUAL pill width
-    private static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat) -> CGPoint {
-        let h = DesignTokens.noteHeight
+    static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat, pillHeight: CGFloat? = nil) -> CGPoint {
+        let h = pillHeight ?? DesignTokens.noteHeight
         switch anchor {
         case .tl: return CGPoint(x: point.x, y: point.y - h / 2)
         case .tr: return CGPoint(x: point.x - pillWidth, y: point.y - h / 2)
@@ -71,6 +71,11 @@ final class NotePillRenderer {
     static func notePillPosition(for annotation: Annotation, canvasSize: NSSize) -> CGPoint {
         let placement = notePlacement(for: annotation)
         return anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: 130)
+    }
+
+    /// VIB-162: Get raw placement (point + anchor) for editing pill positioning
+    static func notePlacementForEditing(for annotation: Annotation) -> PlacedNote {
+        return notePlacement(for: annotation)
     }
 
     private static func notePlacement(for annotation: Annotation) -> PlacedNote {

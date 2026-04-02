@@ -12,7 +12,7 @@ final class SettingsWindowController: NSWindowController {
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 700),  // VIB-163: Min 700px so everything fits
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 560),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
@@ -27,12 +27,18 @@ final class SettingsWindowController: NSWindowController {
     private func setupTabs() {
         guard let contentView = window?.contentView else { return }
 
+        // VIB-163: Use actual content view height, pin tabs to TOP
+        let winW = contentView.frame.width
+        let winH = contentView.frame.height
         let tabBarHeight: CGFloat = 36
-        let tabBar = NSView(frame: NSRect(x: 0, y: 480 - tabBarHeight, width: 540, height: tabBarHeight))
+
+        // Tab bar pinned to top of content view
+        let tabBarY = winH - tabBarHeight
+        let tabBar = NSView(frame: NSRect(x: 0, y: tabBarY, width: winW, height: tabBarHeight))
 
         let tabNames = ["General", "Prompt", "About"]
         let tabWidth: CGFloat = 80
-        let startX = (540 - tabWidth * CGFloat(tabNames.count)) / 2
+        let startX = (winW - tabWidth * CGFloat(tabNames.count)) / 2
 
         for (i, name) in tabNames.enumerated() {
             let btn = NSButton(title: name, target: self, action: #selector(tabClicked(_:)))
@@ -43,7 +49,6 @@ final class SettingsWindowController: NSWindowController {
             tabBar.addSubview(btn)
             tabButtons.append(btn)
 
-            // Underline
             let underline = NSView(frame: NSRect(x: startX + CGFloat(i) * tabWidth + 10, y: 2, width: tabWidth - 20, height: 2))
             underline.wantsLayer = true
             underline.layer?.backgroundColor = purpleAccent.cgColor
@@ -55,20 +60,20 @@ final class SettingsWindowController: NSWindowController {
         contentView.addSubview(tabBar)
 
         // Divider below tabs
-        let divider = NSView(frame: NSRect(x: 0, y: 480 - tabBarHeight, width: 540, height: 0.5))
+        let divider = NSView(frame: NSRect(x: 0, y: tabBarY, width: winW, height: 0.5))
         divider.wantsLayer = true
         divider.layer?.backgroundColor = NSColor.separatorColor.cgColor
         contentView.addSubview(divider)
 
-        // Content container
-        let contentHeight = 480 - tabBarHeight - 0.5
-        contentContainer.frame = NSRect(x: 0, y: 0, width: 540, height: contentHeight)
+        // Content container: fills from bottom to just below tab bar
+        let contentHeight = tabBarY
+        contentContainer.frame = NSRect(x: 0, y: 0, width: winW, height: contentHeight)
         contentView.addSubview(contentContainer)
 
-        // Create tab views
-        let generalTab = GeneralTabView(frame: NSRect(origin: .zero, size: NSSize(width: 540, height: contentHeight)))
-        let promptTab = PromptTabView(frame: NSRect(origin: .zero, size: NSSize(width: 540, height: contentHeight)))
-        let aboutTab = AboutTabView(frame: NSRect(origin: .zero, size: NSSize(width: 540, height: contentHeight)))
+        // Create tab views sized to content area
+        let generalTab = GeneralTabView(frame: NSRect(origin: .zero, size: NSSize(width: winW, height: contentHeight)))
+        let promptTab = PromptTabView(frame: NSRect(origin: .zero, size: NSSize(width: winW, height: contentHeight)))
+        let aboutTab = AboutTabView(frame: NSRect(origin: .zero, size: NSSize(width: winW, height: contentHeight)))
         tabViews = [generalTab, promptTab, aboutTab]
 
         selectTab(0)
