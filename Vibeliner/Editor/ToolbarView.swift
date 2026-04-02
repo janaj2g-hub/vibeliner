@@ -19,6 +19,7 @@ final class ToolbarView: NSView {
     private var copyImageButton: NSView?
     private var pinCounterIcon: PinCounterIcon?
     private let blurView = NSVisualEffectView()
+    private var tintOverlay: NSView?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -54,6 +55,7 @@ final class ToolbarView: NSView {
         tintView.layer?.cornerRadius = DesignTokens.toolbarCornerRadius
         tintView.layer?.masksToBounds = true
         addSubview(tintView)
+        self.tintOverlay = tintView
 
         // Build button strip
         var x: CGFloat = 6  // 6px left padding (prototype: paddingLeft: 6)
@@ -275,7 +277,23 @@ final class ToolbarView: NSView {
     }
 
     private func updateCopyButtonVisibility(mode: String) {
-        copyImageButton?.isHidden = (mode == "ide")
+        let isIDE = (mode == "ide")
+        copyImageButton?.isHidden = isIDE
+
+        // Recalculate toolbar width: shrink when Copy Image is hidden
+        if let copyPrompt = copyPromptButton, let copyImage = copyImagePillButton {
+            let newWidth: CGFloat
+            if isIDE {
+                // End after Copy Prompt + 6px right padding
+                newWidth = copyPrompt.frame.maxX + 6
+            } else {
+                // End after Copy Image + 6px right padding
+                newWidth = copyImage.frame.maxX + 6
+            }
+            setFrameSize(NSSize(width: newWidth, height: DesignTokens.toolbarHeight))
+            blurView.frame = bounds
+            tintOverlay?.frame = bounds
+        }
     }
 
     private func addDivider(at x: CGFloat) -> CGFloat {

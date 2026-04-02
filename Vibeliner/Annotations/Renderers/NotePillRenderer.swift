@@ -31,112 +31,148 @@ final class NotePillRenderer {
         }
     }
 
+    // MARK: - Anchor type (matches prototype transform logic)
+    // In SVG/prototype: tl means note's top-left is at the anchor point
+    // In AppKit (y-up): we need to convert SVG y-down anchors to AppKit frame origins
+
+    enum Anchor { case tl, tr, bl, br }
+
+    struct PlacedNote {
+        let point: CGPoint  // anchor point in prototype coords
+        let anchor: Anchor
+    }
+
     // MARK: - Note placement (matches prototype pinN/arrowN/rectN/circN functions)
+    // IMPORTANT: prototype uses SVG y-down. AppKit uses y-up.
+    // dy comparisons are FLIPPED: prototype dy>0 = down = AppKit dy<0
 
     static func notePillPosition(for annotation: Annotation, canvasSize: NSSize) -> CGPoint {
+        let placement = notePlacement(for: annotation)
+        return anchoredOrigin(point: placement.point, anchor: placement.anchor)
+    }
+
+    /// Convert an anchor point + anchor type to an AppKit frame origin (bottom-left corner)
+    /// In prototype CSS: tl = translateY(-50%), tr = translateX(-100%) translateY(-50%), etc.
+    /// We approximate pill size for the anchor transform.
+    private static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat = 130) -> CGPoint {
+        let h = DesignTokens.noteHeight
+        switch anchor {
+        case .tl:
+            // Note extends right and down from point → AppKit: origin is below-right
+            return CGPoint(x: point.x, y: point.y - h / 2)
+        case .tr:
+            // Note extends left and down → AppKit: origin shifted left by width
+            return CGPoint(x: point.x - pillWidth, y: point.y - h / 2)
+        case .bl:
+            // Note extends right and up → AppKit: origin at point, shifted up
+            return CGPoint(x: point.x, y: point.y - h)
+        case .br:
+            // Note extends left and up
+            return CGPoint(x: point.x - pillWidth, y: point.y - h)
+        }
+    }
+
+    private static func notePlacement(for annotation: Annotation) -> PlacedNote {
         let bx = annotation.badgePosition.x
         let by = annotation.badgePosition.y
         let br = DesignTokens.badgeDiameter / 2
         let gap: CGFloat = 6
+        let off = br + gap + 2
 
         switch annotation.position {
         case .pin:
-            // pinN: note to the right of badge, vertically centered
-            return CGPoint(x: bx + br + gap, y: by - DesignTokens.noteHeight / 2)
+            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
 
-        case .arrow(let start, let end):
-            // arrowN: 8-direction logic, note goes opposite to arrow direction
+        case .arrow(_, let end):
+            // arrowN: 8-direction, note opposite to arrow direction
+            // Prototype y-down: dy>0 means arrow goes down. AppKit y-up: dy<0 means arrow goes down.
             let dx = end.x - bx
-            let dy = end.y - by
-            let ax = abs(dx)
-            let ay = abs(dy)
-            let off = br + gap + 2
+            let dy = end.y - by  // AppKit: positive = up, negative = down
+            let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
-                // Primarily horizontal arrow
                 if dx > 0 {
-                    // Arrow points right → note below-left
-                    return CGPoint(x: bx - off, y: by + off)
+                    // Arrow right → note below-left (AppKit: below = lower y)
+                    return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
                 }
-                // Arrow points left → note below-right
-                return CGPoint(x: bx + off, y: by + off)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
             if ay > ax * 1.5 {
-                // Primarily vertical arrow → note to the right
-                return CGPoint(x: bx + off, y: by - DesignTokens.noteHeight / 2)
+                if dy > 0 {
+                    // Arrow up (AppKit up) → note right
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                }
+                // Arrow down → note right
+                return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
             }
             // Diagonal
-            if dx > 0 && dy < 0 {
-                // NE → note below-left
-                return CGPoint(x: bx - off, y: by + off)
-            }
             if dx > 0 && dy > 0 {
-                // SE → note above-left
-                return CGPoint(x: bx - off, y: by - off - DesignTokens.noteHeight)
+                // AppKit: right+up (= prototype NE) → note below-left
+                return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
             }
-            if dx < 0 && dy < 0 {
-                // NW → note below-right
-                return CGPoint(x: bx + off, y: by + off)
+            if dx > 0 && dy < 0 {
+                // AppKit: right+down (= prototype SE) → note above-left
+                return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
             }
-            // SW → note above-right
-            return CGPoint(x: bx + off, y: by - off - DesignTokens.noteHeight)
+            if dx < 0 && dy > 0 {
+                // AppKit: left+up (= prototype NW) → note below-right
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
+            }
+            // left+down (= prototype SW) → note above-right
+            return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
 
         case .rectangle(let origin, let size):
-            // rectN: outward from rectangle center through badge corner
+            // rectN: outward from rect center through badge
             let cx = origin.x + size.width / 2
             let cy = origin.y + size.height / 2
             let dx = bx - cx
-            let dy = by - cy
-            let off = br + gap + 2
+            let dy = by - cy  // AppKit y-up
 
             if abs(dx) > abs(dy) {
                 if dx > 0 {
-                    return CGPoint(x: bx + off, y: by - DesignTokens.noteHeight / 2)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
-                return CGPoint(x: bx - off, y: by - DesignTokens.noteHeight / 2)
+                return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
             }
             if dy > 0 {
-                return CGPoint(x: bx + off, y: by + off)
+                // Badge above center (AppKit) → note above badge
+                return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
             }
-            return CGPoint(x: bx + off, y: by - off - DesignTokens.noteHeight)
+            // Badge below center → note below badge
+            return PlacedNote(point: CGPoint(x: bx + off, y: by - off - 6), anchor: .tl)
 
         case .circle(let center, _):
-            // circN: 8-direction radial outward from center through badge
+            // circN: radial outward from center through badge
             let dx = bx - center.x
-            let dy = by - center.y
-            let ax = abs(dx)
-            let ay = abs(dy)
-            let off = br + gap + 2
+            let dy = by - center.y  // AppKit y-up
+            let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
-                // Primarily horizontal
                 if dx > 0 {
-                    return CGPoint(x: bx + off, y: by - DesignTokens.noteHeight / 2)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
-                return CGPoint(x: bx - off, y: by - DesignTokens.noteHeight / 2)
+                return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
             }
             if ay > ax * 1.5 {
-                // Primarily vertical
                 if dy > 0 {
-                    return CGPoint(x: bx + off, y: by + off)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
                 }
-                return CGPoint(x: bx + off, y: by - off - DesignTokens.noteHeight)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
             // Diagonal
-            if dx > 0 && dy < 0 {
-                return CGPoint(x: bx + off, y: by - off - DesignTokens.noteHeight)
-            }
             if dx > 0 && dy > 0 {
-                return CGPoint(x: bx + off, y: by + off)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
             }
-            if dx < 0 && dy < 0 {
-                return CGPoint(x: bx - off, y: by - off - DesignTokens.noteHeight)
+            if dx > 0 && dy < 0 {
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
-            return CGPoint(x: bx - off, y: by + off)
+            if dx < 0 && dy > 0 {
+                return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
+            }
+            return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
 
         case .freehand:
-            // Same as pin: note to the right of badge
-            return CGPoint(x: bx + br + gap, y: by - DesignTokens.noteHeight / 2)
+            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
         }
     }
 
