@@ -318,7 +318,12 @@ final class ToolbarView: NSView {
     }
 
     private func updateShadowPath() {
-        let path = CGPath(roundedRect: bounds, cornerWidth: DesignTokens.toolbarCornerRadius, cornerHeight: DesignTokens.toolbarCornerRadius, transform: nil)
+        // VIB-176: Dynamic pill radius = half height for perfect semicircular ends
+        let r = bounds.height / 2.0
+        layer?.cornerRadius = r
+        blurView.layer?.cornerRadius = r
+        tintOverlay?.layer?.cornerRadius = r
+        let path = CGPath(roundedRect: bounds, cornerWidth: r, cornerHeight: r, transform: nil)
         layer?.shadowPath = path
     }
 

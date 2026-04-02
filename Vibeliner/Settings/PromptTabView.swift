@@ -169,7 +169,7 @@ final class PromptTabView: NSView {
             toolFields[key] = field
         }
 
-        addSaveResetButtons(onSave: { [weak self] in
+        addSaveResetButtons(belowY: y, onSave: { [weak self] in
             guard let self else { return }
             for (key, field) in self.toolFields {
                 ConfigManager.shared.toolDescriptions[key] = field.stringValue
@@ -244,9 +244,13 @@ final class PromptTabView: NSView {
     private var _saveAction: (() -> Void)?
     private var _resetAction: (() -> Void)?
 
-    private func addSaveResetButtons(onSave: @escaping () -> Void, onReset: @escaping () -> Void) {
+    /// VIB-163: Save/Reset buttons with configurable vertical position
+    private func addSaveResetButtons(belowY: CGFloat = 6, onSave: @escaping () -> Void, onReset: @escaping () -> Void) {
         _saveAction = onSave
         _resetAction = onReset
+
+        // VIB-163: Position buttons 20px below the last content row
+        let btnY = belowY - 20 - 26  // 20px margin + button height
 
         let saveBtn = NSButton(title: "Save", target: self, action: #selector(saveAction))
         saveBtn.wantsLayer = true
@@ -255,14 +259,14 @@ final class PromptTabView: NSView {
         saveBtn.contentTintColor = .white
         saveBtn.layer?.backgroundColor = purpleAccent.cgColor
         saveBtn.layer?.cornerRadius = 6
-        saveBtn.frame = NSRect(x: 0, y: 6, width: 60, height: 26)
+        saveBtn.frame = NSRect(x: 0, y: max(6, btnY), width: 60, height: 26)
         contentContainer.addSubview(saveBtn)
 
         let resetBtn = NSButton(title: "Reset to default", target: self, action: #selector(resetAction))
         resetBtn.isBordered = false
         resetBtn.font = NSFont.systemFont(ofSize: 11, weight: .medium)
         resetBtn.contentTintColor = purpleAccent
-        resetBtn.frame = NSRect(x: contentContainer.bounds.width - 110, y: 8, width: 110, height: 20)
+        resetBtn.frame = NSRect(x: contentContainer.bounds.width - 110, y: max(8, btnY + 3), width: 110, height: 20)
         contentContainer.addSubview(resetBtn)
     }
 

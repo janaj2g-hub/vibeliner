@@ -56,10 +56,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         if let win = popoverWindow, win.isVisible {
             win.closePopover()
             popoverWindow = nil
+            statusItem.button?.isHighlighted = false  // VIB-175
         } else {
             let win = PopoverWindow()
             if let button = statusItem.button {
                 win.showRelativeTo(button: button)
+                button.isHighlighted = true  // VIB-175
             }
             popoverWindow = win
         }
