@@ -254,8 +254,9 @@ final class PopoverContentView: NSView {
 
     @objc private func captureNow() {
         popoverWindow?.closePopover()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            CaptureCoordinator.shared.startCapture()
+        // VIB-169 (attempt 3): Post notification, let AppDelegate handle on next run loop
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name("VibelinerTriggerCapture"), object: nil)
         }
     }
 

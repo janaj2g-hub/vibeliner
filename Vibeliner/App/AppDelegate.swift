@@ -29,6 +29,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         HotkeyManager.shared.register()
 
+        // VIB-169: Listen for capture trigger from popover
+        NotificationCenter.default.addObserver(forName: NSNotification.Name("VibelinerTriggerCapture"), object: nil, queue: .main) { _ in
+            CaptureCoordinator.shared.startCapture()
+        }
+
         // Show setup window on first launch
         if !ConfigManager.shared.setupComplete {
             let setup = SetupWindowController()

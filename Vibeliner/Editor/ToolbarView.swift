@@ -17,7 +17,6 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var copyImageButton: NSView?
-    private var pinCounterIcon: PinCounterIcon?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
 
@@ -112,21 +111,33 @@ final class ToolbarView: NSView {
         toolButtons[.select] = selectBtn
         x += DesignTokens.toolButtonSize
 
-        // Pin tool button with counter icon
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { [weak self] rect, color in
-            // Draw nothing — PinCounterIcon overlay handles it
-            _ = self
+        // VIB-164 (attempt 3): Pin icon — simple NSBezierPath like all other tools. No special cases.
+        // Filled circle (r=3.5) + stake line, 15×15 viewBox, currentColor
+        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { rect, color in
+            let w = rect.width, h = rect.height
+            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+            }
+            // Filled circle at (7.5, 5), r=3.5
+            let circleCenter = pt(7.5, 5)
+            let r = 3.5 * (w / 15)
+            let circlePath = NSBezierPath(ovalIn: NSRect(x: circleCenter.x - r, y: circleCenter.y - r, width: r * 2, height: r * 2))
+            color.setFill()
+            circlePath.fill()
+            // Stake line from (7.5, 8.5) to (7.5, 13)
+            let stake = NSBezierPath()
+            stake.move(to: pt(7.5, 8.5))
+            stake.line(to: pt(7.5, 13))
+            stake.lineWidth = 1.4
+            stake.lineCapStyle = .round
+            color.setStroke()
+            stake.stroke()
         }
         pinBtn.isActive = (selectedTool == .pin)
         pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
         pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(pinBtn)
         toolButtons[.pin] = pinBtn
-
-        let pinIcon = PinCounterIcon(frame: NSRect(x: 0, y: 0, width: DesignTokens.toolButtonSize, height: DesignTokens.toolButtonSize))
-        pinIcon.isActive = (selectedTool == .pin)
-        pinBtn.addSubview(pinIcon)
-        self.pinCounterIcon = pinIcon
         x += DesignTokens.toolButtonSize
 
         // Other tool buttons
@@ -292,7 +303,6 @@ final class ToolbarView: NSView {
     func selectTool(_ tool: AnnotationToolType) {
         selectedTool = tool
         for (t, btn) in toolButtons { btn.isActive = (t == tool) }
-        pinCounterIcon?.isActive = (tool == .pin)
         delegate?.toolbarDidSelectTool(tool)
     }
 
@@ -302,7 +312,7 @@ final class ToolbarView: NSView {
     private var copyImagePillButton: CopyPillButton?
 
     func updateAnnotationCount(_ count: Int) {
-        pinCounterIcon?.count = count
+        // VIB-164: Pin icon no longer has counter — this is now a no-op
     }
 
     func markCopyState(_ target: CopyTarget) {
