@@ -84,41 +84,46 @@ final class NotePillRenderer {
             return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
 
         case .arrow(_, let end):
-            // arrowN: 8-direction, note opposite to arrow direction
-            // Prototype y-down: dy>0 means arrow goes down. AppKit y-up: dy<0 means arrow goes down.
+            // arrowN: note goes OPPOSITE to arrow direction.
+            // Prototype uses SVG y-down. AppKit is y-up.
+            // Prototype dy>0 = arrow goes down (screen). AppKit dy<0 = arrow goes down.
+            // For position offsets: prototype ny+off = lower on screen = AppKit ny-off.
             let dx = end.x - bx
-            let dy = end.y - by  // AppKit: positive = up, negative = down
+            let dy = end.y - by  // AppKit: positive=up, negative=down
             let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
+                // Primarily horizontal
                 if dx > 0 {
-                    // Arrow right → note below-left (AppKit: below = lower y)
+                    // Arrow RIGHT → note BELOW-LEFT: proto {bx-off, by+off, "tr"}
                     return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
                 }
+                // Arrow LEFT → note BELOW-RIGHT: proto {bx+off, by+off, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
             if ay > ax * 1.5 {
-                if dy > 0 {
-                    // Arrow up (AppKit up) → note right
+                // Primarily vertical
+                if dy < 0 {
+                    // Arrow DOWN (AppKit dy<0) = proto dy>0 → note RIGHT: {bx+off, by, "tl"}
                     return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
-                // Arrow down → note right
+                // Arrow UP (AppKit dy>0) = proto dy<0 → note RIGHT: {bx+off, by, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
             }
-            // Diagonal
+            // Diagonal — map prototype directions to AppKit
             if dx > 0 && dy > 0 {
-                // AppKit: right+up (= prototype NE) → note below-left
+                // AppKit right+up = proto NE (dx>0, dy<0) → BELOW-LEFT: {bx-off, by+off, "tr"}
                 return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
             }
             if dx > 0 && dy < 0 {
-                // AppKit: right+down (= prototype SE) → note above-left
+                // AppKit right+down = proto SE (dx>0, dy>0) → ABOVE-LEFT: {bx-off, by-off, "br"}
                 return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
             }
             if dx < 0 && dy > 0 {
-                // AppKit: left+up (= prototype NW) → note below-right
+                // AppKit left+up = proto NW (dx<0, dy<0) → BELOW-RIGHT: {bx+off, by+off, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
-            // left+down (= prototype SW) → note above-right
+            // AppKit left+down = proto SW (dx<0, dy>0) → ABOVE-RIGHT: {bx+off, by-off, "bl"}
             return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
 
         case .rectangle(let origin, let size):
