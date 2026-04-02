@@ -307,14 +307,23 @@ final class ToolbarView: NSView {
     }
 
     static func drawArrowIcon(_ rect: NSRect, _ color: NSColor) {
+        // Matches prototype SVG: line (2,13)→(13,2), polyline (8,2)→(13,2)→(13,7) in 15×15 viewBox
+        // SVG is y-down; AppKit is y-up. Map: svgY → rect.maxY - (svgY / 15) * rect.height
+        let w = rect.width, h = rect.height
+        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+        }
         let path = NSBezierPath()
-        path.move(to: NSPoint(x: rect.minX, y: rect.minY))
-        path.line(to: NSPoint(x: rect.maxX, y: rect.maxY))
-        // Chevron
-        path.move(to: NSPoint(x: rect.maxX - 5, y: rect.maxY))
-        path.line(to: NSPoint(x: rect.maxX, y: rect.maxY))
-        path.line(to: NSPoint(x: rect.maxX, y: rect.maxY - 5))
-        path.lineWidth = 1.5
+        // Diagonal line
+        path.move(to: pt(2, 13))
+        path.line(to: pt(13, 2))
+        // Arrowhead chevron
+        path.move(to: pt(8, 2))
+        path.line(to: pt(13, 2))
+        path.line(to: pt(13, 7))
+        path.lineWidth = 1.4
+        path.lineCapStyle = .round
+        path.lineJoinStyle = .round
         color.setStroke()
         path.stroke()
     }
@@ -391,11 +400,18 @@ final class ModeToggleView: NSView {
             label.drawsBackground = false
             label.isEditable = false
             label.isSelectable = false
+            label.usesSingleLineMode = true
+            label.cell?.isScrollable = false
+            label.cell?.wraps = false
             addSubview(label)
         }
 
-        ideLabel.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
-        appLabel.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
+        // Labels positioned to vertically center the 9px text within 24px segments
+        // Segments are at y=2 within the 28px container
+        let labelH: CGFloat = 14  // enough for 9px font
+        let labelY: CGFloat = 2 + (24 - labelH) / 2  // center within segment
+        ideLabel.frame = NSRect(x: 2, y: labelY, width: segW, height: labelH)
+        appLabel.frame = NSRect(x: 2 + segW, y: labelY, width: segW, height: labelH)
 
         updateAppearance()
     }
