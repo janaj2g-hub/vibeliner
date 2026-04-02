@@ -4,26 +4,22 @@ import AppKit
 
 final class PopoverWindow: NSPanel {
 
-    private var contentContainer: PopoverContentView?
+    private var popoverContent: PopoverContentView?
+    private var clickMonitor: Any?
 
     init() {
         super.init(
-            contentRect: NSRect(x: 0, y: 0, width: 240, height: 10),
+            contentRect: .zero,
             styleMask: [.borderless, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
         isOpaque = false
         backgroundColor = .clear
-        hasShadow = true
+        hasShadow = false  // we draw our own shadow via the content's boxShadow
         level = .popUpMenu
         isMovableByWindowBackground = false
         isReleasedWhenClosed = false
-
-        let content = PopoverContentView(frame: NSRect(x: 0, y: 0, width: 240, height: 10))
-        content.popoverWindow = self
-        self.contentView = content
-        self.contentContainer = content
     }
 
     override var canBecomeKey: Bool { true }
@@ -34,26 +30,42 @@ final class PopoverWindow: NSPanel {
         let buttonFrame = button.convert(button.bounds, to: nil)
         let screenFrame = buttonWindow.convertToScreen(buttonFrame)
 
+        // Build content
+        let content = PopoverContentView()
+        content.popoverWindow = self
+        self.popoverContent = content
+
         let popW: CGFloat = 240
-        let contentH = contentContainer?.frame.height ?? 260
-        let arrowH: CGFloat = 8
-        let totalH = contentH + arrowH
+        let contentH = content.frame.height
 
         // Position: centered below the status bar button
         let x = screenFrame.midX - popW / 2
-        let y = screenFrame.minY - totalH
+        let y = screenFrame.minY - contentH
 
-        setFrame(NSRect(x: x, y: y, width: popW, height: totalH), display: true)
+        // Set window frame to exactly fit content
+        let winFrame = NSRect(x: x, y: y, width: popW, height: contentH)
+        setFrame(winFrame, display: false)
+
+        // Set content view to a clear container, add our custom view inside
+        let container = NSView(frame: NSRect(origin: .zero, size: winFrame.size))
+        self.contentView = container
+        content.frame.origin = .zero
+        container.addSubview(content)
+
         orderFront(nil)
 
         // Close on click outside
-        NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
+        clickMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             self?.closePopover()
         }
     }
 
     func closePopover() {
         orderOut(nil)
+        if let monitor = clickMonitor {
+            NSEvent.removeMonitor(monitor)
+            clickMonitor = nil
+        }
     }
 }
 
@@ -65,100 +77,104 @@ final class PopoverContentView: NSView {
     private let arrowHeight: CGFloat = 8
     private let arrowWidth: CGFloat = 16
     private let cornerRadius: CGFloat = 10
+    private let popWidth: CGFloat = 240
 
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
+    init() {
+        super.init(frame: .zero)
         wantsLayer = true
-        setupContent()
+        buildContent()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    private func setupContent() {
-        // Build menu items
-        let items: [(String, [String]?, Selector?, Bool)] = [
-            ("Capture Now", ["⌘", "⇧", "6"], #selector(captureNow), false),
-            ("Recent Captures", nil, #selector(recentCaptures), true),
-            ("Open Captures", nil, #selector(openCaptures), false),
-            ("Settings", ["⌘", ","], #selector(openSettings), false),
+    private func buildContent() {
+        let rowH: CGFloat = 32
+        let rowGap: CGFloat = 2
+        let vPad: CGFloat = 6
+        let hPad: CGFloat = 6
+        let dividerH: CGFloat = 9
+
+        // Menu items
+        struct MenuItem {
+            let label: String
+            let keys: [String]?
+            let action: Selector
+            let hasArrow: Bool
+        }
+
+        let items: [MenuItem] = [
+            MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: #selector(captureNow), hasArrow: false),
+            MenuItem(label: "Recent Captures", keys: nil, action: #selector(recentCaptures), hasArrow: true),
+            MenuItem(label: "Open Captures", keys: nil, action: #selector(openCaptures), hasArrow: false),
+            MenuItem(label: "Settings", keys: ["⌘", ","], action: #selector(openSettings), hasArrow: false),
         ]
 
-        let rowH: CGFloat = 32
-        let padding: CGFloat = 6
-        let dividerH: CGFloat = 9
-        let totalRows = CGFloat(items.count + 1) // +1 for Quit
-        let contentH = totalRows * (rowH + 2) + dividerH + padding * 2
-        let totalH = contentH + arrowHeight
+        // Calculate total height: vPad + items + divider + quit + vPad + arrow
+        let bodyH = vPad + CGFloat(items.count) * (rowH + rowGap) + dividerH + (rowH + rowGap) + vPad
+        let totalH = bodyH + arrowHeight
 
-        setFrameSize(NSSize(width: 240, height: totalH))
+        setFrameSize(NSSize(width: popWidth, height: totalH))
 
-        // Rows from top (in AppKit bottom-up, start from contentH and go down)
-        var y = contentH - padding
+        // Layout rows top-down (AppKit y=0 is bottom, so start from bodyH and subtract)
+        var y = bodyH - vPad
 
-        for (title, keys, action, hasArrow) in items {
-            y -= rowH + 2
-            let row = PopoverRowView(frame: NSRect(x: padding, y: y, width: 240 - padding * 2, height: rowH))
-            row.target = self
-            row.action = action
-
-            let label = NSTextField(labelWithString: title)
-            label.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-            label.textColor = NSColor(white: 1, alpha: 0.85)
-            label.frame = NSRect(x: 8, y: (rowH - 18) / 2, width: 130, height: 18)
-            row.addSubview(label)
-
-            if let keys = keys {
-                var kx = row.frame.width - 8
-                for key in keys.reversed() {
-                    let kbd = makeKbdPill(key)
-                    kx -= kbd.frame.width + 3
-                    kbd.frame.origin = NSPoint(x: kx, y: (rowH - kbd.frame.height) / 2)
-                    row.addSubview(kbd)
-                }
-            }
-
-            if hasArrow {
-                let arrow = NSTextField(labelWithString: "›")
-                arrow.font = NSFont.systemFont(ofSize: 16)
-                arrow.textColor = NSColor(white: 1, alpha: 0.35)
-                arrow.isBezeled = false
-                arrow.drawsBackground = false
-                arrow.frame = NSRect(x: row.frame.width - 20, y: (rowH - 20) / 2, width: 16, height: 20)
-                row.addSubview(arrow)
-            }
-
+        for item in items {
+            y -= rowH
+            let row = makeRow(label: item.label, keys: item.keys, action: item.action, hasArrow: item.hasArrow, y: y, rowH: rowH, hPad: hPad)
             addSubview(row)
+            y -= rowGap
         }
 
         // Divider
-        y -= dividerH
-        let divider = NSView(frame: NSRect(x: 14, y: y + dividerH / 2, width: 240 - 28, height: 1))
+        y -= dividerH / 2
+        let divider = NSView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
         divider.wantsLayer = true
         divider.layer?.backgroundColor = NSColor(white: 1, alpha: 0.06).cgColor
         addSubview(divider)
+        y -= dividerH / 2
 
-        // Quit
-        y -= rowH + 2
-        let quitRow = PopoverRowView(frame: NSRect(x: padding, y: y, width: 240 - padding * 2, height: rowH))
-        quitRow.target = self
-        quitRow.action = #selector(quitApp)
-
-        let quitLabel = NSTextField(labelWithString: "Quit Vibeliner")
-        quitLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-        quitLabel.textColor = NSColor(white: 1, alpha: 0.85)
-        quitLabel.frame = NSRect(x: 8, y: (rowH - 18) / 2, width: 130, height: 18)
-        quitRow.addSubview(quitLabel)
-
-        let quitKbd = makeKbdPill("⌘")
-        let quitKbd2 = makeKbdPill("Q")
-        var kx = quitRow.frame.width - 8
-        kx -= quitKbd2.frame.width
-        quitKbd2.frame.origin = NSPoint(x: kx, y: (rowH - quitKbd2.frame.height) / 2)
-        kx -= 3 + quitKbd.frame.width
-        quitKbd.frame.origin = NSPoint(x: kx, y: (rowH - quitKbd.frame.height) / 2)
-        quitRow.addSubview(quitKbd)
-        quitRow.addSubview(quitKbd2)
+        // Quit row
+        y -= rowH
+        let quitRow = makeRow(label: "Quit Vibeliner", keys: ["⌘", "Q"], action: #selector(quitApp), hasArrow: false, y: y, rowH: rowH, hPad: hPad)
         addSubview(quitRow)
+    }
+
+    private func makeRow(label: String, keys: [String]?, action: Selector, hasArrow: Bool, y: CGFloat, rowH: CGFloat, hPad: CGFloat) -> PopoverRowView {
+        let rowW = popWidth - hPad * 2
+        let row = PopoverRowView(frame: NSRect(x: hPad, y: y, width: rowW, height: rowH))
+        row.target = self
+        row.action = action
+
+        let textLabel = NSTextField(labelWithString: label)
+        textLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
+        textLabel.textColor = NSColor(white: 1, alpha: 0.85)
+        textLabel.sizeToFit()
+        textLabel.frame.origin = NSPoint(x: 8, y: (rowH - textLabel.frame.height) / 2)
+        row.addSubview(textLabel)
+
+        if let keys = keys {
+            var kx = rowW - 8
+            for key in keys.reversed() {
+                let kbd = makeKbdPill(key)
+                kx -= kbd.frame.width
+                kbd.frame.origin = NSPoint(x: kx, y: (rowH - kbd.frame.height) / 2)
+                row.addSubview(kbd)
+                kx -= 3
+            }
+        }
+
+        if hasArrow {
+            let arrowLabel = NSTextField(labelWithString: "›")
+            arrowLabel.font = NSFont.systemFont(ofSize: 16)
+            arrowLabel.textColor = NSColor(white: 1, alpha: 0.35)
+            arrowLabel.isBezeled = false
+            arrowLabel.drawsBackground = false
+            arrowLabel.sizeToFit()
+            arrowLabel.frame.origin = NSPoint(x: rowW - 8 - arrowLabel.frame.width, y: (rowH - arrowLabel.frame.height) / 2)
+            row.addSubview(arrowLabel)
+        }
+
+        return row
     }
 
     private func makeKbdPill(_ text: String) -> NSView {
@@ -190,9 +206,19 @@ final class PopoverContentView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
-
         let bodyRect = NSRect(x: 0, y: 0, width: bounds.width, height: bounds.height - arrowHeight)
+
+        // Shadow
+        let shadowPath = NSBezierPath(roundedRect: bodyRect, xRadius: cornerRadius, yRadius: cornerRadius)
+        let shadow = NSShadow()
+        shadow.shadowColor = NSColor.black.withAlphaComponent(0.25)
+        shadow.shadowOffset = NSSize(width: 0, height: -8)
+        shadow.shadowBlurRadius = 32
+        NSGraphicsContext.saveGraphicsState()
+        shadow.set()
+        NSColor.black.setFill()
+        shadowPath.fill()
+        NSGraphicsContext.restoreGraphicsState()
 
         // Background: rgba(30,30,30,0.95) with rounded corners
         let bgColor = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.95)
@@ -200,7 +226,7 @@ final class PopoverContentView: NSView {
         bgColor.setFill()
         path.fill()
 
-        // Arrow pointing up (centered)
+        // Arrow pointing up (centered at top)
         let arrowPath = NSBezierPath()
         let arrowCenterX = bounds.width / 2
         let arrowBaseY = bodyRect.maxY
@@ -266,8 +292,7 @@ final class PopoverRowView: NSView {
         super.draw(dirtyRect)
         if isHovered {
             NSColor(white: 1, alpha: 0.06).setFill()
-            let path = NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6)
-            path.fill()
+            NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill()
         }
     }
 
