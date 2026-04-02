@@ -122,24 +122,32 @@ final class NotePillRenderer {
             return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
 
         case .rectangle(let origin, let size):
-            // rectN: outward from rect center through badge
+            // rectN: note outward from rect center through badge corner.
+            // Prototype rectN() uses SVG y-down coords. AppKit is y-up.
+            // Prototype dy>0 = badge below center (screen). AppKit dy<0 = badge below center.
             let cx = origin.x + size.width / 2
             let cy = origin.y + size.height / 2
             let dx = bx - cx
-            let dy = by - cy  // AppKit y-up
+            let dy = by - cy  // AppKit y-up: positive = badge above center on screen
 
             if abs(dx) > abs(dy) {
+                // Badge is more to the LEFT or RIGHT of center
                 if dx > 0 {
+                    // Badge on right side → note to the right
                     return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
+                // Badge on left side → note to the left
                 return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
             }
-            if dy > 0 {
-                // Badge above center (AppKit) → note above badge
-                return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
+            // Badge is more ABOVE or BELOW center
+            if dy < 0 {
+                // Badge below center (AppKit y-up: lower y = lower on screen)
+                // = prototype dy>0 → note below badge
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - br - gap - 6), anchor: .tl)
             }
-            // Badge below center → note below badge
-            return PlacedNote(point: CGPoint(x: bx + off, y: by - off - 6), anchor: .tl)
+            // Badge above center (AppKit: higher y = higher on screen)
+            // = prototype dy<0 → note above badge
+            return PlacedNote(point: CGPoint(x: bx + off, y: by + br + gap + 6), anchor: .bl)
 
         case .circle(let center, _):
             // circN: radial outward from center through badge

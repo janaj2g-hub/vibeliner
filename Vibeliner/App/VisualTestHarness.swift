@@ -219,15 +219,17 @@ final class VisualTestHarness {
         )
         _ = store.add(arrow)
 
-        // Rectangle from (80, 220) to (250, 310)
+        // Rectangle from (80, 220) to (250, 310) — badge at top-left (drag start)
         let rectOrigin = CGPoint(x: 80, y: 220)
         let rectSize = CGSize(width: 170, height: 90)
+        // In AppKit y-up, top-left corner is at (origin.x, origin.y + height)
+        let rectBadge = CGPoint(x: rectOrigin.x, y: rectOrigin.y + rectSize.height)
         let rect = Annotation(
             type: .rectangle,
             number: 0,
             noteText: "increase height",
             position: .rectangle(origin: rectOrigin, size: rectSize),
-            badgePosition: rectOrigin
+            badgePosition: rectBadge
         )
         _ = store.add(rect)
 
