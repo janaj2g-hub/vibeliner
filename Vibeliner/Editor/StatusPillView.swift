@@ -60,7 +60,7 @@ final class StatusPillView: NSView {
         updateText("\(dims) · \(noteText)")
     }
 
-    func showCopied() {
+    func showCopied(message: String = "Copied") {
         revertTimer?.invalidate()
         let savedText = label.stringValue
 
@@ -68,7 +68,7 @@ final class StatusPillView: NSView {
             ctx.duration = 0.3
             tintView.animator().layer?.backgroundColor = DesignTokens.copiedGreen.cgColor
         })
-        label.stringValue = "Copied"
+        label.stringValue = message
         sizeToFitContent()
 
         revertTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in

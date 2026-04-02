@@ -128,6 +128,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             guard let self else { return }
             self.toolbarView.updateAnnotationCount(self.annotationStore.count)
             self.statusPill.updateNoteCount(self.annotationStore.count)
+            // Reset copy buttons to purple on any annotation change
+            self.toolbarView.resetCopyState()
         }
 
         // Local key monitor for Esc and other shortcuts (nonactivating panel may not get keyDown)
@@ -207,11 +209,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestDelete() {
-        // Delete the entire capture folder and close
-        if let folder = captureFolder {
-            try? FileManager.default.removeItem(at: folder)
+        // Delete the selected annotation (not the entire capture)
+        if let selected = annotationStore.selectedAnnotation {
+            undoRedoManager.record(.remove(annotation: selected))
+            annotationStore.remove(id: selected.id)
         }
-        close()
     }
 
     func toolbarDidRequestUndo() {
@@ -225,12 +227,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     func toolbarDidRequestCopyPrompt() {
         guard let folder = captureFolder else { return }
         ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder)
-        statusPill.showCopied()
+        statusPill.showCopied(message: "Prompt copied")
+        toolbarView.markCopyState(.prompt)
     }
 
     func toolbarDidRequestCopyImage() {
         let canvasSize = CGSize(width: displayWidth, height: displayHeight)
         ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)
-        statusPill.showCopied()
+        statusPill.showCopied(message: "Image copied")
+        toolbarView.markCopyState(.image)
     }
 }

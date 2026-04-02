@@ -66,8 +66,32 @@ final class PopoverViewController: NSViewController {
         }
     }
 
+    private var submenuWindow: NSWindow?
+
     @objc private func recentCaptures() {
-        // Submenu handled in VIB-141
+        guard submenuWindow == nil else { return }
+
+        let submenu = RecentCapturesSubmenu()
+        let window = NSWindow(contentRect: submenu.bounds, styleMask: [.borderless], backing: .buffered, defer: false)
+        window.isOpaque = false
+        window.backgroundColor = .clear
+        window.hasShadow = true
+        window.level = .popUpMenu
+        window.contentView = submenu
+
+        // Position to the right of the popover
+        if let parentWindow = view.window {
+            let parentFrame = parentWindow.frame
+            window.setFrameOrigin(NSPoint(x: parentFrame.maxX + 4, y: parentFrame.maxY - submenu.frame.height - 32))
+        }
+        window.orderFront(nil)
+        self.submenuWindow = window
+
+        // Auto-hide after a delay when mouse leaves
+        submenu.scheduleHide(after: 0.3) { [weak self] in
+            self?.submenuWindow?.close()
+            self?.submenuWindow = nil
+        }
     }
 
     @objc private func openCaptures() {

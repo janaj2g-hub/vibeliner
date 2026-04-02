@@ -6,8 +6,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var settingsWindowController: SettingsWindowController?
     private let popover = NSPopover()
 
+    private var visualTestHarness: VisualTestHarness?
+
     func applicationDidFinishLaunching(_ notification: Notification) {
         NSLog("AppDelegate launched")
+
+        // Visual test mode — open test harness instead of normal flow
+        if CommandLine.arguments.contains("--visual-test") {
+            NSLog("Visual test mode — opening test harness")
+            let harness = VisualTestHarness()
+            harness.show()
+            self.visualTestHarness = harness
+            return
+        }
+
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()
         setupMenuBarIcon()

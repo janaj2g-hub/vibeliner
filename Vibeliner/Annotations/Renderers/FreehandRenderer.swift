@@ -54,13 +54,14 @@ final class FreehandRenderer: AnnotationRenderer {
                 let p2 = points[min(points.count - 1, i + 1)]
                 let p3 = points[min(points.count - 1, i + 2)]
 
+                // Matches prototype catmull() function: /12 divisor
                 let cp1 = CGPoint(
-                    x: p1.x + (p2.x - p0.x) / 6,
-                    y: p1.y + (p2.y - p0.y) / 6
+                    x: p1.x + (p2.x - p0.x) / 12,
+                    y: p1.y + (p2.y - p0.y) / 12
                 )
                 let cp2 = CGPoint(
-                    x: p2.x - (p3.x - p1.x) / 6,
-                    y: p2.y - (p3.y - p1.y) / 6
+                    x: p2.x - (p3.x - p1.x) / 12,
+                    y: p2.y - (p3.y - p1.y) / 12
                 )
 
                 context.addCurve(to: p2, control1: cp1, control2: cp2)

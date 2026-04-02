@@ -78,6 +78,13 @@ final class AboutTabView: NSView {
     }
 
     @objc private func linkClicked(_ sender: NSButton) {
-        print("Link clicked: \(sender.title)")
+        let urls: [String: String] = [
+            "GitHub Repository": "https://github.com/janaj2g-hub/vibeliner",
+            "Report an Issue": "https://github.com/janaj2g-hub/vibeliner/issues",
+            "Documentation": "https://github.com/janaj2g-hub/vibeliner#readme"
+        ]
+        if let urlStr = urls[sender.title], let url = URL(string: urlStr) {
+            NSWorkspace.shared.open(url)
+        }
     }
 }

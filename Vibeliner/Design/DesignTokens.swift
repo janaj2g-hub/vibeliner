@@ -28,11 +28,47 @@ enum DesignTokens {
     /// rgba(239, 68, 68, 0.06) — shape fills
     static let redFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.06)
 
-    /// rgba(239, 68, 68, 0.05) — note pill background
-    static let redNoteBg = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.05)
+    /// Note pill default: rgba(255, 248, 248, 0.82)
+    static let redNoteBg = NSColor(red: 255/255, green: 248/255, blue: 248/255, alpha: 0.82)
 
-    /// rgba(239, 68, 68, 0.1) — note pill border
-    static let redNoteBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.1)
+    /// Note pill default border: rgba(239, 68, 68, 0.18)
+    static let redNoteBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.18)
+
+    /// Note pill hover: rgba(255, 245, 245, 0.88)
+    static let noteHoverBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.88)
+
+    /// Note pill hover border: rgba(239, 68, 68, 0.4)
+    static let noteHoverBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.4)
+
+    /// Note pill selected: rgba(255, 245, 245, 0.9)
+    static let noteSelectedBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.9)
+
+    /// Note pill selected border: rgba(239, 68, 68, 0.5)
+    static let noteSelectedBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.5)
+
+    /// Note pill editing: rgba(255, 245, 245, 0.92)
+    static let noteEditingBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.92)
+
+    /// Note prefix color: rgba(153, 27, 27, 0.4)
+    static let notePrefixColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+
+    /// Note text color: #7f1d1d
+    static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+
+    /// Tooltip dark bg: rgba(28, 28, 32, 0.96) — from toolbar prototype
+    static let tooltipDarkBg = NSColor(red: 28/255, green: 28/255, blue: 32/255, alpha: 0.96)
+
+    /// Tooltip dark border: rgba(255, 255, 255, 0.1)
+    static let tooltipDarkBorder = NSColor(white: 1.0, alpha: 0.1)
+
+    /// Copy success green: rgba(22, 163, 74, 0.5) — border
+    static let copiedGreenBorder = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.5)
+
+    /// Copy success text: rgba(22, 163, 74, 0.8)
+    static let copiedGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.8)
+
+    /// Copy success bg: rgba(22, 163, 74, 0.12)
+    static let copiedGreenBg = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
 
     /// rgba(30, 30, 30, 0.92) — toolbar
     static let darkChrome = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
@@ -182,8 +218,17 @@ enum DesignTokens {
     /// Badge number: system 9px weight 600
     static let badgeFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
 
-    /// Note number prefix: system 9px weight 600
-    static let noteNumberFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
+    /// Note number prefix: system 8px weight 600 (from prototype)
+    static let noteNumberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
+
+    /// Pin counter icon: system 8px weight 700 (7px for 10+)
+    static let pinCounterFont = NSFont.systemFont(ofSize: 8, weight: .bold)
+
+    /// Pin counter icon (10+): system 7px weight 700
+    static let pinCounterFontSmall = NSFont.systemFont(ofSize: 7, weight: .bold)
+
+    /// Badge font (10+ numbers): 7px weight 600
+    static let badgeFontSmall = NSFont.systemFont(ofSize: 7, weight: .semibold)
 
     /// Note text: system 12px weight regular
     static let noteTextFont = NSFont.systemFont(ofSize: 12, weight: .regular)

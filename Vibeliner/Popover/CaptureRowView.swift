@@ -3,9 +3,11 @@ import AppKit
 final class CaptureRowView: NSView {
 
     private let capture: CaptureInfo
-    private var isHovered = false { didSet { needsDisplay = true } }
+    private var isHovered = false { didSet { needsDisplay = true; updateCopyButtonVisibility() } }
     private let timestampLabel = NSTextField(labelWithString: "")
     private let noteCountLabel = NSTextField(labelWithString: "")
+    private var promptButton: NSButton?
+    private var imageButton: NSButton?
 
     init(capture: CaptureInfo) {
         self.capture = capture
@@ -48,6 +50,57 @@ final class CaptureRowView: NSView {
         noteCountLabel.textColor = NSColor(white: 1, alpha: 0.25)
         noteCountLabel.frame = NSRect(x: 50, y: 0, width: 60, height: 14)
         addSubview(noteCountLabel)
+
+        // Copy Prompt button (hidden until hover)
+        let promptBtn = NSButton(title: "Prompt", target: self, action: #selector(copyPrompt))
+        promptBtn.isBordered = false
+        promptBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        promptBtn.wantsLayer = true
+        promptBtn.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+        promptBtn.layer?.cornerRadius = 6
+        promptBtn.contentTintColor = DesignTokens.purpleLight
+        promptBtn.frame = NSRect(x: 150, y: 8, width: 52, height: 20)
+        promptBtn.isHidden = true
+        addSubview(promptBtn)
+        self.promptButton = promptBtn
+
+        // Copy Image button (hidden until hover)
+        let imgBtn = NSButton(title: "Image", target: self, action: #selector(copyImage))
+        imgBtn.isBordered = false
+        imgBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        imgBtn.wantsLayer = true
+        imgBtn.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+        imgBtn.layer?.cornerRadius = 6
+        imgBtn.contentTintColor = DesignTokens.purpleLight
+        imgBtn.frame = NSRect(x: 155, y: 8, width: 48, height: 20)
+        imgBtn.isHidden = true
+        addSubview(imgBtn)
+        self.imageButton = imgBtn
+    }
+
+    private func updateCopyButtonVisibility() {
+        promptButton?.isHidden = !isHovered
+        imageButton?.isHidden = !isHovered
+        if isHovered {
+            promptButton?.frame.origin.x = frame.width - 108
+            imageButton?.frame.origin.x = frame.width - 52
+        }
+    }
+
+    @objc private func copyPrompt() {
+        // Load annotations from prompt.txt and copy
+        let promptURL = capture.folderURL.appendingPathComponent("prompt.txt")
+        if let text = try? String(contentsOf: promptURL, encoding: .utf8) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.setString(text, forType: .string)
+        }
+    }
+
+    @objc private func copyImage() {
+        if let image = NSImage(contentsOf: capture.screenshotURL) {
+            NSPasteboard.general.clearContents()
+            NSPasteboard.general.writeObjects([image])
+        }
     }
 
     override func draw(_ dirtyRect: NSRect) {

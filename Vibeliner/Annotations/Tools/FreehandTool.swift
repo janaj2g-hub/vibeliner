@@ -28,13 +28,15 @@ final class FreehandTool: AnnotationTool {
             return
         }
 
-        let smoothed = catmullRomSmooth(points: points, passes: 3, tension: 0.5)
-        let badgePos = smoothed.first ?? point
+        // Prototype-exact pipeline: smooth → downsample → store control points
+        let smoothed = smoothPoints(points, passes: 3)
+        let controlPoints = downsample(smoothed, count: min(10, smoothed.count))
+        let badgePos = controlPoints.first ?? point
 
         let annotation = Annotation(
             type: .freehand,
             number: 0,
-            position: .freehand(points: smoothed),
+            position: .freehand(points: controlPoints),
             badgePosition: badgePos
         )
         let added = store.add(annotation)
@@ -46,52 +48,40 @@ final class FreehandTool: AnnotationTool {
     func drawGhost(at point: CGPoint, in context: CGContext) {
         guard isDrawing, points.count >= 2 else { return }
         context.saveGState()
-        context.setAlpha(0.5)
+        context.setAlpha(0.6)
         FreehandRenderer.drawFreehandPath(in: context, points: points)
         context.restoreGState()
     }
 
-    // MARK: - Catmull-Rom smoothing
+    // MARK: - Smoothing (matches prototype sm() function)
+    // 3 passes of weighted average: prev * 0.25 + current * 0.5 + next * 0.25
 
-    private func catmullRomSmooth(points: [CGPoint], passes: Int, tension: CGFloat) -> [CGPoint] {
-        guard points.count >= 3 else { return points }
-
-        // Catmull-Rom interpolation: generate smooth intermediate points
-        var result: [CGPoint] = []
-        let stepsPerSegment = 8
-
-        for i in 0..<points.count - 1 {
-            let p0 = points[max(0, i - 1)]
-            let p1 = points[i]
-            let p2 = points[min(points.count - 1, i + 1)]
-            let p3 = points[min(points.count - 1, i + 2)]
-
-            for step in 0..<stepsPerSegment {
-                let t = CGFloat(step) / CGFloat(stepsPerSegment)
-                let t2 = t * t
-                let t3 = t2 * t
-
-                let x = tension * (
-                    (2 * p1.x) +
-                    (-p0.x + p2.x) * t +
-                    (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2 +
-                    (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3
-                )
-                let y = tension * (
-                    (2 * p1.y) +
-                    (-p0.y + p2.y) * t +
-                    (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2 +
-                    (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3
-                )
-                result.append(CGPoint(x: x, y: y))
+    private func smoothPoints(_ pts: [CGPoint], passes: Int) -> [CGPoint] {
+        var result = pts
+        for _ in 0..<passes {
+            var smoothed = [result[0]]
+            for i in 1..<result.count - 1 {
+                smoothed.append(CGPoint(
+                    x: result[i - 1].x * 0.25 + result[i].x * 0.5 + result[i + 1].x * 0.25,
+                    y: result[i - 1].y * 0.25 + result[i].y * 0.5 + result[i + 1].y * 0.25
+                ))
             }
+            smoothed.append(result[result.count - 1])
+            result = smoothed
         }
-
-        // Add the last point
-        if let last = points.last {
-            result.append(last)
-        }
-
         return result
+    }
+
+    // MARK: - Downsampling (matches prototype ds() function)
+    // Evenly space n points along the smoothed path
+
+    private func downsample(_ pts: [CGPoint], count n: Int) -> [CGPoint] {
+        guard pts.count > n else { return pts }
+        let step = Double(pts.count - 1) / Double(n - 1)
+        var out: [CGPoint] = []
+        for i in 0..<n {
+            out.append(pts[Int(round(Double(i) * step))])
+        }
+        return out
     }
 }

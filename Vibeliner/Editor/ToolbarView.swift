@@ -186,6 +186,8 @@ final class ToolbarView: NSView {
             ConfigManager.shared.copyMode = mode
             ConfigManager.shared.save()
             self?.updateCopyButtonVisibility(mode: mode)
+            // Reset copy buttons on mode switch
+            self?.resetCopyState()
         }
         addSubview(toggle)
         x += toggle.frame.width + 10
@@ -198,6 +200,7 @@ final class ToolbarView: NSView {
         copyPromptBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestCopyPrompt() }
         copyPromptBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - copyPromptBtn.frame.height) / 2))
         addSubview(copyPromptBtn)
+        self.copyPromptButton = copyPromptBtn
         x += copyPromptBtn.frame.width + 4
 
         // Copy Image button
@@ -206,6 +209,7 @@ final class ToolbarView: NSView {
         copyImageBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - copyImageBtn.frame.height) / 2))
         addSubview(copyImageBtn)
         self.copyImageButton = copyImageBtn
+        self.copyImagePillButton = copyImageBtn
         x += copyImageBtn.frame.width + 4
 
         // Set total size
@@ -223,8 +227,25 @@ final class ToolbarView: NSView {
         delegate?.toolbarDidSelectTool(tool)
     }
 
+    enum CopyTarget { case prompt, image }
+
+    private var copyPromptButton: CopyPillButton?
+    private var copyImagePillButton: CopyPillButton?
+
     func updateAnnotationCount(_ count: Int) {
         pinCounterIcon?.count = count
+    }
+
+    func markCopyState(_ target: CopyTarget) {
+        switch target {
+        case .prompt: copyPromptButton?.showCopied()
+        case .image: copyImagePillButton?.showCopied()
+        }
+    }
+
+    func resetCopyState() {
+        copyPromptButton?.resetState()
+        copyImagePillButton?.resetState()
     }
 
     private func updateCopyButtonVisibility(mode: String) {
@@ -314,9 +335,14 @@ final class ModeToggleView: NSView {
     private let highlightView = NSView()
     private var currentMode: String
 
+    // Prototype: container height 28, borderRadius 14, bg rgba(255,255,255,0.06), padding 2
+    // Segments: height 24, borderRadius 12, padding 0 12px, fontSize 9 weight 600
+    private let segW: CGFloat = 36
+    private let containerH: CGFloat = 28
+
     override init(frame frameRect: NSRect) {
         currentMode = ConfigManager.shared.copyMode
-        super.init(frame: NSRect(origin: .zero, size: NSSize(width: 72, height: 22)))
+        super.init(frame: NSRect(origin: .zero, size: NSSize(width: segW * 2 + 4, height: containerH)))
         setupView()
     }
 
@@ -324,11 +350,11 @@ final class ModeToggleView: NSView {
 
     private func setupView() {
         wantsLayer = true
-        layer?.cornerRadius = 10
+        layer?.cornerRadius = 14
         layer?.backgroundColor = DesignTokens.toggleBg.cgColor
 
         highlightView.wantsLayer = true
-        highlightView.layer?.cornerRadius = 8
+        highlightView.layer?.cornerRadius = 12
         highlightView.layer?.backgroundColor = DesignTokens.toggleActiveBg.cgColor
         addSubview(highlightView)
 
@@ -342,19 +368,19 @@ final class ModeToggleView: NSView {
             addSubview(label)
         }
 
-        ideLabel.frame = NSRect(x: 2, y: 1, width: 34, height: 20)
-        appLabel.frame = NSRect(x: 36, y: 1, width: 34, height: 20)
+        ideLabel.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
+        appLabel.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
 
         updateAppearance()
     }
 
     private func updateAppearance() {
         if currentMode == "ide" {
-            highlightView.frame = NSRect(x: 2, y: 2, width: 34, height: 18)
+            highlightView.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
             ideLabel.textColor = DesignTokens.purpleLight
             appLabel.textColor = DesignTokens.toggleInactiveText
         } else {
-            highlightView.frame = NSRect(x: 36, y: 2, width: 34, height: 18)
+            highlightView.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
             appLabel.textColor = DesignTokens.purpleLight
             ideLabel.textColor = DesignTokens.toggleInactiveText
         }
@@ -374,49 +400,69 @@ final class CopyPillButton: NSView {
 
     var onClick: (() -> Void)?
     private let label: NSTextField
-    private var isHovered = false { didSet { needsDisplay = true; updateLabelColor() } }
+    private let originalTitle: String
+    private var isHovered = false { didSet { needsDisplay = true; updateAppearance() } }
+    private(set) var isCopied = false
+    private var revertTimer: Timer?
 
     init(title: String) {
+        self.originalTitle = title
         label = NSTextField(labelWithString: title)
         super.init(frame: .zero)
 
         wantsLayer = true
         layer?.cornerRadius = 14
+        layer?.masksToBounds = true
         layer?.borderWidth = 1.5
 
         label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
+        label.textColor = DesignTokens.purpleButton
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
         label.isSelectable = false
-        label.translatesAutoresizingMaskIntoConstraints = false
         addSubview(label)
 
         label.sizeToFit()
-        let w = label.frame.width + 28
+        let w = label.frame.width + 28  // padding 0 14px each side = 28
         let h: CGFloat = 28
         setFrameSize(NSSize(width: w, height: h))
         label.frame = NSRect(x: 14, y: (h - label.frame.height) / 2, width: label.frame.width, height: label.frame.height)
 
-        updateColors()
+        updateAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        updateColors()
+    func showCopied() {
+        isCopied = true
+        label.stringValue = "✓ Copied"
+        updateAppearance()
+        revertTimer?.invalidate()
+        revertTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: false) { [weak self] _ in
+            self?.resetState()
+        }
     }
 
-    private func updateColors() {
-        let borderColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
-        let bgColor = isHovered ? DesignTokens.purpleButtonBgHover : DesignTokens.purpleButtonBg
-        layer?.borderColor = borderColor.cgColor
-        layer?.backgroundColor = bgColor.cgColor
+    func resetState() {
+        revertTimer?.invalidate()
+        isCopied = false
+        label.stringValue = originalTitle
+        updateAppearance()
     }
 
-    private func updateLabelColor() {
-        label.textColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
+    private func updateAppearance() {
+        if isCopied {
+            layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
+            layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+            label.textColor = DesignTokens.copiedGreenText
+        } else {
+            let borderColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
+            let bgColor = isHovered ? DesignTokens.purpleButtonBgHover : DesignTokens.purpleButtonBg
+            layer?.borderColor = borderColor.cgColor
+            layer?.backgroundColor = bgColor.cgColor
+            label.textColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
+        }
     }
 
     override func updateTrackingAreas() {

@@ -57,6 +57,7 @@ final class PromptGenerator {
         let fileURL = folderURL.appendingPathComponent("prompt.txt")
         let tempURL = folderURL.appendingPathComponent(".prompt.txt.tmp")
         try? prompt.write(to: tempURL, atomically: true, encoding: .utf8)
+        try? FileManager.default.removeItem(at: fileURL)
         try? FileManager.default.moveItem(at: tempURL, to: fileURL)
     }
 

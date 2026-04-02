@@ -57,6 +57,7 @@
 		A10000010000000000000030 /* CaptureRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* CaptureRowView.swift */; };
 		A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* FirstUseTooltipView.swift */; };
 		A10000010000000000000032 /* NotePillRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* NotePillRenderer.swift */; };
+		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -112,6 +113,7 @@
 		A20000010000000000000032 /* CaptureRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRowView.swift; sourceTree = "<group>"; };
 		A20000010000000000000033 /* FirstUseTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstUseTooltipView.swift; sourceTree = "<group>"; };
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
+		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +159,7 @@
 			children = (
 				A20000010000000000000001 /* AppDelegate.swift */,
 				A2000001000000000000000C /* main.swift */,
+				B20000010000000000000001 /* VisualTestHarness.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -423,6 +426,7 @@
 				A10000010000000000000030 /* CaptureRowView.swift in Sources */,
 				A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */,
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
+				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

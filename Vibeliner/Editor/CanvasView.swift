@@ -69,12 +69,65 @@ final class CanvasView: NSView {
         marksLayer.needsDisplay = true
     }
 
+    // Hit testing matching prototype ht() function
+    // Priority: badge(12px) → arrow endpoint(10px) → rect corners(10px) → circle resize(10px) → body containment → freehand CPs(8px)
     private func hitTestAnnotation(at point: CGPoint) -> UUID? {
         for annotation in store.annotations.reversed() {
-            let badgePos = annotation.badgePosition
-            let badgeRadius = DesignTokens.badgeDiameter / 2 + 4 // generous hit target
-            if hypot(point.x - badgePos.x, point.y - badgePos.y) <= badgeRadius {
+            // Badge proximity (12px)
+            if hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12 {
                 return annotation.id
+            }
+
+            switch annotation.position {
+            case .arrow(_, let end):
+                // Arrow endpoint (10px)
+                if hypot(point.x - end.x, point.y - end.y) < 10 {
+                    return annotation.id
+                }
+
+            case .rectangle(let origin, let size):
+                // Rectangle corners (10px)
+                let corners = [
+                    CGPoint(x: origin.x, y: origin.y),
+                    CGPoint(x: origin.x + size.width, y: origin.y),
+                    CGPoint(x: origin.x, y: origin.y + size.height),
+                    CGPoint(x: origin.x + size.width, y: origin.y + size.height)
+                ]
+                for corner in corners {
+                    if hypot(point.x - corner.x, point.y - corner.y) < 10 {
+                        return annotation.id
+                    }
+                }
+                // Body containment (±5px)
+                if point.x >= origin.x - 5 && point.x <= origin.x + size.width + 5 &&
+                   point.y >= origin.y - 5 && point.y <= origin.y + size.height + 5 {
+                    return annotation.id
+                }
+
+            case .circle(let center, let radius):
+                // Opposite handle (10px)
+                let bx = annotation.badgePosition.x
+                let by = annotation.badgePosition.y
+                let ox = center.x * 2 - bx
+                let oy = center.y * 2 - by
+                if hypot(point.x - ox, point.y - oy) < 10 {
+                    return annotation.id
+                }
+                // Body containment
+                if hypot(point.x - center.x, point.y - center.y) < radius + 8 {
+                    return annotation.id
+                }
+
+            case .freehand(let pts):
+                // Control point proximity (8px)
+                for cp in pts {
+                    if hypot(point.x - cp.x, point.y - cp.y) < 8 {
+                        return annotation.id
+                    }
+                }
+
+            case .pin:
+                break // badge already checked above
             }
         }
         return nil
@@ -108,7 +161,7 @@ final class CanvasView: NSView {
     }
 
     func refreshNotePills() {
-        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId)
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId)
     }
 
     private var activeNoteField: NSTextField?
@@ -155,8 +208,13 @@ final class CanvasView: NSView {
 
     func confirmNoteEditing() {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
-        let text = field.stringValue
-        store.update(id: id, noteText: text)
+        let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text.isEmpty {
+            // Empty text on confirm → remove the annotation and renumber
+            store.remove(id: id)
+        } else {
+            store.update(id: id, noteText: text)
+        }
         field.removeFromSuperview()
         activeNoteField = nil
         editingAnnotationId = nil
@@ -210,6 +268,7 @@ final class MarksLayerView: NSView {
     var ghostPosition: CGPoint?
     var ghostTool: AnnotationTool?
     var hoveredId: UUID?
+    var selectedId: UUID?
     private let store: AnnotationStore
     private let pinRenderer = PinRenderer()
     private let arrowRenderer = ArrowRenderer()
@@ -238,14 +297,69 @@ final class MarksLayerView: NSView {
         // Draw hover glow
         if let hId = hoveredId, let annotation = store.annotations.first(where: { $0.id == hId }) {
             let bp = annotation.badgePosition
-            let glowRadius = DesignTokens.badgeDiameter / 2 + 6
-            context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.07).cgColor)
+            let glowRadius = DesignTokens.badgeDiameter / 2 + 7 // prototype: badgeR + 7
+            context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor)
             context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
+        }
+
+        // Draw selected state: dashed purple ring + handles
+        if let sId = selectedId, let annotation = store.annotations.first(where: { $0.id == sId }) {
+            let bp = annotation.badgePosition
+            let ringRadius = DesignTokens.badgeDiameter / 2 + 5 // prototype: badgeR + 5
+
+            // Dashed purple ring: #AFA9EC, 1.5px, dash 3,2
+            context.setStrokeColor(DesignTokens.purpleLight.cgColor)
+            context.setLineWidth(1.5)
+            context.setLineDash(phase: 0, lengths: [3, 2])
+            context.strokeEllipse(in: CGRect(x: bp.x - ringRadius, y: bp.y - ringRadius, width: ringRadius * 2, height: ringRadius * 2))
+            context.setLineDash(phase: 0, lengths: []) // reset dash
+
+            // Draw handles per tool type
+            switch annotation.position {
+            case .arrow(_, let end):
+                drawHandle(in: context, at: end)
+            case .rectangle(let origin, let size):
+                let corners = [
+                    CGPoint(x: origin.x, y: origin.y),
+                    CGPoint(x: origin.x + size.width, y: origin.y),
+                    CGPoint(x: origin.x, y: origin.y + size.height),
+                    CGPoint(x: origin.x + size.width, y: origin.y + size.height)
+                ]
+                for corner in corners {
+                    // Skip badge corner
+                    if hypot(corner.x - bp.x, corner.y - bp.y) > 5 {
+                        drawHandle(in: context, at: corner)
+                    }
+                }
+            case .circle(let center, _):
+                // Opposite handle
+                let ox = center.x * 2 - bp.x
+                let oy = center.y * 2 - bp.y
+                drawHandle(in: context, at: CGPoint(x: ox, y: oy))
+            case .freehand(let pts):
+                for pt in pts {
+                    drawHandle(in: context, at: pt)
+                }
+            case .pin:
+                break
+            }
         }
 
         // Draw ghost preview
         if let pos = ghostPosition, let tool = ghostTool {
             tool.drawGhost(at: pos, in: context)
         }
+    }
+
+    /// Handle: white circle, 5px radius, #AFA9EC 2px border
+    private func drawHandle(in context: CGContext, at point: CGPoint) {
+        let r: CGFloat = 5
+        let handleRect = CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2)
+        context.setFillColor(NSColor.white.cgColor)
+        context.fillEllipse(in: handleRect)
+        context.setStrokeColor(DesignTokens.purpleLight.cgColor)
+        context.setLineWidth(2)
+        context.setLineDash(phase: 0, lengths: [])
+        context.strokeEllipse(in: handleRect)
     }
 }

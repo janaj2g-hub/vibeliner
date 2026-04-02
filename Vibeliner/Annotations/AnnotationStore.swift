@@ -30,7 +30,16 @@ final class AnnotationStore {
 
     func remove(id: UUID) {
         annotations.removeAll { $0.id == id }
+        // Renumber all annotations sequentially after deletion
+        renumber()
         notifyChange()
+    }
+
+    private func renumber() {
+        for i in annotations.indices {
+            annotations[i].number = i + 1
+        }
+        nextNumber = annotations.count + 1
     }
 
     func update(id: UUID, noteText: String) {
