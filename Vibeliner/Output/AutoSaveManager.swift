@@ -31,6 +31,7 @@ final class AutoSaveManager {
         debounceTimer?.invalidate()
     }
 
+    /// VIB-169: Save immediately but non-blocking. File I/O goes to background queue.
     func saveNow() {
         debounceTimer?.invalidate()
         performSave()

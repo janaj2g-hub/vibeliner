@@ -122,6 +122,11 @@ final class PopoverContentView: NSView {
             y -= rowH
             let row = makeRow(label: item.label, keys: item.keys, action: item.action, hasArrow: item.hasArrow, y: y, rowH: rowH, hPad: hPad)
             addSubview(row)
+            // VIB-168: Add hover tracking on "Recent Captures" row
+            if item.hasArrow {
+                row.onHoverEnter = { [weak self] in self?.showRecentSubmenu() }
+                row.onHoverExit = { [weak self] in self?.scheduleSubmenuHide() }
+            }
             y -= rowGap
         }
 
@@ -254,8 +259,57 @@ final class PopoverContentView: NSView {
         }
     }
 
+    private var submenuPanel: NSPanel?
+    private var submenuHideTimer: Timer?
+
     @objc private func recentCaptures() {
-        // TODO: submenu
+        showRecentSubmenu()
+    }
+
+    func showRecentSubmenu() {
+        submenuHideTimer?.invalidate()
+        guard submenuPanel == nil, let popWin = popoverWindow else { return }
+
+        let submenu = RecentCapturesSubmenu()
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 300, height: submenu.frame.height),
+            styleMask: [.borderless, .nonactivatingPanel],
+            backing: .buffered, defer: false
+        )
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = false
+        panel.level = .popUpMenu
+        panel.isReleasedWhenClosed = false
+        panel.contentView = submenu
+
+        // Position to the right of popover, aligned with "Recent Captures" row
+        let popFrame = popWin.frame
+        let x = popFrame.maxX + 4
+        let y = popFrame.maxY - 80 - submenu.frame.height  // align near row
+        panel.setFrameOrigin(NSPoint(x: x, y: max(y, popFrame.minY)))
+        panel.orderFront(nil)
+        self.submenuPanel = panel
+
+        // Track mouse exit on submenu to hide with delay
+        submenu.onMouseExited = { [weak self] in
+            self?.scheduleSubmenuHide()
+        }
+        submenu.onMouseEntered = { [weak self] in
+            self?.submenuHideTimer?.invalidate()
+        }
+    }
+
+    func scheduleSubmenuHide() {
+        submenuHideTimer?.invalidate()
+        submenuHideTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
+            self?.submenuPanel?.close()
+            self?.submenuPanel = nil
+        }
+    }
+
+    func cancelSubmenuHide() {
+        submenuHideTimer?.invalidate()
     }
 
     @objc private func openCaptures() {
@@ -286,6 +340,8 @@ final class PopoverContentView: NSView {
 final class PopoverRowView: NSView {
     var target: AnyObject?
     var action: Selector?
+    var onHoverEnter: (() -> Void)?
+    var onHoverExit: (() -> Void)?
     private var isHovered = false { didSet { needsDisplay = true } }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -302,8 +358,14 @@ final class PopoverRowView: NSView {
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
     }
 
-    override func mouseEntered(with event: NSEvent) { isHovered = true }
-    override func mouseExited(with event: NSEvent) { isHovered = false }
+    override func mouseEntered(with event: NSEvent) {
+        isHovered = true
+        onHoverEnter?()
+    }
+    override func mouseExited(with event: NSEvent) {
+        isHovered = false
+        onHoverExit?()
+    }
     override func mouseDown(with event: NSEvent) {
         if let target = target, let action = action {
             NSApp.sendAction(action, to: target, from: self)

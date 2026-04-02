@@ -3,6 +3,13 @@ import AppKit
 final class RecentCapturesSubmenu: NSView {
 
     private var hideTimer: Timer?
+    var onMouseEntered: (() -> Void)?
+    var onMouseExited: (() -> Void)?
+
+    init() {
+        super.init(frame: .zero)
+        setupView()
+    }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -56,4 +63,13 @@ final class RecentCapturesSubmenu: NSView {
     func cancelHide() {
         hideTimer?.invalidate()
     }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { onMouseEntered?() }
+    override func mouseExited(with event: NSEvent) { onMouseExited?() }
 }
