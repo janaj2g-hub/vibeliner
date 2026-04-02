@@ -71,6 +71,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         hasShadow = false
         isMovableByWindowBackground = true
         isReleasedWhenClosed = false
+        becomesKeyOnlyIfNeeded = true  // VIB-169: Accept first click without needing to become key first
 
         let container = NSView(frame: NSRect(origin: .zero, size: contentRect.size))
         contentView = container

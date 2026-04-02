@@ -49,14 +49,15 @@ final class AutoSaveManager {
     }
 
     private func performSave() {
+        // VIB-169: Capture data on main thread, dispatch file I/O to background
         let annotations = store.annotations
-        ScreenshotExporter.saveExportedScreenshot(
-            to: captureFolder,
-            original: originalImage,
-            annotations: annotations,
-            canvasSize: canvasSize
-        )
-        PromptGenerator.savePromptFile(to: captureFolder, annotations: annotations)
+        let folder = captureFolder
+        let image = originalImage
+        let size = canvasSize
         isDirty = false
+        DispatchQueue.global(qos: .userInitiated).async {
+            ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
+            PromptGenerator.savePromptFile(to: folder, annotations: annotations)
+        }
     }
 }
