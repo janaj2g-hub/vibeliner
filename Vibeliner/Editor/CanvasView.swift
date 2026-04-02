@@ -196,16 +196,16 @@ final class CanvasView: NSView, NotePillDelegate {
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
-        let pillPos = NotePillRenderer.notePillPosition(for: annotation, canvasSize: bounds.size)
-
-        // Create pill-shaped editor container matching the editing state from prototype NP component
-        // Background: rgba(255,245,245,0.92), border: 1.5px solid #EF4444, borderRadius: 13px
-        // VIB-162: Pill grows vertically for long text, max width 200px
+        // VIB-162: Get raw placement with anchor, apply anchor using EDITING pill width
+        let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
         let maxPillW: CGFloat = 200
         let textLen = annotation.noteText.count
         let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
         let lineH: CGFloat = 16
         let pillH = max(DesignTokens.noteHeight, CGFloat(numLines) * lineH + 8)
+        // Apply anchor transform with the EDITING pill width (200px, not resting 130px)
+        let pillPos = NotePillRenderer.anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: maxPillW, pillHeight: pillH)
+
         let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: maxPillW, height: pillH))
         pillContainer.wantsLayer = true
         pillContainer.layer?.masksToBounds = false
