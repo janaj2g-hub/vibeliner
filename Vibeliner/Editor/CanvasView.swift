@@ -169,25 +169,83 @@ final class CanvasView: NSView {
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
     private(set) var hoveredAnnotationId: UUID?
 
+    private var activeEditorPill: NSView?
+
     func openNoteEditor(for annotation: Annotation) {
         activeNoteField?.removeFromSuperview()
+        activeEditorPill?.removeFromSuperview()
 
         let pillPos = NotePillRenderer.notePillPosition(for: annotation, canvasSize: bounds.size)
 
+        // Create pill-shaped editor container matching the editing state from prototype NP component
+        // Background: rgba(255,245,245,0.92), border: 1.5px solid #EF4444, borderRadius: 13px
+        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: 200, height: DesignTokens.noteHeight))
+        pillContainer.wantsLayer = true
+        pillContainer.layer?.masksToBounds = false
+
+        // Shadow
+        pillContainer.layer?.shadowColor = NSColor.black.withAlphaComponent(0.06).cgColor
+        pillContainer.layer?.shadowOffset = CGSize(width: 0, height: -1)
+        pillContainer.layer?.shadowRadius = 4
+        pillContainer.layer?.shadowOpacity = 1
+
+        // Blur backdrop
+        let blurLayer = CALayer()
+        blurLayer.frame = NSRect(origin: .zero, size: pillContainer.frame.size)
+        blurLayer.cornerRadius = DesignTokens.noteCornerRadius
+        blurLayer.masksToBounds = true
+        if let blurFilter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 10]) {
+            blurLayer.backgroundFilters = [blurFilter]
+        }
+        pillContainer.layer?.addSublayer(blurLayer)
+
+        // Tinted background + red border (editing state)
+        let tintView = NSView(frame: NSRect(origin: .zero, size: pillContainer.frame.size))
+        tintView.wantsLayer = true
+        tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
+        tintView.layer?.masksToBounds = true
+        tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
+        tintView.layer?.borderColor = DesignTokens.red.cgColor
+        tintView.layer?.borderWidth = 1.5
+        pillContainer.addSubview(tintView)
+
+        // Number prefix label
+        let numberLabel = NSTextField(labelWithString: "\(annotation.number)")
+        numberLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        numberLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+        numberLabel.isBezeled = false
+        numberLabel.drawsBackground = false
+        numberLabel.sizeToFit()
+        numberLabel.frame.origin = NSPoint(x: 12, y: (DesignTokens.noteHeight - numberLabel.frame.height) / 2)
+        pillContainer.addSubview(numberLabel)
+
+        // Text field (borderless, transparent, inside pill)
         let textField = NSTextField()
         textField.font = DesignTokens.noteTextFont
         textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
-        textField.backgroundColor = DesignTokens.redNoteBg
-        textField.isBordered = true
-        textField.wantsLayer = true
-        textField.layer?.borderColor = DesignTokens.red.cgColor
-        textField.layer?.borderWidth = 1
-        textField.layer?.cornerRadius = DesignTokens.noteCornerRadius
+        textField.backgroundColor = .clear
+        textField.drawsBackground = false
+        textField.isBordered = false
+        textField.isBezeled = false
         textField.focusRingType = .none
-        textField.frame = NSRect(x: pillPos.x, y: pillPos.y, width: 180, height: DesignTokens.noteHeight)
-        textField.placeholderString = "Add note..."
+        textField.wantsLayer = true
+
+        // Placeholder: "describe…" italic rgba(127,29,29,0.35)
+        let placeholderAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
+            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
+        ]
+        textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
         textField.stringValue = annotation.noteText
-        textField.identifier = NSUserInterfaceItemIdentifier("noteEditor")
+
+        // Position after number prefix + 7px gap
+        let textX = 12 + numberLabel.frame.width + 7
+        textField.frame = NSRect(x: textX, y: 4, width: 200 - textX - 12, height: DesignTokens.noteHeight - 8)
+
+        // Red caret color
+        if let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
+            fieldEditor.insertionPointColor = DesignTokens.red
+        }
 
         let delegate = CanvasNoteFieldDelegate(canvas: self)
         self.noteFieldDelegate = delegate
@@ -195,14 +253,21 @@ final class CanvasView: NSView {
         textField.target = delegate
         textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
 
-        notesLayer.addSubview(textField)
+        pillContainer.addSubview(textField)
+        notesLayer.addSubview(pillContainer)
+
         editingAnnotationId = annotation.id
         activeNoteField = textField
+        activeEditorPill = pillContainer
 
-        // Make the field first responder via the window
+        // Make the field first responder and set caret color
         DispatchQueue.main.async { [weak self, weak textField] in
             guard let window = self?.window, let tf = textField else { return }
             window.makeFirstResponder(tf)
+            // Set caret color after becoming first responder
+            if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
+                fieldEditor.insertionPointColor = DesignTokens.red
+            }
         }
     }
 
@@ -210,12 +275,12 @@ final class CanvasView: NSView {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
         let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
         if text.isEmpty {
-            // Empty text on confirm → remove the annotation and renumber
             store.remove(id: id)
         } else {
             store.update(id: id, noteText: text)
         }
-        field.removeFromSuperview()
+        activeEditorPill?.removeFromSuperview()
+        activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
         noteFieldDelegate = nil
@@ -228,7 +293,8 @@ final class CanvasView: NSView {
         if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
             store.remove(id: id)
         }
-        activeNoteField?.removeFromSuperview()
+        activeEditorPill?.removeFromSuperview()
+        activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
         noteFieldDelegate = nil

@@ -4,7 +4,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var setupWindowController: SetupWindowController?
     var settingsWindowController: SettingsWindowController?
-    private let popover = NSPopover()
+    private var popoverWindow: PopoverWindow?
 
     private var visualTestHarness: VisualTestHarness?
 
@@ -53,15 +53,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     @objc private func statusItemClicked() {
-        if popover.isShown {
-            popover.performClose(nil)
+        if let win = popoverWindow, win.isVisible {
+            win.closePopover()
+            popoverWindow = nil
         } else {
-            popover.contentViewController = PopoverViewController()
-            popover.appearance = NSAppearance(named: .darkAqua)
-            popover.behavior = .transient
+            let win = PopoverWindow()
             if let button = statusItem.button {
-                popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
+                win.showRelativeTo(button: button)
             }
+            popoverWindow = win
         }
     }
 
