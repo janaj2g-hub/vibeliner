@@ -188,6 +188,8 @@ final class CanvasView: NSView, NotePillDelegate {
     private(set) var hoveredAnnotationId: UUID?
 
     private var activeEditorPill: NSView?
+    private var editorTintView: NSView?
+    private var editorBlurLayer: CALayer?
 
     func openNoteEditor(for annotation: Annotation) {
         activeNoteField?.removeFromSuperview()
@@ -195,9 +197,58 @@ final class CanvasView: NSView, NotePillDelegate {
 
         let pillPos = NotePillRenderer.notePillPosition(for: annotation, canvasSize: bounds.size)
 
-        // Create pill-shaped editor container matching the editing state from prototype NP component
-        // Background: rgba(255,245,245,0.92), border: 1.5px solid #EF4444, borderRadius: 13px
-        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: 200, height: DesignTokens.noteHeight))
+        // Constants matching prototype NP component editing state
+        let maxPillW: CGFloat = 200
+        let padding: CGFloat = 12
+        let prefixGap: CGFloat = 7
+        let lineH: CGFloat = 16
+        let minH = DesignTokens.noteHeight  // 26px
+
+        // Number prefix
+        let numberLabel = NSTextField(labelWithString: "\(annotation.number)")
+        numberLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        numberLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+        numberLabel.isBezeled = false
+        numberLabel.drawsBackground = false
+        numberLabel.sizeToFit()
+
+        let textX = padding + numberLabel.frame.width + prefixGap
+        let textW: CGFloat = 140  // prototype: width: 140
+
+        // Pill width = prefix + gap + text + padding
+        let pillW = min(maxPillW, textX + textW + padding)
+
+        // Text field — borderless, no background, no scrollbar
+        let textField = NSTextField()
+        textField.font = DesignTokens.noteTextFont
+        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+        textField.backgroundColor = .clear
+        textField.drawsBackground = false
+        textField.isBordered = false
+        textField.isBezeled = false
+        textField.focusRingType = .none
+        textField.usesSingleLineMode = false
+        textField.cell?.wraps = true
+        textField.cell?.isScrollable = false
+        textField.lineBreakMode = .byWordWrapping
+        textField.maximumNumberOfLines = 0
+
+        // Placeholder: "describe…" italic rgba(127,29,29,0.35)
+        let placeholderAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
+            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
+        ]
+        textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
+        textField.stringValue = annotation.noteText
+
+        // Calculate initial pill height from text content
+        // Prototype formula: max(1, ceil(text.length / 22)) lines
+        let textLen = annotation.noteText.count
+        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
+        let pillH = max(minH, CGFloat(numLines) * lineH + 8) // 4px top + 4px bottom padding
+
+        // Pill container
+        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: pillW, height: pillH))
         pillContainer.wantsLayer = true
         pillContainer.layer?.masksToBounds = false
 
@@ -216,6 +267,7 @@ final class CanvasView: NSView, NotePillDelegate {
             blurLayer.backgroundFilters = [blurFilter]
         }
         pillContainer.layer?.addSublayer(blurLayer)
+        self.editorBlurLayer = blurLayer
 
         // Tinted background + red border (editing state)
         let tintView = NSView(frame: NSRect(origin: .zero, size: pillContainer.frame.size))
@@ -226,44 +278,15 @@ final class CanvasView: NSView, NotePillDelegate {
         tintView.layer?.borderColor = DesignTokens.red.cgColor
         tintView.layer?.borderWidth = 1.5
         pillContainer.addSubview(tintView)
+        self.editorTintView = tintView
 
-        // Number prefix label
-        let numberLabel = NSTextField(labelWithString: "\(annotation.number)")
-        numberLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
-        numberLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
-        numberLabel.isBezeled = false
-        numberLabel.drawsBackground = false
-        numberLabel.sizeToFit()
-        numberLabel.frame.origin = NSPoint(x: 12, y: (DesignTokens.noteHeight - numberLabel.frame.height) / 2)
+        // Position number prefix vertically centered in first line
+        numberLabel.frame.origin = NSPoint(x: padding, y: pillH - 4 - lineH + (lineH - numberLabel.frame.height) / 2)
         pillContainer.addSubview(numberLabel)
 
-        // Text field (borderless, transparent, inside pill)
-        let textField = NSTextField()
-        textField.font = DesignTokens.noteTextFont
-        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
-        textField.backgroundColor = .clear
-        textField.drawsBackground = false
-        textField.isBordered = false
-        textField.isBezeled = false
-        textField.focusRingType = .none
-        textField.wantsLayer = true
-
-        // Placeholder: "describe…" italic rgba(127,29,29,0.35)
-        let placeholderAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
-            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
-        ]
-        textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
-        textField.stringValue = annotation.noteText
-
-        // Position after number prefix + 7px gap
-        let textX = 12 + numberLabel.frame.width + 7
-        textField.frame = NSRect(x: textX, y: 4, width: 200 - textX - 12, height: DesignTokens.noteHeight - 8)
-
-        // Red caret color
-        if let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
-            fieldEditor.insertionPointColor = DesignTokens.red
-        }
+        // Position text field
+        textField.frame = NSRect(x: textX, y: 4, width: textW, height: pillH - 8)
+        pillContainer.addSubview(textField)
 
         let delegate = CanvasNoteFieldDelegate(canvas: self)
         self.noteFieldDelegate = delegate
@@ -271,21 +294,35 @@ final class CanvasView: NSView, NotePillDelegate {
         textField.target = delegate
         textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
 
-        pillContainer.addSubview(textField)
         notesLayer.addSubview(pillContainer)
-
         editingAnnotationId = annotation.id
         activeNoteField = textField
         activeEditorPill = pillContainer
 
-        // Make the field first responder and set caret color
+        // Make first responder and set red caret
         DispatchQueue.main.async { [weak self, weak textField] in
             guard let window = self?.window, let tf = textField else { return }
             window.makeFirstResponder(tf)
-            // Set caret color after becoming first responder
             if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
                 fieldEditor.insertionPointColor = DesignTokens.red
             }
+        }
+    }
+
+    /// Called by text field delegate on text changes to resize the editing pill
+    func resizeEditingPill() {
+        guard let pill = activeEditorPill, let field = activeNoteField else { return }
+        let lineH: CGFloat = 16
+        let minH = DesignTokens.noteHeight
+        let textLen = field.stringValue.count
+        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
+        let newH = max(minH, CGFloat(numLines) * lineH + 8)
+
+        if abs(pill.frame.height - newH) > 1 {
+            pill.setFrameSize(NSSize(width: pill.frame.width, height: newH))
+            editorTintView?.frame = NSRect(origin: .zero, size: pill.frame.size)
+            editorBlurLayer?.frame = NSRect(origin: .zero, size: pill.frame.size)
+            field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
         }
     }
 
@@ -334,6 +371,11 @@ final class CanvasNoteFieldDelegate: NSObject, NSTextFieldDelegate {
 
     @objc func confirmNote(_ sender: NSTextField) {
         canvas?.confirmNoteEditing()
+    }
+
+    func controlTextDidChange(_ obj: Notification) {
+        // Resize the editing pill as text changes
+        canvas?.resizeEditingPill()
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
