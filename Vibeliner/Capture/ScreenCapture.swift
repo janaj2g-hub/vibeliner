@@ -8,18 +8,20 @@ final class ScreenCapture {
         // Check screen recording permission
         if !CGPreflightScreenCaptureAccess() {
             CGRequestScreenCaptureAccess()
-            print("Vibeliner: Screen recording permission required. Please grant access in System Settings > Privacy & Security > Screen Recording.")
+            print("Vibeliner: Screen recording permission required.")
             return nil
         }
 
-        // Convert from NSRect (bottom-left origin) to CGRect (top-left origin for CGWindowList)
-        let screenHeight = screen.frame.height
-        let cgRect = CGRect(
-            x: rect.origin.x,
-            y: screenHeight - rect.origin.y - rect.height,
-            width: rect.width,
-            height: rect.height
-        )
+        // VIB-179: Convert to global display coordinates for multi-monitor
+        // CGWindowListCreateImage uses global display space (top-left origin)
+        let screenFrame = screen.frame
+        let mainScreenH = NSScreen.screens.first?.frame.height ?? screenFrame.height
+
+        // Convert from screen-local bottom-left to global top-left
+        let globalX = screenFrame.origin.x + rect.origin.x
+        let globalY = mainScreenH - (screenFrame.origin.y + rect.origin.y + rect.height)
+
+        let cgRect = CGRect(x: globalX, y: globalY, width: rect.width, height: rect.height)
 
         // Capture using CGWindowListCreateImage
         guard let cgImage = CGWindowListCreateImage(
@@ -32,7 +34,10 @@ final class ScreenCapture {
             return captureWithFallback(rect: rect)
         }
 
-        return NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+        // VIB-179: Set image display size to POINT dimensions (not pixel)
+        // CGWindowListCreateImage with .bestResolution returns 2x pixels on Retina
+        let image = NSImage(cgImage: cgImage, size: NSSize(width: rect.width, height: rect.height))
+        return image
     }
 
     private static func captureWithFallback(rect: NSRect) -> NSImage? {

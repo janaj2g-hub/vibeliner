@@ -71,8 +71,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         hasShadow = false
         isMovableByWindowBackground = true
         isReleasedWhenClosed = false
+        becomesKeyOnlyIfNeeded = true  // VIB-169: Accept first click without needing to become key first
 
         let container = NSView(frame: NSRect(origin: .zero, size: contentRect.size))
+        container.wantsLayer = true
+        container.layer?.masksToBounds = false  // VIB-165/167: Don't clip toolbar shadow or note overflow
         contentView = container
 
         // Canvas centered horizontally, above bottom gap

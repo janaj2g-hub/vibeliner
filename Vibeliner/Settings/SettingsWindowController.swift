@@ -12,7 +12,7 @@ final class SettingsWindowController: NSWindowController {
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 480),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 700),  // VIB-163: Min 700px so everything fits
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false

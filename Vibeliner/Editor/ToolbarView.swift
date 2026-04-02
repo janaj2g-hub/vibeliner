@@ -17,7 +17,6 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var copyImageButton: NSView?
-    private var pinCounterIcon: PinCounterIcon?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
 
@@ -31,12 +30,12 @@ final class ToolbarView: NSView {
     private func setupView() {
         wantsLayer = true
         layer?.cornerRadius = DesignTokens.toolbarCornerRadius
-        layer?.masksToBounds = true
-        layer?.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.25).cgColor
+        layer?.masksToBounds = false  // VIB-165: must be false for diffuse shadow
+        // VIB-165: Soft diffuse shadow matching prototype 0 4px 20px rgba(0,0,0,0.25)
+        layer?.shadowColor = NSColor.black.cgColor
         layer?.shadowOffset = NSSize(width: 0, height: -4)
         layer?.shadowRadius = 20
-        layer?.shadowOpacity = 1.0
-        layer?.masksToBounds = false
+        layer?.shadowOpacity = 0.25
 
         // Blur background
         blurView.material = .hudWindow
@@ -82,23 +81,27 @@ final class ToolbarView: NSView {
         x = addDivider(at: x)
         x += 10
 
-        // Select tool button (pointer/cursor icon)
+        // VIB-159: Select tool — clean pointer arrow icon
+        // SVG path: M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z in 15×15 viewBox
         let selectBtn = ToolButton(style: .tool, tooltip: "Select (1)") { rect, color in
-            // Pointer/cursor arrow icon
+            let w = rect.width, h = rect.height
+            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+            }
             let path = NSBezierPath()
-            let cx = rect.midX - 1
-            let cy = rect.midY
-            path.move(to: NSPoint(x: cx - 4, y: cy + 5))
-            path.line(to: NSPoint(x: cx - 4, y: cy - 6))
-            path.line(to: NSPoint(x: cx + 3, y: cy - 1))
-            path.line(to: NSPoint(x: cx + 6, y: cy - 4))
-            path.line(to: NSPoint(x: cx + 3, y: cy - 4))
-            path.line(to: NSPoint(x: cx + 1, y: cy + 1))
+            path.move(to: pt(3, 2))
+            path.line(to: pt(12, 7.5))
+            path.line(to: pt(8, 8.5))
+            path.line(to: pt(10.5, 13))
+            path.line(to: pt(9, 13.8))
+            path.line(to: pt(6.5, 9.3))
+            path.line(to: pt(3.5, 12.3))
             path.close()
             color.setFill()
             path.fill()
             color.setStroke()
             path.lineWidth = 0.5
+            path.lineJoinStyle = .round
             path.stroke()
         }
         selectBtn.isActive = (selectedTool == .select)
@@ -108,21 +111,33 @@ final class ToolbarView: NSView {
         toolButtons[.select] = selectBtn
         x += DesignTokens.toolButtonSize
 
-        // Pin tool button with counter icon
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { [weak self] rect, color in
-            // Draw nothing — PinCounterIcon overlay handles it
-            _ = self
+        // VIB-164 (attempt 3): Pin icon — simple NSBezierPath like all other tools. No special cases.
+        // Filled circle (r=3.5) + stake line, 15×15 viewBox, currentColor
+        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)") { rect, color in
+            let w = rect.width, h = rect.height
+            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+            }
+            // Filled circle at (7.5, 5), r=3.5
+            let circleCenter = pt(7.5, 5)
+            let r = 3.5 * (w / 15)
+            let circlePath = NSBezierPath(ovalIn: NSRect(x: circleCenter.x - r, y: circleCenter.y - r, width: r * 2, height: r * 2))
+            color.setFill()
+            circlePath.fill()
+            // Stake line from (7.5, 8.5) to (7.5, 13)
+            let stake = NSBezierPath()
+            stake.move(to: pt(7.5, 8.5))
+            stake.line(to: pt(7.5, 13))
+            stake.lineWidth = 1.4
+            stake.lineCapStyle = .round
+            color.setStroke()
+            stake.stroke()
         }
         pinBtn.isActive = (selectedTool == .pin)
         pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
         pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(pinBtn)
         toolButtons[.pin] = pinBtn
-
-        let pinIcon = PinCounterIcon(frame: NSRect(x: 0, y: 0, width: DesignTokens.toolButtonSize, height: DesignTokens.toolButtonSize))
-        pinIcon.isActive = (selectedTool == .pin)
-        pinBtn.addSubview(pinIcon)
-        self.pinCounterIcon = pinIcon
         x += DesignTokens.toolButtonSize
 
         // Other tool buttons
@@ -174,30 +189,64 @@ final class ToolbarView: NSView {
         addSubview(trashBtn)
         x += DesignTokens.iconButtonSize + 10
 
-        // Undo — use SF Symbol
-        let undoBtn = ToolButton(style: .icon, tooltip: "Undo") { rect, color in
-            if let img = NSImage(systemSymbolName: "arrow.uturn.backward", accessibilityDescription: "Undo") {
-                let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .medium)
-                let configured = img.withSymbolConfiguration(config) ?? img
-                let imgSize = configured.size
-                let imgRect = NSRect(x: rect.midX - imgSize.width / 2, y: rect.midY - imgSize.height / 2, width: imgSize.width, height: imgSize.height)
-                configured.draw(in: imgRect)
+        // VIB-160: Undo — manual path drawing (NOT SF Symbol which renders black)
+        // Prototype SVG: <path d="M3 8h7a3 3 0 010 6H8"/><polyline points="6,5 3,8 6,11"/>
+        let undoBtn = ToolButton(style: .icon, tooltip: "Undo (⌘Z)") { rect, color in
+            let w = rect.width, h = rect.height
+            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                NSPoint(x: rect.minX + sx / 16 * w, y: rect.maxY - sy / 16 * h)
             }
+            let path = NSBezierPath()
+            // Curved arrow body: M3,8 → line to 10,8 → arc to 10,14 → line to 8,14
+            path.move(to: pt(3, 8))
+            path.line(to: pt(10, 8))
+            path.curve(to: pt(10, 14), controlPoint1: pt(13, 8), controlPoint2: pt(13, 14))
+            path.line(to: pt(8, 14))
+            path.lineWidth = 1.3
+            path.lineCapStyle = .round
+            path.lineJoinStyle = .round
+            color.setStroke()
+            path.stroke()
+            // Chevron: polyline 6,5 → 3,8 → 6,11
+            let chevron = NSBezierPath()
+            chevron.move(to: pt(6, 5))
+            chevron.line(to: pt(3, 8))
+            chevron.line(to: pt(6, 11))
+            chevron.lineWidth = 1.3
+            chevron.lineCapStyle = .round
+            chevron.lineJoinStyle = .round
+            chevron.stroke()
         }
         undoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestUndo() }
         undoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(undoBtn)
         x += DesignTokens.iconButtonSize + 1
 
-        // Redo — use SF Symbol
-        let redoBtn = ToolButton(style: .icon, tooltip: "Redo") { rect, color in
-            if let img = NSImage(systemSymbolName: "arrow.uturn.forward", accessibilityDescription: "Redo") {
-                let config = NSImage.SymbolConfiguration(pointSize: 13, weight: .medium)
-                let configured = img.withSymbolConfiguration(config) ?? img
-                let imgSize = configured.size
-                let imgRect = NSRect(x: rect.midX - imgSize.width / 2, y: rect.midY - imgSize.height / 2, width: imgSize.width, height: imgSize.height)
-                configured.draw(in: imgRect)
+        // VIB-160: Redo — manual path (mirrored undo)
+        // Prototype SVG: <path d="M13 8H6a3 3 0 000 6h2"/><polyline points="10,5 13,8 10,11"/>
+        let redoBtn = ToolButton(style: .icon, tooltip: "Redo (⌘⇧Z)") { rect, color in
+            let w = rect.width, h = rect.height
+            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                NSPoint(x: rect.minX + sx / 16 * w, y: rect.maxY - sy / 16 * h)
             }
+            let path = NSBezierPath()
+            path.move(to: pt(13, 8))
+            path.line(to: pt(6, 8))
+            path.curve(to: pt(6, 14), controlPoint1: pt(3, 8), controlPoint2: pt(3, 14))
+            path.line(to: pt(8, 14))
+            path.lineWidth = 1.3
+            path.lineCapStyle = .round
+            path.lineJoinStyle = .round
+            color.setStroke()
+            path.stroke()
+            let chevron = NSBezierPath()
+            chevron.move(to: pt(10, 5))
+            chevron.line(to: pt(13, 8))
+            chevron.line(to: pt(10, 11))
+            chevron.lineWidth = 1.3
+            chevron.lineCapStyle = .round
+            chevron.lineJoinStyle = .round
+            chevron.stroke()
         }
         redoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestRedo() }
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
@@ -245,13 +294,15 @@ final class ToolbarView: NSView {
         blurView.frame = bounds
         tintView.frame = bounds
 
+        // VIB-165: Set shadow path to pill shape for diffuse shadow
+        updateShadowPath()
+
         updateCopyButtonVisibility(mode: ConfigManager.shared.copyMode)
     }
 
     func selectTool(_ tool: AnnotationToolType) {
         selectedTool = tool
         for (t, btn) in toolButtons { btn.isActive = (t == tool) }
-        pinCounterIcon?.isActive = (tool == .pin)
         delegate?.toolbarDidSelectTool(tool)
     }
 
@@ -261,7 +312,7 @@ final class ToolbarView: NSView {
     private var copyImagePillButton: CopyPillButton?
 
     func updateAnnotationCount(_ count: Int) {
-        pinCounterIcon?.count = count
+        // VIB-164: Pin icon no longer has counter — this is now a no-op
     }
 
     func markCopyState(_ target: CopyTarget) {
@@ -274,6 +325,16 @@ final class ToolbarView: NSView {
     func resetCopyState() {
         copyPromptButton?.resetState()
         copyImagePillButton?.resetState()
+    }
+
+    private func updateShadowPath() {
+        // VIB-176: Dynamic pill radius = half height for perfect semicircular ends
+        let r = bounds.height / 2.0
+        layer?.cornerRadius = r
+        blurView.layer?.cornerRadius = r
+        tintOverlay?.layer?.cornerRadius = r
+        let path = CGPath(roundedRect: bounds, cornerWidth: r, cornerHeight: r, transform: nil)
+        layer?.shadowPath = path
     }
 
     private func updateCopyButtonVisibility(mode: String) {
@@ -293,6 +354,7 @@ final class ToolbarView: NSView {
             setFrameSize(NSSize(width: newWidth, height: DesignTokens.toolbarHeight))
             blurView.frame = bounds
             tintOverlay?.frame = bounds
+            updateShadowPath()
         }
     }
 

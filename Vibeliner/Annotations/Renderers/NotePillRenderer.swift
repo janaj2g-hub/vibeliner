@@ -190,39 +190,54 @@ final class NotePillView: NSView {
         self.currentState = state
         self.tintView = NSView()
 
-        // Build attributed string
-        let numberStr = "\(number)"
-        let attrStr = NSMutableAttributedString()
+        // VIB-161/VIB-166: Proper max width, wrapping, and vertical centering
+        let padding: CGFloat = 12
+        let vertPad: CGFloat = 4
+        let prefixGap: CGFloat = 7
+        let maxPillW: CGFloat = 180  // VIB-161: max width resting
+        let lineH: CGFloat = 16
+
+        // Number prefix label (separate from text for independent sizing)
         let numberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        let prefixStr = "\(number)" as NSString
+        let prefixAttrs: [NSAttributedString.Key: Any] = [.font: numberFont]
+        let prefixSize = prefixStr.size(withAttributes: prefixAttrs)
+
+        // Text label
         let textFont = DesignTokens.noteTextFont
-
-        // Number prefix
-        attrStr.append(NSAttributedString(string: numberStr, attributes: [
-            .font: numberFont,
-            .foregroundColor: NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4),
-            .baselineOffset: 1.5  // lift smaller font to align with 12px text center
-        ]))
-        attrStr.addAttribute(.kern, value: 7.0, range: NSRange(location: numberStr.count - 1, length: 1))
-
-        // User text
-        attrStr.append(NSAttributedString(string: text, attributes: [
+        let textAttrs: [NSAttributedString.Key: Any] = [
             .font: textFont,
             .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
-        ]))
+        ]
 
-        let textField = NSTextField(labelWithString: "")
-        textField.attributedStringValue = attrStr
+        // Calculate text width: maxPillW - prefix area - padding
+        let prefixW = prefixSize.width
+        let textX = padding + prefixW + prefixGap
+        let maxTextW = maxPillW - textX - padding
+
+        // Create text field with wrapping
+        let textField = NSTextField(labelWithString: text)
+        textField.font = textFont
+        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.isEditable = false
-        textField.maximumNumberOfLines = 1
-        textField.lineBreakMode = .byTruncatingTail
-        textField.preferredMaxLayoutWidth = 160
+        textField.maximumNumberOfLines = 0  // VIB-161: unlimited lines
+        textField.lineBreakMode = .byWordWrapping
+        textField.preferredMaxLayoutWidth = maxTextW
+        textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
+        // Size to fit within max text width
+        textField.frame = NSRect(x: 0, y: 0, width: maxTextW, height: 0)
+        textField.sizeToFit()
+        // If text is short, shrink width to fit content
+        let actualTextW = min(textField.frame.width, maxTextW)
         textField.sizeToFit()
 
-        let padding: CGFloat = 12
-        let pillWidth = textField.frame.width + padding * 2
-        let pillHeight = DesignTokens.noteHeight  // always 26px
+        // VIB-166: Pill dimensions with exact padding: 4px top, 4px bottom, 12px left, 12px right
+        let contentH = max(lineH, textField.frame.height)
+        let pillWidth = min(maxPillW, textX + actualTextW + padding)
+        let pillHeight = max(DesignTokens.noteHeight, contentH + vertPad * 2) // min 26px
 
         super.init(frame: NSRect(x: 0, y: 0, width: pillWidth, height: pillHeight))
         wantsLayer = true
@@ -244,15 +259,33 @@ final class NotePillView: NSView {
         }
         layer?.addSublayer(blurLayer)
 
-        // Tint overlay
+        // Tint overlay — matches pill bounds exactly (VIB-166: concentric border)
         tintView.frame = bounds
         tintView.wantsLayer = true
         tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
         tintView.layer?.masksToBounds = true
         addSubview(tintView)
 
-        // Text field — vertically centered
-        textField.frame = NSRect(x: padding, y: (pillHeight - textField.frame.height) / 2, width: textField.frame.width, height: textField.frame.height)
+        // VIB-166: Number prefix — vertically centered in pill
+        let prefixLabel = NSTextField(labelWithString: "\(number)")
+        prefixLabel.font = numberFont
+        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+        prefixLabel.isBezeled = false
+        prefixLabel.drawsBackground = false
+        prefixLabel.sizeToFit()
+        prefixLabel.frame.origin = NSPoint(
+            x: padding,
+            y: (pillHeight - prefixLabel.frame.height) / 2
+        )
+        addSubview(prefixLabel)
+
+        // VIB-166: Text field — vertically centered in pill
+        textField.frame = NSRect(
+            x: textX,
+            y: (pillHeight - textField.frame.height) / 2,
+            width: actualTextW,
+            height: textField.frame.height
+        )
         addSubview(textField)
 
         applyState(state)

@@ -1,8 +1,10 @@
 import AppKit
 
+/// VIB-164: Simple pin icon — filled circle + stake, no counter number.
+/// Uses currentColor via isActive toggle for state changes.
 final class PinCounterIcon: NSView {
 
-    var count: Int = 0 { didSet { needsDisplay = true } }
+    var count: Int = 0 { didSet { /* count no longer displayed */ } }
     var isActive: Bool = false { didSet { needsDisplay = true } }
 
     override init(frame frameRect: NSRect) {
@@ -15,44 +17,29 @@ final class PinCounterIcon: NSView {
         super.draw(dirtyRect)
 
         let color = isActive ? DesignTokens.purpleLight : DesignTokens.purpleLightInactive
-        let circleRadius: CGFloat = 10
+
+        // Prototype SVG: circle cx=7.5 cy=5 r=4.5, line y1=9.5 y2=14 in 15×15 viewBox
+        // Map to bounds (30×30 button)
+        let scale = bounds.width / 15
         let cx = bounds.midX
-        let cy = bounds.midY + 3
+        let cy = bounds.midY + 1 * scale  // optical center shift
+
+        let circR: CGFloat = 4.5 * scale
+        let circCy = cy + (5 - 7.5) * scale
 
         // Filled circle
-        let circlePath = NSBezierPath(ovalIn: NSRect(
-            x: cx - circleRadius, y: cy - circleRadius,
-            width: circleRadius * 2, height: circleRadius * 2
-        ))
         color.setFill()
-        circlePath.fill()
+        NSBezierPath(ovalIn: NSRect(x: cx - circR, y: circCy - circR, width: circR * 2, height: circR * 2)).fill()
 
-        // Stake line below circle
-        let stakePath = NSBezierPath()
-        stakePath.move(to: NSPoint(x: cx, y: cy - circleRadius))
-        stakePath.line(to: NSPoint(x: cx, y: cy - circleRadius - 6))
-        stakePath.lineWidth = 1.8
-        stakePath.lineCapStyle = .round
+        // Stake line
+        let stakeTop = cy + (7.5 - 9.5) * scale
+        let stakeBottom = cy + (7.5 - 14) * scale
+        let stake = NSBezierPath()
+        stake.move(to: NSPoint(x: cx, y: stakeTop))
+        stake.line(to: NSPoint(x: cx, y: stakeBottom))
+        stake.lineWidth = 1.8 * scale
+        stake.lineCapStyle = .round
         color.setStroke()
-        stakePath.stroke()
-
-        // Counter number
-        if count > 0 {
-            let fontSize: CGFloat = count >= 10 ? 7 : 8
-            let font = NSFont.systemFont(ofSize: fontSize, weight: .bold)
-            let text = "\(count)" as NSString
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: font,
-                .foregroundColor: NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
-            ]
-            let textSize = text.size(withAttributes: attrs)
-            let textRect = NSRect(
-                x: cx - textSize.width / 2,
-                y: cy - textSize.height / 2,
-                width: textSize.width,
-                height: textSize.height
-            )
-            text.draw(in: textRect, withAttributes: attrs)
-        }
+        stake.stroke()
     }
 }

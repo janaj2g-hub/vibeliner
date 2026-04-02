@@ -21,6 +21,9 @@ final class CanvasView: NSView, NotePillDelegate {
         notesLayer.layer?.masksToBounds = false
 
         super.init(frame: NSRect(origin: .zero, size: frame.size))
+        // VIB-167: CanvasView must not clip notes layer
+        wantsLayer = true
+        layer?.masksToBounds = false
 
         addSubview(marksLayer)
         addSubview(notesLayer)
@@ -197,7 +200,13 @@ final class CanvasView: NSView, NotePillDelegate {
 
         // Create pill-shaped editor container matching the editing state from prototype NP component
         // Background: rgba(255,245,245,0.92), border: 1.5px solid #EF4444, borderRadius: 13px
-        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: 200, height: DesignTokens.noteHeight))
+        // VIB-162: Pill grows vertically for long text, max width 200px
+        let maxPillW: CGFloat = 200
+        let textLen = annotation.noteText.count
+        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
+        let lineH: CGFloat = 16
+        let pillH = max(DesignTokens.noteHeight, CGFloat(numLines) * lineH + 8)
+        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: maxPillW, height: pillH))
         pillContainer.wantsLayer = true
         pillContainer.layer?.masksToBounds = false
 
@@ -247,6 +256,12 @@ final class CanvasView: NSView, NotePillDelegate {
         textField.isBezeled = false
         textField.focusRingType = .none
         textField.wantsLayer = true
+        // VIB-162: Allow text wrapping, no truncation, unlimited lines
+        textField.usesSingleLineMode = false
+        textField.cell?.wraps = true
+        textField.cell?.isScrollable = false
+        textField.lineBreakMode = .byWordWrapping
+        textField.maximumNumberOfLines = 0
 
         // Placeholder: "describe…" italic rgba(127,29,29,0.35)
         let placeholderAttrs: [NSAttributedString.Key: Any] = [
@@ -258,7 +273,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
         // Position after number prefix + 7px gap
         let textX = 12 + numberLabel.frame.width + 7
-        textField.frame = NSRect(x: textX, y: 4, width: 200 - textX - 12, height: DesignTokens.noteHeight - 8)
+        textField.frame = NSRect(x: textX, y: 4, width: maxPillW - textX - 12, height: pillH - 8)
 
         // Red caret color
         if let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
@@ -286,6 +301,30 @@ final class CanvasView: NSView, NotePillDelegate {
             if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
                 fieldEditor.insertionPointColor = DesignTokens.red
             }
+        }
+    }
+
+    /// VIB-162: Resize editing pill as text grows
+    func resizeEditingPill() {
+        guard let pill = activeEditorPill, let field = activeNoteField else { return }
+        let lineH: CGFloat = 16
+        let minH = DesignTokens.noteHeight
+        let textLen = field.stringValue.count
+        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
+        let newH = max(minH, CGFloat(numLines) * lineH + 8)
+
+        if abs(pill.frame.height - newH) > 1 {
+            pill.setFrameSize(NSSize(width: pill.frame.width, height: newH))
+            // Update sublayers/views to match new size
+            for sub in pill.subviews {
+                if sub.layer?.cornerRadius == DesignTokens.noteCornerRadius {
+                    sub.frame = NSRect(origin: .zero, size: pill.frame.size)
+                }
+            }
+            if let blurLayer = pill.layer?.sublayers?.first(where: { $0.cornerRadius == DesignTokens.noteCornerRadius }) {
+                blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
+            }
+            field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
         }
     }
 
@@ -334,6 +373,11 @@ final class CanvasNoteFieldDelegate: NSObject, NSTextFieldDelegate {
 
     @objc func confirmNote(_ sender: NSTextField) {
         canvas?.confirmNoteEditing()
+    }
+
+    // VIB-162: Resize pill on text changes so all text is visible
+    func controlTextDidChange(_ obj: Notification) {
+        canvas?.resizeEditingPill()
     }
 
     func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {

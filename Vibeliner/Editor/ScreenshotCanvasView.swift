@@ -9,15 +9,15 @@ final class ScreenshotCanvasView: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
-        layer?.cornerRadius = 6
-        layer?.masksToBounds = true
+        // VIB-167: Do NOT set cornerRadius on the parent — it forces masksToBounds.
+        // Corner radius is applied via the clipView sublayer only.
+        layer?.masksToBounds = false  // MUST be false for note pill overflow
 
-        // Shadow on a wrapper approach: set shadow on superview layer
+        // Shadow
         layer?.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.12).cgColor
         layer?.shadowOffset = NSSize(width: 0, height: -4)
         layer?.shadowRadius = 24
         layer?.shadowOpacity = 1.0
-        layer?.masksToBounds = false
 
         // Use a sublayer for clipping content while keeping shadow visible
         let clipView = NSView()
