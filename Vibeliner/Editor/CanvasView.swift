@@ -1,6 +1,6 @@
 import AppKit
 
-final class CanvasView: NSView {
+final class CanvasView: NSView, NotePillDelegate {
 
     let marksLayer: MarksLayerView
     let notesLayer: NSView
@@ -161,7 +161,25 @@ final class CanvasView: NSView {
     }
 
     func refreshNotePills() {
-        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId)
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self)
+    }
+
+    // MARK: - NotePillDelegate
+
+    func notePillHovered(annotationId: UUID?) {
+        let oldHovered = hoveredAnnotationId
+        hoveredAnnotationId = annotationId
+        if hoveredAnnotationId != oldHovered {
+            marksLayer.hoveredId = hoveredAnnotationId
+            marksLayer.needsDisplay = true
+            refreshNotePills()
+        }
+    }
+
+    func notePillClicked(annotationId: UUID) {
+        // Clicking a note pill opens it for editing
+        guard let annotation = store.annotation(for: annotationId) else { return }
+        openNoteEditor(for: annotation)
     }
 
     private var activeNoteField: NSTextField?

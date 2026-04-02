@@ -1,10 +1,16 @@
 import AppKit
 
+/// Callback protocol for note pill interactions
+protocol NotePillDelegate: AnyObject {
+    func notePillHovered(annotationId: UUID?)
+    func notePillClicked(annotationId: UUID)
+}
+
 final class NotePillRenderer {
 
     static let pillIdentifier = "notePill"
 
-    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil, selectedId: UUID? = nil, editingId: UUID? = nil) {
+    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil, selectedId: UUID? = nil, editingId: UUID? = nil, delegate: NotePillDelegate? = nil) {
         // Remove existing note pill subviews
         for subview in view.subviews where subview.identifier?.rawValue == pillIdentifier {
             subview.removeFromSuperview()
@@ -23,53 +29,48 @@ final class NotePillRenderer {
                 state = .default
             }
 
-            let pillPos = notePillPosition(for: annotation, canvasSize: canvasSize)
-            let pill = createNotePill(number: annotation.number, text: annotation.noteText, state: state)
+            let placement = notePlacement(for: annotation)
+            let pill = NotePillView(
+                annotationId: annotation.id,
+                number: annotation.number,
+                text: annotation.noteText,
+                state: state,
+                delegate: delegate
+            )
             pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
-            pill.frame.origin = pillPos
+
+            // Apply anchor: convert anchor point to AppKit frame origin using actual pill width
+            let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
+            pill.frame.origin = origin
             view.addSubview(pill)
         }
     }
 
-    // MARK: - Anchor type (matches prototype transform logic)
-    // In SVG/prototype: tl means note's top-left is at the anchor point
-    // In AppKit (y-up): we need to convert SVG y-down anchors to AppKit frame origins
+    // MARK: - Anchor
 
     enum Anchor { case tl, tr, bl, br }
 
     struct PlacedNote {
-        let point: CGPoint  // anchor point in prototype coords
+        let point: CGPoint
         let anchor: Anchor
     }
 
-    // MARK: - Note placement (matches prototype pinN/arrowN/rectN/circN functions)
-    // IMPORTANT: prototype uses SVG y-down. AppKit uses y-up.
-    // dy comparisons are FLIPPED: prototype dy>0 = down = AppKit dy<0
+    /// Convert anchor point + anchor type to AppKit frame origin using ACTUAL pill width
+    private static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat) -> CGPoint {
+        let h = DesignTokens.noteHeight
+        switch anchor {
+        case .tl: return CGPoint(x: point.x, y: point.y - h / 2)
+        case .tr: return CGPoint(x: point.x - pillWidth, y: point.y - h / 2)
+        case .bl: return CGPoint(x: point.x, y: point.y - h)
+        case .br: return CGPoint(x: point.x - pillWidth, y: point.y - h)
+        }
+    }
+
+    // MARK: - Note placement
 
     static func notePillPosition(for annotation: Annotation, canvasSize: NSSize) -> CGPoint {
         let placement = notePlacement(for: annotation)
-        return anchoredOrigin(point: placement.point, anchor: placement.anchor)
-    }
-
-    /// Convert an anchor point + anchor type to an AppKit frame origin (bottom-left corner)
-    /// In prototype CSS: tl = translateY(-50%), tr = translateX(-100%) translateY(-50%), etc.
-    /// We approximate pill size for the anchor transform.
-    private static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat = 130) -> CGPoint {
-        let h = DesignTokens.noteHeight
-        switch anchor {
-        case .tl:
-            // Note extends right and down from point → AppKit: origin is below-right
-            return CGPoint(x: point.x, y: point.y - h / 2)
-        case .tr:
-            // Note extends left and down → AppKit: origin shifted left by width
-            return CGPoint(x: point.x - pillWidth, y: point.y - h / 2)
-        case .bl:
-            // Note extends right and up → AppKit: origin at point, shifted up
-            return CGPoint(x: point.x, y: point.y - h)
-        case .br:
-            // Note extends left and up
-            return CGPoint(x: point.x - pillWidth, y: point.y - h)
-        }
+        return anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: 130)
     }
 
     private static func notePlacement(for annotation: Annotation) -> PlacedNote {
@@ -84,80 +85,53 @@ final class NotePillRenderer {
             return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
 
         case .arrow(_, let end):
-            // arrowN: note goes OPPOSITE to arrow direction.
-            // Prototype uses SVG y-down. AppKit is y-up.
-            // Prototype dy>0 = arrow goes down (screen). AppKit dy<0 = arrow goes down.
-            // For position offsets: prototype ny+off = lower on screen = AppKit ny-off.
             let dx = end.x - bx
-            let dy = end.y - by  // AppKit: positive=up, negative=down
+            let dy = end.y - by
             let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
-                // Primarily horizontal
                 if dx > 0 {
-                    // Arrow RIGHT → note BELOW-LEFT: proto {bx-off, by+off, "tr"}
                     return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
                 }
-                // Arrow LEFT → note BELOW-RIGHT: proto {bx+off, by+off, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
             if ay > ax * 1.5 {
-                // Primarily vertical
                 if dy < 0 {
-                    // Arrow DOWN (AppKit dy<0) = proto dy>0 → note RIGHT: {bx+off, by, "tl"}
                     return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
-                // Arrow UP (AppKit dy>0) = proto dy<0 → note RIGHT: {bx+off, by, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
             }
-            // Diagonal — map prototype directions to AppKit
             if dx > 0 && dy > 0 {
-                // AppKit right+up = proto NE (dx>0, dy<0) → BELOW-LEFT: {bx-off, by+off, "tr"}
                 return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
             }
             if dx > 0 && dy < 0 {
-                // AppKit right+down = proto SE (dx>0, dy>0) → ABOVE-LEFT: {bx-off, by-off, "br"}
                 return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
             }
             if dx < 0 && dy > 0 {
-                // AppKit left+up = proto NW (dx<0, dy<0) → BELOW-RIGHT: {bx+off, by+off, "tl"}
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
-            // AppKit left+down = proto SW (dx<0, dy>0) → ABOVE-RIGHT: {bx+off, by-off, "bl"}
             return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
 
         case .rectangle(let origin, let size):
-            // rectN: note outward from rect center through badge corner.
-            // Prototype rectN() uses SVG y-down coords. AppKit is y-up.
-            // Prototype dy>0 = badge below center (screen). AppKit dy<0 = badge below center.
             let cx = origin.x + size.width / 2
             let cy = origin.y + size.height / 2
             let dx = bx - cx
-            let dy = by - cy  // AppKit y-up: positive = badge above center on screen
+            let dy = by - cy
 
             if abs(dx) > abs(dy) {
-                // Badge is more to the LEFT or RIGHT of center
                 if dx > 0 {
-                    // Badge on right side → note to the right
                     return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
-                // Badge on left side → note to the left
                 return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
             }
-            // Badge is more ABOVE or BELOW center
             if dy < 0 {
-                // Badge below center (AppKit y-up: lower y = lower on screen)
-                // = prototype dy>0 → note below badge
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - br - gap - 6), anchor: .tl)
             }
-            // Badge above center (AppKit: higher y = higher on screen)
-            // = prototype dy<0 → note above badge
             return PlacedNote(point: CGPoint(x: bx + off, y: by + br + gap + 6), anchor: .bl)
 
         case .circle(let center, _):
-            // circN: radial outward from center through badge
             let dx = bx - center.x
-            let dy = by - center.y  // AppKit y-up
+            let dy = by - center.y
             let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
@@ -172,7 +146,6 @@ final class NotePillRenderer {
                 }
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
-            // Diagonal
             if dx > 0 && dy > 0 {
                 return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
             }
@@ -189,7 +162,7 @@ final class NotePillRenderer {
         }
     }
 
-    // MARK: - Note pill states (matches prototype NP component)
+    // MARK: - State enum
 
     enum NotePillState {
         case `default`, hover, selected, editing
@@ -197,26 +170,43 @@ final class NotePillRenderer {
 
     /// Public for visual test harness
     static func createNotePillForTest(number: Int, text: String, state: NotePillState) -> NSView {
-        return createNotePill(number: number, text: text, state: state)
+        return NotePillView(annotationId: UUID(), number: number, text: text, state: state, delegate: nil)
     }
+}
 
-    private static func createNotePill(number: Int, text: String, state: NotePillState = .default) -> NSView {
+// MARK: - Interactive Note Pill View
+
+final class NotePillView: NSView {
+
+    let annotationId: UUID
+    private weak var pillDelegate: NotePillDelegate?
+    private let tintView: NSView
+    private var currentState: NotePillRenderer.NotePillState
+    private var isHoveredByMouse = false
+
+    init(annotationId: UUID, number: Int, text: String, state: NotePillRenderer.NotePillState, delegate: NotePillDelegate?) {
+        self.annotationId = annotationId
+        self.pillDelegate = delegate
+        self.currentState = state
+        self.tintView = NSView()
+
+        // Build attributed string
         let numberStr = "\(number)"
-
-        let font = DesignTokens.noteTextFont
-        let numberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
-
         let attrStr = NSMutableAttributedString()
-        // Number prefix: 8px weight 600, rgba(153,27,27,0.4), marginRight 7px
+        let numberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        let textFont = DesignTokens.noteTextFont
+
+        // Number prefix
         attrStr.append(NSAttributedString(string: numberStr, attributes: [
             .font: numberFont,
-            .foregroundColor: NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+            .foregroundColor: NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4),
+            .baselineOffset: 1.5  // lift smaller font to align with 12px text center
         ]))
-        // 7px gap via kern on the number
         attrStr.addAttribute(.kern, value: 7.0, range: NSRange(location: numberStr.count - 1, length: 1))
-        // Note text: 12px, #7f1d1d
+
+        // User text
         attrStr.append(NSAttributedString(string: text, attributes: [
-            .font: font,
+            .font: textFont,
             .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
         ]))
 
@@ -225,47 +215,54 @@ final class NotePillRenderer {
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.isEditable = false
-        textField.maximumNumberOfLines = 0
-        textField.lineBreakMode = .byWordWrapping
+        textField.maximumNumberOfLines = 1
+        textField.lineBreakMode = .byTruncatingTail
         textField.preferredMaxLayoutWidth = 160
         textField.sizeToFit()
 
         let padding: CGFloat = 12
-        let vertPadding: CGFloat = 4
         let pillWidth = textField.frame.width + padding * 2
-        let pillHeight = max(DesignTokens.noteHeight, textField.frame.height + vertPadding * 2)
+        let pillHeight = DesignTokens.noteHeight  // always 26px
 
-        // Outer container (holds shadow, does NOT clip)
-        let pill = NSView(frame: NSRect(x: 0, y: 0, width: pillWidth, height: pillHeight))
-        pill.wantsLayer = true
-        pill.layer?.masksToBounds = false
+        super.init(frame: NSRect(x: 0, y: 0, width: pillWidth, height: pillHeight))
+        wantsLayer = true
+        layer?.masksToBounds = false
 
-        // Shadow: 0 1px 4px rgba(0,0,0,0.06)
-        pill.layer?.shadowColor = NSColor.black.withAlphaComponent(0.06).cgColor
-        pill.layer?.shadowOffset = CGSize(width: 0, height: -1)
-        pill.layer?.shadowRadius = 4
-        pill.layer?.shadowOpacity = 1
+        // Shadow
+        layer?.shadowColor = NSColor.black.withAlphaComponent(0.06).cgColor
+        layer?.shadowOffset = CGSize(width: 0, height: -1)
+        layer?.shadowRadius = 4
+        layer?.shadowOpacity = 1
 
-        // Frosted glass backdrop blur via CALayer backgroundFilters (blur 10px)
-        // This applies a Gaussian blur to content behind the pill without adding
-        // NSVisualEffectView's built-in material tinting.
+        // Blur backdrop
         let blurLayer = CALayer()
-        blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
+        blurLayer.frame = bounds
         blurLayer.cornerRadius = DesignTokens.noteCornerRadius
         blurLayer.masksToBounds = true
         if let blurFilter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 10]) {
             blurLayer.backgroundFilters = [blurFilter]
         }
-        pill.layer?.addSublayer(blurLayer)
+        layer?.addSublayer(blurLayer)
 
-        // Warm-tinted overlay on top of blur (translucent off-white per state)
-        let tintView = NSView(frame: NSRect(origin: .zero, size: pill.frame.size))
+        // Tint overlay
+        tintView.frame = bounds
         tintView.wantsLayer = true
         tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
         tintView.layer?.masksToBounds = true
+        addSubview(tintView)
 
-        // Background and border per state (from prototype NP component)
-        // Colors: rgba(255,248,248,0.82) = NSColor(r:1, g:0.973, b:0.973, a:0.82)
+        // Text field — vertically centered
+        textField.frame = NSRect(x: padding, y: (pillHeight - textField.frame.height) / 2, width: textField.frame.width, height: textField.frame.height)
+        addSubview(textField)
+
+        applyState(state)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    // MARK: - State
+
+    private func applyState(_ state: NotePillRenderer.NotePillState) {
         switch state {
         case .default:
             tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.973, blue: 0.973, alpha: 0.82).cgColor
@@ -284,11 +281,33 @@ final class NotePillRenderer {
             tintView.layer?.borderColor = DesignTokens.red.cgColor
             tintView.layer?.borderWidth = 1.5
         }
-        pill.addSubview(tintView)
+    }
 
-        textField.frame = NSRect(x: padding, y: (pillHeight - textField.frame.height) / 2, width: textField.frame.width, height: textField.frame.height)
-        pill.addSubview(textField)
+    // MARK: - Mouse tracking (hover + click)
 
-        return pill
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        isHoveredByMouse = true
+        if currentState == .default {
+            applyState(.hover)
+        }
+        pillDelegate?.notePillHovered(annotationId: annotationId)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        isHoveredByMouse = false
+        if currentState == .default {
+            applyState(.default)
+        }
+        pillDelegate?.notePillHovered(annotationId: nil)
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        pillDelegate?.notePillClicked(annotationId: annotationId)
     }
 }
