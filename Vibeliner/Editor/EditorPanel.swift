@@ -188,13 +188,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                     case "z": fieldEditor.undoManager?.undo(); return true
                     default: break
                     }
-                } else if flags == [.command, .shift] && chars == "z" {
+                } else if flags.contains(.command) && flags.contains(.shift) && chars == "z" {
                     fieldEditor.undoManager?.redo()
                     return true
                 }
             }
-            // Swallow any other key equivalent during editing to prevent beep
-            return true
+            // VIB-205 (attempt 2): Do NOT swallow unhandled key equivalents —
+            // arrow keys and other combos must pass through to the responder chain
+            return false
         }
         return super.performKeyEquivalent(with: event)
     }
