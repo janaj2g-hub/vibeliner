@@ -227,6 +227,74 @@ final class NotePillRenderer {
     }
 }
 
+// MARK: - Shared Pill Chrome Builder
+
+/// VIB-197: Single source of truth for pill chrome (blur, tint, border, number prefix).
+/// Used by both NotePillView (resting) and CanvasView.openNoteEditor (editing).
+enum PillChromeBuilder {
+    struct PillChrome {
+        let blurLayer: CALayer
+        let tintView: NSView
+        let prefixLabel: NSTextField
+    }
+
+    static func build(size: NSSize, number: Int) -> PillChrome {
+        // Blur layer
+        let blurLayer = CALayer()
+        blurLayer.frame = NSRect(origin: .zero, size: size)
+        blurLayer.cornerRadius = DesignTokens.noteCornerRadius
+        blurLayer.masksToBounds = true
+        if let blurFilter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 10]) {
+            blurLayer.backgroundFilters = [blurFilter]
+        }
+
+        // Tint view
+        let tintView = NSView(frame: NSRect(origin: .zero, size: size))
+        tintView.wantsLayer = true
+        tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
+        tintView.layer?.masksToBounds = true
+        tintView.layer?.borderWidth = 2  // VIB-186 constant — single source of truth
+        tintView.layer?.allowsEdgeAntialiasing = true
+
+        // Number prefix
+        let prefixLabel = NSTextField(labelWithString: "\(number)")
+        prefixLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.45)
+        prefixLabel.isBezeled = false
+        prefixLabel.drawsBackground = false
+        prefixLabel.sizeToFit()
+        prefixLabel.frame.origin = NSPoint(x: 12, y: (size.height - prefixLabel.frame.height) / 2)
+
+        return PillChrome(blurLayer: blurLayer, tintView: tintView, prefixLabel: prefixLabel)
+    }
+
+    static func createEditableTextField(pillWidth: CGFloat, pillHeight: CGFloat, text: String, prefixWidth: CGFloat) -> NSTextField {
+        let textField = NSTextField()
+        textField.font = DesignTokens.noteTextFont
+        textField.textColor = DesignTokens.noteTextColor
+        textField.backgroundColor = .clear
+        textField.drawsBackground = false
+        textField.isBordered = false
+        textField.isBezeled = false
+        textField.focusRingType = .none
+        textField.wantsLayer = true
+        textField.usesSingleLineMode = false
+        textField.cell?.wraps = true
+        textField.cell?.isScrollable = false
+        textField.lineBreakMode = .byWordWrapping
+        textField.maximumNumberOfLines = 0
+        let placeholderAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
+            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
+        ]
+        textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
+        textField.stringValue = text
+        let textX = 12 + prefixWidth + 7
+        textField.frame = NSRect(x: textX, y: 4, width: pillWidth - textX - 12, height: pillHeight - 8)
+        return textField
+    }
+}
+
 // MARK: - Interactive Note Pill View
 
 final class NotePillView: NSView {
@@ -237,7 +305,7 @@ final class NotePillView: NSView {
     /// VIB-194 (attempt 5): Cache offset from badge to pill origin — apply directly on drag
     var pillOffsetFromBadge: CGPoint = .zero
     private weak var pillDelegate: NotePillDelegate?
-    private let tintView: NSView
+    private var tintView: NSView!
     private var currentState: NotePillRenderer.NotePillState
     private var isHoveredByMouse = false
 
@@ -245,7 +313,6 @@ final class NotePillView: NSView {
         self.annotationId = annotationId
         self.pillDelegate = delegate
         self.currentState = state
-        self.tintView = NSView()
 
         // VIB-161/VIB-166: Proper max width, wrapping, and vertical centering
         let padding: CGFloat = 12
@@ -296,45 +363,12 @@ final class NotePillView: NSView {
         wantsLayer = true
         layer?.masksToBounds = false
 
-        // VIB-186/188: Shadow starts at zero — editing state adds red glow
-        layer?.shadowRadius = 0
-        layer?.shadowOpacity = 0
-
-        // Blur backdrop
-        let blurLayer = CALayer()
-        blurLayer.frame = bounds
-        blurLayer.cornerRadius = DesignTokens.noteCornerRadius
-        blurLayer.masksToBounds = true
-        if let blurFilter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 10]) {
-            blurLayer.backgroundFilters = [blurFilter]
-        }
-        layer?.addSublayer(blurLayer)
-
-        // Tint overlay — matches pill bounds exactly
-        tintView.frame = bounds
-        tintView.wantsLayer = true
-        tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
-        tintView.layer?.masksToBounds = true
-        // VIB-186: Constant borderWidth = 2, NEVER changes in applyState
-        tintView.layer?.borderWidth = 2
-        tintView.layer?.allowsEdgeAntialiasing = true
+        // VIB-197: Use PillChromeBuilder for blur, tint, and prefix (single source of truth)
+        let chrome = PillChromeBuilder.build(size: NSSize(width: pillWidth, height: pillHeight), number: number)
+        layer?.addSublayer(chrome.blurLayer)
+        tintView = chrome.tintView
         addSubview(tintView)
-
-        // VIB-166: Number prefix — vertically centered in pill
-        let prefixLabel = NSTextField(labelWithString: "\(number)")
-        prefixLabel.font = numberFont
-        // VIB-188: Slightly more visible prefix (alpha 0.45 vs 0.35)
-        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.45)
-        prefixLabel.isBezeled = false
-        prefixLabel.drawsBackground = false
-        prefixLabel.sizeToFit()
-        // VIB-192: Use actual pillHeight (not hardcoded 26px) for centering
-        prefixLabel.frame.origin = NSPoint(
-            x: padding,
-            y: (pillHeight - prefixLabel.frame.height) / 2
-        )
-        // Note: pillHeight is already the actual computed height above
-        addSubview(prefixLabel)
+        addSubview(chrome.prefixLabel)
 
         // VIB-166: Text field — vertically centered in pill
         textField.frame = NSRect(
