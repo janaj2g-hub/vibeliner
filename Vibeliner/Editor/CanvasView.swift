@@ -154,6 +154,8 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseDragged(with event: NSEvent) {
+        // VIB-193: Don't intercept drags while editing — let text field handle selection
+        if isEditingNote { return }
         let point = convert(event.locationInWindow, from: nil)
         guard let undoMgr = undoManager_ else { return }
         activeTool?.mouseDragged(to: point, in: self, store: store, undoManager: undoMgr)
@@ -161,6 +163,8 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseUp(with event: NSEvent) {
+        // VIB-193: Don't intercept mouseUp while editing
+        if isEditingNote { return }
         let point = convert(event.locationInWindow, from: nil)
         guard let undoMgr = undoManager_ else { return }
         activeTool?.mouseUp(at: point, in: self, store: store, undoManager: undoMgr)

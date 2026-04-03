@@ -41,12 +41,10 @@ final class NotePillRenderer {
             let placement = notePlacement(for: annotation)
 
             if let existing = pillsByID[annotation.id] {
-                // Reuse: update position and state without recreating view hierarchy
+                // VIB-194: ONLY update visual state, NOT position.
+                // Position is set on creation. Recalculating on hover causes slides
+                // because pill width rounding differs between states.
                 existing.updateState(state)
-                let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: existing.frame.width)
-                existing.frame.origin = origin
-                // VIB-186: Round to integral pixels
-                existing.frame = NSIntegralRect(existing.frame)
             } else {
                 // Create new pill
                 let pill = NotePillView(
@@ -108,73 +106,75 @@ final class NotePillRenderer {
 
         switch annotation.position {
         case .pin:
-            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
+            // VIB-192: point at badge TOP (by + br) so pill top aligns with badge top
+            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by + br), anchor: .tl)
 
         case .arrow(_, let end):
+            // VIB-192: Use badge top (by+br) for .tl/.tr, badge bottom (by-br) for .bl/.br
             let dx = end.x - bx
             let dy = end.y - by
             let ax = abs(dx), ay = abs(dy)
+            let top = by + br  // badge top edge
+            let bot = by - br  // badge bottom edge
 
             if ax > ay * 1.5 {
                 if dx > 0 {
-                    return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
+                    return PlacedNote(point: CGPoint(x: bx - off, y: bot - gap), anchor: .tr)
                 }
-                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: bot - gap), anchor: .tl)
             }
             if ay > ax * 1.5 {
                 if dy < 0 {
-                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: top), anchor: .tl)
                 }
-                return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: top), anchor: .tl)
             }
             if dx > 0 && dy > 0 {
-                return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
+                return PlacedNote(point: CGPoint(x: bx - off, y: bot - gap), anchor: .tr)
             }
             if dx > 0 && dy < 0 {
-                return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
+                return PlacedNote(point: CGPoint(x: bx - off, y: bot), anchor: .br)
             }
             if dx < 0 && dy > 0 {
-                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: bot - gap), anchor: .tl)
             }
-            return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
+            return PlacedNote(point: CGPoint(x: bx + off, y: bot), anchor: .bl)
 
         case .rectangle(let origin, let size):
-            // VIB-194: 1.2× bias threshold to prevent anchor flip-flopping near diagonals
+            // VIB-192/194: badge top/bottom + 1.2× bias threshold
             let cx = origin.x + size.width / 2
             let cy = origin.y + size.height / 2
             let dx = bx - cx
             let dy = by - cy
 
             if abs(dx) > abs(dy) * 1.2 {
-                // Clearly more horizontal
                 if dx > 0 {
-                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by + br), anchor: .tl)
                 }
-                return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
+                return PlacedNote(point: CGPoint(x: bx - off, y: by + br), anchor: .tr)
             }
             if abs(dy) > abs(dx) * 1.2 {
-                // Clearly more vertical
                 if dy < 0 {
                     return PlacedNote(point: CGPoint(x: bx + off, y: by - br - gap - 6), anchor: .tl)
                 }
-                return PlacedNote(point: CGPoint(x: bx + off, y: by + br + gap + 6), anchor: .bl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - br), anchor: .bl)
             }
-            // Ambiguous diagonal — default based on horizontal direction to avoid flipping
             if dx > 0 {
-                return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by + br), anchor: .tl)
             }
-            return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
+            return PlacedNote(point: CGPoint(x: bx - off, y: by + br), anchor: .tr)
 
         case .circle(let center, _):
+            // VIB-192: Use badge top/bottom for anchor points
             let dx = bx - center.x
             let dy = by - center.y
             let ax = abs(dx), ay = abs(dy)
 
             if ax > ay * 1.5 {
                 if dx > 0 {
-                    return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by + br), anchor: .tl)
                 }
-                return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
+                return PlacedNote(point: CGPoint(x: bx - off, y: by + br), anchor: .tr)
             }
             if ay > ax * 1.5 {
                 if dy > 0 {
@@ -183,18 +183,19 @@ final class NotePillRenderer {
                 return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
             }
             if dx > 0 && dy > 0 {
-                return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by - br), anchor: .bl)
             }
             if dx > 0 && dy < 0 {
-                return PlacedNote(point: CGPoint(x: bx + off, y: by - off), anchor: .tl)
+                return PlacedNote(point: CGPoint(x: bx + off, y: by + br), anchor: .tl)
             }
             if dx < 0 && dy > 0 {
-                return PlacedNote(point: CGPoint(x: bx - off, y: by + off), anchor: .br)
+                return PlacedNote(point: CGPoint(x: bx - off, y: by - br), anchor: .br)
             }
-            return PlacedNote(point: CGPoint(x: bx - off, y: by - off), anchor: .tr)
+            return PlacedNote(point: CGPoint(x: bx - off, y: by + br), anchor: .tr)
 
         case .freehand:
-            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by), anchor: .tl)
+            // VIB-192: badge top
+            return PlacedNote(point: CGPoint(x: bx + br + gap, y: by + br), anchor: .tl)
         }
     }
 
