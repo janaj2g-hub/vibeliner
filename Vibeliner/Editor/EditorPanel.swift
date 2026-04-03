@@ -44,12 +44,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.displayWidth = dw
         self.displayHeight = dh
 
-        // Window encompasses toolbar + shadow padding + canvas + status pill area
+        // VIB-191: Add overflow padding so note pills can extend beyond canvas
         let toolbarGap: CGFloat = 48
         let bottomGap: CGFloat = 44
-        let shadowPad: CGFloat = 24  // VIB-165: room for toolbar shadow to extend above
-        let totalHeight = dh + toolbarGap + bottomGap + shadowPad
-        let totalWidth = max(dw, toolbarView.frame.width)
+        let shadowPad: CGFloat = 24
+        let overflowPad: CGFloat = 200  // room for pills to extend beyond canvas
+        let totalHeight = dh + toolbarGap + bottomGap + shadowPad + overflowPad
+        let totalWidth = max(dw, toolbarView.frame.width) + overflowPad * 2
 
         let contentRect = NSRect(
             x: screenFrame.midX - totalWidth / 2,
@@ -79,9 +80,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         container.layer?.masksToBounds = false  // VIB-165/167: Don't clip toolbar shadow or note overflow
         contentView = container
 
-        // Canvas centered horizontally, above bottom gap
-        let canvasX = (totalWidth - dw) / 2
-        canvasView.frame = NSRect(x: canvasX, y: bottomGap, width: dw, height: dh)
+        // VIB-191: Canvas centered within the wider window (overflow padding on sides)
+        let canvasX = overflowPad + (totalWidth - overflowPad * 2 - dw) / 2
+        let canvasY = bottomGap + overflowPad / 2  // some overflow below too
+        canvasView.frame = NSRect(x: canvasX, y: canvasY, width: dw, height: dh)
         container.addSubview(canvasView)
 
         // Annotation canvas overlay
@@ -113,17 +115,17 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             )
         }
 
-        // Toolbar centered above canvas
+        // VIB-191: Toolbar centered above canvas (using canvasY for correct vertical offset)
         let toolbarX = (totalWidth - toolbarView.frame.width) / 2
-        let toolbarY = bottomGap + dh + toolbarGap - DesignTokens.toolbarHeight
+        let toolbarY = canvasY + dh + (toolbarGap - DesignTokens.toolbarHeight) / 2
         toolbarView.setFrameOrigin(NSPoint(x: toolbarX, y: toolbarY))
         toolbarView.delegate = self
         container.addSubview(toolbarView)
 
-        // Status pill below canvas
+        // VIB-191: Status pill below canvas
         statusPill.updateDimensions(width: Int(image.size.width), height: Int(image.size.height))
         let pillX = (totalWidth - statusPill.frame.width) / 2
-        let pillY = bottomGap - statusPill.frame.height
+        let pillY = canvasY - 32 - statusPill.frame.height
         statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
         container.addSubview(statusPill)
 
