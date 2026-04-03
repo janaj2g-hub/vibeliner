@@ -310,9 +310,13 @@ final class CanvasView: NSView, NotePillDelegate {
         textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
 
         pillContainer.addSubview(textField)
-        notesLayer.addSubview(pillContainer)
 
+        // VIB-204 (attempt 3): Set editingAnnotationId BEFORE adding pill to view
+        // so refreshNotePills() removes the resting pill (no ghost behind editing pill)
         editingAnnotationId = annotation.id
+        refreshNotePills()
+
+        notesLayer.addSubview(pillContainer)
         activeNoteField = textField
         activeEditorPill = pillContainer
 
