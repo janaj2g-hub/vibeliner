@@ -197,7 +197,23 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // arrow keys and other combos must pass through to the responder chain
             return false
         }
-        // VIB-205 (attempt 3): Return false so Cmd+C/Z reach handleKeyEvent when not editing
+        // VIB-205 (attempt 4): Handle non-editing Cmd+key here too —
+        // performKeyEquivalent fires before the key monitor on borderless panels,
+        // so handleKeyEvent never sees these events.
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let chars = event.charactersIgnoringModifiers ?? ""
+        if flags == .command && chars == "c" {
+            toolbarDidRequestCopyPrompt()
+            return true
+        }
+        if flags == .command && chars == "z" {
+            toolbarDidRequestUndo()
+            return true
+        }
+        if flags.contains(.command) && flags.contains(.shift) && chars.lowercased() == "z" {
+            toolbarDidRequestRedo()
+            return true
+        }
         return false
     }
 
