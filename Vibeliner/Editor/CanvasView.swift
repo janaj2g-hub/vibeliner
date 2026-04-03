@@ -199,7 +199,7 @@ final class CanvasView: NSView, NotePillDelegate {
         openNoteEditor(for: annotation)
     }
 
-    private var activeNoteField: NSTextField?
+    var activeNoteField: NSTextField?  // VIB-193: accessible for EditorPanel key forwarding
     private var editingAnnotationId: UUID?
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
     private(set) var hoveredAnnotationId: UUID?
