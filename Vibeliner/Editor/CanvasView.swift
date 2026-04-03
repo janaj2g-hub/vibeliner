@@ -199,12 +199,14 @@ final class CanvasView: NSView, NotePillDelegate {
         openNoteEditor(for: annotation)
     }
 
-    var activeNoteField: NSTextField?  // VIB-193: accessible for EditorPanel key forwarding
+    var activeNoteField: NSTextField?
     private var editingAnnotationId: UUID?
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
     private(set) var hoveredAnnotationId: UUID?
 
     private var activeEditorPill: NSView?
+    /// VIB-193 (attempt 5): Temporary Edit menu for Cmd+key during note editing
+    private var editingMenu: NSMenu?
 
     func openNoteEditor(for annotation: Annotation) {
         activeNoteField?.removeFromSuperview()
@@ -316,6 +318,9 @@ final class CanvasView: NSView, NotePillDelegate {
         activeNoteField = textField
         activeEditorPill = pillContainer
 
+        // VIB-193 (attempt 5): Install Edit menu so Cmd+C/V/A/Z validate against field editor
+        installEditMenu()
+
         // VIB-193: Force panel to become key so makeFirstResponder works
         DispatchQueue.main.async { [weak self, weak textField] in
             guard let self, let window = self.window, let tf = textField else { return }
@@ -361,6 +366,25 @@ final class CanvasView: NSView, NotePillDelegate {
         }
     }
 
+    /// VIB-193 (attempt 5): Install a temporary Edit menu on the window so AppKit's
+    /// menu validation finds Cut/Copy/Paste/Select All/Undo items for the field editor.
+    /// Borderless panels have no menu bar, so without this, Cmd+C/V/A/Z beep.
+    private func installEditMenu() {
+        let editMenu = NSMenu(title: "Edit")
+        editMenu.addItem(withTitle: "Undo", action: #selector(UndoManager.undo), keyEquivalent: "z")
+        editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        self.editingMenu = editMenu
+        self.window?.menu = editMenu
+    }
+
+    private func removeEditMenu() {
+        self.window?.menu = nil
+        self.editingMenu = nil
+    }
+
     func confirmNoteEditing() {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
         let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -369,6 +393,7 @@ final class CanvasView: NSView, NotePillDelegate {
         } else {
             store.update(id: id, noteText: text)
         }
+        removeEditMenu()
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
@@ -383,6 +408,7 @@ final class CanvasView: NSView, NotePillDelegate {
         if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
             store.remove(id: id)
         }
+        removeEditMenu()
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
