@@ -50,23 +50,35 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupMenuBarIcon() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
+        // VIB-175: Create normal (template) and highlighted (non-template, always white) icons
+        normalIcon = createCrosshairImage()
+        normalIcon?.isTemplate = true
+
+        highlightedIcon = createCrosshairImage()
+        highlightedIcon?.isTemplate = false  // Won't adapt to menu bar — stays white/bright
+
         if let button = statusItem.button {
-            button.image = createCrosshairImage()
+            button.image = normalIcon
             button.action = #selector(statusItemClicked)
             button.target = self
         }
     }
 
+    private var normalIcon: NSImage?
+    private var highlightedIcon: NSImage?
+
     @objc private func statusItemClicked() {
         if let win = popoverWindow, win.isVisible {
             win.closePopover()
             popoverWindow = nil
-            statusItem.button?.isHighlighted = false  // VIB-175
+            // VIB-175: Swap back to normal template icon
+            statusItem.button?.image = normalIcon
         } else {
             let win = PopoverWindow()
             if let button = statusItem.button {
                 win.showRelativeTo(button: button)
-                button.isHighlighted = true  // VIB-175
+                // VIB-175: Swap to non-template highlighted icon (always white/bright)
+                statusItem.button?.image = highlightedIcon
             }
             popoverWindow = win
         }
