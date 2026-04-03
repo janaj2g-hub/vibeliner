@@ -213,10 +213,16 @@ final class CanvasView: NSView, NotePillDelegate {
         // VIB-162: Get raw placement with anchor, apply anchor using EDITING pill width
         let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
         let maxPillW: CGFloat = 200
-        // VIB-192 (attempt 4): Use actual text measurement instead of char-count estimate
+        // VIB-192 (attempt 5): Configure temp field with wrapping to get correct multi-line height
+        let textX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
+        let maxTextW = maxPillW - textX - 12
         let tempField = NSTextField(labelWithString: annotation.noteText)
         tempField.font = DesignTokens.noteTextFont
-        tempField.preferredMaxLayoutWidth = maxPillW - 12 - 20 - 7 - 12  // same as resting pill text width
+        tempField.maximumNumberOfLines = 0
+        tempField.lineBreakMode = .byWordWrapping
+        tempField.cell?.wraps = true
+        tempField.preferredMaxLayoutWidth = maxTextW
+        tempField.frame = NSRect(x: 0, y: 0, width: maxTextW, height: 0)
         tempField.sizeToFit()
         let pillH = max(DesignTokens.noteHeight, tempField.frame.height + 8)
         // Apply anchor transform with the EDITING pill width (200px, not resting 130px)
@@ -315,9 +321,10 @@ final class CanvasView: NSView, NotePillDelegate {
             guard let self, let window = self.window, let tf = textField else { return }
             window.makeKeyAndOrderFront(nil)  // Must be key window for first responder
             window.makeFirstResponder(tf)
-            // Set caret color after becoming first responder
             if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
                 fieldEditor.insertionPointColor = DesignTokens.red
+                // VIB-192 (attempt 5): Place cursor at END of text, not select-all
+                fieldEditor.setSelectedRange(NSRange(location: fieldEditor.string.count, length: 0))
             }
         }
     }
@@ -325,19 +332,16 @@ final class CanvasView: NSView, NotePillDelegate {
     /// VIB-162: Resize editing pill as text grows
     func resizeEditingPill() {
         guard let pill = activeEditorPill, let field = activeNoteField else { return }
-        let lineH: CGFloat = 16
         let minH = DesignTokens.noteHeight
-        let textLen = field.stringValue.count
-        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
-        let newH = max(minH, CGFloat(numLines) * lineH + 8)
+
+        // VIB-192 (attempt 5): Use actual text layout via cellSize, not char count
+        let fittingSize = field.cell?.cellSize(forBounds: NSRect(x: 0, y: 0, width: field.frame.width, height: CGFloat.greatestFiniteMagnitude)) ?? NSSize(width: field.frame.width, height: minH)
+        let newH = max(minH, fittingSize.height + 8)  // +8 for 4px top + 4px bottom padding
 
         if abs(pill.frame.height - newH) > 1 {
-            // VIB-192 (attempt 3): Shift origin DOWN so TOP edge stays fixed
-            // AppKit: lower y = lower on screen. Growing height pushes top up unless we compensate.
             let heightDelta = newH - pill.frame.height
-            pill.frame.origin.y -= heightDelta
+            pill.frame.origin.y -= heightDelta  // keep top edge fixed (AppKit y-up)
             pill.setFrameSize(NSSize(width: pill.frame.width, height: newH))
-            // Update sublayers/views to match new size
             for sub in pill.subviews {
                 if sub.layer?.cornerRadius == DesignTokens.noteCornerRadius {
                     sub.frame = NSRect(origin: .zero, size: pill.frame.size)
@@ -347,7 +351,7 @@ final class CanvasView: NSView, NotePillDelegate {
                 blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
             }
             field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
-            // VIB-192 (attempt 4): Re-center the number prefix label after height change
+            // Re-center number prefix label
             for sub in pill.subviews {
                 if let label = sub as? NSTextField, label.font?.pointSize == 8 {
                     label.frame.origin.y = (newH - label.frame.height) / 2
