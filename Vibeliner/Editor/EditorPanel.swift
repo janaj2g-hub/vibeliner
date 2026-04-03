@@ -188,7 +188,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                     case "z": fieldEditor.undoManager?.undo(); return true
                     default: break
                     }
-                } else if flags.contains(.command) && flags.contains(.shift) && chars == "z" {
+                } else if flags.contains(.command) && flags.contains(.shift) && chars.lowercased() == "z" {
                     fieldEditor.undoManager?.redo()
                     return true
                 }
@@ -197,7 +197,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // arrow keys and other combos must pass through to the responder chain
             return false
         }
-        return super.performKeyEquivalent(with: event)
+        // VIB-205 (attempt 3): Return false so Cmd+C/Z reach handleKeyEvent when not editing
+        return false
     }
 
     override func keyDown(with event: NSEvent) {
