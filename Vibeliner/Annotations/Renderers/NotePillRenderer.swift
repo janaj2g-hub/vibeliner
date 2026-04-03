@@ -45,6 +45,8 @@ final class NotePillRenderer {
                 existing.updateState(state)
                 let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: existing.frame.width)
                 existing.frame.origin = origin
+                // VIB-186: Round to integral pixels
+                existing.frame = NSIntegralRect(existing.frame)
             } else {
                 // Create new pill
                 let pill = NotePillView(
@@ -57,6 +59,8 @@ final class NotePillRenderer {
                 pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
                 let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
                 pill.frame.origin = origin
+                // VIB-186: Round to integral pixels for crisp borders
+                pill.frame = NSIntegralRect(pill.frame)
                 view.addSubview(pill)
             }
         }
@@ -264,11 +268,9 @@ final class NotePillView: NSView {
         wantsLayer = true
         layer?.masksToBounds = false
 
-        // Shadow
-        layer?.shadowColor = NSColor.black.withAlphaComponent(0.06).cgColor
-        layer?.shadowOffset = CGSize(width: 0, height: -1)
-        layer?.shadowRadius = 4
-        layer?.shadowOpacity = 1
+        // VIB-186/188: Shadow starts at zero — editing state adds red glow
+        layer?.shadowRadius = 0
+        layer?.shadowOpacity = 0
 
         // Blur backdrop
         let blurLayer = CALayer()
@@ -280,17 +282,21 @@ final class NotePillView: NSView {
         }
         layer?.addSublayer(blurLayer)
 
-        // Tint overlay — matches pill bounds exactly (VIB-166: concentric border)
+        // Tint overlay — matches pill bounds exactly
         tintView.frame = bounds
         tintView.wantsLayer = true
         tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
         tintView.layer?.masksToBounds = true
+        // VIB-186: Constant borderWidth = 2, NEVER changes in applyState
+        tintView.layer?.borderWidth = 2
+        tintView.layer?.allowsEdgeAntialiasing = true
         addSubview(tintView)
 
         // VIB-166: Number prefix — vertically centered in pill
         let prefixLabel = NSTextField(labelWithString: "\(number)")
         prefixLabel.font = numberFont
-        prefixLabel.textColor = DesignTokens.notePrefixColor
+        // VIB-188: Slightly more visible prefix (alpha 0.45 vs 0.35)
+        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.45)
         prefixLabel.isBezeled = false
         prefixLabel.drawsBackground = false
         prefixLabel.sizeToFit()
@@ -323,25 +329,42 @@ final class NotePillView: NSView {
 
     // MARK: - State
 
+    /// VIB-186: borderWidth is ALWAYS 2 (set in init) — NEVER changed here.
+    /// VIB-188: Concept B — gray→red border shift with red glow on editing.
     private func applyState(_ state: NotePillRenderer.NotePillState) {
+        CATransaction.begin()
+        CATransaction.setAnimationDuration(0.15)
+
         switch state {
         case .default:
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.973, blue: 0.973, alpha: 0.82).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.18).cgColor
-            tintView.layer?.borderWidth = 1
+            // Translucent warm white, neutral GRAY border (barely visible)
+            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.72).cgColor
+            tintView.layer?.borderColor = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22).cgColor
+            layer?.shadowRadius = 0
+            layer?.shadowOpacity = 0
         case .hover:
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.88).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.4).cgColor
-            tintView.layer?.borderWidth = 1
+            // Slightly more opaque, RED border appears
+            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.80).cgColor
+            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45).cgColor
+            layer?.shadowRadius = 0
+            layer?.shadowOpacity = 0
         case .selected:
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.9).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.5).cgColor
-            tintView.layer?.borderWidth = 1.5
+            // More opaque, stronger red border
+            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.88).cgColor
+            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55).cgColor
+            layer?.shadowRadius = 0
+            layer?.shadowOpacity = 0
         case .editing:
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
+            // Nearly opaque, solid red border + red glow halo
+            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.980, blue: 0.980, alpha: 0.96).cgColor
             tintView.layer?.borderColor = DesignTokens.red.cgColor
-            tintView.layer?.borderWidth = 1.5
+            layer?.shadowColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0).cgColor
+            layer?.shadowOffset = .zero
+            layer?.shadowRadius = 10
+            layer?.shadowOpacity = 0.22
         }
+
+        CATransaction.commit()
     }
 
     // MARK: - Mouse tracking (hover + click)
