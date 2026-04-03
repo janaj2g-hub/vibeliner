@@ -221,10 +221,10 @@ final class CanvasView: NSView, NotePillDelegate {
         tempField.maximumNumberOfLines = 0
         tempField.lineBreakMode = .byWordWrapping
         tempField.cell?.wraps = true
-        tempField.preferredMaxLayoutWidth = maxTextW
-        tempField.frame = NSRect(x: 0, y: 0, width: maxTextW, height: 0)
-        tempField.sizeToFit()
-        let pillH = max(DesignTokens.noteHeight, tempField.frame.height + 8)
+        // VIB-204 (attempt 2): Use cellSize(forBounds:) — same pattern that works in NotePillView.init
+        let cellBounds = NSRect(x: 0, y: 0, width: maxTextW, height: CGFloat.greatestFiniteMagnitude)
+        let fittedSize = tempField.cell?.cellSize(forBounds: cellBounds) ?? NSSize(width: maxTextW, height: 16)
+        let pillH = max(DesignTokens.noteHeight, fittedSize.height + 8)
         // Apply anchor transform with the EDITING pill width (200px, not resting 130px)
         let pillPos = NotePillRenderer.anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: maxPillW, pillHeight: pillH)
 
@@ -347,10 +347,10 @@ final class CanvasView: NSView, NotePillDelegate {
         measurer.maximumNumberOfLines = 0
         measurer.lineBreakMode = .byWordWrapping
         measurer.cell?.wraps = true
-        measurer.preferredMaxLayoutWidth = field.frame.width
-        measurer.frame = NSRect(x: 0, y: 0, width: field.frame.width, height: 0)
-        measurer.sizeToFit()
-        let newH = max(minH, measurer.frame.height + 8)
+        // VIB-204 (attempt 2): Use cellSize(forBounds:) — same pattern that works in NotePillView.init
+        let cellBounds = NSRect(x: 0, y: 0, width: field.frame.width, height: CGFloat.greatestFiniteMagnitude)
+        let fittedSize = measurer.cell?.cellSize(forBounds: cellBounds) ?? NSSize(width: field.frame.width, height: 16)
+        let newH = max(minH, fittedSize.height + 8)
 
         if abs(pill.frame.height - newH) > 1 {
             let heightDelta = newH - pill.frame.height
