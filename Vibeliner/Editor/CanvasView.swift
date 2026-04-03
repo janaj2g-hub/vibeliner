@@ -213,10 +213,12 @@ final class CanvasView: NSView, NotePillDelegate {
         // VIB-162: Get raw placement with anchor, apply anchor using EDITING pill width
         let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
         let maxPillW: CGFloat = 200
-        let textLen = annotation.noteText.count
-        let numLines = max(1, Int(ceil(Double(max(textLen, 1)) / 22.0)))
-        let lineH: CGFloat = 16
-        let pillH = max(DesignTokens.noteHeight, CGFloat(numLines) * lineH + 8)
+        // VIB-192 (attempt 4): Use actual text measurement instead of char-count estimate
+        let tempField = NSTextField(labelWithString: annotation.noteText)
+        tempField.font = DesignTokens.noteTextFont
+        tempField.preferredMaxLayoutWidth = maxPillW - 12 - 20 - 7 - 12  // same as resting pill text width
+        tempField.sizeToFit()
+        let pillH = max(DesignTokens.noteHeight, tempField.frame.height + 8)
         // Apply anchor transform with the EDITING pill width (200px, not resting 130px)
         let pillPos = NotePillRenderer.anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: maxPillW, pillHeight: pillH)
 
@@ -345,6 +347,13 @@ final class CanvasView: NSView, NotePillDelegate {
                 blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
             }
             field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
+            // VIB-192 (attempt 4): Re-center the number prefix label after height change
+            for sub in pill.subviews {
+                if let label = sub as? NSTextField, label.font?.pointSize == 8 {
+                    label.frame.origin.y = (newH - label.frame.height) / 2
+                    break
+                }
+            }
         }
     }
 
