@@ -18,7 +18,7 @@ final class AboutTabView: NSView {
         // App icon — 64px red rounded square
         let iconView = NSView(frame: NSRect(x: centerX - 32, y: y - 64, width: 64, height: 64))
         iconView.wantsLayer = true
-        iconView.layer?.backgroundColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1).cgColor
+        iconView.layer?.backgroundColor = DesignTokens.red.cgColor
         iconView.layer?.cornerRadius = 16
         addSubview(iconView)
 

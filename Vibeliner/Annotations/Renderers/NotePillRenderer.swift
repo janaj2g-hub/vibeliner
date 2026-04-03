@@ -212,7 +212,7 @@ final class NotePillView: NSView {
         let textFont = DesignTokens.noteTextFont
         let textAttrs: [NSAttributedString.Key: Any] = [
             .font: textFont,
-            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+            .foregroundColor: DesignTokens.noteTextColor
         ]
 
         // Calculate text width: maxPillW - prefix area - padding
@@ -223,7 +223,7 @@ final class NotePillView: NSView {
         // Create text field with wrapping
         let textField = NSTextField(labelWithString: text)
         textField.font = textFont
-        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+        textField.textColor = DesignTokens.noteTextColor
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.isEditable = false
@@ -274,7 +274,7 @@ final class NotePillView: NSView {
         // VIB-166: Number prefix — vertically centered in pill
         let prefixLabel = NSTextField(labelWithString: "\(number)")
         prefixLabel.font = numberFont
-        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+        prefixLabel.textColor = DesignTokens.notePrefixColor
         prefixLabel.isBezeled = false
         prefixLabel.drawsBackground = false
         prefixLabel.sizeToFit()

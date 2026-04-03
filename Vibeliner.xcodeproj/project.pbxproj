@@ -23,7 +23,6 @@
 		A1000001000000000000000E /* ToolButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* ToolButton.swift */; };
 		A1000001000000000000000F /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* ToolbarView.swift */; };
 		A10000010000000000000010 /* StatusPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* StatusPillView.swift */; };
-		A10000010000000000000011 /* PinCounterIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000013 /* PinCounterIcon.swift */; };
 		A10000010000000000000012 /* AnnotationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* AnnotationModel.swift */; };
 		A10000010000000000000013 /* AnnotationStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* AnnotationStore.swift */; };
 		A10000010000000000000014 /* UndoRedoManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* UndoRedoManager.swift */; };
@@ -42,11 +41,7 @@
 		A10000010000000000000021 /* ScreenshotExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000023 /* ScreenshotExporter.swift */; };
 		A10000010000000000000022 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* ClipboardManager.swift */; };
 		A10000010000000000000023 /* AutoSaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* AutoSaveManager.swift */; };
-		A10000010000000000000024 /* SetupPanelView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000026 /* SetupPanelView.swift */; };
 		A10000010000000000000025 /* SetupWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000027 /* SetupWindowController.swift */; };
-		A10000010000000000000026 /* PermissionPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000028 /* PermissionPanel.swift */; };
-		A10000010000000000000027 /* FolderPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000029 /* FolderPanel.swift */; };
-		A10000010000000000000028 /* ShareExplanationPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002A /* ShareExplanationPanel.swift */; };
 		A10000010000000000000029 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002B /* SettingsWindowController.swift */; };
 		A1000001000000000000002A /* GeneralTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002C /* GeneralTabView.swift */; };
 		A1000001000000000000002B /* PromptTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002D /* PromptTabView.swift */; };
@@ -80,7 +75,6 @@
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000011 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
 		A20000010000000000000012 /* StatusPillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusPillView.swift; sourceTree = "<group>"; };
-		A20000010000000000000013 /* PinCounterIcon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinCounterIcon.swift; sourceTree = "<group>"; };
 		A20000010000000000000014 /* AnnotationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationModel.swift; sourceTree = "<group>"; };
 		A20000010000000000000015 /* AnnotationStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationStore.swift; sourceTree = "<group>"; };
 		A20000010000000000000016 /* UndoRedoManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UndoRedoManager.swift; sourceTree = "<group>"; };
@@ -99,11 +93,7 @@
 		A20000010000000000000023 /* ScreenshotExporter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotExporter.swift; sourceTree = "<group>"; };
 		A20000010000000000000024 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000025 /* AutoSaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSaveManager.swift; sourceTree = "<group>"; };
-		A20000010000000000000026 /* SetupPanelView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupPanelView.swift; sourceTree = "<group>"; };
 		A20000010000000000000027 /* SetupWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindowController.swift; sourceTree = "<group>"; };
-		A20000010000000000000028 /* PermissionPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionPanel.swift; sourceTree = "<group>"; };
-		A20000010000000000000029 /* FolderPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FolderPanel.swift; sourceTree = "<group>"; };
-		A2000001000000000000002A /* ShareExplanationPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareExplanationPanel.swift; sourceTree = "<group>"; };
 		A2000001000000000000002B /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		A2000001000000000000002C /* GeneralTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralTabView.swift; sourceTree = "<group>"; };
 		A2000001000000000000002D /* PromptTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTabView.swift; sourceTree = "<group>"; };
@@ -249,7 +239,6 @@
 				A2000001000000000000000F /* ToolButton.swift */,
 				A20000010000000000000011 /* ToolbarView.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
-				A20000010000000000000013 /* PinCounterIcon.swift */,
 				A20000010000000000000017 /* CanvasView.swift */,
 				A20000010000000000000033 /* FirstUseTooltipView.swift */,
 			);
@@ -259,11 +248,7 @@
 		A4000001000000000000000D /* Setup */ = {
 			isa = PBXGroup;
 			children = (
-				A20000010000000000000026 /* SetupPanelView.swift */,
 				A20000010000000000000027 /* SetupWindowController.swift */,
-				A20000010000000000000028 /* PermissionPanel.swift */,
-				A20000010000000000000029 /* FolderPanel.swift */,
-				A2000001000000000000002A /* ShareExplanationPanel.swift */,
 			);
 			path = Setup;
 			sourceTree = "<group>";

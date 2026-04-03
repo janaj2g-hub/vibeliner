@@ -79,11 +79,6 @@ enum DesignTokens {
     /// rgba(30, 30, 30, 0.95) — popover
     static let darkChromePopover = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.95)
 
-    /// #f0edf9 — tooltip background
-    static let tooltipBg = NSColor(red: 240/255, green: 237/255, blue: 249/255, alpha: 1.0)
-
-    /// #d4cef0 — tooltip border
-    static let tooltipBorder = NSColor(red: 212/255, green: 206/255, blue: 240/255, alpha: 1.0)
 
     /// rgba(22, 163, 74, 0.9) — copied state green
     static let copiedGreen = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.9)
@@ -112,8 +107,7 @@ enum DesignTokens {
     /// rgba(175, 169, 236, 0.2) — active tool bg
     static let toolActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
 
-    /// rgba(175, 169, 236, 0.6) — inactive pin icon
-    static let purpleLightInactive = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.6)
+
 
     /// rgba(175, 169, 236, 0.25) — toggle active bg
     static let toggleActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.25)
@@ -221,11 +215,6 @@ enum DesignTokens {
     /// Note number prefix: system 8px weight 600 (from prototype)
     static let noteNumberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
 
-    /// Pin counter icon: system 8px weight 700 (7px for 10+)
-    static let pinCounterFont = NSFont.systemFont(ofSize: 8, weight: .bold)
-
-    /// Pin counter icon (10+): system 7px weight 700
-    static let pinCounterFontSmall = NSFont.systemFont(ofSize: 7, weight: .bold)
 
     /// Badge font (10+ numbers): 7px weight 600
     static let badgeFontSmall = NSFont.systemFont(ofSize: 7, weight: .semibold)

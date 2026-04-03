@@ -239,7 +239,7 @@ final class CanvasView: NSView, NotePillDelegate {
         // Number prefix label
         let numberLabel = NSTextField(labelWithString: "\(annotation.number)")
         numberLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
-        numberLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+        numberLabel.textColor = DesignTokens.notePrefixColor
         numberLabel.isBezeled = false
         numberLabel.drawsBackground = false
         numberLabel.sizeToFit()
@@ -249,7 +249,7 @@ final class CanvasView: NSView, NotePillDelegate {
         // Text field (borderless, transparent, inside pill)
         let textField = NSTextField()
         textField.font = DesignTokens.noteTextFont
-        textField.textColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
+        textField.textColor = DesignTokens.noteTextColor
         textField.backgroundColor = .clear
         textField.drawsBackground = false
         textField.isBordered = false
