@@ -52,34 +52,6 @@ final class ArrowRenderer: AnnotationRenderer {
         context.strokePath()
 
         // Badge at start
-        context.setFillColor(DesignTokens.red.cgColor)
-        let badgeRect = CGRect(
-            x: start.x - badgeRadius,
-            y: start.y - badgeRadius,
-            width: DesignTokens.badgeDiameter,
-            height: DesignTokens.badgeDiameter
-        )
-        context.fillEllipse(in: badgeRect)
-
-        // Badge number
-        if number > 0 {
-            let numStr = "\(number)" as NSString
-            let attrs: [NSAttributedString.Key: Any] = [
-                .font: DesignTokens.badgeFont,
-                .foregroundColor: NSColor.white
-            ]
-            let textSize = numStr.size(withAttributes: attrs)
-            let textRect = CGRect(
-                x: start.x - textSize.width / 2,
-                y: start.y - textSize.height / 2,
-                width: textSize.width,
-                height: textSize.height
-            )
-            NSGraphicsContext.saveGraphicsState()
-            let nsCtx = NSGraphicsContext(cgContext: context, flipped: false)
-            NSGraphicsContext.current = nsCtx
-            numStr.draw(in: textRect, withAttributes: attrs)
-            NSGraphicsContext.restoreGraphicsState()
-        }
+        BadgeRenderer.drawBadge(at: start, number: number, in: context)
     }
 }

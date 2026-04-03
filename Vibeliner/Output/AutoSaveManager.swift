@@ -37,12 +37,7 @@ final class AutoSaveManager {
         performSave()
     }
 
-    func saveIfNeeded() {
-        guard isDirty else { return }
-        saveNow()
-    }
-
-    private func scheduleSave() {
+private func scheduleSave() {
         debounceTimer?.invalidate()
         debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
             self?.performSave()
@@ -59,6 +54,8 @@ final class AutoSaveManager {
         DispatchQueue.global(qos: .userInitiated).async {
             ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
             PromptGenerator.savePromptFile(to: folder, annotations: annotations)
+            // VIB-183: Invalidate captures cache so next submenu open shows the new capture
+            CapturesManager.shared.invalidateCache()
         }
     }
 }

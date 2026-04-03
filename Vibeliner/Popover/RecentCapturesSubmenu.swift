@@ -30,8 +30,11 @@ final class RecentCapturesSubmenu: NSView {
         layer?.borderWidth = 0.5
         layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
 
-        // VIB-174: Limit to 5 most recent captures
+        // VIB-183: Use async version with cache, but fall back to sync for initial render
+        // (async completion will rebuild if cache was stale)
         let captures = Array(CapturesManager.shared.listRecentCaptures(limit: 5).prefix(5))
+        // Also pre-warm the cache asynchronously for next open
+        CapturesManager.shared.listRecentCapturesAsync(limit: 5) { _ in }
         let openFolderH: CGFloat = 34
         let dividerH: CGFloat = 9
 

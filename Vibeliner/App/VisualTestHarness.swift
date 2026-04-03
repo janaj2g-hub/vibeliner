@@ -182,20 +182,9 @@ final class VisualTestHarness {
         return image
     }
 
+    /// VIB-184: Use FreehandTool's static smoothing function instead of local duplicate
     private func smoothPoints(_ pts: [CGPoint], passes: Int) -> [CGPoint] {
-        var result = pts
-        for _ in 0..<passes {
-            var smoothed = [result[0]]
-            for i in 1..<result.count - 1 {
-                smoothed.append(CGPoint(
-                    x: result[i - 1].x * 0.25 + result[i].x * 0.5 + result[i + 1].x * 0.25,
-                    y: result[i - 1].y * 0.25 + result[i].y * 0.5 + result[i + 1].y * 0.25
-                ))
-            }
-            smoothed.append(result[result.count - 1])
-            result = smoothed
-        }
-        return result
+        return FreehandTool.smoothPoints(pts, passes: passes)
     }
 
     private func addSampleAnnotations(to store: AnnotationStore) {

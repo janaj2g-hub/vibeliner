@@ -37,6 +37,34 @@ final class CapturesManager {
         return folderURL
     }
 
+    // VIB-183: Cached results for async usage
+    private var cachedCaptures: [CaptureInfo]?
+    private var cacheTimestamp: Date?
+
+    /// VIB-183: Async version — scans on background thread, calls completion on main
+    func listRecentCapturesAsync(limit: Int = 5, completion: @escaping ([CaptureInfo]) -> Void) {
+        // Return cache if fresh (< 5 seconds old)
+        if let cached = cachedCaptures, let ts = cacheTimestamp, Date().timeIntervalSince(ts) < 5 {
+            completion(Array(cached.prefix(limit)))
+            return
+        }
+        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
+            guard let self else { return }
+            let captures = self.listRecentCaptures(limit: limit)
+            self.cachedCaptures = captures
+            self.cacheTimestamp = Date()
+            DispatchQueue.main.async {
+                completion(captures)
+            }
+        }
+    }
+
+    /// Invalidate cache (call after saving a new capture)
+    func invalidateCache() {
+        cachedCaptures = nil
+        cacheTimestamp = nil
+    }
+
     func listRecentCaptures(limit: Int = 10) -> [CaptureInfo] {
         guard let contents = try? fileManager.contentsOfDirectory(
             at: baseFolderURL,

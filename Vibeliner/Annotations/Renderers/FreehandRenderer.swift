@@ -10,24 +10,7 @@ final class FreehandRenderer: AnnotationRenderer {
 
             // Badge at first point
             if let first = points.first {
-                let badgeRadius = DesignTokens.badgeDiameter / 2
-                context.setFillColor(DesignTokens.red.cgColor)
-                let badgeRect = CGRect(
-                    x: first.x - badgeRadius, y: first.y - badgeRadius,
-                    width: DesignTokens.badgeDiameter, height: DesignTokens.badgeDiameter
-                )
-                context.fillEllipse(in: badgeRect)
-
-                if annotation.number > 0 {
-                    let numStr = "\(annotation.number)" as NSString
-                    let attrs: [NSAttributedString.Key: Any] = [.font: DesignTokens.badgeFont, .foregroundColor: NSColor.white]
-                    let textSize = numStr.size(withAttributes: attrs)
-                    let textRect = CGRect(x: first.x - textSize.width / 2, y: first.y - textSize.height / 2, width: textSize.width, height: textSize.height)
-                    NSGraphicsContext.saveGraphicsState()
-                    NSGraphicsContext.current = NSGraphicsContext(cgContext: context, flipped: false)
-                    numStr.draw(in: textRect, withAttributes: attrs)
-                    NSGraphicsContext.restoreGraphicsState()
-                }
+                BadgeRenderer.drawBadge(at: first, number: annotation.number, in: context)
             }
         }
     }

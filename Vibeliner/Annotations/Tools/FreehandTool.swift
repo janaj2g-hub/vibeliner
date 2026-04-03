@@ -30,7 +30,7 @@ final class FreehandTool: AnnotationTool {
 
         // VIB-177: smooth → store ALL smoothed points (NOT aggressively downsampled)
         // Downsampling to 10 points made strokes jagged. Store full smoothed set.
-        let smoothed = smoothPoints(points, passes: 3)
+        let smoothed = Self.smoothPoints(points, passes: 3)
         let badgePos = smoothed.first ?? point
 
         let annotation = Annotation(
@@ -50,7 +50,7 @@ final class FreehandTool: AnnotationTool {
         context.saveGState()
         context.setAlpha(0.6)
         // VIB-177: Apply smoothing to ghost preview too for visual consistency
-        let ghostSmoothed = points.count >= 4 ? smoothPoints(points, passes: 1) : points
+        let ghostSmoothed = points.count >= 4 ? Self.smoothPoints(points, passes: 1) : points
         FreehandRenderer.drawFreehandPath(in: context, points: ghostSmoothed)
         context.restoreGState()
     }
@@ -58,7 +58,8 @@ final class FreehandTool: AnnotationTool {
     // MARK: - Smoothing (matches prototype sm() function)
     // 3 passes of weighted average: prev * 0.25 + current * 0.5 + next * 0.25
 
-    private func smoothPoints(_ pts: [CGPoint], passes: Int) -> [CGPoint] {
+    /// 3-pass weighted average smoothing. Static so VisualTestHarness can use it.
+    static func smoothPoints(_ pts: [CGPoint], passes: Int) -> [CGPoint] {
         var result = pts
         for _ in 0..<passes {
             var smoothed = [result[0]]
@@ -74,16 +75,4 @@ final class FreehandTool: AnnotationTool {
         return result
     }
 
-    // MARK: - Downsampling (matches prototype ds() function)
-    // Evenly space n points along the smoothed path
-
-    private func downsample(_ pts: [CGPoint], count n: Int) -> [CGPoint] {
-        guard pts.count > n else { return pts }
-        let step = Double(pts.count - 1) / Double(n - 1)
-        var out: [CGPoint] = []
-        for i in 0..<n {
-            out.append(pts[Int(round(Double(i) * step))])
-        }
-        return out
-    }
 }

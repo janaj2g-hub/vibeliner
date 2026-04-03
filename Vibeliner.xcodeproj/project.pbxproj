@@ -54,6 +54,7 @@
 		A10000010000000000000032 /* NotePillRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* NotePillRenderer.swift */; };
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
+		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +107,7 @@
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
 		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
+		D20000010000000000000001 /* BadgeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRenderer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -199,6 +201,7 @@
 			children = (
 				A20000010000000000000019 /* PinRenderer.swift */,
 				A2000001000000000000001B /* ArrowRenderer.swift */,
+				D20000010000000000000001 /* BadgeRenderer.swift */,
 				A2000001000000000000001D /* RectangleRenderer.swift */,
 				A2000001000000000000001F /* CircleRenderer.swift */,
 				A20000010000000000000021 /* FreehandRenderer.swift */,
@@ -416,6 +419,7 @@
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
+				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
