@@ -48,18 +48,11 @@ final class NotePillRenderer {
                     annotation.badgePosition.y - existing.lastBadgePosition.y
                 ) > 0.5
                 if badgeMoved {
-                    // VIB-194 (attempt 5): Apply cached offset directly — no recalculation,
-                    // no rounding drift from repeated anchoredOrigin calls
-                    let newOrigin = CGPoint(
+                    // VIB-206: Apply cached offset directly. No NSIntegralRect (causes
+                    // cumulative rounding drift). No offset recalculation (compounds error).
+                    existing.frame.origin = CGPoint(
                         x: annotation.badgePosition.x + existing.pillOffsetFromBadge.x,
                         y: annotation.badgePosition.y + existing.pillOffsetFromBadge.y
-                    )
-                    existing.frame.origin = newOrigin
-                    existing.frame = NSIntegralRect(existing.frame)
-                    // Update offset to account for NSIntegralRect rounding on new position
-                    existing.pillOffsetFromBadge = CGPoint(
-                        x: existing.frame.origin.x - annotation.badgePosition.x,
-                        y: existing.frame.origin.y - annotation.badgePosition.y
                     )
                     existing.lastBadgePosition = annotation.badgePosition
                 }
