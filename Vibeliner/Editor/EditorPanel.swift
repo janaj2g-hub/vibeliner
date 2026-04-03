@@ -140,9 +140,20 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.toolbarView.resetCopyState()
         }
 
-        // Local key monitor for Esc and other shortcuts (nonactivating panel may not get keyDown)
+        // VIB-193: Key monitor — when editing, only intercept Escape BEFORE handleKeyEvent
+        // This ensures Cmd+C/V/A pass directly to the text field's field editor
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.isVisible else { return event }
+
+            // When editing a note, only intercept Escape. ALL other keys pass through untouched.
+            if let canvas = self.canvasOverlay, canvas.isEditingNote {
+                if event.keyCode == 53 { // Escape
+                    canvas.cancelNoteEditing()
+                    return nil  // consumed
+                }
+                return event  // pass through to text field (Cmd+C/V/A, arrows, etc.)
+            }
+
             return self.handleKeyEvent(event) ? nil : event
         }
     }
