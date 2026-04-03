@@ -19,12 +19,14 @@ final class PinRenderer: AnnotationRenderer {
             let clampedX = max(badgeRadius, min(canvasSize.width - badgeRadius, badgeCenterX))
             let clampedY = max(badgeRadius, min(canvasSize.height - badgeRadius, badgeCenterY))
 
-            // Stake
+            // VIB-167: Stake ALWAYS vertical — straight down from badge center
+            let stakeTopY = clampedY - badgeRadius
+            let stakeBottomY = stakeTopY - DesignTokens.stakeLength
             context.setStrokeColor(DesignTokens.red.cgColor)
             context.setLineWidth(DesignTokens.stakeWidth)
             context.setLineCap(.round)
-            context.move(to: tip)
-            context.addLine(to: CGPoint(x: clampedX, y: clampedY - badgeRadius))
+            context.move(to: CGPoint(x: clampedX, y: stakeTopY))
+            context.addLine(to: CGPoint(x: clampedX, y: stakeBottomY))
             context.strokePath()
 
             // Badge circle

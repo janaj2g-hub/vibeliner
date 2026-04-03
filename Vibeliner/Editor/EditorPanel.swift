@@ -44,10 +44,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.displayWidth = dw
         self.displayHeight = dh
 
-        // Window encompasses toolbar (48px above) + canvas + status pill area (44px below)
+        // Window encompasses toolbar + shadow padding + canvas + status pill area
         let toolbarGap: CGFloat = 48
         let bottomGap: CGFloat = 44
-        let totalHeight = dh + toolbarGap + bottomGap
+        let shadowPad: CGFloat = 24  // VIB-165: room for toolbar shadow to extend above
+        let totalHeight = dh + toolbarGap + bottomGap + shadowPad
         let totalWidth = max(dw, toolbarView.frame.width)
 
         let contentRect = NSRect(
