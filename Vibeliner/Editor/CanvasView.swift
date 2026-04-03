@@ -330,6 +330,10 @@ final class CanvasView: NSView, NotePillDelegate {
         let newH = max(minH, CGFloat(numLines) * lineH + 8)
 
         if abs(pill.frame.height - newH) > 1 {
+            // VIB-192 (attempt 3): Shift origin DOWN so TOP edge stays fixed
+            // AppKit: lower y = lower on screen. Growing height pushes top up unless we compensate.
+            let heightDelta = newH - pill.frame.height
+            pill.frame.origin.y -= heightDelta
             pill.setFrameSize(NSSize(width: pill.frame.width, height: newH))
             // Update sublayers/views to match new size
             for sub in pill.subviews {

@@ -41,10 +41,18 @@ final class NotePillRenderer {
             let placement = notePlacement(for: annotation)
 
             if let existing = pillsByID[annotation.id] {
-                // VIB-194: ONLY update visual state, NOT position.
-                // Position is set on creation. Recalculating on hover causes slides
-                // because pill width rounding differs between states.
+                // VIB-194 (attempt 3): Update state always. Only recalculate position if badge moved.
                 existing.updateState(state)
+                let badgeMoved = hypot(
+                    annotation.badgePosition.x - existing.lastBadgePosition.x,
+                    annotation.badgePosition.y - existing.lastBadgePosition.y
+                ) > 0.5
+                if badgeMoved {
+                    let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: existing.frame.width)
+                    existing.frame.origin = origin
+                    existing.frame = NSIntegralRect(existing.frame)
+                    existing.lastBadgePosition = annotation.badgePosition
+                }
             } else {
                 // Create new pill
                 let pill = NotePillView(
@@ -55,9 +63,9 @@ final class NotePillRenderer {
                     delegate: delegate
                 )
                 pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
+                pill.lastBadgePosition = annotation.badgePosition
                 let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
                 pill.frame.origin = origin
-                // VIB-186: Round to integral pixels for crisp borders
                 pill.frame = NSIntegralRect(pill.frame)
                 view.addSubview(pill)
             }
@@ -216,6 +224,8 @@ final class NotePillRenderer {
 final class NotePillView: NSView {
 
     let annotationId: UUID
+    /// VIB-194: Track badge position to detect moves vs hover-only refreshes
+    var lastBadgePosition: CGPoint = .zero
     private weak var pillDelegate: NotePillDelegate?
     private let tintView: NSView
     private var currentState: NotePillRenderer.NotePillState
