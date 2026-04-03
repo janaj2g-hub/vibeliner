@@ -253,11 +253,11 @@ final class PopoverContentView: NSView {
     // MARK: - Actions
 
     @objc private func captureNow() {
+        // VIB-169 (attempt 4): Trigger capture IMMEDIATELY. The capture overlay is at
+        // .screenSaver level which renders ABOVE the popover (.popUpMenu level).
+        // The popover will auto-close when it loses focus to the overlay.
         popoverWindow?.closePopover()
-        // VIB-169 (attempt 3): Post notification, let AppDelegate handle on next run loop
-        DispatchQueue.main.async {
-            NotificationCenter.default.post(name: NSNotification.Name("VibelinerTriggerCapture"), object: nil)
-        }
+        CaptureCoordinator.shared.startCapture()
     }
 
     private var submenuPanel: NSPanel?
