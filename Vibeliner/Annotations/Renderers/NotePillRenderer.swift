@@ -48,10 +48,14 @@ final class NotePillRenderer {
                     annotation.badgePosition.y - existing.lastBadgePosition.y
                 ) > 0.5
                 if badgeMoved {
-                    let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: existing.frame.width)
+                    // VIB-194 (attempt 4): Recalculate placement point but keep CACHED anchor
+                    // to prevent left/right flip during drag
+                    let newPlacement = notePlacement(for: annotation)
+                    let origin = anchoredOrigin(point: newPlacement.point, anchor: existing.lastAnchor, pillWidth: existing.frame.width)
                     existing.frame.origin = origin
                     existing.frame = NSIntegralRect(existing.frame)
                     existing.lastBadgePosition = annotation.badgePosition
+                    // Do NOT update lastAnchor — it was set on creation and stays fixed
                 }
             } else {
                 // Create new pill
@@ -64,6 +68,7 @@ final class NotePillRenderer {
                 )
                 pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
                 pill.lastBadgePosition = annotation.badgePosition
+                pill.lastAnchor = placement.anchor  // VIB-194 (attempt 4): cache anchor on creation
                 let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
                 pill.frame.origin = origin
                 pill.frame = NSIntegralRect(pill.frame)
@@ -226,6 +231,8 @@ final class NotePillView: NSView {
     let annotationId: UUID
     /// VIB-194: Track badge position to detect moves vs hover-only refreshes
     var lastBadgePosition: CGPoint = .zero
+    /// VIB-194 (attempt 4): Cache anchor on creation to prevent flip during drag
+    var lastAnchor: NotePillRenderer.Anchor = .tl
     private weak var pillDelegate: NotePillDelegate?
     private let tintView: NSView
     private var currentState: NotePillRenderer.NotePillState
