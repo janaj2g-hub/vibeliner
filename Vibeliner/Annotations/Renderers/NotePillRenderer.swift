@@ -75,14 +75,15 @@ final class NotePillRenderer {
         let anchor: Anchor
     }
 
-    /// Convert anchor point + anchor type to AppKit frame origin using ACTUAL pill width
+    /// VIB-192: Anchor from TOP edge, pill grows downward. In AppKit y-up,
+    /// "top" = highest y. Pill frame origin (bottom-left) = point.y - h.
     static func anchoredOrigin(point: CGPoint, anchor: Anchor, pillWidth: CGFloat, pillHeight: CGFloat? = nil) -> CGPoint {
         let h = pillHeight ?? DesignTokens.noteHeight
         switch anchor {
-        case .tl: return CGPoint(x: point.x, y: point.y - h / 2)
-        case .tr: return CGPoint(x: point.x - pillWidth, y: point.y - h / 2)
-        case .bl: return CGPoint(x: point.x, y: point.y - h)
-        case .br: return CGPoint(x: point.x - pillWidth, y: point.y - h)
+        case .tl: return CGPoint(x: point.x, y: point.y - h)       // top-left at point, grows down
+        case .tr: return CGPoint(x: point.x - pillWidth, y: point.y - h)  // top-right at point, grows down
+        case .bl: return CGPoint(x: point.x, y: point.y)           // bottom-left at point, grows up
+        case .br: return CGPoint(x: point.x - pillWidth, y: point.y)      // bottom-right at point, grows up
         }
     }
 
@@ -138,21 +139,31 @@ final class NotePillRenderer {
             return PlacedNote(point: CGPoint(x: bx + off, y: by + off), anchor: .bl)
 
         case .rectangle(let origin, let size):
+            // VIB-194: 1.2× bias threshold to prevent anchor flip-flopping near diagonals
             let cx = origin.x + size.width / 2
             let cy = origin.y + size.height / 2
             let dx = bx - cx
             let dy = by - cy
 
-            if abs(dx) > abs(dy) {
+            if abs(dx) > abs(dy) * 1.2 {
+                // Clearly more horizontal
                 if dx > 0 {
                     return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
                 }
                 return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
             }
-            if dy < 0 {
-                return PlacedNote(point: CGPoint(x: bx + off, y: by - br - gap - 6), anchor: .tl)
+            if abs(dy) > abs(dx) * 1.2 {
+                // Clearly more vertical
+                if dy < 0 {
+                    return PlacedNote(point: CGPoint(x: bx + off, y: by - br - gap - 6), anchor: .tl)
+                }
+                return PlacedNote(point: CGPoint(x: bx + off, y: by + br + gap + 6), anchor: .bl)
             }
-            return PlacedNote(point: CGPoint(x: bx + off, y: by + br + gap + 6), anchor: .bl)
+            // Ambiguous diagonal — default based on horizontal direction to avoid flipping
+            if dx > 0 {
+                return PlacedNote(point: CGPoint(x: bx + off, y: by), anchor: .tl)
+            }
+            return PlacedNote(point: CGPoint(x: bx - off, y: by), anchor: .tr)
 
         case .circle(let center, _):
             let dx = bx - center.x
@@ -300,10 +311,12 @@ final class NotePillView: NSView {
         prefixLabel.isBezeled = false
         prefixLabel.drawsBackground = false
         prefixLabel.sizeToFit()
+        // VIB-192: Use actual pillHeight (not hardcoded 26px) for centering
         prefixLabel.frame.origin = NSPoint(
             x: padding,
             y: (pillHeight - prefixLabel.frame.height) / 2
         )
+        // Note: pillHeight is already the actual computed height above
         addSubview(prefixLabel)
 
         // VIB-166: Text field — vertically centered in pill

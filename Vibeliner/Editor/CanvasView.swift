@@ -138,6 +138,16 @@ final class CanvasView: NSView, NotePillDelegate {
 
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
+
+        // VIB-193: Click outside editing pill = commit text
+        if isEditingNote {
+            let clickInPill = activeEditorPill.map { $0.frame.contains(point) } ?? false
+            if !clickInPill {
+                confirmNoteEditing()
+                return  // Don't process as a tool action
+            }
+        }
+
         guard let undoMgr = undoManager_ else { return }
         activeTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
         marksLayer.needsDisplay = true
@@ -233,7 +243,7 @@ final class CanvasView: NSView, NotePillDelegate {
         tintView.layer?.masksToBounds = true
         tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
         tintView.layer?.borderColor = DesignTokens.red.cgColor
-        tintView.layer?.borderWidth = 1.5
+        tintView.layer?.borderWidth = 2  // VIB-192: match VIB-186 constant
         pillContainer.addSubview(tintView)
 
         // Number prefix label
@@ -243,7 +253,8 @@ final class CanvasView: NSView, NotePillDelegate {
         numberLabel.isBezeled = false
         numberLabel.drawsBackground = false
         numberLabel.sizeToFit()
-        numberLabel.frame.origin = NSPoint(x: 12, y: (DesignTokens.noteHeight - numberLabel.frame.height) / 2)
+        // VIB-192: Use actual pillH for centering, not hardcoded DesignTokens.noteHeight
+        numberLabel.frame.origin = NSPoint(x: 12, y: (pillH - numberLabel.frame.height) / 2)
         pillContainer.addSubview(numberLabel)
 
         // Text field (borderless, transparent, inside pill)
@@ -293,9 +304,10 @@ final class CanvasView: NSView, NotePillDelegate {
         activeNoteField = textField
         activeEditorPill = pillContainer
 
-        // Make the field first responder and set caret color
+        // VIB-193: Force panel to become key so makeFirstResponder works
         DispatchQueue.main.async { [weak self, weak textField] in
-            guard let window = self?.window, let tf = textField else { return }
+            guard let self, let window = self.window, let tf = textField else { return }
+            window.makeKeyAndOrderFront(nil)  // Must be key window for first responder
             window.makeFirstResponder(tf)
             // Set caret color after becoming first responder
             if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
