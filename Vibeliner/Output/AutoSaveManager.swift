@@ -54,6 +54,8 @@ private func scheduleSave() {
         DispatchQueue.global(qos: .userInitiated).async {
             ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
             PromptGenerator.savePromptFile(to: folder, annotations: annotations)
+            // VIB-183: Invalidate captures cache so next submenu open shows the new capture
+            CapturesManager.shared.invalidateCache()
         }
     }
 }
