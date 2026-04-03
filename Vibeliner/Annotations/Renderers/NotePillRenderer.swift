@@ -41,21 +41,27 @@ final class NotePillRenderer {
             let placement = notePlacement(for: annotation)
 
             if let existing = pillsByID[annotation.id] {
-                // VIB-194 (attempt 3): Update state always. Only recalculate position if badge moved.
+                // VIB-194: Update state always. Only reposition if badge moved.
                 existing.updateState(state)
                 let badgeMoved = hypot(
                     annotation.badgePosition.x - existing.lastBadgePosition.x,
                     annotation.badgePosition.y - existing.lastBadgePosition.y
                 ) > 0.5
                 if badgeMoved {
-                    // VIB-194 (attempt 4): Recalculate placement point but keep CACHED anchor
-                    // to prevent left/right flip during drag
-                    let newPlacement = notePlacement(for: annotation)
-                    let origin = anchoredOrigin(point: newPlacement.point, anchor: existing.lastAnchor, pillWidth: existing.frame.width)
-                    existing.frame.origin = origin
+                    // VIB-194 (attempt 5): Apply cached offset directly — no recalculation,
+                    // no rounding drift from repeated anchoredOrigin calls
+                    let newOrigin = CGPoint(
+                        x: annotation.badgePosition.x + existing.pillOffsetFromBadge.x,
+                        y: annotation.badgePosition.y + existing.pillOffsetFromBadge.y
+                    )
+                    existing.frame.origin = newOrigin
                     existing.frame = NSIntegralRect(existing.frame)
+                    // Update offset to account for NSIntegralRect rounding on new position
+                    existing.pillOffsetFromBadge = CGPoint(
+                        x: existing.frame.origin.x - annotation.badgePosition.x,
+                        y: existing.frame.origin.y - annotation.badgePosition.y
+                    )
                     existing.lastBadgePosition = annotation.badgePosition
-                    // Do NOT update lastAnchor — it was set on creation and stays fixed
                 }
             } else {
                 // Create new pill
@@ -68,10 +74,14 @@ final class NotePillRenderer {
                 )
                 pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
                 pill.lastBadgePosition = annotation.badgePosition
-                pill.lastAnchor = placement.anchor  // VIB-194 (attempt 4): cache anchor on creation
                 let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
                 pill.frame.origin = origin
                 pill.frame = NSIntegralRect(pill.frame)
+                // VIB-194 (attempt 5): Cache offset from badge to pill origin
+                pill.pillOffsetFromBadge = CGPoint(
+                    x: pill.frame.origin.x - annotation.badgePosition.x,
+                    y: pill.frame.origin.y - annotation.badgePosition.y
+                )
                 view.addSubview(pill)
             }
         }
@@ -231,8 +241,8 @@ final class NotePillView: NSView {
     let annotationId: UUID
     /// VIB-194: Track badge position to detect moves vs hover-only refreshes
     var lastBadgePosition: CGPoint = .zero
-    /// VIB-194 (attempt 4): Cache anchor on creation to prevent flip during drag
-    var lastAnchor: NotePillRenderer.Anchor = .tl
+    /// VIB-194 (attempt 5): Cache offset from badge to pill origin — apply directly on drag
+    var pillOffsetFromBadge: CGPoint = .zero
     private weak var pillDelegate: NotePillDelegate?
     private let tintView: NSView
     private var currentState: NotePillRenderer.NotePillState
