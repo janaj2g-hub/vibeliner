@@ -338,10 +338,24 @@ final class CanvasView: NSView, NotePillDelegate {
     func resizeEditingPill() {
         guard let pill = activeEditorPill, let field = activeNoteField else { return }
         let minH = DesignTokens.noteHeight
-
-        // VIB-192 (attempt 5): Use actual text layout via cellSize, not char count
-        let fittingSize = field.cell?.cellSize(forBounds: NSRect(x: 0, y: 0, width: field.frame.width, height: CGFloat.greatestFiniteMagnitude)) ?? NSSize(width: field.frame.width, height: minH)
-        let newH = max(minH, fittingSize.height + 8)  // +8 for 4px top + 4px bottom padding
+        // VIB-204: Get LIVE text from the field editor, not stale stringValue
+        let liveText: String
+        if let fieldEditor = field.currentEditor() as? NSTextView {
+            liveText = fieldEditor.string
+        } else {
+            liveText = field.stringValue
+        }
+        guard !liveText.isEmpty else { return }
+        // Measure with a temp label matching the editing field's wrapping config
+        let measurer = NSTextField(labelWithString: liveText)
+        measurer.font = DesignTokens.noteTextFont
+        measurer.maximumNumberOfLines = 0
+        measurer.lineBreakMode = .byWordWrapping
+        measurer.cell?.wraps = true
+        measurer.preferredMaxLayoutWidth = field.frame.width
+        measurer.frame = NSRect(x: 0, y: 0, width: field.frame.width, height: 0)
+        measurer.sizeToFit()
+        let newH = max(minH, measurer.frame.height + 8)
 
         if abs(pill.frame.height - newH) > 1 {
             let heightDelta = newH - pill.frame.height
@@ -356,7 +370,6 @@ final class CanvasView: NSView, NotePillDelegate {
                 blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
             }
             field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
-            // Re-center number prefix label
             for sub in pill.subviews {
                 if let label = sub as? NSTextField, label.font?.pointSize == 8 {
                     label.frame.origin.y = (newH - label.frame.height) / 2

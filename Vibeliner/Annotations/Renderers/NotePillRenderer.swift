@@ -291,15 +291,11 @@ final class NotePillView: NSView {
         textField.preferredMaxLayoutWidth = maxTextW
         textField.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
-        // Size to fit within max text width
-        textField.frame = NSRect(x: 0, y: 0, width: maxTextW, height: 0)
-        textField.sizeToFit()
-        // If text is short, shrink width to fit content
-        let actualTextW = min(textField.frame.width, maxTextW)
-        textField.sizeToFit()
-
-        // VIB-166: Pill dimensions with exact padding: 4px top, 4px bottom, 12px left, 12px right
-        let contentH = max(lineH, textField.frame.height)
+        // VIB-204: Use cellSize to measure wrapped text height — no double sizeToFit
+        let cellBounds = NSRect(x: 0, y: 0, width: maxTextW, height: CGFloat.greatestFiniteMagnitude)
+        let fittedSize = textField.cell?.cellSize(forBounds: cellBounds) ?? NSSize(width: maxTextW, height: lineH)
+        let actualTextW = min(fittedSize.width, maxTextW)
+        let contentH = max(lineH, fittedSize.height)
         let pillWidth = min(maxPillW, textX + actualTextW + padding)
         let pillHeight = max(DesignTokens.noteHeight, contentH + vertPad * 2) // min 26px
 
@@ -350,9 +346,9 @@ final class NotePillView: NSView {
         // VIB-166: Text field — vertically centered in pill
         textField.frame = NSRect(
             x: textX,
-            y: (pillHeight - textField.frame.height) / 2,
+            y: (pillHeight - fittedSize.height) / 2,
             width: actualTextW,
-            height: textField.frame.height
+            height: fittedSize.height
         )
         addSubview(textField)
 
