@@ -88,11 +88,9 @@ final class CaptureCoordinator {
         let rect = rectFromPoints(start, point)
         view.selectionRect = rect
 
-        // Update all crosshair views with the same selection for multi-monitor
-        for crosshairView in crosshairViews where crosshairView !== view {
-            crosshairView.isDragging = true
-            crosshairView.selectionRect = rect
-        }
+        // VIB-185: Do NOT update other screens' crosshair views.
+        // Only the active screen shows the selection rectangle.
+        // Other screens stay dimmed without selection/crosshair.
 
         // Update dimension label
         let w = Int(rect.width)
