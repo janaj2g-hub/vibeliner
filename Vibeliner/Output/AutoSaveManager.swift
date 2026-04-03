@@ -37,12 +37,7 @@ final class AutoSaveManager {
         performSave()
     }
 
-    func saveIfNeeded() {
-        guard isDirty else { return }
-        saveNow()
-    }
-
-    private func scheduleSave() {
+private func scheduleSave() {
         debounceTimer?.invalidate()
         debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
             self?.performSave()

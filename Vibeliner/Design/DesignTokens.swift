@@ -216,8 +216,7 @@ enum DesignTokens {
     static let noteNumberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
 
 
-    /// Badge font (10+ numbers): 7px weight 600
-    static let badgeFontSmall = NSFont.systemFont(ofSize: 7, weight: .semibold)
+
 
     /// Note text: system 12px weight regular
     static let noteTextFont = NSFont.systemFont(ofSize: 12, weight: .regular)
