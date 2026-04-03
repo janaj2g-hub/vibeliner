@@ -170,6 +170,35 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
+    /// VIB-205: During note editing, directly invoke clipboard/undo actions on the
+    /// field editor and return true to swallow the event. This prevents it from
+    /// reaching AppKit's main menu validation (which beeps on borderless panels).
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if let canvas = canvasOverlay, canvas.isEditingNote {
+            if let activeField = canvas.activeNoteField,
+               let fieldEditor = fieldEditor(false, for: activeField) as? NSTextView {
+                let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+                let chars = event.charactersIgnoringModifiers ?? ""
+                if flags == .command {
+                    switch chars {
+                    case "c": fieldEditor.copy(nil); return true
+                    case "v": fieldEditor.paste(nil); return true
+                    case "x": fieldEditor.cut(nil); return true
+                    case "a": fieldEditor.selectAll(nil); return true
+                    case "z": fieldEditor.undoManager?.undo(); return true
+                    default: break
+                    }
+                } else if flags == [.command, .shift] && chars == "z" {
+                    fieldEditor.undoManager?.redo()
+                    return true
+                }
+            }
+            // Swallow any other key equivalent during editing to prevent beep
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
     override func keyDown(with event: NSEvent) {
         if !handleKeyEvent(event) {
             super.keyDown(with: event)
