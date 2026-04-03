@@ -67,7 +67,7 @@ final class NotePillRenderer {
                 )
                 pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
                 pill.lastBadgePosition = annotation.badgePosition
-                let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
+                let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width, pillHeight: pill.frame.height)
                 pill.frame.origin = origin
                 pill.frame = NSIntegralRect(pill.frame)
                 // VIB-194 (attempt 5): Cache offset from badge to pill origin
