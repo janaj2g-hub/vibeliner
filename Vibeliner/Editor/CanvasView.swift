@@ -216,8 +216,8 @@ final class CanvasView: NSView, NotePillDelegate {
         let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
         let maxPillW: CGFloat = 200
         // VIB-192 (attempt 5): Configure temp field with wrapping to get correct multi-line height
-        let textX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
-        let maxTextW = maxPillW - textX - 12
+        let estTextX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
+        let maxTextW = maxPillW - estTextX - 12
         let tempField = NSTextField(labelWithString: annotation.noteText)
         tempField.font = DesignTokens.noteTextFont
         tempField.maximumNumberOfLines = 0
