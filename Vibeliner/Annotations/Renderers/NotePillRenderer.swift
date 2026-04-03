@@ -10,39 +10,55 @@ final class NotePillRenderer {
 
     static let pillIdentifier = "notePill"
 
+    /// VIB-181: Reuse pool — update existing pills, add/remove only as needed
     static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil, selectedId: UUID? = nil, editingId: UUID? = nil, delegate: NotePillDelegate? = nil) {
-        // Remove existing note pill subviews
-        for subview in view.subviews where subview.identifier?.rawValue == pillIdentifier {
-            subview.removeFromSuperview()
+        // Collect existing pills by annotation ID
+        let existingPills = view.subviews.compactMap { $0 as? NotePillView }
+        var pillsByID: [UUID: NotePillView] = [:]
+        for pill in existingPills { pillsByID[pill.annotationId] = pill }
+
+        // Determine which annotations need pills
+        var neededIDs = Set<UUID>()
+        for annotation in annotations {
+            guard !annotation.noteText.isEmpty, annotation.id != editingId else { continue }
+            neededIDs.insert(annotation.id)
         }
 
+        // Remove pills for annotations that no longer need them
+        for pill in existingPills where !neededIDs.contains(pill.annotationId) {
+            pill.removeFromSuperview()
+        }
+
+        // Update existing pills or create new ones
         for annotation in annotations {
-            guard !annotation.noteText.isEmpty else { continue }
-            guard annotation.id != editingId else { continue }
+            guard !annotation.noteText.isEmpty, annotation.id != editingId else { continue }
 
             let state: NotePillState
-            if annotation.id == selectedId {
-                state = .selected
-            } else if annotation.id == hoveredId {
-                state = .hover
-            } else {
-                state = .default
-            }
+            if annotation.id == selectedId { state = .selected }
+            else if annotation.id == hoveredId { state = .hover }
+            else { state = .default }
 
             let placement = notePlacement(for: annotation)
-            let pill = NotePillView(
-                annotationId: annotation.id,
-                number: annotation.number,
-                text: annotation.noteText,
-                state: state,
-                delegate: delegate
-            )
-            pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
 
-            // Apply anchor: convert anchor point to AppKit frame origin using actual pill width
-            let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
-            pill.frame.origin = origin
-            view.addSubview(pill)
+            if let existing = pillsByID[annotation.id] {
+                // Reuse: update position and state without recreating view hierarchy
+                existing.updateState(state)
+                let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: existing.frame.width)
+                existing.frame.origin = origin
+            } else {
+                // Create new pill
+                let pill = NotePillView(
+                    annotationId: annotation.id,
+                    number: annotation.number,
+                    text: annotation.noteText,
+                    state: state,
+                    delegate: delegate
+                )
+                pill.identifier = NSUserInterfaceItemIdentifier(pillIdentifier)
+                let origin = anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: pill.frame.width)
+                pill.frame.origin = origin
+                view.addSubview(pill)
+            }
         }
     }
 
@@ -294,6 +310,13 @@ final class NotePillView: NSView {
         addSubview(textField)
 
         applyState(state)
+    }
+
+    /// VIB-181: Update visual state without recreating view hierarchy
+    func updateState(_ newState: NotePillRenderer.NotePillState) {
+        guard newState != currentState else { return }
+        currentState = newState
+        applyState(newState)
     }
 
     required init?(coder: NSCoder) { fatalError() }
