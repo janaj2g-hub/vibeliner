@@ -170,11 +170,18 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
-    /// VIB-193 (attempt 3): Let Cmd+C/V/A/Z reach the text field during note editing.
-    /// performKeyEquivalent is called BEFORE keyDown for Cmd+key combos.
-    /// Returning false = "I didn't handle it" → AppKit forwards to first responder.
+    /// VIB-193 (attempt 4): Explicitly forward Cmd+key events to the field editor.
+    /// Returning false caused beeps because AppKit walked up to the main menu which
+    /// couldn't validate against the field editor. Instead, get the field editor and
+    /// forward the event directly.
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
         if let canvas = canvasOverlay, canvas.isEditingNote {
+            if let activeField = canvas.activeNoteField,
+               let fieldEditor = fieldEditor(false, for: activeField) as? NSTextView {
+                if fieldEditor.performKeyEquivalent(with: event) {
+                    return true  // field editor handled it
+                }
+            }
             return false
         }
         return super.performKeyEquivalent(with: event)
