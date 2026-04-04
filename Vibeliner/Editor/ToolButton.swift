@@ -52,7 +52,7 @@ final class ToolButton: NSView {
         case .trash:
             if !isEnabled {
                 bgColor = .clear
-                iconColor = DesignTokens.iconDefault.withAlphaComponent(0.35)
+                iconColor = DesignTokens.iconDefault.withAlphaComponent(0.12)
             } else if isHovered {
                 bgColor = DesignTokens.trashHoverBg
                 iconColor = DesignTokens.red
