@@ -41,4 +41,17 @@ This document records architectural decisions and failed approaches. Claude Code
 
 *This section is updated when tickets fail. Each entry explains what was tried, why it failed, and what to do instead.*
 
-*(none yet — project starting fresh)*
+### Cursor management: NSCursor.hide()/unhide() causes permanent cursor loss
+
+**Ticket:** VIB-214 (attempts 1 and 2 both failed before settling on push/pop)
+
+**What failed:** Using `NSCursor.hide()` to hide the system cursor when drawing tools are active. `NSCursor.hide()` and `NSCursor.unhide()` are globally reference-counted at the process level — every `hide()` increments a hidden counter, every `unhide()` decrements it. The cursor only reappears when the counter reaches zero. Any code path that calls `hide()` more times than `unhide()` (e.g., app switching, opening Settings, mouse exiting without triggering `mouseExited`) permanently hides the cursor system-wide across all apps until the app is quit.
+
+**Attempt 1:** Added `NSCursor.unhide()` to `ToolbarView.mouseEntered`. Made things worse — the unhide/hide balance was still broken across app-switching paths.
+
+**Correct fix:** Use the NSCursor stack API instead:
+- `NSCursor.invisible.push()` — pushes a 1×1 transparent cursor; scoped to the calling context
+- `NSCursor.pop()` — restores the previous cursor
+- This never bleeds to other apps or windows
+
+**Rule: Do not use `NSCursor.hide()` or `NSCursor.unhide()` anywhere in this codebase.** Use invisible cursor push/pop instead. The invisible cursor is defined in `DesignTokens.swift` as `NSCursor.invisible`.

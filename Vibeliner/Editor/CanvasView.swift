@@ -10,6 +10,7 @@ final class CanvasView: NSView, NotePillDelegate {
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
+    private var isShowingInvisibleCursor = false
 
     init(frame: NSRect, store: AnnotationStore) {
         self.store = store
@@ -62,11 +63,14 @@ final class CanvasView: NSView, NotePillDelegate {
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
 
-        // VIB-201: Hide system cursor when drawing tool is active and not editing
-        if activeTool?.toolType.isDrawingTool == true && !isEditingNote {
-            NSCursor.hide()
-        } else {
-            NSCursor.unhide()
+        // VIB-214: Push invisible cursor when drawing tool active; pop when not
+        let shouldHideCursor = activeTool?.toolType.isDrawingTool == true && !isEditingNote
+        if shouldHideCursor && !isShowingInvisibleCursor {
+            NSCursor.invisible.push()
+            isShowingInvisibleCursor = true
+        } else if !shouldHideCursor && isShowingInvisibleCursor {
+            NSCursor.pop()
+            isShowingInvisibleCursor = false
         }
 
         // Hit-test for shape hover
@@ -220,7 +224,10 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
-        NSCursor.unhide()
+        if isShowingInvisibleCursor {
+            NSCursor.pop()
+            isShowingInvisibleCursor = false
+        }
         ghostPosition = nil
         marksLayer.ghostPosition = nil
         marksLayer.needsDisplay = true
@@ -258,7 +265,10 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
-        NSCursor.unhide()  // VIB-201: Restore cursor when editor opens
+        if isShowingInvisibleCursor {  // VIB-214: Restore cursor when editor opens
+            NSCursor.pop()
+            isShowingInvisibleCursor = false
+        }
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
@@ -420,6 +430,14 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
+
+    // VIB-214: Pop invisible cursor if active (called on app resign, tool change, etc.)
+    func resetCursor() {
+        if isShowingInvisibleCursor {
+            NSCursor.pop()
+            isShowingInvisibleCursor = false
+        }
+    }
 }
 
 // MARK: - Note field delegate

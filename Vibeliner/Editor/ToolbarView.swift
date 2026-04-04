@@ -282,17 +282,6 @@ final class ToolbarView: NSView {
         updateCopyButtonVisibility(mode: ConfigManager.shared.copyMode)
     }
 
-    // VIB-214: Restore system cursor when entering the toolbar (drawing tools hide it)
-    override func updateTrackingAreas() {
-        super.updateTrackingAreas()
-        for area in trackingAreas { removeTrackingArea(area) }
-        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
-    }
-
-    override func mouseEntered(with event: NSEvent) {
-        NSCursor.unhide()
-    }
-
     func selectTool(_ tool: AnnotationToolType) {
         selectedTool = tool
         for (t, btn) in toolButtons { btn.isActive = (t == tool) }

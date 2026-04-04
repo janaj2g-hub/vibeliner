@@ -253,3 +253,18 @@ enum DesignTokens {
     /// Tooltip label: system 13px weight 600
     static let tooltipLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
 }
+
+// MARK: - VIB-214: Invisible cursor for drawing tools (safe alternative to NSCursor.hide/unhide)
+
+extension NSCursor {
+    /// 1×1 transparent cursor used to visually hide the system cursor while drawing.
+    /// Push onto the cursor stack; pop to restore. Never use NSCursor.hide()/unhide().
+    static let invisible: NSCursor = {
+        let image = NSImage(size: NSSize(width: 1, height: 1))
+        image.lockFocus()
+        NSColor.clear.set()
+        NSRect(x: 0, y: 0, width: 1, height: 1).fill()
+        image.unlockFocus()
+        return NSCursor(image: image, hotSpot: .zero)
+    }()
+}

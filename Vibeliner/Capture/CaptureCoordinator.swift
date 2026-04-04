@@ -10,6 +10,7 @@ final class CaptureCoordinator {
     private var activeView: CrosshairView?
     private var editorPanel: EditorPanel?
     private var isCapturing = false
+    private var isShowingInvisibleCursor = false
 
     private init() {}
 
@@ -17,7 +18,9 @@ final class CaptureCoordinator {
         guard !isCapturing else { return }
         isCapturing = true
 
-        NSCursor.hide()
+        // VIB-214: Use invisible cursor push — never NSCursor.hide()
+        NSCursor.invisible.push()
+        isShowingInvisibleCursor = true
 
         for screen in NSScreen.screens {
             let window = CaptureOverlayWindow(screen: screen)
@@ -160,7 +163,7 @@ final class CaptureCoordinator {
     }
 
     private func cleanupAfterCapture() {
-        NSCursor.unhide()
+        if isShowingInvisibleCursor { NSCursor.pop(); isShowingInvisibleCursor = false }
         removeDimensionLabel()
         overlayWindows.removeAll()
         crosshairViews.removeAll()
@@ -170,7 +173,7 @@ final class CaptureCoordinator {
     }
 
     private func dismissOverlays() {
-        NSCursor.unhide()
+        if isShowingInvisibleCursor { NSCursor.pop(); isShowingInvisibleCursor = false }
         removeDimensionLabel()
 
         for window in overlayWindows {

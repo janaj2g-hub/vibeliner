@@ -143,6 +143,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
         }
 
+        // VIB-214: Pop invisible cursor if app loses focus while drawing
+        NotificationCenter.default.addObserver(forName: NSApplication.willResignActiveNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.canvasOverlay?.resetCursor()
+        }
+
         // VIB-193: Key monitor — when editing, only intercept Escape BEFORE handleKeyEvent
         // This ensures Cmd+C/V/A pass directly to the text field's field editor
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
