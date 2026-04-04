@@ -37,6 +37,8 @@ final class ToolbarView: NSView {
         layer?.shadowOffset = NSSize(width: 0, height: -4)
         layer?.shadowRadius = 20
         layer?.shadowOpacity = 0.25
+        layer?.borderWidth = 1
+        layer?.borderColor = DesignTokens.chromeBorder.cgColor
 
         // Blur background
         blurView.material = .hudWindow

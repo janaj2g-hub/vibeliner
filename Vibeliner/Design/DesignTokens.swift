@@ -95,6 +95,9 @@ enum DesignTokens {
     /// rgba(255, 87, 87, 0.15) — trash button hover
     static let trashHoverBg = NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.15)
 
+    /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
+    static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
+
     /// rgba(255, 255, 255, 0.4) — default icon stroke
     static let iconDefault = NSColor(white: 1.0, alpha: 0.4)
 
