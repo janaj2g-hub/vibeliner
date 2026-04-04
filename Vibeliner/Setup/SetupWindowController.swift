@@ -186,11 +186,12 @@ final class SetupWindowController: NSWindowController {
         pathDisplay.layer?.borderWidth = 1
         pathDisplay.layer?.cornerRadius = 8
         pathDisplay.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 36 - 14 - 36, width: container.frame.width - pad * 2, height: 36)
-        // Inset text by adding padding via edge insets on the cell
+        pathDisplay.usesSingleLineMode = true
+        pathDisplay.cell?.truncatesLastVisibleLine = true
         container.addSubview(pathDisplay)
 
-        // Create folder button
-        let btn = makePillButton("Create folder…")
+        // Choose folder button
+        let btn = makePillButton("Choose folder…")
         btn.target = self
         btn.action = #selector(createFolder)
         btn.frame.origin = NSPoint(x: pad, y: h - pad - 32 - 18 - 36 - 14 - 36 - 14 - 36)
@@ -228,7 +229,7 @@ final class SetupWindowController: NSWindowController {
             // Checkmark
             let check = makeLabel("✓", size: 16, weight: .bold, color: NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1))
             check.alignment = .center
-            check.frame = NSRect(x: 0, y: 4, width: size, height: size - 8)
+            check.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(check)
         } else if locked {
             view.layer?.borderColor = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1).cgColor  // #555
@@ -236,7 +237,7 @@ final class SetupWindowController: NSWindowController {
             view.layer?.backgroundColor = NSColor(white: 1, alpha: 0.03).cgColor
             let numLabel = makeLabel("\(num)", size: 14, weight: .semibold, color: NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1))
             numLabel.alignment = .center
-            numLabel.frame = NSRect(x: 0, y: 4, width: size, height: size - 8)
+            numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(numLabel)
         } else {
             // Active: purple (#534AB7)
@@ -245,7 +246,7 @@ final class SetupWindowController: NSWindowController {
             view.layer?.backgroundColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08).cgColor
             let numLabel = makeLabel("\(num)", size: 14, weight: .semibold, color: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1))
             numLabel.alignment = .center
-            numLabel.frame = NSRect(x: 0, y: 4, width: size, height: size - 8)
+            numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(numLabel)
         }
 
@@ -277,7 +278,7 @@ final class SetupWindowController: NSWindowController {
             label.textColor = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1)  // #555
         }
 
-        label.frame = NSRect(x: 0, y: 8, width: pill.frame.width, height: 20)
+        label.frame = NSRect(x: 0, y: 0, width: pill.frame.width, height: pill.frame.height)
         pill.addSubview(label)
         return pill
     }
@@ -495,7 +496,6 @@ final class SetupWindowController: NSWindowController {
         badge2View.removeFromSuperview()
         badge2View = newBadge
 
-        step2Button?.isHidden = true
         pathDisplay.stringValue = folderPath.isEmpty ? "~/Documents/vibeliner" : folderPath
         pathDisplay.textColor = tx
         updateStatusPill(status2, text: "Folder created and ready", style: .green)
@@ -536,15 +536,18 @@ final class SetupWindowController: NSWindowController {
     }
 
     @objc private func createFolder() {
-        let defaultPath = NSString("~/Documents/vibeliner").expandingTildeInPath
-        do {
-            try FileManager.default.createDirectory(atPath: defaultPath, withIntermediateDirectories: true)
-            folderPath = "~/Documents/vibeliner"
-            ConfigManager.shared.capturesFolder = folderPath
+        let panel = NSOpenPanel()
+        panel.canChooseDirectories = true
+        panel.canChooseFiles = false
+        panel.canCreateDirectories = true
+        panel.prompt = "Choose"
+        panel.directoryURL = URL(fileURLWithPath: NSString("~/Documents").expandingTildeInPath)
+        panel.begin { [weak self] response in
+            guard let self, response == .OK, let url = panel.url else { return }
+            self.folderPath = url.path
+            ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
-            completeStep2()
-        } catch {
-            NSLog("Failed to create folder: \(error)")
+            self.completeStep2()
         }
     }
 
