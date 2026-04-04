@@ -385,6 +385,9 @@ final class CanvasView: NSView, NotePillDelegate {
             store.remove(id: id)
         } else {
             store.update(id: id, noteText: text)
+            if let _ = store.annotation(for: id) {
+                undoManager_?.record(.editText(id: id, oldText: "", newText: text))
+            }
         }
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
