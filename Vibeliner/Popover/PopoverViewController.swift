@@ -110,6 +110,7 @@ final class PopoverContentView: NSView {
             MenuItem(label: "Recent Captures", keys: nil, action: { [weak self] in self?.showRecentSubmenu() }, hasArrow: true),
             MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false),
             MenuItem(label: "Settings", keys: ["⌘", ","], action: { [weak self] in self?.openSettings() }, hasArrow: false),
+            MenuItem(label: "Re-run Setup", keys: nil, action: { [weak self] in self?.reRunSetup() }, hasArrow: false),
         ]
 
         // Calculate total height: vPad + items + divider + quit + vPad + arrow
@@ -334,6 +335,19 @@ final class PopoverContentView: NSView {
             delegate.settingsWindowController?.showWindow(nil)
             delegate.settingsWindowController?.window?.makeKeyAndOrderFront(nil)
             NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    private func reRunSetup() {
+        popoverWindow?.closePopover()
+        ConfigManager.shared.setupComplete = false
+        ConfigManager.shared.tooltipDismissed = false
+        ConfigManager.shared.save()
+        let setup = SetupWindowController()
+        setup.showWindow(nil)
+        setup.window?.center()
+        if let delegate = NSApp.delegate as? AppDelegate {
+            delegate.setupWindowController = setup
         }
     }
 

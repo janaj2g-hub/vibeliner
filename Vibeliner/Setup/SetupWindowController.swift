@@ -203,6 +203,14 @@ final class SetupWindowController: NSWindowController {
         status2.frame.origin = NSPoint(x: pad, y: 10)
         status2.frame.size.width = container.frame.width - pad * 2
         container.addSubview(status2)
+
+        // Pre-fill if default folder already exists
+        let defaultPath = NSString("~/Documents/vibeliner").expandingTildeInPath
+        if FileManager.default.fileExists(atPath: defaultPath) {
+            folderPath = "~/Documents/vibeliner"
+            pathDisplay.stringValue = folderPath
+            pathDisplay.textColor = tx
+        }
     }
 
     // MARK: - Step badge (prototype StepBadge component)
@@ -508,7 +516,11 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Permission polling
 
     private func startPermissionPolling() {
-        // Check screen recording permission on window focus
+        // Check immediately on open
+        if CGPreflightScreenCaptureAccess() {
+            completeStep1()
+        }
+        // Then poll every 2 seconds
         permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             guard let self, !self.step1Done else { return }
             if CGPreflightScreenCaptureAccess() {

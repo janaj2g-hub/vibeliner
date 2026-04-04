@@ -2,7 +2,7 @@ import AppKit
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
-    private var setupWindowController: SetupWindowController?
+    var setupWindowController: SetupWindowController?
     var settingsWindowController: SettingsWindowController?
     private var popoverWindow: PopoverWindow?
 
