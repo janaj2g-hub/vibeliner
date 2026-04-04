@@ -6,6 +6,7 @@ final class FreehandTool: AnnotationTool {
     weak var editorPanel: EditorPanel?
     private var points: [CGPoint] = []
     private var isDrawing = false
+    var isActivelyDrawing: Bool { isDrawing }  // VIB-221: expose for ghost suppression guard
 
     func mouseDown(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
         points = [point]
