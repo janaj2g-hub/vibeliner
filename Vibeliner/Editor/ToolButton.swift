@@ -11,6 +11,8 @@ final class ToolButton: NSView {
 
     var onClick: (() -> Void)?
     var isActive: Bool = false { didSet { needsDisplay = true } }
+    // VIB-202: Trash enabled/disabled state
+    var isEnabled: Bool = true { didSet { needsDisplay = true } }
 
     private let style: ToolButtonStyle
     private let iconDrawer: (NSRect, NSColor) -> Void
@@ -48,8 +50,16 @@ final class ToolButton: NSView {
             bgColor = isHovered ? DesignTokens.closeHoverBg : .clear
             iconColor = isHovered ? DesignTokens.closeIconHover : DesignTokens.iconDefault
         case .trash:
-            bgColor = isHovered ? DesignTokens.trashHoverBg : .clear
-            iconColor = isHovered ? DesignTokens.red : DesignTokens.iconDefault
+            if !isEnabled {
+                bgColor = .clear
+                iconColor = DesignTokens.iconDefault.withAlphaComponent(0.35)
+            } else if isHovered {
+                bgColor = DesignTokens.trashHoverBg
+                iconColor = DesignTokens.red
+            } else {
+                bgColor = .clear
+                iconColor = DesignTokens.iconDefault
+            }
         case .tool:
             if isActive {
                 bgColor = DesignTokens.toolActiveBg
@@ -100,6 +110,7 @@ final class ToolButton: NSView {
     override func mouseExited(with event: NSEvent) { isHovered = false }
 
     override func mouseDown(with event: NSEvent) {
+        guard isEnabled else { return }
         onClick?()
     }
 }
