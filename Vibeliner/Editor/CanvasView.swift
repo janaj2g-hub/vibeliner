@@ -68,11 +68,11 @@ final class CanvasView: NSView, NotePillDelegate {
             NSCursor.unhide()
         }
 
-        // Hit-test for hover
-        let oldHovered = hoveredAnnotationId
-        hoveredAnnotationId = hitTestAnnotation(at: point)
-        if hoveredAnnotationId != oldHovered {
-            marksLayer.hoveredId = hoveredAnnotationId
+        // Hit-test for shape hover
+        let oldHovered = shapeHoveredId
+        shapeHoveredId = hitTestAnnotation(at: point)
+        if shapeHoveredId != oldHovered {
+            marksLayer.hoveredId = shapeHoveredId
             refreshNotePills()
         }
 
@@ -186,16 +186,16 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     func refreshNotePills() {
-        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: hoveredAnnotationId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self)
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: pillHoveredId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self)
     }
 
     // MARK: - NotePillDelegate
 
     func notePillHovered(annotationId: UUID?) {
-        let oldHovered = hoveredAnnotationId
-        hoveredAnnotationId = annotationId
-        if hoveredAnnotationId != oldHovered {
-            // VIB-203: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
+        let oldPillHovered = pillHoveredId
+        pillHoveredId = annotationId
+        if pillHoveredId != oldPillHovered {
+            // VIB-203/215: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
             marksLayer.needsDisplay = true
             refreshNotePills()
         }
@@ -210,7 +210,9 @@ final class CanvasView: NSView, NotePillDelegate {
     var activeNoteField: NSTextField?
     private var editingAnnotationId: UUID?
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
-    private(set) var hoveredAnnotationId: UUID?
+    // VIB-215: Separate shape hover (drives marksLayer halo) from pill hover (drives pill highlight)
+    private var shapeHoveredId: UUID?
+    private var pillHoveredId: UUID?
 
     private var activeEditorPill: NSView?
 
@@ -433,14 +435,14 @@ final class MarksLayerView: NSView {
         super.draw(dirtyRect)
         guard let context = NSGraphicsContext.current?.cgContext else { return }
 
-        // Draw all annotations
-        pinRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
-        arrowRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
-        rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
-        circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
-        freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size)
+        // VIB-216 Pass 1: Draw all shapes WITHOUT badges (so hover halo renders beneath badges)
+        pinRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
+        arrowRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
+        rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
+        circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
+        freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
 
-        // Draw hover glow
+        // VIB-216 Pass 2: Draw hover glow
         if let hId = hoveredId, let annotation = store.annotations.first(where: { $0.id == hId }) {
             let bp = annotation.badgePosition
 
@@ -508,6 +510,22 @@ final class MarksLayerView: NSView {
             }
 
             context.restoreGState()
+        }
+
+        // VIB-216 Pass 3: Draw all badges on top of hover halo
+        let badgeRadius = DesignTokens.badgeDiameter / 2
+        for annotation in store.annotations {
+            let bp: CGPoint
+            if annotation.type == .pin {
+                // Pin badge is clamped to canvas bounds
+                bp = CGPoint(
+                    x: max(badgeRadius, min(bounds.width - badgeRadius, annotation.badgePosition.x)),
+                    y: max(badgeRadius, min(bounds.height - badgeRadius, annotation.badgePosition.y))
+                )
+            } else {
+                bp = annotation.badgePosition
+            }
+            BadgeRenderer.drawBadge(at: bp, number: annotation.number, in: context)
         }
 
         // Draw selected state: dashed purple ring + handles
