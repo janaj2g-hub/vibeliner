@@ -20,6 +20,7 @@ final class SettingsWindowController: NSWindowController {
         window.title = "Vibeliner Settings"
         window.center()
         window.isReleasedWhenClosed = false
+        window.level = .floating
         self.init(window: window)
         setupTabs()
     }
