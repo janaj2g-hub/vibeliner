@@ -212,7 +212,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
         // VIB-162: Get raw placement with anchor, apply anchor using EDITING pill width
         let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
-        let maxPillW: CGFloat = 200
+        let maxPillW: CGFloat = 180  // VIB-209: match resting pill max width to prevent reflow on commit
         // VIB-192 (attempt 5): Configure temp field with wrapping to get correct multi-line height
         let estTextX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
         let maxTextW = maxPillW - estTextX - 12
