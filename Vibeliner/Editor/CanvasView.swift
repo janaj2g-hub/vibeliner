@@ -10,6 +10,7 @@ final class CanvasView: NSView, NotePillDelegate {
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
+    private var isCursorHidden = false  // VIB-223: track hide state — only call hide/unhide once each
 
     init(frame: NSRect, store: AnnotationStore) {
         self.store = store
@@ -77,17 +78,18 @@ final class CanvasView: NSView, NotePillDelegate {
         marksLayer.suppressGhost = shouldSuppressGhost
 
         // VIB-201/VIB-221/VIB-223: Cursor management
-        // Use setHiddenUntilMouseMoves(true) instead of hide() — it auto-unhides when
-        // the cursor enters a different NSView (e.g. toolbar), avoiding reference-count imbalance.
-        if isDrawingToolActive && !isEditingNote {
-            if shouldSuppressGhost {
-                NSCursor.unhide()
-                NSCursor.arrow.set()
-            } else {
-                NSCursor.setHiddenUntilMouseMoves(true)
-            }
-        } else {
+        // Call hide/unhide at most ONCE per state transition (not on every mouse move).
+        // isCursorHidden tracks whether we have an outstanding hide() call.
+        let shouldHideCursor = isDrawingToolActive && !isEditingNote && !shouldSuppressGhost
+        if shouldHideCursor && !isCursorHidden {
+            NSCursor.hide()
+            isCursorHidden = true
+        } else if !shouldHideCursor && isCursorHidden {
             NSCursor.unhide()
+            isCursorHidden = false
+        }
+        if shouldSuppressGhost && isDrawingToolActive && !isEditingNote {
+            NSCursor.arrow.set()
         }
 
         marksLayer.needsDisplay = true
@@ -233,7 +235,10 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
-        NSCursor.unhide()
+        if isCursorHidden {
+            NSCursor.unhide()
+            isCursorHidden = false
+        }
         marksLayer.suppressGhost = false
         ghostPosition = nil
         marksLayer.ghostPosition = nil
@@ -258,7 +263,10 @@ final class CanvasView: NSView, NotePillDelegate {
             refreshNotePills()
             // VIB-221: Show arrow cursor when pill hovered with drawing tool
             if isDrawingToolActive && !isEditingNote && pillHoveredId != nil {
-                NSCursor.unhide()
+                if isCursorHidden {
+                    NSCursor.unhide()
+                    isCursorHidden = false
+                }
                 NSCursor.arrow.set()
             }
         }
@@ -280,7 +288,10 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
-        NSCursor.unhide()  // VIB-201: Restore cursor when editor opens
+        if isCursorHidden {   // VIB-201/VIB-223: Restore cursor when editor opens
+            NSCursor.unhide()
+            isCursorHidden = false
+        }
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
@@ -425,6 +436,10 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         noteFieldDelegate = nil
         refreshNotePills()
+        // VIB-223: Restore ghost after note editing — mouseMoved won't fire until user moves mouse
+        if activeTool?.toolType.isDrawingTool == true {
+            marksLayer.ghostTool = activeTool
+        }
         marksLayer.needsDisplay = true
     }
 
@@ -439,6 +454,11 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         noteFieldDelegate = nil
         refreshNotePills()
+        // VIB-223: Restore ghost after note editing
+        if activeTool?.toolType.isDrawingTool == true {
+            marksLayer.ghostTool = activeTool
+        }
+        marksLayer.needsDisplay = true
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
