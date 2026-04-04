@@ -31,12 +31,14 @@ final class GeneralTabView: NSView {
             pill.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
             pill.textColor = .labelColor
             pill.alignment = .center
+            pill.lineBreakMode = .byClipping
+            pill.maximumNumberOfLines = 1
             pill.wantsLayer = true
             pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
             pill.layer?.cornerRadius = 5
             pill.layer?.borderWidth = 1
             pill.layer?.borderColor = NSColor(white: 1, alpha: 0.12).cgColor
-            pill.frame = NSRect(x: kx, y: 2, width: 28, height: 24)
+            pill.frame = NSRect(x: kx, y: 0, width: 28, height: 28)
             hotkeyContainer.addSubview(pill)
             kx += 32
         }
@@ -53,7 +55,7 @@ final class GeneralTabView: NSView {
         addSubview(makeRowLabel("Captures folder", y: y + 3))
 
         let folderFieldX = pad + labelWidth + 12
-        let folderW = frame.width - folderFieldX - 60  // reserve 60px for Change button
+        let folderW = frame.width - folderFieldX - 80  // reserve 80px for Change button
         folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
         folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         folderPathLabel.textColor = .secondaryLabelColor
