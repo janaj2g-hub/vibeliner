@@ -49,17 +49,21 @@ final class PromptTabView: NSView {
         div.layer?.backgroundColor = NSColor.separatorColor.cgColor
         addSubview(div)
 
-        contentContainer.frame = NSRect(x: 28, y: 200, width: frame.width - 56, height: tabBarY - 212)
-        addSubview(contentContainer)
+        // VIB-224: Layout — preview at bottom (190px), contentContainer fills remaining space
+        let previewH: CGFloat = 190
+        previewView = PromptPreviewView(frame: NSRect(x: 28, y: 10, width: frame.width - 56, height: previewH))
+        addSubview(previewView)
 
         // Preview divider
-        let previewDiv = NSView(frame: NSRect(x: 28, y: 194, width: frame.width - 56, height: 0.5))
+        let previewDiv = NSView(frame: NSRect(x: 28, y: previewH + 14, width: frame.width - 56, height: 0.5))
         previewDiv.wantsLayer = true
         previewDiv.layer?.backgroundColor = NSColor.separatorColor.cgColor
         addSubview(previewDiv)
 
-        previewView = PromptPreviewView(frame: NSRect(x: 28, y: 10, width: frame.width - 56, height: 180))
-        addSubview(previewView)
+        let contentY = previewH + 20
+        let contentH = tabBarY - 8 - contentY
+        contentContainer.frame = NSRect(x: 28, y: contentY, width: frame.width - 56, height: contentH)
+        addSubview(contentContainer)
 
         selectSubTab(0)
     }
