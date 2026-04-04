@@ -40,7 +40,19 @@ final class CircleTool: AnnotationTool {
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
-        guard let c = center, currentRadius > 0 else { return }
+        guard let c = center, currentRadius > 0 else {
+            // Idle ghost: purple dot at center, dashed circle r=10
+            let r = DesignTokens.ghostDotRadius
+            context.setFillColor(DesignTokens.ghostDotColor.cgColor)
+            context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2))
+
+            context.setStrokeColor(DesignTokens.ghostStrokeColor.cgColor)
+            context.setLineWidth(DesignTokens.ghostStrokeWidth)
+            context.setLineDash(phase: 0, lengths: DesignTokens.ghostDashPattern)
+            context.strokeEllipse(in: CGRect(x: point.x - 10, y: point.y - 10, width: 20, height: 20))
+            context.setLineDash(phase: 0, lengths: [])
+            return
+        }
         context.saveGState()
         context.setAlpha(0.5)
         CircleRenderer.drawCircleShape(in: context, center: c, radius: currentRadius, number: 0, badgePos: releasePoint ?? point)

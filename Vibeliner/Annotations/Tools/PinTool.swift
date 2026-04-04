@@ -44,21 +44,22 @@ final class PinTool: AnnotationTool {
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
-        context.saveGState()
-        context.setAlpha(0.5)
-        let tip = point
-        let badgeCenterY = tip.y + DesignTokens.stakeLength + DesignTokens.badgeDiameter / 2
-        let badgeRadius = DesignTokens.badgeDiameter / 2
+        // Purple anchor dot at cursor
+        context.setFillColor(DesignTokens.ghostDotColor.cgColor)
+        let r = DesignTokens.ghostDotRadius
+        context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2))
 
-        context.setStrokeColor(DesignTokens.red.cgColor)
-        context.setLineWidth(DesignTokens.stakeWidth)
-        context.setLineCap(.round)
-        context.move(to: tip)
-        context.addLine(to: CGPoint(x: tip.x, y: tip.y + DesignTokens.stakeLength))
+        // Dashed badge circle above the dot (AppKit: higher y = visually above)
+        let badgeCenterY = point.y + 16
+        context.setStrokeColor(DesignTokens.ghostStrokeColor.cgColor)
+        context.setLineWidth(DesignTokens.ghostStrokeWidth)
+        context.setLineDash(phase: 0, lengths: DesignTokens.ghostDashPattern)
+        context.strokeEllipse(in: CGRect(x: point.x - 5, y: badgeCenterY - 5, width: 10, height: 10))
+
+        // Dashed stake line from badge bottom to just above dot
+        context.move(to: CGPoint(x: point.x, y: badgeCenterY - 5))
+        context.addLine(to: CGPoint(x: point.x, y: point.y + 2))
         context.strokePath()
-
-        context.setFillColor(DesignTokens.red.cgColor)
-        context.fillEllipse(in: CGRect(x: tip.x - badgeRadius, y: badgeCenterY - badgeRadius, width: DesignTokens.badgeDiameter, height: DesignTokens.badgeDiameter))
-        context.restoreGState()
+        context.setLineDash(phase: 0, lengths: [])
     }
 }

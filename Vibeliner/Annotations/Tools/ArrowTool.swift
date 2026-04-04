@@ -38,10 +38,44 @@ final class ArrowTool: AnnotationTool {
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
-        guard let start = dragStart, let end = dragEnd else { return }
+        guard let start = dragStart, let end = dragEnd else {
+            drawIdleGhost(at: point, in: context)
+            return
+        }
         context.saveGState()
         context.setAlpha(0.5)
         ArrowRenderer.drawArrowShape(in: context, start: start, end: end, number: 0)
         context.restoreGState()
+    }
+
+    private func drawIdleGhost(at point: CGPoint, in context: CGContext) {
+        // Purple anchor dot
+        context.setFillColor(DesignTokens.ghostDotColor.cgColor)
+        let r = DesignTokens.ghostDotRadius
+        context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2))
+
+        // Dashed chevron ahead (up-right at 45°). AppKit: both x and y increase for up-right.
+        let dir = CGFloat.pi / 4
+        let gap: CGFloat = 12
+        let armLen: CGFloat = 11.9
+        let chevAngle: CGFloat = 28 * .pi / 180
+        let tipX = point.x + (gap + 3) * cos(dir)
+        let tipY = point.y + (gap + 3) * sin(dir)
+        let backAngle = dir + .pi
+        let c1x = tipX + armLen * cos(backAngle + chevAngle)
+        let c1y = tipY + armLen * sin(backAngle + chevAngle)
+        let c2x = tipX + armLen * cos(backAngle - chevAngle)
+        let c2y = tipY + armLen * sin(backAngle - chevAngle)
+
+        context.setStrokeColor(DesignTokens.ghostStrokeColor.cgColor)
+        context.setLineWidth(DesignTokens.ghostStrokeWidth)
+        context.setLineDash(phase: 0, lengths: DesignTokens.ghostDashPattern)
+        context.setLineCap(.round)
+        context.setLineJoin(.round)
+        context.move(to: CGPoint(x: c1x, y: c1y))
+        context.addLine(to: CGPoint(x: tipX, y: tipY))
+        context.addLine(to: CGPoint(x: c2x, y: c2y))
+        context.strokePath()
+        context.setLineDash(phase: 0, lengths: [])
     }
 }
