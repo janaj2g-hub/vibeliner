@@ -39,15 +39,15 @@ final class RectangleTool: AnnotationTool {
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
         guard let start = dragStart, let end = dragEnd else {
-            // Idle ghost: purple dot at top-left corner, 15x15 dashed square
+            // Idle ghost: dashed 15x15 square, purple dot at bottom-left corner (AppKit y-up)
             let r = DesignTokens.ghostDotRadius
+            // Dot at bottom-left of the rect: CGRect(x: point.x, y: point.y - 15, ...)
             context.setFillColor(DesignTokens.ghostDotColor.cgColor)
-            context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2))
+            context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - 15 - r, width: r * 2, height: r * 2))
 
             context.setStrokeColor(DesignTokens.ghostStrokeColor.cgColor)
             context.setLineWidth(DesignTokens.ghostStrokeWidth)
             context.setLineDash(phase: 0, lengths: DesignTokens.ghostDashPattern)
-            // AppKit: "down" = decreasing y, "right" = increasing x
             let path = CGPath(roundedRect: CGRect(x: point.x, y: point.y - 15, width: 15, height: 15), cornerWidth: 2, cornerHeight: 2, transform: nil)
             context.addPath(path)
             context.strokePath()
