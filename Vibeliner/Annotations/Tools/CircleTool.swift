@@ -8,6 +8,8 @@ final class CircleTool: AnnotationTool {
     private var currentRadius: CGFloat = 0
     private var releasePoint: CGPoint?
 
+    var isActivelyDrawing: Bool { center != nil && currentRadius > 0 }
+
     func mouseDown(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
         center = point
         currentRadius = 0
