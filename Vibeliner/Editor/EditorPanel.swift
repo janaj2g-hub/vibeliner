@@ -240,6 +240,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let keyCode = event.keyCode
 
         if keyCode == 53 { // Escape
+            // VIB-213: If a shape is selected, deselect it and hide handles — do NOT close
+            if let canvas = canvasOverlay, canvas.marksLayer.selectedId != nil {
+                annotationStore.deselectAll()
+                canvas.marksLayer.selectedId = nil
+                canvas.marksLayer.needsDisplay = true
+                canvas.refreshNotePills()
+                return true
+            }
             autoSaveManager?.saveNow()
             close()
             return true

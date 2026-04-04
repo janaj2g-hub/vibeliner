@@ -43,7 +43,7 @@ final class ArrowTool: AnnotationTool {
             return
         }
         context.saveGState()
-        context.setAlpha(0.5)
+        context.setAlpha(0.7)
         ArrowRenderer.drawArrowShape(in: context, start: start, end: end, number: 0)
         context.restoreGState()
     }
