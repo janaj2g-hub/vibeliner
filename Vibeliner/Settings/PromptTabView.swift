@@ -11,7 +11,7 @@ final class PromptTabView: NSView {
     private var previewView: PromptPreviewView!
     private let subTabNames = ["Preamble", "Tool descriptions", "Footer"]
     private var activeSubTab = 0
-    private let purpleAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)

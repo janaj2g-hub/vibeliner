@@ -3,11 +3,10 @@ import ServiceManagement
 
 final class GeneralTabView: NSView {
 
-    private let hotkeyDisplay = NSTextField(labelWithString: "⌘  ⇧  6")
     private let folderPathLabel = NSTextField(labelWithString: "")
     private let loginCheckbox = NSButton(checkboxWithTitle: "Start Vibeliner when you log in", target: nil, action: nil)
 
-    private let purpleAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
     private let labelWidth: CGFloat = 120
     private let pad: CGFloat = 28
 
@@ -24,16 +23,24 @@ final class GeneralTabView: NSView {
         // Hotkey row
         addSubview(makeRowLabel("Capture hotkey", y: y + 3))
 
-        hotkeyDisplay.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
-        hotkeyDisplay.textColor = .labelColor
-        hotkeyDisplay.wantsLayer = true
-        hotkeyDisplay.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-        hotkeyDisplay.layer?.cornerRadius = 8
-        hotkeyDisplay.layer?.borderWidth = 1
-        hotkeyDisplay.layer?.borderColor = NSColor.separatorColor.cgColor
-        hotkeyDisplay.alignment = .center
-        hotkeyDisplay.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 100, height: 26)
-        addSubview(hotkeyDisplay)
+        let hotkeyContainer = NSView(frame: NSRect(x: pad + labelWidth + 12, y: y - 2, width: 120, height: 28))
+        let keys = ["⌘", "⇧", "6"]
+        var kx: CGFloat = 0
+        for key in keys {
+            let pill = NSTextField(labelWithString: key)
+            pill.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+            pill.textColor = .labelColor
+            pill.alignment = .center
+            pill.wantsLayer = true
+            pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
+            pill.layer?.cornerRadius = 5
+            pill.layer?.borderWidth = 1
+            pill.layer?.borderColor = NSColor(white: 1, alpha: 0.12).cgColor
+            pill.frame = NSRect(x: kx, y: 2, width: 28, height: 24)
+            hotkeyContainer.addSubview(pill)
+            kx += 32
+        }
+        addSubview(hotkeyContainer)
 
         let changeHotkey = makePurpleLink("Change", action: #selector(changeHotkey))
         changeHotkey.frame = NSRect(x: pad + labelWidth + 122, y: y + 1, width: 50, height: 20)
@@ -55,7 +62,7 @@ final class GeneralTabView: NSView {
         folderPathLabel.layer?.cornerRadius = 6
         folderPathLabel.layer?.borderWidth = 1
         folderPathLabel.layer?.borderColor = NSColor.separatorColor.cgColor
-        folderPathLabel.frame = NSRect(x: folderFieldX, y: y - 2, width: folderW, height: 24)
+        folderPathLabel.frame = NSRect(x: folderFieldX, y: y - 2, width: folderW, height: 26)
         addSubview(folderPathLabel)
 
         let changeFolder = makePurpleLink("Change", action: #selector(changeFolderClicked))
@@ -106,7 +113,7 @@ final class GeneralTabView: NSView {
     }
 
     @objc private func changeHotkey() {
-        hotkeyDisplay.stringValue = "Press new shortcut…"
+        // Hotkey change not yet implemented
     }
 
     @objc private func changeFolderClicked() {
