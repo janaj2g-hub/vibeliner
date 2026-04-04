@@ -238,65 +238,21 @@ final class CanvasView: NSView, NotePillDelegate {
         pillContainer.layer?.shadowRadius = 4
         pillContainer.layer?.shadowOpacity = 1
 
-        // Blur backdrop
-        let blurLayer = CALayer()
-        blurLayer.frame = NSRect(origin: .zero, size: pillContainer.frame.size)
-        blurLayer.cornerRadius = DesignTokens.noteCornerRadius
-        blurLayer.masksToBounds = true
-        if let blurFilter = CIFilter(name: "CIGaussianBlur", parameters: ["inputRadius": 10]) {
-            blurLayer.backgroundFilters = [blurFilter]
-        }
-        pillContainer.layer?.addSublayer(blurLayer)
+        // VIB-197: Use PillChromeBuilder for blur, tint, and prefix (single source of truth)
+        let chrome = PillChromeBuilder.build(size: NSSize(width: maxPillW, height: pillH), number: annotation.number)
+        pillContainer.layer?.addSublayer(chrome.blurLayer)
+        // Apply editing state colors directly
+        chrome.tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
+        chrome.tintView.layer?.borderColor = DesignTokens.red.cgColor
+        pillContainer.addSubview(chrome.tintView)
+        pillContainer.addSubview(chrome.prefixLabel)
 
-        // Tinted background + red border (editing state)
-        let tintView = NSView(frame: NSRect(origin: .zero, size: pillContainer.frame.size))
-        tintView.wantsLayer = true
-        tintView.layer?.cornerRadius = DesignTokens.noteCornerRadius
-        tintView.layer?.masksToBounds = true
-        tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
-        tintView.layer?.borderColor = DesignTokens.red.cgColor
-        tintView.layer?.borderWidth = 2  // VIB-192: match VIB-186 constant
-        pillContainer.addSubview(tintView)
-
-        // Number prefix label
-        let numberLabel = NSTextField(labelWithString: "\(annotation.number)")
-        numberLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
-        numberLabel.textColor = DesignTokens.notePrefixColor
-        numberLabel.isBezeled = false
-        numberLabel.drawsBackground = false
-        numberLabel.sizeToFit()
-        // VIB-192: Use actual pillH for centering, not hardcoded DesignTokens.noteHeight
-        numberLabel.frame.origin = NSPoint(x: 12, y: (pillH - numberLabel.frame.height) / 2)
-        pillContainer.addSubview(numberLabel)
-
-        // Text field (borderless, transparent, inside pill)
-        let textField = NSTextField()
-        textField.font = DesignTokens.noteTextFont
-        textField.textColor = DesignTokens.noteTextColor
-        textField.backgroundColor = .clear
-        textField.drawsBackground = false
-        textField.isBordered = false
-        textField.isBezeled = false
-        textField.focusRingType = .none
-        textField.wantsLayer = true
-        // VIB-162: Allow text wrapping, no truncation, unlimited lines
-        textField.usesSingleLineMode = false
-        textField.cell?.wraps = true
-        textField.cell?.isScrollable = false
-        textField.lineBreakMode = .byWordWrapping
-        textField.maximumNumberOfLines = 0
-
-        // Placeholder: "describe…" italic rgba(127,29,29,0.35)
-        let placeholderAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
-            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
-        ]
-        textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
-        textField.stringValue = annotation.noteText
-
-        // Position after number prefix + 7px gap
-        let textX = 12 + numberLabel.frame.width + 7
-        textField.frame = NSRect(x: textX, y: 4, width: maxPillW - textX - 12, height: pillH - 8)
+        // VIB-197: Use PillChromeBuilder for editable text field
+        let numberLabel = chrome.prefixLabel
+        let textField = PillChromeBuilder.createEditableTextField(
+            pillWidth: maxPillW, pillHeight: pillH,
+            text: annotation.noteText, prefixWidth: numberLabel.frame.width
+        )
 
         // Red caret color
         if let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
