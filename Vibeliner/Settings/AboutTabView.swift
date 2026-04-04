@@ -36,7 +36,7 @@ final class AboutTabView: NSView {
         let iconImage = NSImageView(frame: NSRect(x: 16, y: 16, width: 32, height: 32))
         iconImage.image = crosshairImage
         iconView.addSubview(iconImage)
-        y -= 80
+        y -= 96
 
         // App name
         let name = NSTextField(labelWithString: "Vibeliner")

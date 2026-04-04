@@ -110,7 +110,7 @@ final class PromptTabView: NSView {
     private func showToolDescriptions() {
         let w = contentContainer.bounds.width
         let rowH: CGFloat = 32
-        let rowGap: CGFloat = 14
+        let rowGap: CGFloat = 8
         let iconSize: CGFloat = 32
         let nameW: CGFloat = 80
 

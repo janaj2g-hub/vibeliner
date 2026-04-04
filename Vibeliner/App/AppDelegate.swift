@@ -54,7 +54,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         normalIcon = createCrosshairImage()
         normalIcon?.isTemplate = true
 
-        highlightedIcon = createCrosshairImage()
+        highlightedIcon = createCrosshairImage(color: .white)
         highlightedIcon?.isTemplate = false  // Won't adapt to menu bar — stays white/bright
 
         if let button = statusItem.button {
@@ -75,6 +75,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             statusItem.button?.image = normalIcon
         } else {
             let win = PopoverWindow()
+            win.onClose = { [weak self] in
+                self?.statusItem.button?.image = self?.normalIcon
+            }
             if let button = statusItem.button {
                 win.showRelativeTo(button: button)
                 // VIB-175: Swap to non-template highlighted icon (always white/bright)
@@ -84,7 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func createCrosshairImage() -> NSImage {
+    private func createCrosshairImage(color: NSColor? = nil) -> NSImage {
         let size: CGFloat = 18
         let image = NSImage(size: NSSize(width: size, height: size))
         image.lockFocus()
@@ -94,7 +97,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let tickLength: CGFloat = 4
         let lineWidth: CGFloat = 1.5
 
-        NSColor.black.setStroke()
+        (color ?? .black).setStroke()
 
         // Circle
         let circlePath = NSBezierPath(
@@ -137,7 +140,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         left.stroke()
 
         image.unlockFocus()
-        image.isTemplate = true
         return image
     }
 }

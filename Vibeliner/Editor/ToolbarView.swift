@@ -16,6 +16,7 @@ final class ToolbarView: NSView {
 
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
+    private var trashButton: ToolButton?  // VIB-202: enabled/disabled based on selection
     private var copyImageButton: NSView?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
@@ -138,12 +139,9 @@ final class ToolbarView: NSView {
             x += DesignTokens.toolButtonSize
         }
 
-        x += 10
-        x = addDivider(at: x)
-        x += 20
-
-        // Trash
-        let trashBtn = ToolButton(style: .trash, tooltip: "Delete") { rect, color in
+        // VIB-202: Trash — now part of tool group, always visible, grayed when no selection
+        let iconY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2
+        let trashBtn = ToolButton(style: .trash, tooltip: "Delete selected") { rect, color in
             let inset = rect.insetBy(dx: 1, dy: 0)
             let path = NSBezierPath()
             // Can body
@@ -163,11 +161,15 @@ final class ToolbarView: NSView {
             color.setStroke()
             path.stroke()
         }
+        trashBtn.isEnabled = false  // grayed by default — no selection
         trashBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestDelete() }
-        let iconY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2
         trashBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(trashBtn)
+        self.trashButton = trashBtn
         x += DesignTokens.iconButtonSize + 10
+
+        x = addDivider(at: x)
+        x += 20
 
         // VIB-160: Undo — manual path drawing (NOT SF Symbol which renders black)
         // Prototype SVG: <path d="M3 8h7a3 3 0 010 6H8"/><polyline points="6,5 3,8 6,11"/>
@@ -304,6 +306,11 @@ final class ToolbarView: NSView {
 
     func updateAnnotationCount(_ count: Int) {
         // VIB-164: Pin icon no longer has counter — this is now a no-op
+    }
+
+    // VIB-202: Enable/disable trash based on whether an annotation is selected
+    func updateTrashState(hasSelection: Bool) {
+        trashButton?.isEnabled = hasSelection
     }
 
     func markCopyState(_ target: CopyTarget) {

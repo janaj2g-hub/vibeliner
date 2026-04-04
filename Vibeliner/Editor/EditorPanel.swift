@@ -103,6 +103,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         freehandTool.editorPanel = self
         canvas.activeTool = pinTool  // Default to pin tool
         canvas.undoManager_ = undoRedoManager
+        canvas.selectTool = selectTool  // VIB-217: click-through edit
 
         // Auto-save
         self.captureFolder = captureFolder
@@ -138,6 +139,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.statusPill.updateNoteCount(self.annotationStore.count)
             // Reset copy buttons to purple on any annotation change
             self.toolbarView.resetCopyState()
+            // VIB-202: Enable trash only when an annotation is selected
+            self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
         }
 
         // VIB-193: Key monitor — when editing, only intercept Escape BEFORE handleKeyEvent

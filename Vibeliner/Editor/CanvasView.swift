@@ -5,6 +5,7 @@ final class CanvasView: NSView, NotePillDelegate {
     let marksLayer: MarksLayerView
     let notesLayer: NSView
     var activeTool: AnnotationTool?
+    var selectTool: SelectTool?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
@@ -156,8 +157,38 @@ final class CanvasView: NSView, NotePillDelegate {
         }
 
         guard let undoMgr = undoManager_ else { return }
+
+        // VIB-217: When a drawing tool is active, check for hits on existing annotations first
+        if let tool = activeTool, tool.toolType != .select {
+            if let hitId = hitTestAnnotation(at: point) {
+                handleEditHit(id: hitId, at: point)
+                return
+            }
+            // No hit — if a shape was previously selected, deselect it first
+            if marksLayer.selectedId != nil {
+                store.deselectAll()
+                marksLayer.selectedId = nil
+                marksLayer.needsDisplay = true
+            }
+            // Fall through to activeTool?.mouseDown (creates new shape)
+        }
+
         activeTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
         marksLayer.needsDisplay = true
+    }
+
+    private func handleEditHit(id: UUID, at point: CGPoint) {
+        if pillHoveredId == id, let annotation = store.annotation(for: id) {
+            openNoteEditor(for: annotation)
+            return
+        }
+        guard let undoMgr = undoManager_ else { return }
+        store.select(id: id)
+        marksLayer.selectedId = id
+        window?.makeKey()
+        selectTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
+        marksLayer.needsDisplay = true
+        refreshNotePills()
     }
 
     override func mouseDragged(with event: NSEvent) {
@@ -165,7 +196,12 @@ final class CanvasView: NSView, NotePillDelegate {
         if isEditingNote { return }
         let point = convert(event.locationInWindow, from: nil)
         guard let undoMgr = undoManager_ else { return }
-        activeTool?.mouseDragged(to: point, in: self, store: store, undoManager: undoMgr)
+        // VIB-217: Route drags through selectTool when a shape is selected with a drawing tool
+        if let tool = activeTool, tool.toolType != .select, marksLayer.selectedId != nil {
+            selectTool?.mouseDragged(to: point, in: self, store: store, undoManager: undoMgr)
+        } else {
+            activeTool?.mouseDragged(to: point, in: self, store: store, undoManager: undoMgr)
+        }
         marksLayer.needsDisplay = true
     }
 
@@ -174,7 +210,12 @@ final class CanvasView: NSView, NotePillDelegate {
         if isEditingNote { return }
         let point = convert(event.locationInWindow, from: nil)
         guard let undoMgr = undoManager_ else { return }
-        activeTool?.mouseUp(at: point, in: self, store: store, undoManager: undoMgr)
+        // VIB-217: Mirror drag routing for mouseUp
+        if let tool = activeTool, tool.toolType != .select, marksLayer.selectedId != nil {
+            selectTool?.mouseUp(at: point, in: self, store: store, undoManager: undoMgr)
+        } else {
+            activeTool?.mouseUp(at: point, in: self, store: store, undoManager: undoMgr)
+        }
         marksLayer.needsDisplay = true
     }
 

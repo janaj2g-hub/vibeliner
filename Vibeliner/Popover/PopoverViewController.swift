@@ -4,6 +4,7 @@ import AppKit
 
 final class PopoverWindow: NSPanel {
 
+    var onClose: (() -> Void)?  // VIB-175: callback when popover closes for any reason
     private var popoverContent: PopoverContentView?
     private var clickMonitor: Any?
 
@@ -20,6 +21,7 @@ final class PopoverWindow: NSPanel {
         level = .popUpMenu
         isMovableByWindowBackground = false
         isReleasedWhenClosed = false
+        becomesKeyOnlyIfNeeded = true  // VIB-219: accept first click without activating app
     }
 
     override var canBecomeKey: Bool { true }
@@ -66,6 +68,7 @@ final class PopoverWindow: NSPanel {
             NSEvent.removeMonitor(monitor)
             clickMonitor = nil
         }
+        onClose?()  // VIB-175: notify AppDelegate to restore normal icon
     }
 }
 
@@ -94,19 +97,19 @@ final class PopoverContentView: NSView {
         let hPad: CGFloat = 6
         let dividerH: CGFloat = 9
 
-        // Menu items
+        // Menu items — VIB-219: use closures instead of selectors for first-click support
         struct MenuItem {
             let label: String
             let keys: [String]?
-            let action: Selector
+            let action: () -> Void
             let hasArrow: Bool
         }
 
         let items: [MenuItem] = [
-            MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: #selector(captureNow), hasArrow: false),
-            MenuItem(label: "Recent Captures", keys: nil, action: #selector(recentCaptures), hasArrow: true),
-            MenuItem(label: "Open Captures", keys: nil, action: #selector(openCaptures), hasArrow: false),
-            MenuItem(label: "Settings", keys: ["⌘", ","], action: #selector(openSettings), hasArrow: false),
+            MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: { [weak self] in self?.captureNow() }, hasArrow: false),
+            MenuItem(label: "Recent Captures", keys: nil, action: { [weak self] in self?.showRecentSubmenu() }, hasArrow: true),
+            MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false),
+            MenuItem(label: "Settings", keys: ["⌘", ","], action: { [weak self] in self?.openSettings() }, hasArrow: false),
         ]
 
         // Calculate total height: vPad + items + divider + quit + vPad + arrow
@@ -120,7 +123,7 @@ final class PopoverContentView: NSView {
 
         for item in items {
             y -= rowH
-            let row = makeRow(label: item.label, keys: item.keys, action: item.action, hasArrow: item.hasArrow, y: y, rowH: rowH, hPad: hPad)
+            let row = makeRow(label: item.label, keys: item.keys, onAction: item.action, hasArrow: item.hasArrow, y: y, rowH: rowH, hPad: hPad)
             addSubview(row)
             // VIB-168: Add hover tracking on "Recent Captures" row
             if item.hasArrow {
@@ -140,15 +143,14 @@ final class PopoverContentView: NSView {
 
         // Quit row
         y -= rowH
-        let quitRow = makeRow(label: "Quit Vibeliner", keys: ["⌘", "Q"], action: #selector(quitApp), hasArrow: false, y: y, rowH: rowH, hPad: hPad)
+        let quitRow = makeRow(label: "Quit Vibeliner", keys: ["⌘", "Q"], onAction: { [weak self] in self?.quitApp() }, hasArrow: false, y: y, rowH: rowH, hPad: hPad)
         addSubview(quitRow)
     }
 
-    private func makeRow(label: String, keys: [String]?, action: Selector, hasArrow: Bool, y: CGFloat, rowH: CGFloat, hPad: CGFloat) -> PopoverRowView {
+    private func makeRow(label: String, keys: [String]?, onAction: @escaping () -> Void, hasArrow: Bool, y: CGFloat, rowH: CGFloat, hPad: CGFloat) -> PopoverRowView {
         let rowW = popWidth - hPad * 2
         let row = PopoverRowView(frame: NSRect(x: hPad, y: y, width: rowW, height: rowH))
-        row.target = self
-        row.action = action
+        row.onAction = onAction  // VIB-219: closure-based action for first-click support
 
         let textLabel = NSTextField(labelWithString: label)
         textLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
@@ -284,11 +286,15 @@ final class PopoverContentView: NSView {
         panel.isReleasedWhenClosed = false
         panel.contentView = submenu
 
-        // Position to the right of popover, aligned with "Recent Captures" row
+        // Position to the right of popover, with top aligned near "Recent Captures" row
         let popFrame = popWin.frame
         let x = popFrame.maxX + 4
-        let y = popFrame.maxY - 80 - submenu.frame.height  // align near row
-        panel.setFrameOrigin(NSPoint(x: x, y: max(y, popFrame.minY)))
+        let rowOffsetFromTop: CGFloat = 40  // approx distance from popover top to Recent Captures row
+        let preferredY = popFrame.maxY - rowOffsetFromTop - submenu.frame.height
+        let screen = NSScreen.main ?? NSScreen.screens[0]
+        let screenFrame = screen.visibleFrame
+        let clampedY = max(screenFrame.minY + 8, min(preferredY, screenFrame.maxY - submenu.frame.height - 8))
+        panel.setFrameOrigin(NSPoint(x: x, y: clampedY))
         panel.orderFront(nil)
         self.submenuPanel = panel
 
@@ -339,8 +345,7 @@ final class PopoverContentView: NSView {
 // MARK: - Hover Row
 
 final class PopoverRowView: NSView {
-    var target: AnyObject?
-    var action: Selector?
+    var onAction: (() -> Void)?  // VIB-219: direct closure, works on first click
     var onHoverEnter: (() -> Void)?
     var onHoverExit: (() -> Void)?
     private var isHovered = false { didSet { needsDisplay = true } }
@@ -367,9 +372,10 @@ final class PopoverRowView: NSView {
         isHovered = false
         onHoverExit?()
     }
+    // VIB-219: accept first click even when popover isn't the key window
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
     override func mouseDown(with event: NSEvent) {
-        if let target = target, let action = action {
-            NSApp.sendAction(action, to: target, from: self)
-        }
+        onAction?()
     }
 }
