@@ -19,6 +19,8 @@ final class SelectTool: AnnotationTool {
         if let hit = hit {
             store.select(id: hit.id)
             canvas.marksLayer.selectedId = hit.id
+            // VIB-213: Make panel key so Esc key events are delivered via key monitor
+            canvas.window?.makeKey()
 
             if hit.part == "badge" || hit.part == "body" {
                 // Start drag to move entire annotation
