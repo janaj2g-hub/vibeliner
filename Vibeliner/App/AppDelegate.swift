@@ -1,4 +1,5 @@
 import AppKit
+import ApplicationServices
 
 class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
@@ -41,10 +42,44 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             setup.window?.center()
             setupWindowController = setup
         }
+
+        // Check permissions for returning users
+        if ConfigManager.shared.setupComplete {
+            let hasScreenRecording = CGPreflightScreenCaptureAccess()
+            let hasAccessibility = AXIsProcessTrusted()
+            if !hasScreenRecording || !hasAccessibility {
+                DispatchQueue.main.async {
+                    self.showPermissionAlert(missingScreenRecording: !hasScreenRecording, missingAccessibility: !hasAccessibility)
+                }
+            }
+        }
     }
 
     func applicationWillTerminate(_ notification: Notification) {
         HotkeyManager.shared.unregister()
+    }
+
+    private func showPermissionAlert(missingScreenRecording: Bool, missingAccessibility: Bool) {
+        let alert = NSAlert()
+        alert.alertStyle = .warning
+        alert.messageText = "Vibeliner needs permission"
+
+        var msgs: [String] = []
+        if missingScreenRecording { msgs.append("Screen Recording is required to capture screenshots.") }
+        if missingAccessibility { msgs.append("Accessibility is required for the ⌘⇧6 hotkey.") }
+        alert.informativeText = msgs.joined(separator: "\n")
+
+        alert.addButton(withTitle: "Open Settings")
+        alert.addButton(withTitle: "Later")
+
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            if missingScreenRecording {
+                CGRequestScreenCaptureAccess()
+            } else if missingAccessibility {
+                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+            }
+        }
     }
 
     private func setupMenuBarIcon() {
