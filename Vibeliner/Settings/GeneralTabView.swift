@@ -22,7 +22,7 @@ final class GeneralTabView: NSView {
         var y = frame.height - 36
 
         // Hotkey row
-        addSubview(makeRowLabel("Capture hotkey", y: y))
+        addSubview(makeRowLabel("Capture hotkey", y: y + 3))
 
         hotkeyDisplay.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .medium)
         hotkeyDisplay.textColor = .labelColor
@@ -43,8 +43,10 @@ final class GeneralTabView: NSView {
         addDivider(at: y + 20)
 
         // Folder row
-        addSubview(makeRowLabel("Captures folder", y: y))
+        addSubview(makeRowLabel("Captures folder", y: y + 3))
 
+        let folderFieldX = pad + labelWidth + 12
+        let folderW = frame.width - folderFieldX - 60  // reserve 60px for Change button
         folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
         folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         folderPathLabel.textColor = .secondaryLabelColor
@@ -53,24 +55,24 @@ final class GeneralTabView: NSView {
         folderPathLabel.layer?.cornerRadius = 6
         folderPathLabel.layer?.borderWidth = 1
         folderPathLabel.layer?.borderColor = NSColor.separatorColor.cgColor
-        folderPathLabel.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 230, height: 24)
+        folderPathLabel.frame = NSRect(x: folderFieldX, y: y - 2, width: folderW, height: 24)
         addSubview(folderPathLabel)
 
         let changeFolder = makePurpleLink("Change", action: #selector(changeFolderClicked))
-        changeFolder.frame = NSRect(x: pad + labelWidth + 252, y: y + 1, width: 50, height: 20)
+        changeFolder.frame = NSRect(x: folderFieldX + folderW + 8, y: y + 1, width: 50, height: 20)
         addSubview(changeFolder)
 
         let folderHelper = NSTextField(labelWithString: "Screenshots and prompts are saved here.")
         folderHelper.font = NSFont.systemFont(ofSize: 12)
         folderHelper.textColor = .tertiaryLabelColor
-        folderHelper.frame = NSRect(x: pad + labelWidth + 12, y: y - 22, width: 300, height: 16)
+        folderHelper.frame = NSRect(x: folderFieldX, y: y - 22, width: 300, height: 16)
         addSubview(folderHelper)
 
-        y -= 60
+        y -= 72
         addDivider(at: y + 20)
 
         // Login row
-        addSubview(makeRowLabel("Launch at login", y: y))
+        addSubview(makeRowLabel("Launch at login", y: y + 3))
 
         loginCheckbox.state = ConfigManager.shared.launchAtLogin ? .on : .off
         loginCheckbox.target = self

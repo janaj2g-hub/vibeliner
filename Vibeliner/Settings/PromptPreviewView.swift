@@ -18,12 +18,12 @@ final class PromptPreviewView: NSView {
 
     private func setupView() {
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        titleLabel.textColor = NSColor(white: 0.53, alpha: 1)
+        titleLabel.textColor = .secondaryLabelColor
         titleLabel.frame = NSRect(x: 0, y: frame.height - 20, width: 100, height: 16)
         addSubview(titleLabel)
 
         previewText.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
-        previewText.textColor = NSColor(white: 0.33, alpha: 1)
+        previewText.textColor = .labelColor
         previewText.isEditable = false
         previewText.isRichText = false
         previewText.drawsBackground = false
@@ -32,9 +32,9 @@ final class PromptPreviewView: NSView {
         scrollView.documentView = previewText
         scrollView.hasVerticalScroller = true
         scrollView.wantsLayer = true
-        scrollView.layer?.backgroundColor = NSColor(white: 0.97, alpha: 1).cgColor
+        scrollView.layer?.backgroundColor = NSColor.textBackgroundColor.cgColor
         scrollView.layer?.borderWidth = 1
-        scrollView.layer?.borderColor = NSColor(white: 0.93, alpha: 1).cgColor
+        scrollView.layer?.borderColor = NSColor.separatorColor.cgColor
         scrollView.layer?.cornerRadius = 8
         addSubview(scrollView)
     }
