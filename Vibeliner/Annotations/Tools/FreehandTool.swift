@@ -46,7 +46,23 @@ final class FreehandTool: AnnotationTool {
     }
 
     func drawGhost(at point: CGPoint, in context: CGContext) {
-        guard isDrawing, points.count >= 2 else { return }
+        guard isDrawing, points.count >= 2 else {
+            // Idle ghost: 3 fading trailing dots + purple anchor dot
+            // AppKit: "trailing behind" = lower x, lower y (negative offsets from prototype web coords)
+            let dots: [(dx: CGFloat, dy: CGFloat, r: CGFloat, a: CGFloat)] = [
+                (-7, -6, 1.3, 0.08),
+                (-4, -3.5, 1.5, 0.13),
+                (0, -1, 1.7, 0.20)
+            ]
+            for dot in dots {
+                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: dot.a).cgColor)
+                context.fillEllipse(in: CGRect(x: point.x + dot.dx - dot.r, y: point.y + dot.dy - dot.r, width: dot.r * 2, height: dot.r * 2))
+            }
+            let r = DesignTokens.ghostDotRadius
+            context.setFillColor(DesignTokens.ghostDotColor.cgColor)
+            context.fillEllipse(in: CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2))
+            return
+        }
         context.saveGState()
         context.setAlpha(0.6)
         // VIB-177: Apply smoothing to ghost preview too for visual consistency

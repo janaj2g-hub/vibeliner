@@ -207,6 +207,23 @@ enum DesignTokens {
     /// 10px minimum selection size
     static let minimumSelectionSize: CGFloat = 10
 
+    // MARK: - Ghost preview
+
+    /// Ghost anchor dot radius: 3px
+    static let ghostDotRadius: CGFloat = 3
+
+    /// Ghost anchor dot color: #AFA9EC at 85%
+    static let ghostDotColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.85)
+
+    /// Ghost silhouette stroke color: #EF4444 at 22%
+    static let ghostStrokeColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.22)
+
+    /// Ghost silhouette stroke width: 1.5px
+    static let ghostStrokeWidth: CGFloat = 1.5
+
+    /// Ghost silhouette dash pattern: 3,2
+    static let ghostDashPattern: [CGFloat] = [3, 2]
+
     // MARK: - Fonts
 
     /// Badge number: system 9px weight 600

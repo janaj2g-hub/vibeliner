@@ -61,6 +61,13 @@ final class CanvasView: NSView, NotePillDelegate {
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
 
+        // VIB-201: Hide system cursor when drawing tool is active and not editing
+        if activeTool?.toolType.isDrawingTool == true && !isEditingNote {
+            NSCursor.hide()
+        } else {
+            NSCursor.unhide()
+        }
+
         // Hit-test for hover
         let oldHovered = hoveredAnnotationId
         hoveredAnnotationId = hitTestAnnotation(at: point)
@@ -172,6 +179,7 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
+        NSCursor.unhide()
         ghostPosition = nil
         marksLayer.ghostPosition = nil
         marksLayer.needsDisplay = true
@@ -207,6 +215,7 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
+        NSCursor.unhide()  // VIB-201: Restore cursor when editor opens
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
