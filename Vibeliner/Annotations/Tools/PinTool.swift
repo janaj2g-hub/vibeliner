@@ -14,6 +14,8 @@ extension AnnotationTool {
     func mouseDragged(to point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {}
     func mouseUp(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {}
     func drawGhost(at point: CGPoint, in context: CGContext) {}
+    /// VIB-221: True when a stroke is actively in progress (prevents ghost suppression mid-stroke)
+    var isActivelyDrawing: Bool { false }
 }
 
 final class PinTool: AnnotationTool {

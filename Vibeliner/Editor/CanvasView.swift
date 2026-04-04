@@ -62,19 +62,30 @@ final class CanvasView: NSView, NotePillDelegate {
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
 
-        // VIB-201: Hide system cursor when drawing tool is active and not editing
-        if activeTool?.toolType.isDrawingTool == true && !isEditingNote {
-            NSCursor.hide()
-        } else {
-            NSCursor.unhide()
-        }
-
-        // Hit-test for shape hover
+        // Hit-test for shape hover (must run before cursor/ghost logic)
         let oldHovered = shapeHoveredId
         shapeHoveredId = hitTestAnnotation(at: point)
         if shapeHoveredId != oldHovered {
             marksLayer.hoveredId = shapeHoveredId
             refreshNotePills()
+        }
+
+        // VIB-221: Suppress ghost when hovering annotation with drawing tool (unless mid-stroke)
+        let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
+        let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
+        let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
+        marksLayer.suppressGhost = shouldSuppressGhost
+
+        // VIB-201/VIB-221: Cursor management
+        if isDrawingToolActive && !isEditingNote {
+            if shouldSuppressGhost {
+                NSCursor.unhide()
+                NSCursor.arrow.set()
+            } else {
+                NSCursor.hide()
+            }
+        } else {
+            NSCursor.unhide()
         }
 
         marksLayer.needsDisplay = true
@@ -221,6 +232,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     override func mouseExited(with event: NSEvent) {
         NSCursor.unhide()
+        marksLayer.suppressGhost = false
         ghostPosition = nil
         marksLayer.ghostPosition = nil
         marksLayer.needsDisplay = true
@@ -237,8 +249,16 @@ final class CanvasView: NSView, NotePillDelegate {
         pillHoveredId = annotationId
         if pillHoveredId != oldPillHovered {
             // VIB-203/215: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
+            // VIB-221: Suppress ghost when pill hovered with drawing tool active
+            let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
+            marksLayer.suppressGhost = isDrawingToolActive && (pillHoveredId != nil || shapeHoveredId != nil)
             marksLayer.needsDisplay = true
             refreshNotePills()
+            // VIB-221: Show arrow cursor when pill hovered with drawing tool
+            if isDrawingToolActive && !isEditingNote && pillHoveredId != nil {
+                NSCursor.unhide()
+                NSCursor.arrow.set()
+            }
         }
     }
 
@@ -458,6 +478,7 @@ final class MarksLayerView: NSView {
     var ghostTool: AnnotationTool?
     var hoveredId: UUID?
     var selectedId: UUID?
+    var suppressGhost: Bool = false  // VIB-221: set true when hovering annotation with drawing tool
     private let store: AnnotationStore
     private let pinRenderer = PinRenderer()
     private let arrowRenderer = ArrowRenderer()
@@ -612,8 +633,8 @@ final class MarksLayerView: NSView {
             }
         }
 
-        // Draw ghost preview
-        if let pos = ghostPosition, let tool = ghostTool {
+        // Draw ghost preview (VIB-221: suppressed when hovering existing annotation)
+        if let pos = ghostPosition, let tool = ghostTool, !suppressGhost {
             tool.drawGhost(at: pos, in: context)
         }
     }
