@@ -76,13 +76,15 @@ final class CanvasView: NSView, NotePillDelegate {
         let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
         marksLayer.suppressGhost = shouldSuppressGhost
 
-        // VIB-201/VIB-221: Cursor management
+        // VIB-201/VIB-221/VIB-223: Cursor management
+        // Use setHiddenUntilMouseMoves(true) instead of hide() — it auto-unhides when
+        // the cursor enters a different NSView (e.g. toolbar), avoiding reference-count imbalance.
         if isDrawingToolActive && !isEditingNote {
             if shouldSuppressGhost {
                 NSCursor.unhide()
                 NSCursor.arrow.set()
             } else {
-                NSCursor.hide()
+                NSCursor.setHiddenUntilMouseMoves(true)
             }
         } else {
             NSCursor.unhide()
