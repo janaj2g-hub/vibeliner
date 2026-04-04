@@ -88,7 +88,7 @@ final class PromptTabView: NSView {
         desc.frame = NSRect(x: 0, y: contentContainer.bounds.height - 36, width: w, height: 32)
         contentContainer.addSubview(desc)
 
-        let scrollView = makeScrollableEditor(text: ConfigManager.shared.preamble, height: contentContainer.bounds.height - 80)
+        let scrollView = makeScrollableEditor(text: ConfigManager.shared.preamble, height: min(contentContainer.bounds.height - 80, 100))
         scrollView.frame.origin = NSPoint(x: 0, y: 38)
         contentContainer.addSubview(scrollView)
         preambleEditor = (scrollView.documentView as? NSTextView)

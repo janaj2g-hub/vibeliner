@@ -30,7 +30,7 @@ final class PromptPreviewView: NSView {
 
         scrollView.frame = NSRect(x: 0, y: 0, width: frame.width, height: frame.height - 28)
         scrollView.documentView = previewText
-        scrollView.hasVerticalScroller = true
+        scrollView.hasVerticalScroller = false
         scrollView.wantsLayer = true
         scrollView.layer?.backgroundColor = NSColor.textBackgroundColor.cgColor
         scrollView.layer?.borderWidth = 1
@@ -54,5 +54,13 @@ final class PromptPreviewView: NSView {
             mode: .clipboardIDE(absolutePath: samplePath)
         )
         previewText.string = prompt
+
+        // VIB-224: Auto-size preview height to content, up to 180px
+        previewText.sizeToFit()
+        let textHeight = previewText.frame.height + 16
+        let maxH: CGFloat = 180
+        let newH = min(textHeight, maxH)
+        scrollView.frame = NSRect(x: 0, y: 0, width: frame.width, height: newH)
+        frame = NSRect(x: frame.origin.x, y: frame.origin.y, width: frame.width, height: newH + 28)
     }
 }
