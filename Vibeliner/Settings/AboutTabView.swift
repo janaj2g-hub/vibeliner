@@ -2,7 +2,7 @@ import AppKit
 
 final class AboutTabView: NSView {
 
-    private let purpleAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)

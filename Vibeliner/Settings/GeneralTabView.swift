@@ -53,7 +53,7 @@ final class GeneralTabView: NSView {
         addSubview(makeRowLabel("Captures folder", y: y + 3))
 
         let folderFieldX = pad + labelWidth + 12
-        let folderW = frame.width - folderFieldX - 60  // reserve 60px for Change button
+        let folderW = frame.width - folderFieldX - 80  // reserve 80px for Change button
         folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
         folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         folderPathLabel.textColor = .secondaryLabelColor
