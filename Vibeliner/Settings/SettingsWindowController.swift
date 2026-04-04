@@ -8,11 +8,11 @@ final class SettingsWindowController: NSWindowController {
     private var contentContainer = NSView()
     private var activeTabIndex = 0
 
-    private let purpleAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1)
+    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 580),
+            contentRect: NSRect(x: 0, y: 0, width: 540, height: 420),
             styleMask: [.titled, .closable, .miniaturizable],
             backing: .buffered,
             defer: false
