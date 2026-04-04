@@ -7,6 +7,8 @@ final class RectangleTool: AnnotationTool {
     private var dragStart: CGPoint?
     private var dragEnd: CGPoint?
 
+    var isActivelyDrawing: Bool { dragStart != nil }
+
     func mouseDown(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
         dragStart = point
         dragEnd = point

@@ -159,6 +159,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
+        marksLayer.suppressGhost = false
 
         // VIB-193: Click outside editing pill = commit text
         if isEditingNote {
@@ -425,6 +426,9 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         noteFieldDelegate = nil
         refreshNotePills()
+        if activeTool?.toolType.isDrawingTool == true {
+            marksLayer.ghostTool = activeTool
+        }
         marksLayer.needsDisplay = true
     }
 
@@ -439,6 +443,10 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         noteFieldDelegate = nil
         refreshNotePills()
+        if activeTool?.toolType.isDrawingTool == true {
+            marksLayer.ghostTool = activeTool
+        }
+        marksLayer.needsDisplay = true
     }
 
     var isEditingNote: Bool { activeNoteField != nil }

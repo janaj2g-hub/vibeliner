@@ -2,6 +2,7 @@ import AppKit
 
 protocol AnnotationTool: AnyObject {
     var toolType: AnnotationToolType { get }
+    var isActivelyDrawing: Bool { get }
     func mouseDown(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager)
     func mouseMoved(to point: CGPoint, in canvas: CanvasView)
     func mouseDragged(to point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager)
