@@ -8,6 +8,10 @@ protocol AnnotationRenderer {
 final class PinRenderer: AnnotationRenderer {
 
     func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize) {
+        drawMarks(in: context, annotations: annotations, canvasSize: canvasSize, drawBadge: true)
+    }
+
+    func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize, drawBadge: Bool) {
         for annotation in annotations where annotation.type == .pin {
             guard case .pin(let tip) = annotation.position else { continue }
 
@@ -30,7 +34,9 @@ final class PinRenderer: AnnotationRenderer {
             context.strokePath()
 
             // Badge circle + number
-            BadgeRenderer.drawBadge(at: CGPoint(x: clampedX, y: clampedY), number: annotation.number, in: context)
+            if drawBadge {
+                BadgeRenderer.drawBadge(at: CGPoint(x: clampedX, y: clampedY), number: annotation.number, in: context)
+            }
 
             // Hover glow
             if annotation.isSelected {
