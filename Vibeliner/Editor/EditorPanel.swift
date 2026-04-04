@@ -297,7 +297,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestDelete() {
-        // Delete the selected annotation (not the entire capture)
+        canvasOverlay?.tearDownNoteEditingUI()  // VIB-220: clean up editing pill before removing annotation
         if let selected = annotationStore.selectedAnnotation {
             undoRedoManager.record(.remove(annotation: selected))
             annotationStore.remove(id: selected.id)

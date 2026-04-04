@@ -420,6 +420,18 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
+
+    /// VIB-220: Tears down the editing pill UI only — does not modify the store.
+    /// Call this before any operation that removes the annotation directly (trash, keyboard delete).
+    func tearDownNoteEditingUI() {
+        activeEditorPill?.removeFromSuperview()
+        activeEditorPill = nil
+        activeNoteField = nil
+        editingAnnotationId = nil
+        noteFieldDelegate = nil
+        refreshNotePills()
+        marksLayer.needsDisplay = true
+    }
 }
 
 // MARK: - Note field delegate
