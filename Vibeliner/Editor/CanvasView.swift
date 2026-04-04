@@ -187,7 +187,7 @@ final class CanvasView: NSView, NotePillDelegate {
         let oldHovered = hoveredAnnotationId
         hoveredAnnotationId = annotationId
         if hoveredAnnotationId != oldHovered {
-            marksLayer.hoveredId = hoveredAnnotationId
+            // VIB-203: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
             marksLayer.needsDisplay = true
             refreshNotePills()
         }
@@ -475,9 +475,71 @@ final class MarksLayerView: NSView {
         // Draw hover glow
         if let hId = hoveredId, let annotation = store.annotations.first(where: { $0.id == hId }) {
             let bp = annotation.badgePosition
+
+            // Badge glow (keep existing)
             let glowRadius = DesignTokens.badgeDiameter / 2 + 7 // prototype: badgeR + 7
             context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor)
             context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
+
+            // VIB-203: Shape halo — draw thicker/warmer version behind the shape with soft shadow
+            context.saveGState()
+            context.setShadow(offset: .zero, blur: 6, color: NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.20).cgColor)
+
+            switch annotation.position {
+            case .pin:
+                // Stake halo
+                let stakeTopY = bp.y - DesignTokens.badgeDiameter / 2
+                let stakeBottomY = stakeTopY - DesignTokens.stakeLength
+                context.setStrokeColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.3).cgColor)
+                context.setLineWidth(6)
+                context.setLineCap(.round)
+                context.move(to: CGPoint(x: bp.x, y: stakeTopY))
+                context.addLine(to: CGPoint(x: bp.x, y: stakeBottomY))
+                context.strokePath()
+
+            case .rectangle(let origin, let size):
+                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                let path = CGPath(roundedRect: CGRect(origin: origin, size: size), cornerWidth: 3, cornerHeight: 3, transform: nil)
+                context.addPath(path)
+                context.fillPath()
+                context.setStrokeColor(DesignTokens.red.cgColor)
+                context.setLineWidth(3)
+                context.addPath(path)
+                context.strokePath()
+
+            case .circle(let center, let radius):
+                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                let circleRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
+                context.fillEllipse(in: circleRect)
+                context.setStrokeColor(DesignTokens.red.cgColor)
+                context.setLineWidth(3)
+                context.strokeEllipse(in: circleRect)
+
+            case .arrow(let start, let end):
+                let dx = end.x - start.x, dy = end.y - start.y
+                let len = hypot(dx, dy)
+                guard len > 0 else { break }
+                let ux = dx / len, uy = dy / len
+                let lineStart = CGPoint(x: start.x + ux * 9, y: start.y + uy * 9)
+                context.setStrokeColor(DesignTokens.red.cgColor)
+                context.setLineWidth(3.5)
+                context.setLineCap(.round)
+                context.move(to: lineStart)
+                context.addLine(to: end)
+                context.strokePath()
+
+            case .freehand(let pts):
+                guard pts.count >= 2 else { break }
+                context.setStrokeColor(DesignTokens.red.cgColor)
+                context.setLineWidth(3.5)
+                context.setLineCap(.round)
+                context.setLineJoin(.round)
+                context.move(to: pts[0])
+                for i in 1..<pts.count { context.addLine(to: pts[i]) }
+                context.strokePath()
+            }
+
+            context.restoreGState()
         }
 
         // Draw selected state: dashed purple ring + handles
