@@ -54,7 +54,7 @@ final class CircleTool: AnnotationTool {
             return
         }
         context.saveGState()
-        context.setAlpha(0.7)
+        context.setAlpha(0.85)
         CircleRenderer.drawCircleShape(in: context, center: c, radius: currentRadius, number: 0, badgePos: releasePoint ?? point)
         context.restoreGState()
     }

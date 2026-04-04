@@ -55,7 +55,7 @@ final class RectangleTool: AnnotationTool {
             return
         }
         context.saveGState()
-        context.setAlpha(0.7)
+        context.setAlpha(0.85)
         let rect = rectFromPoints(start, end)
         RectangleRenderer.drawRectShape(in: context, rect: rect, number: 0, badgePos: start)
         context.restoreGState()
