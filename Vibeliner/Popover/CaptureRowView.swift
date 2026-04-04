@@ -12,14 +12,24 @@ final class CaptureRowView: NSView {
     init(capture: CaptureInfo) {
         self.capture = capture
         super.init(frame: .zero)
-        setupView()
+        // VIB-174: Don't call buildSubviews here — frame is .zero at init time
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    private func setupView() {
+    private var didLayout = false
+
+    override func layout() {
+        super.layout()
+        guard !didLayout, bounds.height > 0 else { return }
+        didLayout = true
+        buildSubviews()
+    }
+
+    private func buildSubviews() {
+        let h = bounds.height
         // VIB-174: Thumbnail 44×30px with 4px radius
-        let thumbView = NSImageView(frame: NSRect(x: 4, y: (frame.height - 30) / 2, width: 44, height: 30))
+        let thumbView = NSImageView(frame: NSRect(x: 4, y: (h - 30) / 2, width: 44, height: 30))
         thumbView.wantsLayer = true
         thumbView.layer?.cornerRadius = 4
         thumbView.layer?.masksToBounds = true
@@ -42,14 +52,14 @@ final class CaptureRowView: NSView {
         timestampLabel.stringValue = relativeTime(from: capture.timestamp)
         timestampLabel.font = NSFont.systemFont(ofSize: 12)
         timestampLabel.textColor = NSColor(white: 1, alpha: 0.85)
-        timestampLabel.frame = NSRect(x: textX, y: frame.height / 2 + 1, width: 120, height: 16)
+        timestampLabel.frame = NSRect(x: textX, y: h / 2 + 1, width: 120, height: 16)
         addSubview(timestampLabel)
 
         // VIB-174: Note count 10px rgba(255,255,255,0.25)
         noteCountLabel.stringValue = "\(capture.noteCount) notes"
         noteCountLabel.font = NSFont.systemFont(ofSize: 10)
         noteCountLabel.textColor = NSColor(white: 1, alpha: 0.25)
-        noteCountLabel.frame = NSRect(x: textX, y: frame.height / 2 - 14, width: 60, height: 14)
+        noteCountLabel.frame = NSRect(x: textX, y: h / 2 - 14, width: 60, height: 14)
         addSubview(noteCountLabel)
 
         // Copy Prompt button (hidden until hover)
