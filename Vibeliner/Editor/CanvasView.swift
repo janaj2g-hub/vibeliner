@@ -442,6 +442,23 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
+
+    /// Tears down the editing pill UI only — does NOT modify the annotation store.
+    /// Call before any external operation that removes the annotation directly.
+    /// Does NOT call refreshNotePills() — let the .annotationsDidChange notification
+    /// handle that after the store removal to avoid re-creating a pill for a deleted annotation.
+    func tearDownNoteEditingUI() {
+        activeEditorPill?.removeFromSuperview()
+        activeEditorPill = nil
+        activeNoteField = nil
+        editingAnnotationId = nil
+        noteFieldDelegate = nil
+        // Also sweep any orphaned pill subviews (safety net if reference was lost)
+        for sub in subviews where sub !== marksLayer && sub !== notesLayer {
+            sub.removeFromSuperview()
+        }
+        marksLayer.needsDisplay = true
+    }
 }
 
 // MARK: - Note field delegate
