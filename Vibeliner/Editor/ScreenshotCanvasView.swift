@@ -24,8 +24,8 @@ final class ScreenshotCanvasView: NSView {
         clipView.wantsLayer = true
         clipView.layer?.cornerRadius = 6
         clipView.layer?.masksToBounds = true
-        // Subtle border: 1px solid rgba(255,255,255,0.1)
-        clipView.layer?.borderColor = NSColor(white: 1, alpha: 0.1).cgColor
+        // VIB-222: 1px purple border rgba(175,169,236,0.12)
+        clipView.layer?.borderColor = DesignTokens.chromeBorder.cgColor
         clipView.layer?.borderWidth = 1
         clipView.translatesAutoresizingMaskIntoConstraints = false
         addSubview(clipView)
