@@ -64,7 +64,7 @@ final class FreehandTool: AnnotationTool {
             return
         }
         context.saveGState()
-        context.setAlpha(0.7)
+        context.setAlpha(0.85)
         // VIB-177: Apply smoothing to ghost preview too for visual consistency
         let ghostSmoothed = points.count >= 4 ? Self.smoothPoints(points, passes: 1) : points
         FreehandRenderer.drawFreehandPath(in: context, points: ghostSmoothed)

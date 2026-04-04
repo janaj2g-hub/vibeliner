@@ -3,13 +3,17 @@ import AppKit
 final class FreehandRenderer: AnnotationRenderer {
 
     func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize) {
+        drawMarks(in: context, annotations: annotations, canvasSize: canvasSize, drawBadge: true)
+    }
+
+    func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize, drawBadge: Bool) {
         for annotation in annotations where annotation.type == .freehand {
             guard case .freehand(let points) = annotation.position else { continue }
 
             FreehandRenderer.drawFreehandPath(in: context, points: points)
 
             // Badge at first point
-            if let first = points.first {
+            if drawBadge, let first = points.first {
                 BadgeRenderer.drawBadge(at: first, number: annotation.number, in: context)
             }
         }

@@ -3,15 +3,19 @@ import AppKit
 final class ArrowRenderer: AnnotationRenderer {
 
     func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize) {
+        drawMarks(in: context, annotations: annotations, canvasSize: canvasSize, drawBadge: true)
+    }
+
+    func drawMarks(in context: CGContext, annotations: [Annotation], canvasSize: NSSize, drawBadge: Bool) {
         for annotation in annotations where annotation.type == .arrow {
             guard case .arrow(let start, let end) = annotation.position else { continue }
-            ArrowRenderer.drawArrowShape(in: context, start: start, end: end, number: annotation.number)
+            ArrowRenderer.drawArrowShape(in: context, start: start, end: end, number: annotation.number, drawBadge: drawBadge)
         }
     }
 
     func drawNotes(in view: NSView, annotations: [Annotation], canvasSize: NSSize) {}
 
-    static func drawArrowShape(in context: CGContext, start: CGPoint, end: CGPoint, number: Int) {
+    static func drawArrowShape(in context: CGContext, start: CGPoint, end: CGPoint, number: Int, drawBadge: Bool = true) {
         let dx = end.x - start.x
         let dy = end.y - start.y
         let length = hypot(dx, dy)
@@ -52,6 +56,8 @@ final class ArrowRenderer: AnnotationRenderer {
         context.strokePath()
 
         // Badge at start
-        BadgeRenderer.drawBadge(at: start, number: number, in: context)
+        if drawBadge {
+            BadgeRenderer.drawBadge(at: start, number: number, in: context)
+        }
     }
 }
