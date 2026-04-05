@@ -4,13 +4,16 @@ import ApplicationServices
 /// 3-panel setup: Screen Recording → Accessibility → Captures Folder
 final class SetupWindowController: NSWindowController {
 
-    // State
+    // MARK: - State
+
     private var step1Done = false
-    private var step2AccessibilityDone = false
+    private var step2Done = false
     private var step3Done = false
     private var folderPath = ""
+    private var isRerun: Bool
 
-    // UI refs
+    // MARK: - UI refs
+
     private var panel1Container: NSView!
     private var panel2Container: NSView!
     private var panel3Container: NSView!
@@ -18,32 +21,24 @@ final class SetupWindowController: NSWindowController {
     private var badge1View: NSView!
     private var badge2View: NSView!
     private var badge3View: NSView!
-    private var step1Button: NSButton?
-    private var step1SuccessLabel: NSTextField?
-    private var step2Button: NSButton?
-    private var step3Button: NSButton?
+    private var step1ActionRow: NSView!
+    private var step2ActionRow: NSView!
+    private var step2Helper: NSTextField!
+    private var step3ActionRow: NSView!
+    private var step3DoneArea: NSView!
     private var pathDisplay: NSTextField!
-    private var status1: NSView!
-    private var status2: NSView!
-    private var status3: NSView!
+    private var status1: NSTextField!
+    private var status2: NSTextField!
+    private var status3: NSTextField!
     private var permissionTimer: Timer?
 
-    // Colors (dark mode — the setup window is always dark)
-    private static let bg = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
-    private static let titleBarBg = NSColor(red: 42/255, green: 42/255, blue: 42/255, alpha: 1)
-    private static let bdr = NSColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1)
-    private static let tx = NSColor(red: 224/255, green: 224/255, blue: 224/255, alpha: 1)
-    private static let txS = NSColor(red: 136/255, green: 136/255, blue: 136/255, alpha: 1)
-    private static let footerBg = NSColor(red: 34/255, green: 34/255, blue: 34/255, alpha: 1)
-    private var bg: NSColor { Self.bg }
-    private var bdr: NSColor { Self.bdr }
-    private var tx: NSColor { Self.tx }
-    private var txS: NSColor { Self.txS }
-    private var footerBg: NSColor { Self.footerBg }
+    // MARK: - Init
 
     convenience init() {
+        let winW = DesignTokens.setupWindowWidth
+        let totalH = DesignTokens.setupPanelHeight + DesignTokens.setupFooterHeight
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 700, height: 450),
+            contentRect: NSRect(x: 0, y: 0, width: winW, height: totalH),
             styleMask: [.titled, .closable],
             backing: .buffered,
             defer: false
@@ -52,11 +47,18 @@ final class SetupWindowController: NSWindowController {
         window.center()
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: .darkAqua)
-        window.backgroundColor = Self.bg
+        window.backgroundColor = DesignTokens.setupWindowBg
         self.init(window: window)
         buildUI()
         startPermissionPolling()
     }
+
+    override init(window: NSWindow?) {
+        isRerun = ConfigManager.shared.capturesFolderExists
+        super.init(window: window)
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 
     deinit { permissionTimer?.invalidate() }
 
@@ -65,40 +67,36 @@ final class SetupWindowController: NSWindowController {
     private func buildUI() {
         guard let cv = window?.contentView else { return }
         cv.wantsLayer = true
-        cv.layer?.backgroundColor = bg.cgColor
+        cv.layer?.backgroundColor = DesignTokens.setupWindowBg.cgColor
 
-        let winW: CGFloat = 700
-        let footerH: CGFloat = 56
-        let panelMinH: CGFloat = 310
-        let panelW = (winW - 2) / 3  // -2 for two dividers
+        let winW = DesignTokens.setupWindowWidth
+        let footerH = DesignTokens.setupFooterHeight
+        let panelH = DesignTokens.setupPanelHeight
+        let panelW = (winW - 2) / 3
 
         let panelsY = footerH
 
         // Panel 1: Screen recording
-        panel1Container = NSView(frame: NSRect(x: 0, y: panelsY, width: panelW, height: panelMinH))
+        panel1Container = NSView(frame: NSRect(x: 0, y: panelsY, width: panelW, height: panelH))
         buildPanel1(in: panel1Container)
         cv.addSubview(panel1Container)
 
         // Divider 1
-        let divider1 = NSView(frame: NSRect(x: panelW, y: panelsY, width: 1, height: panelMinH))
-        divider1.wantsLayer = true
-        divider1.layer?.backgroundColor = bdr.cgColor
-        cv.addSubview(divider1)
+        let d1 = makeDivider(x: panelW, y: panelsY, height: panelH)
+        cv.addSubview(d1)
 
         // Panel 2: Accessibility
-        panel2Container = NSView(frame: NSRect(x: panelW + 1, y: panelsY, width: panelW, height: panelMinH))
-        buildPanel2Accessibility(in: panel2Container)
+        panel2Container = NSView(frame: NSRect(x: panelW + 1, y: panelsY, width: panelW, height: panelH))
+        buildPanel2(in: panel2Container)
         cv.addSubview(panel2Container)
         panel2Container.alphaValue = 0.35
 
         // Divider 2
-        let divider2 = NSView(frame: NSRect(x: panelW * 2 + 1, y: panelsY, width: 1, height: panelMinH))
-        divider2.wantsLayer = true
-        divider2.layer?.backgroundColor = bdr.cgColor
-        cv.addSubview(divider2)
+        let d2 = makeDivider(x: panelW * 2 + 1, y: panelsY, height: panelH)
+        cv.addSubview(d2)
 
         // Panel 3: Captures folder
-        panel3Container = NSView(frame: NSRect(x: panelW * 2 + 2, y: panelsY, width: panelW, height: panelMinH))
+        panel3Container = NSView(frame: NSRect(x: panelW * 2 + 2, y: panelsY, width: panelW, height: panelH))
         buildPanel3(in: panel3Container)
         cv.addSubview(panel3Container)
         panel3Container.alphaValue = 0.35
@@ -106,183 +104,183 @@ final class SetupWindowController: NSWindowController {
         // Footer
         footerContent = NSView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
         footerContent.wantsLayer = true
-        footerContent.layer?.backgroundColor = footerBg.cgColor
+        footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
         cv.addSubview(footerContent)
 
-        let footerBorder = NSView(frame: NSRect(x: 0, y: footerH - 1, width: winW, height: 1))
-        footerBorder.wantsLayer = true
-        footerBorder.layer?.backgroundColor = bdr.cgColor
+        let footerBorder = makeDivider(x: 0, y: footerH - 1, height: 1)
+        footerBorder.frame.size.width = winW
         cv.addSubview(footerBorder)
 
         updateFooter()
-
-        let totalH = panelMinH + footerH
-        window?.setContentSize(NSSize(width: winW, height: totalH))
     }
 
     // MARK: - Panel 1: Screen recording
 
-    private func buildPanel1(in container: NSView) {
-        let pad: CGFloat = 28
-        let h = container.frame.height
+    private func buildPanel1(in c: NSView) {
+        let pad = DesignTokens.setupPanelPad
+        let h = c.frame.height
+        let contentW = c.frame.width - pad * 2
 
-        badge1View = makeStepBadge(num: 1, done: false, locked: false)
-        badge1View.frame.origin = NSPoint(x: pad, y: h - pad - 32)
-        container.addSubview(badge1View)
+        badge1View = makeStepBadge(num: 1, state: .active)
+        badge1View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
+        c.addSubview(badge1View)
 
-        let title = makeLabel("Screen recording", size: 16, weight: .semibold, color: tx)
-        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: 200, height: 22)
-        container.addSubview(title)
+        let title = makeLabel("Screen recording", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
+        c.addSubview(title)
 
-        let desc = makeLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", size: 13, weight: .regular, color: txS)
-        desc.maximumNumberOfLines = 0
-        desc.preferredMaxLayoutWidth = container.frame.width - pad * 2
-        desc.lineBreakMode = .byWordWrapping
-        desc.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 50, width: container.frame.width - pad * 2, height: 50)
-        container.addSubview(desc)
+        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
+        c.addSubview(desc)
 
-        let btn = makePillButton("Open Screen Recording Settings →")
-        btn.target = self
-        btn.action = #selector(openSystemSettings)
-        btn.frame.origin = NSPoint(x: pad, y: h - pad - 32 - 18 - 50 - 14 - 36)
-        container.addSubview(btn)
-        step1Button = btn
+        // Action row (label + arrow button)
+        step1ActionRow = makeActionRow(label: "Open Screen Recording Settings", action: #selector(openSystemSettings), width: contentW)
+        step1ActionRow.frame.origin = NSPoint(x: pad, y: 10)
+        c.addSubview(step1ActionRow)
 
-        let success = makeLabel("Vibeliner can now capture your screen.", size: 13, weight: .regular, color: NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1))
-        success.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 50 - 14 - 20, width: 300, height: 20)
-        success.isHidden = true
-        container.addSubview(success)
-        step1SuccessLabel = success
-
-        status1 = makeStatusPill(text: "Not yet granted", style: .amber)
-        status1.frame.origin = NSPoint(x: pad, y: 10)
-        status1.frame.size.width = container.frame.width - pad * 2
-        container.addSubview(status1)
+        // Status label (hidden initially — action row is shown)
+        status1 = makeStatusLabel("Not yet granted", style: .amber)
+        status1.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        status1.isHidden = true
+        c.addSubview(status1)
     }
 
     // MARK: - Panel 2: Accessibility
 
-    private func buildPanel2Accessibility(in container: NSView) {
-        let pad: CGFloat = 28
-        let h = container.frame.height
+    private func buildPanel2(in c: NSView) {
+        let pad = DesignTokens.setupPanelPad
+        let h = c.frame.height
+        let contentW = c.frame.width - pad * 2
 
-        badge2View = makeStepBadge(num: 2, done: false, locked: true)
-        badge2View.frame.origin = NSPoint(x: pad, y: h - pad - 32)
-        container.addSubview(badge2View)
+        badge2View = makeStepBadge(num: 2, state: .locked)
+        badge2View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
+        c.addSubview(badge2View)
 
-        let title = makeLabel("Accessibility", size: 16, weight: .semibold, color: tx)
-        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: 180, height: 22)
-        container.addSubview(title)
+        let title = makeLabel("Accessibility", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
+        c.addSubview(title)
 
-        let desc = makeLabel("Vibeliner needs accessibility permission so the capture hotkey (⌘⇧6) works from any app.", size: 13, weight: .regular, color: txS)
-        desc.maximumNumberOfLines = 0
-        desc.preferredMaxLayoutWidth = container.frame.width - pad * 2
-        desc.lineBreakMode = .byWordWrapping
-        desc.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 50, width: container.frame.width - pad * 2, height: 50)
-        container.addSubview(desc)
+        let desc = makeWrappingLabel("Vibeliner needs accessibility permission so the capture hotkey works from any app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
+        c.addSubview(desc)
 
-        let btn = makePillButton("Open Accessibility Settings →")
-        btn.target = self
-        btn.action = #selector(openAccessibilitySettings)
-        btn.frame.origin = NSPoint(x: pad, y: h - pad - 32 - 18 - 50 - 14 - 36)
-        container.addSubview(btn)
-        step2Button = btn
+        // Helper text — always positioned for stable layout, visibility toggled
+        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
+        step2Helper.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
+        step2Helper.isHidden = true  // visible only when step 2 is active
+        c.addSubview(step2Helper)
 
-        let note = makeLabel("You may need to relaunch after granting.", size: 11, weight: .regular, color: NSColor(white: 0.4, alpha: 1))
-        note.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 50 - 14 - 36 - 18, width: container.frame.width - pad * 2, height: 14)
-        container.addSubview(note)
+        // Action row
+        step2ActionRow = makeActionRow(label: "Open Accessibility Settings", action: #selector(openAccessibilitySettings), width: contentW)
+        step2ActionRow.frame.origin = NSPoint(x: pad, y: 10)
+        step2ActionRow.isHidden = true
+        c.addSubview(step2ActionRow)
 
-        status2 = makeStatusPill(text: "Complete step 1 first", style: .gray)
-        status2.frame.origin = NSPoint(x: pad, y: 10)
-        status2.frame.size.width = container.frame.width - pad * 2
-        container.addSubview(status2)
+        // Status label
+        status2 = makeStatusLabel("Complete step 1 first", style: .gray)
+        status2.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        c.addSubview(status2)
     }
 
     // MARK: - Panel 3: Captures folder
 
-    private func buildPanel3(in container: NSView) {
-        let pad: CGFloat = 28
-        let h = container.frame.height
+    private func buildPanel3(in c: NSView) {
+        let pad = DesignTokens.setupPanelPad
+        let h = c.frame.height
+        let contentW = c.frame.width - pad * 2
 
-        badge3View = makeStepBadge(num: 3, done: false, locked: true)
-        badge3View.frame.origin = NSPoint(x: pad, y: h - pad - 32)
-        container.addSubview(badge3View)
+        badge3View = makeStepBadge(num: 3, state: .locked)
+        badge3View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
+        c.addSubview(badge3View)
 
-        let title = makeLabel("Captures folder", size: 16, weight: .semibold, color: tx)
-        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: 200, height: 22)
-        container.addSubview(title)
+        let title = makeLabel("Captures folder", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
+        c.addSubview(title)
 
-        let desc = makeLabel("Choose where Vibeliner saves screenshots and prompts.", size: 13, weight: .regular, color: txS)
-        desc.maximumNumberOfLines = 0
-        desc.preferredMaxLayoutWidth = container.frame.width - pad * 2
-        desc.lineBreakMode = .byWordWrapping
-        desc.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 36, width: container.frame.width - pad * 2, height: 36)
-        container.addSubview(desc)
+        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
+        c.addSubview(desc)
 
-        pathDisplay = NSTextField(labelWithString: "No folder selected")
-        pathDisplay.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-        pathDisplay.textColor = txS
+        // Path box
+        let pathBoxY = desc.frame.origin.y - 14 - 36
+        pathDisplay = NSTextField(labelWithString: isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected")
+        pathDisplay.font = DesignTokens.setupPathFont
+        pathDisplay.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
         pathDisplay.wantsLayer = true
-        pathDisplay.layer?.backgroundColor = NSColor(white: 1, alpha: 0.05).cgColor
-        pathDisplay.layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
+        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
+        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
         pathDisplay.layer?.borderWidth = 1
-        pathDisplay.layer?.cornerRadius = 8
-        pathDisplay.frame = NSRect(x: pad, y: h - pad - 32 - 18 - 36 - 14 - 36, width: container.frame.width - pad * 2, height: 36)
+        pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
+        pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
         pathDisplay.usesSingleLineMode = true
         pathDisplay.cell?.truncatesLastVisibleLine = true
-        container.addSubview(pathDisplay)
+        c.addSubview(pathDisplay)
 
-        let btn = makePillButton("Choose folder…")
-        btn.target = self
-        btn.action = #selector(createFolder)
-        btn.frame.origin = NSPoint(x: pad, y: h - pad - 32 - 18 - 36 - 14 - 36 - 14 - 36)
-        btn.isHidden = true
-        container.addSubview(btn)
-        step3Button = btn
+        // Action row (choose folder)
+        step3ActionRow = makeActionRow(label: "Choose folder…", action: #selector(chooseFolder), width: contentW)
+        step3ActionRow.frame.origin = NSPoint(x: pad, y: 10)
+        step3ActionRow.isHidden = true
+        c.addSubview(step3ActionRow)
 
-        status3 = makeStatusPill(text: "Complete step 2 first", style: .gray)
-        status3.frame.origin = NSPoint(x: pad, y: 10)
-        status3.frame.size.width = container.frame.width - pad * 2
-        container.addSubview(status3)
+        // Step 3 done area: "Folder ready" + "Change folder" button
+        step3DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 50))
+        step3DoneArea.isHidden = true
 
-        // Pre-fill if default folder already exists
-        let defaultPath = NSString("~/Documents/vibeliner").expandingTildeInPath
-        if FileManager.default.fileExists(atPath: defaultPath) {
-            folderPath = "~/Documents/vibeliner"
-            pathDisplay.stringValue = folderPath
-            pathDisplay.textColor = tx
+        let readyLabel = makeLabel("Folder ready", font: DesignTokens.setupStatusFont, color: DesignTokens.setupGreenText)
+        readyLabel.alignment = .center
+        readyLabel.frame = NSRect(x: 0, y: 30, width: contentW, height: 18)
+        step3DoneArea.addSubview(readyLabel)
+
+        let changeBtn = makeSmallPillButton("Change folder", green: true)
+        changeBtn.target = self
+        changeBtn.action = #selector(chooseFolder)
+        let cbW = changeBtn.frame.width
+        changeBtn.frame.origin = NSPoint(x: (contentW - cbW) / 2, y: 0)
+        step3DoneArea.addSubview(changeBtn)
+
+        c.addSubview(step3DoneArea)
+
+        // Status label
+        status3 = makeStatusLabel("Complete step 2 first", style: .gray)
+        status3.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        c.addSubview(status3)
+
+        // Pre-fill path for re-run
+        if isRerun {
+            folderPath = ConfigManager.shared.capturesFolder
         }
     }
 
     // MARK: - Step badge
 
-    private func makeStepBadge(num: Int, done: Bool, locked: Bool) -> NSView {
-        let size: CGFloat = 32
+    private enum BadgeState { case active, locked, done }
+
+    private func makeStepBadge(num: Int, state: BadgeState) -> NSView {
+        let size = DesignTokens.setupBadgeSize
         let view = NSView(frame: NSRect(x: 0, y: 0, width: size, height: size))
         view.wantsLayer = true
         view.layer?.cornerRadius = size / 2
+        view.layer?.borderWidth = 2
 
-        if done {
-            view.layer?.borderColor = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1).cgColor
-            view.layer?.borderWidth = 2
-            view.layer?.backgroundColor = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.1).cgColor
-            let check = makeLabel("✓", size: 16, weight: .bold, color: NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1))
+        switch state {
+        case .done:
+            view.layer?.borderColor = DesignTokens.setupGreen.cgColor
+            view.layer?.backgroundColor = DesignTokens.setupGreenBadgeBg.cgColor
+            let check = makeLabel("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen)
             check.alignment = .center
             check.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(check)
-        } else if locked {
-            view.layer?.borderColor = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1).cgColor
-            view.layer?.borderWidth = 2
-            view.layer?.backgroundColor = NSColor(white: 1, alpha: 0.03).cgColor
-            let numLabel = makeLabel("\(num)", size: 14, weight: .semibold, color: NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1))
+        case .locked:
+            view.layer?.borderColor = DesignTokens.setupGrayText.cgColor
+            view.layer?.backgroundColor = DesignTokens.setupGrayBg.cgColor
+            let numLabel = makeLabel("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText)
             numLabel.alignment = .center
             numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(numLabel)
-        } else {
-            view.layer?.borderColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1).cgColor
-            view.layer?.borderWidth = 2
+        case .active:
+            view.layer?.borderColor = DesignTokens.purpleDark.cgColor
             view.layer?.backgroundColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08).cgColor
-            let numLabel = makeLabel("\(num)", size: 14, weight: .semibold, color: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1))
+            let numLabel = makeLabel("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark)
             numLabel.alignment = .center
             numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
             view.addSubview(numLabel)
@@ -291,129 +289,193 @@ final class SetupWindowController: NSWindowController {
         return view
     }
 
-    // MARK: - Status pill
+    private func replaceBadge(_ badgeRef: inout NSView!, num: Int, state: BadgeState) {
+        let newBadge = makeStepBadge(num: num, state: state)
+        newBadge.frame = badgeRef.frame
+        badgeRef.superview?.addSubview(newBadge)
+        badgeRef.removeFromSuperview()
+        badgeRef = newBadge
+    }
 
-    private enum StatusStyle { case amber, green, gray, locked }
+    // MARK: - Action row (label + arrow)
 
-    private func makeStatusPill(text: String, style: StatusStyle) -> NSView {
-        let pill = NSView(frame: NSRect(x: 0, y: 0, width: 200, height: 36))
-        pill.wantsLayer = true
-        pill.layer?.cornerRadius = 20
+    private func makeActionRow(label: String, action: Selector, width: CGFloat) -> NSView {
+        let rowH: CGFloat = 72
+        let row = NSView(frame: NSRect(x: 0, y: 0, width: width, height: rowH))
 
+        // Label (clickable)
+        let labelBtn = NSButton(title: label, target: self, action: action)
+        labelBtn.isBordered = false
+        labelBtn.wantsLayer = true
+        labelBtn.font = DesignTokens.setupActionLabelFont
+        labelBtn.contentTintColor = DesignTokens.setupButtonText
+        labelBtn.sizeToFit()
+        let labelW = labelBtn.frame.width
+        labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)
+        row.addSubview(labelBtn)
+
+        // Arrow button
+        let arrowSize = DesignTokens.setupArrowSize
+        let arrow = NSButton(title: "→", target: self, action: action)
+        arrow.isBordered = false
+        arrow.wantsLayer = true
+        arrow.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
+        arrow.contentTintColor = DesignTokens.setupButtonText
+        arrow.layer?.backgroundColor = DesignTokens.setupButtonFill.cgColor
+        arrow.layer?.borderColor = DesignTokens.setupButtonBorder.cgColor
+        arrow.layer?.borderWidth = 1
+        arrow.layer?.cornerRadius = arrowSize / 2
+        arrow.frame = NSRect(x: (width - arrowSize) / 2, y: rowH - 18 - 8 - arrowSize, width: arrowSize, height: arrowSize)
+
+        // Hover tracking
+        let trackArea = NSTrackingArea(rect: arrow.bounds, options: [.mouseEnteredAndExited, .activeInActiveApp], owner: nil, userInfo: nil)
+        arrow.addTrackingArea(trackArea)
+
+        row.addSubview(arrow)
+        return row
+    }
+
+    // MARK: - Status label
+
+    private enum StatusStyle { case amber, green, gray }
+
+    private func makeStatusLabel(_ text: String, style: StatusStyle) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
+        label.font = DesignTokens.setupStatusFont
         label.alignment = .center
+        applyStatusStyle(label, style: style)
+        return label
+    }
 
+    private func applyStatusStyle(_ label: NSTextField, style: StatusStyle) {
         switch style {
         case .amber:
-            pill.layer?.backgroundColor = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 0.08).cgColor
-            label.textColor = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1)
+            label.textColor = DesignTokens.setupAmberText
         case .green:
-            pill.layer?.backgroundColor = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08).cgColor
-            label.textColor = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1)
-        case .gray, .locked:
-            pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.03).cgColor
-            label.textColor = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1)
-        }
-
-        label.frame = NSRect(x: 0, y: 0, width: pill.frame.width, height: pill.frame.height)
-        pill.addSubview(label)
-        return pill
-    }
-
-    private func updateStatusPill(_ pill: NSView, text: String, style: StatusStyle) {
-        if let label = pill.subviews.first as? NSTextField {
-            label.stringValue = text
-            switch style {
-            case .amber:
-                pill.layer?.backgroundColor = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 0.08).cgColor
-                label.textColor = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1)
-            case .green:
-                pill.layer?.backgroundColor = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08).cgColor
-                label.textColor = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1)
-            case .gray, .locked:
-                pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.03).cgColor
-                label.textColor = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1)
-            }
+            label.textColor = DesignTokens.setupGreenText
+        case .gray:
+            label.textColor = DesignTokens.setupGrayText
         }
     }
 
-    // MARK: - Pill button
+    // MARK: - Small pill button
 
-    private func makePillButton(_ title: String) -> NSButton {
+    private func makeSmallPillButton(_ title: String, green: Bool) -> NSButton {
         let btn = NSButton(title: title, target: nil, action: nil)
         btn.isBordered = false
         btn.wantsLayer = true
-        btn.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
-        btn.contentTintColor = NSColor(red: 26/255, green: 26/255, blue: 26/255, alpha: 1)
-        btn.layer?.backgroundColor = NSColor.white.cgColor
-        btn.layer?.cornerRadius = 20
+        btn.font = DesignTokens.setupSmallPillFont
+        let pillH = DesignTokens.setupSmallPillHeight
+
+        if green {
+            btn.contentTintColor = DesignTokens.setupGreenText
+            btn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
+            btn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
+        } else {
+            btn.contentTintColor = DesignTokens.purpleButton
+            btn.layer?.backgroundColor = DesignTokens.purpleButtonBg.cgColor
+            btn.layer?.borderColor = DesignTokens.purpleButton.cgColor
+        }
+
+        btn.layer?.borderWidth = 1
+        btn.layer?.cornerRadius = pillH / 2
         btn.sizeToFit()
-        let w = max(btn.frame.width + 48, 160)
-        btn.setFrameSize(NSSize(width: w, height: 36))
+        let w = btn.frame.width + 20
+        btn.setFrameSize(NSSize(width: w, height: pillH))
         return btn
-    }
-
-    // MARK: - Helpers
-
-    private func makeLabel(_ text: String, size: CGFloat, weight: NSFont.Weight, color: NSColor) -> NSTextField {
-        let label = NSTextField(labelWithString: text)
-        label.font = NSFont.systemFont(ofSize: size, weight: weight)
-        label.textColor = color
-        label.isBezeled = false
-        label.drawsBackground = false
-        label.isEditable = false
-        label.sizeToFit()
-        return label
     }
 
     // MARK: - Footer
 
     private func updateFooter() {
         for sv in footerContent.subviews { sv.removeFromSuperview() }
-        let winW: CGFloat = 700
+        let winW = DesignTokens.setupWindowWidth
 
-        if step1Done && step2AccessibilityDone && step3Done {
-            let hint = makeLabel("Capture shortcut:", size: 12, weight: .regular, color: txS)
-            hint.frame.origin = NSPoint(x: 24, y: 18)
-            footerContent.addSubview(hint)
+        if step1Done && step2Done && step3Done {
+            // Left: Shortcut group in pill container
+            let shortcutGroup = buildShortcutGroup()
+            shortcutGroup.frame.origin = NSPoint(x: 24, y: (DesignTokens.setupFooterHeight - shortcutGroup.frame.height) / 2)
+            footerContent.addSubview(shortcutGroup)
 
-            var kx: CGFloat = 24 + hint.frame.width + 8
-            for key in ["⌘", "⇧", "6"] {
-                let pill = makeKbdPill(key)
-                pill.frame.origin = NSPoint(x: kx, y: 17)
-                footerContent.addSubview(pill)
-                kx += pill.frame.width + 3
-            }
-
+            // Right: Green "Start using Vibeliner →" button
             let startBtn = NSButton(title: "Start using Vibeliner →", target: self, action: #selector(startClicked))
             startBtn.isBordered = false
             startBtn.wantsLayer = true
-            startBtn.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
-            startBtn.contentTintColor = .white
-            startBtn.layer?.backgroundColor = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1).cgColor
+            startBtn.font = DesignTokens.setupActionLabelFont
+            startBtn.contentTintColor = DesignTokens.setupGreenText
+            startBtn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
+            startBtn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
+            startBtn.layer?.borderWidth = 1
             startBtn.layer?.cornerRadius = 20
             startBtn.sizeToFit()
             let btnW = startBtn.frame.width + 48
             startBtn.setFrameSize(NSSize(width: btnW, height: 36))
-            startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: 10)
+            startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
             footerContent.addSubview(startBtn)
         } else {
-            let msg = makeLabel("Complete all steps to continue", size: 13, weight: .regular, color: NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1))
-            msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: 18)
+            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
+            msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
             footerContent.addSubview(msg)
         }
     }
 
+    private func buildShortcutGroup() -> NSView {
+        // Build all children first to measure total width
+        let hint = makeLabel("Shortcut:", font: DesignTokens.setupShortcutHintFont, color: DesignTokens.setupTextSecondary)
+        let keys = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey)
+        var kbdPills: [NSView] = []
+        for key in keys {
+            kbdPills.append(makeKbdPill(key))
+        }
+        let editBtn = makeSmallPillButton("Edit", green: false)
+        editBtn.target = self
+        editBtn.action = #selector(editShortcut)
+
+        // Calculate total width
+        let innerPad: CGFloat = 12
+        let gap: CGFloat = 6
+        let rightPad: CGFloat = 3
+        var totalW = innerPad + hint.frame.width + gap
+        for pill in kbdPills {
+            totalW += pill.frame.width + 3
+        }
+        totalW += gap + editBtn.frame.width + rightPad
+
+        let groupH: CGFloat = 28
+        let group = NSView(frame: NSRect(x: 0, y: 0, width: totalW, height: groupH))
+        group.wantsLayer = true
+        group.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
+        group.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        group.layer?.borderWidth = 1
+        group.layer?.cornerRadius = groupH / 2
+
+        var x = innerPad
+        hint.frame.origin = NSPoint(x: x, y: (groupH - hint.frame.height) / 2)
+        group.addSubview(hint)
+        x += hint.frame.width + gap
+
+        for pill in kbdPills {
+            pill.frame.origin = NSPoint(x: x, y: (groupH - pill.frame.height) / 2)
+            group.addSubview(pill)
+            x += pill.frame.width + 3
+        }
+
+        x += gap - 3
+        editBtn.frame.origin = NSPoint(x: x, y: (groupH - editBtn.frame.height) / 2)
+        group.addSubview(editBtn)
+
+        return group
+    }
+
     private func makeKbdPill(_ text: String) -> NSView {
-        let label = makeLabel(text, size: 12, weight: .semibold, color: NSColor(white: 1, alpha: 0.55))
+        let label = makeLabel(text, font: DesignTokens.setupKbdFont, color: DesignTokens.setupKbdText)
         label.alignment = .center
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
         pill.wantsLayer = true
-        pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
-        pill.layer?.borderColor = NSColor(white: 1, alpha: 0.12).cgColor
+        pill.layer?.backgroundColor = DesignTokens.setupKbdBg.cgColor
+        pill.layer?.borderColor = DesignTokens.setupKbdBorder.cgColor
         pill.layer?.borderWidth = 1
         pill.layer?.cornerRadius = 5
         label.frame = NSRect(x: 0, y: (h - label.frame.height) / 2, width: w, height: label.frame.height)
@@ -424,108 +486,119 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Step completion
 
     func completeStep1() {
+        guard !step1Done else { return }
         step1Done = true
 
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.5
+            ctx.duration = 0.3
             panel1Container.animator().alphaValue = 0.45
         }
 
-        let newBadge = makeStepBadge(num: 1, done: true, locked: false)
-        newBadge.frame = badge1View.frame
-        badge1View.superview?.addSubview(newBadge)
-        badge1View.removeFromSuperview()
-        badge1View = newBadge
+        replaceBadge(&badge1View, num: 1, state: .done)
+        step1ActionRow.isHidden = true
+        status1.isHidden = false
+        status1.stringValue = "Permission granted"
+        applyStatusStyle(status1, style: .green)
 
-        step1Button?.isHidden = true
-        step1SuccessLabel?.isHidden = false
-        updateStatusPill(status1, text: "Permission granted", style: .green)
-
-        // Unlock panel 2 (Accessibility)
+        // Unlock panel 2
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.5
+            ctx.duration = 0.3
             panel2Container.animator().alphaValue = 1.0
         }
 
-        let newBadge2 = makeStepBadge(num: 2, done: false, locked: false)
-        newBadge2.frame = badge2View.frame
-        badge2View.superview?.addSubview(newBadge2)
-        badge2View.removeFromSuperview()
-        badge2View = newBadge2
-
-        step2Button?.isHidden = false
-        updateStatusPill(status2, text: "Not yet granted", style: .amber)
+        replaceBadge(&badge2View, num: 2, state: .active)
+        step2ActionRow.isHidden = false
+        step2Helper.isHidden = false
+        status2.isHidden = true
 
         checkCompletion()
     }
 
-    func completeStep2Accessibility() {
-        step2AccessibilityDone = true
+    func completeStep2() {
+        guard !step2Done else { return }
+        step2Done = true
 
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.5
+            ctx.duration = 0.3
             panel2Container.animator().alphaValue = 0.45
         }
 
-        let newBadge = makeStepBadge(num: 2, done: true, locked: false)
-        newBadge.frame = badge2View.frame
-        badge2View.superview?.addSubview(newBadge)
-        badge2View.removeFromSuperview()
-        badge2View = newBadge
+        replaceBadge(&badge2View, num: 2, state: .done)
+        step2ActionRow.isHidden = true
+        step2Helper.isHidden = true
+        status2.isHidden = false
+        status2.stringValue = "Permission granted"
+        applyStatusStyle(status2, style: .green)
 
-        step2Button?.isHidden = true
-        updateStatusPill(status2, text: "Permission granted", style: .green)
-
-        // Unlock panel 3 (Captures folder)
+        // Unlock panel 3
         NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.5
+            ctx.duration = 0.3
             panel3Container.animator().alphaValue = 1.0
         }
 
-        let newBadge3 = makeStepBadge(num: 3, done: false, locked: false)
-        newBadge3.frame = badge3View.frame
-        badge3View.superview?.addSubview(newBadge3)
-        badge3View.removeFromSuperview()
-        badge3View = newBadge3
+        replaceBadge(&badge3View, num: 3, state: .active)
+        step3ActionRow.isHidden = false
+        status3.isHidden = true
 
-        step3Button?.isHidden = false
-        updateStatusPill(status3, text: "Folder not yet chosen", style: .amber)
+        // If re-running with existing folder, pre-fill path
+        if isRerun && !folderPath.isEmpty {
+            pathDisplay.stringValue = abbreviatePath(folderPath)
+            pathDisplay.textColor = DesignTokens.setupTextPrimary
+        } else {
+            pathDisplay.stringValue = "No folder selected"
+            pathDisplay.textColor = DesignTokens.setupTextSecondary
+        }
 
         checkCompletion()
     }
 
     func completeStep3() {
+        guard !step3Done else { return }
         step3Done = true
 
-        // Panel 3 does NOT dim — stays fully interactive
-        let newBadge = makeStepBadge(num: 3, done: true, locked: false)
-        newBadge.frame = badge3View.frame
-        badge3View.superview?.addSubview(newBadge)
-        badge3View.removeFromSuperview()
-        badge3View = newBadge
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.3
+            panel3Container.animator().alphaValue = 0.45
+        }
 
-        pathDisplay.stringValue = folderPath.isEmpty ? "~/Documents/vibeliner" : folderPath
-        pathDisplay.textColor = tx
-        updateStatusPill(status3, text: "Folder ready", style: .green)
+        replaceBadge(&badge3View, num: 3, state: .done)
+        step3ActionRow.isHidden = true
+        status3.isHidden = true
+        step3DoneArea.isHidden = false
+
+        pathDisplay.stringValue = abbreviatePath(folderPath)
+        pathDisplay.textColor = DesignTokens.setupTextPrimary
 
         checkCompletion()
     }
 
-    private func checkCompletion() {
-        if step1Done && step2AccessibilityDone && step3Done {
-            updateFooter()
+    /// Called when "Change folder" is clicked after step 3 is done — allow re-selecting
+    private func reopenFolderSelection() {
+        step3Done = false
+        step3DoneArea.isHidden = true
+        step3ActionRow.isHidden = false
+
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.3
+            panel3Container.animator().alphaValue = 1.0
         }
+        replaceBadge(&badge3View, num: 3, state: .active)
+        updateFooter()
+    }
+
+    private func checkCompletion() {
+        updateFooter()
     }
 
     // MARK: - Permission polling
 
     private func startPermissionPolling() {
-        // Immediate checks on open
+        // Immediate checks
         if CGPreflightScreenCaptureAccess() {
             completeStep1()
         }
         if step1Done && AXIsProcessTrusted() {
-            completeStep2Accessibility()
+            completeStep2()
         }
 
         permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
@@ -533,8 +606,8 @@ final class SetupWindowController: NSWindowController {
             if !self.step1Done && CGPreflightScreenCaptureAccess() {
                 self.completeStep1()
             }
-            if self.step1Done && !self.step2AccessibilityDone && AXIsProcessTrusted() {
-                self.completeStep2Accessibility()
+            if self.step1Done && !self.step2Done && AXIsProcessTrusted() {
+                self.completeStep2()
             }
         }
     }
@@ -549,13 +622,21 @@ final class SetupWindowController: NSWindowController {
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
     }
 
-    @objc private func createFolder() {
+    @objc private func chooseFolder() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.prompt = "Choose"
-        panel.directoryURL = URL(fileURLWithPath: NSString("~/Documents").expandingTildeInPath)
+
+        // Start from existing folder or default
+        if !folderPath.isEmpty {
+            let expanded = (folderPath as NSString).expandingTildeInPath
+            panel.directoryURL = URL(fileURLWithPath: expanded)
+        } else {
+            panel.directoryURL = URL(fileURLWithPath: NSString("~/Documents").expandingTildeInPath)
+        }
+
         panel.begin { [weak self] response in
             guard let self, response == .OK, let url = panel.url else { return }
             self.folderPath = url.path
@@ -568,6 +649,60 @@ final class SetupWindowController: NSWindowController {
     @objc private func startClicked() {
         ConfigManager.shared.setupComplete = true
         ConfigManager.shared.save()
+        permissionTimer?.invalidate()
+        permissionTimer = nil
         window?.close()
+    }
+
+    @objc private func editShortcut() {
+        // Open Settings to the General tab
+        if let delegate = NSApp.delegate as? AppDelegate {
+            if delegate.settingsWindowController == nil {
+                delegate.settingsWindowController = SettingsWindowController()
+            }
+            delegate.settingsWindowController?.showWindow(nil)
+            delegate.settingsWindowController?.window?.makeKeyAndOrderFront(nil)
+            NSApp.activate(ignoringOtherApps: true)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private func makeLabel(_ text: String, font: NSFont, color: NSColor) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = font
+        label.textColor = color
+        label.isBezeled = false
+        label.drawsBackground = false
+        label.isEditable = false
+        label.sizeToFit()
+        return label
+    }
+
+    private func makeWrappingLabel(_ text: String, font: NSFont, color: NSColor, width: CGFloat) -> NSTextField {
+        let label = makeLabel(text, font: font, color: color)
+        label.maximumNumberOfLines = 0
+        label.preferredMaxLayoutWidth = width
+        label.lineBreakMode = .byWordWrapping
+        label.setFrameSize(NSSize(width: width, height: label.fittingSize.height))
+        return label
+    }
+
+    private func makeDivider(x: CGFloat, y: CGFloat, height: CGFloat) -> NSView {
+        let d = NSView(frame: NSRect(x: x, y: y, width: 1, height: height))
+        d.wantsLayer = true
+        d.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        return d
+    }
+
+    private func abbreviatePath(_ path: String) -> String {
+        let home = NSHomeDirectory()
+        if path.hasPrefix(home) {
+            return "~" + path.dropFirst(home.count)
+        }
+        if path.hasPrefix("~/") {
+            return path
+        }
+        return path
     }
 }

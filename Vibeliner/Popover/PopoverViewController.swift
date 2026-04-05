@@ -343,11 +343,8 @@ final class PopoverContentView: NSView {
         ConfigManager.shared.setupComplete = false
         ConfigManager.shared.tooltipDismissed = false
         ConfigManager.shared.save()
-        let setup = SetupWindowController()
-        setup.showWindow(nil)
-        setup.window?.center()
         if let delegate = NSApp.delegate as? AppDelegate {
-            delegate.setupWindowController = setup
+            delegate.showSetupWindow()
         }
     }
 

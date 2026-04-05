@@ -11,6 +11,8 @@ final class ConfigManager {
     var setupComplete: Bool = false
     var tooltipDismissed: Bool = false
     var launchAtLogin: Bool = false
+    /// Appearance mode: "system", "dark", or "light"
+    var appearance: String = "system"
     var preamble: String = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
     var footer: String = "Make the changes and verify they match the design."
     var toolDescriptions: [String: String] = [
@@ -23,6 +25,17 @@ final class ConfigManager {
 
     var expandedCapturesFolder: String {
         return (capturesFolder as NSString).expandingTildeInPath
+    }
+
+    /// Whether the captures folder exists on disk as a directory
+    var capturesFolderExists: Bool {
+        var isDir: ObjCBool = false
+        return FileManager.default.fileExists(atPath: expandedCapturesFolder, isDirectory: &isDir) && isDir.boolValue
+    }
+
+    /// Whether config.toml exists (distinguishes first-time from returning user)
+    var configFileExists: Bool {
+        return FileManager.default.fileExists(atPath: configFileURL.path)
     }
 
     private var configFileURL: URL {
@@ -52,6 +65,7 @@ final class ConfigManager {
             setupComplete = false
             tooltipDismissed = false
             launchAtLogin = false
+            appearance = "system"
             preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
             footer = "Make the changes and verify they match the design."
             toolDescriptions = [
@@ -135,6 +149,8 @@ final class ConfigManager {
                 tooltipDismissed = rawValue == "true"
             case "launch_at_login":
                 launchAtLogin = rawValue == "true"
+            case "appearance":
+                appearance = unquoteString(rawValue)
             case "preamble":
                 preamble = unquoteMultilineString(rawValue)
             case "footer":
@@ -153,6 +169,7 @@ final class ConfigManager {
         lines.append("setup_complete = \(setupComplete)")
         lines.append("tooltip_dismissed = \(tooltipDismissed)")
         lines.append("launch_at_login = \(launchAtLogin)")
+        lines.append("appearance = \"\(appearance)\"")
         lines.append("preamble = \"\(escapeString(preamble))\"")
         lines.append("footer = \"\(escapeString(footer))\"")
         lines.append("")

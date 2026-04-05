@@ -35,23 +35,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             CaptureCoordinator.shared.startCapture()
         }
 
-        // Show setup window on first launch
-        if !ConfigManager.shared.setupComplete {
-            let setup = SetupWindowController()
-            setup.showWindow(nil)
-            setup.window?.center()
-            setupWindowController = setup
-        }
+        // Show setup window when needed:
+        //   1. First-time (no config or setupComplete=false)
+        //   2. Permission revoked (Screen Recording or Accessibility)
+        //   3. Captures folder deleted
+        let needsSetup: Bool = {
+            let config = ConfigManager.shared
+            guard config.setupComplete else { return true }
+            guard CGPreflightScreenCaptureAccess() else { return true }
+            guard AXIsProcessTrusted() else { return true }
+            guard config.capturesFolderExists else { return true }
+            return false
+        }()
 
-        // Check permissions for returning users
-        if ConfigManager.shared.setupComplete {
-            let hasScreenRecording = CGPreflightScreenCaptureAccess()
-            let hasAccessibility = AXIsProcessTrusted()
-            if !hasScreenRecording || !hasAccessibility {
-                DispatchQueue.main.async {
-                    self.showPermissionAlert(missingScreenRecording: !hasScreenRecording, missingAccessibility: !hasAccessibility)
-                }
-            }
+        if needsSetup {
+            showSetupWindow()
         }
     }
 
@@ -59,28 +57,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         HotkeyManager.shared.unregister()
     }
 
-    private func showPermissionAlert(missingScreenRecording: Bool, missingAccessibility: Bool) {
-        let alert = NSAlert()
-        alert.alertStyle = .warning
-        alert.messageText = "Vibeliner needs permission"
-        let hotkeyDisplay = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey).joined()
-
-        var msgs: [String] = []
-        if missingScreenRecording { msgs.append("Screen Recording is required to capture screenshots.") }
-        if missingAccessibility { msgs.append("Accessibility is required for the \(hotkeyDisplay) hotkey.") }
-        alert.informativeText = msgs.joined(separator: "\n")
-
-        alert.addButton(withTitle: "Open Settings")
-        alert.addButton(withTitle: "Later")
-
-        let response = alert.runModal()
-        if response == .alertFirstButtonReturn {
-            if missingScreenRecording {
-                CGRequestScreenCaptureAccess()
-            } else if missingAccessibility {
-                NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
-            }
-        }
+    func showSetupWindow() {
+        let setup = SetupWindowController()
+        setup.showWindow(nil)
+        setup.window?.center()
+        NSApp.activate(ignoringOtherApps: true)
+        setupWindowController = setup
     }
 
     private func setupMenuBarIcon() {
