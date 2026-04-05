@@ -7,29 +7,27 @@ final class SettingsWindowController: NSWindowController {
     private var tabButtons: [NSButton] = []
     private var tabUnderlines: [NSView] = []
     private let contentContainer = NSView()
-    private var activeTabIndex = -1 // nothing selected yet
+    private var activeTabIndex = -1
 
     /// Cached tab views — created lazily on first display.
     private var cachedTabViews: [Int: NSView] = [:]
 
-    /// Maximum content width so sections stay readable on wide windows.
-    private static let maxContentWidth: CGFloat = 484
     private static let tabBarHeight: CGFloat = 36
 
     // MARK: - Lifecycle
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 540, height: 720),
+            contentRect: NSRect(x: 0, y: 0, width: 600, height: 740),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
-            defer: true // defer rendering until we finish setup
+            defer: true
         )
         window.title = "Vibeliner Settings"
         window.center()
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.minSize = NSSize(width: 480, height: 520)
+        window.minSize = NSSize(width: 520, height: 560)
         self.init(window: window)
         buildWindowLayout()
     }
@@ -118,16 +116,15 @@ final class SettingsWindowController: NSWindowController {
         scrollView.contentInsets = NSEdgeInsetsZero
         contentView.addSubview(scrollView)
 
-        // Flipped document view so content flows top-down
         let documentView = FlippedDocumentView()
         documentView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.documentView = documentView
 
-        // Content container lives inside the document view, centered with max-width
+        // Content container fills the document view (no max-width cap —
+        // the window padding inside each tab provides the visual inset,
+        // so the edit frame stays concentric with the window at any size)
         contentContainer.translatesAutoresizingMaskIntoConstraints = false
         documentView.addSubview(contentContainer)
-
-        // ── Top-level layout: tab bar → divider → scroll view ──
 
         NSLayoutConstraint.activate([
             tabBar.topAnchor.constraint(equalTo: contentView.topAnchor),
@@ -146,29 +143,20 @@ final class SettingsWindowController: NSWindowController {
             scrollView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
 
-        // Pin document view to clip view so it fills horizontally
         let clipView = scrollView.contentView
         NSLayoutConstraint.activate([
             documentView.topAnchor.constraint(equalTo: clipView.topAnchor),
             documentView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
             documentView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor),
-            // No bottom pin — documentView grows with its content
         ])
-
-        // Center contentContainer horizontally, cap its width
-        let fillWidth = contentContainer.widthAnchor.constraint(equalTo: documentView.widthAnchor)
-        fillWidth.priority = .defaultHigh // 750 — fill, but yield to cap
-        let capWidth = contentContainer.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContentWidth)
 
         NSLayoutConstraint.activate([
             contentContainer.topAnchor.constraint(equalTo: documentView.topAnchor),
-            contentContainer.centerXAnchor.constraint(equalTo: documentView.centerXAnchor),
+            contentContainer.leadingAnchor.constraint(equalTo: documentView.leadingAnchor),
+            contentContainer.trailingAnchor.constraint(equalTo: documentView.trailingAnchor),
             contentContainer.bottomAnchor.constraint(equalTo: documentView.bottomAnchor),
-            fillWidth,
-            capWidth,
         ])
 
-        // Show the first tab
         selectTab(0)
     }
 
@@ -181,14 +169,12 @@ final class SettingsWindowController: NSWindowController {
     private func selectTab(_ index: Int) {
         guard index >= 0, index < 3, index != activeTabIndex else { return }
 
-        // Remove the current tab view from the hierarchy (keep it cached)
         if let oldView = cachedTabViews[activeTabIndex] {
             oldView.removeFromSuperview()
         }
 
         activeTabIndex = index
 
-        // Create or reuse the tab view
         let tabView: NSView
         if let cached = cachedTabViews[index] {
             tabView = cached
@@ -197,7 +183,6 @@ final class SettingsWindowController: NSWindowController {
             cachedTabViews[index] = tabView
         }
 
-        // Add to container and constrain
         tabView.translatesAutoresizingMaskIntoConstraints = false
         contentContainer.addSubview(tabView)
         NSLayoutConstraint.activate([
@@ -207,13 +192,11 @@ final class SettingsWindowController: NSWindowController {
             tabView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
         ])
 
-        // Scroll to top when switching tabs
         if let scrollView = contentContainer.enclosingScrollView,
            let documentView = scrollView.documentView {
             documentView.scroll(.zero)
         }
 
-        // Update tab bar styling
         for (i, button) in tabButtons.enumerated() {
             let active = i == index
             button.contentTintColor = active ? DesignTokens.purpleLight : .secondaryLabelColor
@@ -227,7 +210,6 @@ final class SettingsWindowController: NSWindowController {
             return GeneralTabView()
         case 1:
             let prompt = PromptTabView()
-            // Defer content loading until the view is in the hierarchy
             DispatchQueue.main.async {
                 prompt.loadContent()
             }
@@ -239,8 +221,6 @@ final class SettingsWindowController: NSWindowController {
         }
     }
 }
-
-// MARK: - Flipped document view (origin at top-left for natural scrolling)
 
 private final class FlippedDocumentView: NSView {
     override var isFlipped: Bool { true }
