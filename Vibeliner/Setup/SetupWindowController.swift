@@ -204,7 +204,9 @@ final class SetupWindowController: NSWindowController {
         // Path box
         let pathBoxY = desc.frame.origin.y - 14 - 36
         pathDisplay = NSTextField(labelWithString: isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected")
+        pathDisplay.cell = VerticallyCenteredTextFieldCell()
         pathDisplay.font = DesignTokens.setupPathFont
+        pathDisplay.stringValue = isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected"
         pathDisplay.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
         pathDisplay.wantsLayer = true
         pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
@@ -262,27 +264,22 @@ final class SetupWindowController: NSWindowController {
         view.layer?.cornerRadius = size / 2
         view.layer?.borderWidth = 2
 
+        let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
             view.layer?.borderColor = DesignTokens.setupGreen.cgColor
             view.layer?.backgroundColor = DesignTokens.setupGreenBadgeBg.cgColor
-            let check = makeLabel("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen)
-            check.alignment = .center
-            check.frame = NSRect(x: 0, y: 0, width: size, height: size)
+            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
             view.layer?.borderColor = DesignTokens.setupGrayText.cgColor
             view.layer?.backgroundColor = DesignTokens.setupGrayBg.cgColor
-            let numLabel = makeLabel("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText)
-            numLabel.alignment = .center
-            numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
             view.layer?.borderColor = DesignTokens.purpleDark.cgColor
             view.layer?.backgroundColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08).cgColor
-            let numLabel = makeLabel("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark)
-            numLabel.alignment = .center
-            numLabel.frame = NSRect(x: 0, y: 0, width: size, height: size)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark, in: badgeRect)
             view.addSubview(numLabel)
         }
 

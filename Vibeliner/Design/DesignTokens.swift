@@ -478,4 +478,61 @@ enum DesignTokens {
     static let setupBadgeCheckFont = NSFont.systemFont(ofSize: 16, weight: .bold)
     static let setupKbdFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
     static let setupShortcutHintFont = NSFont.systemFont(ofSize: 12, weight: .regular)
+
+    // MARK: - Vertically Centered Text Field
+
+    /// Creates an NSTextField that is vertically centered within a given container height.
+    /// Use this instead of setting frame = container bounds, which leaves text top-aligned.
+    /// Usage: `DesignTokens.makeCenteredTextField("text", font: font, color: color, in: NSRect(...))`
+    static func makeCenteredTextField(_ text: String, font: NSFont, color: NSColor, in containerFrame: NSRect) -> NSTextField {
+        let label = NSTextField(labelWithString: text)
+        label.font = font
+        label.textColor = color
+        label.alignment = .center
+        label.isBezeled = false
+        label.drawsBackground = false
+        label.isEditable = false
+        label.sizeToFit()
+        let textH = label.frame.height
+        let y = (containerFrame.height - textH) / 2
+        label.frame = NSRect(x: containerFrame.origin.x, y: containerFrame.origin.y + y, width: containerFrame.width, height: textH)
+        return label
+    }
+}
+
+// MARK: - Vertically Centered Text Field Cell
+
+/// NSTextFieldCell subclass that vertically centers text in its frame.
+/// By default NSTextField/NSTextFieldCell draws text top-aligned, which looks
+/// wrong in fixed-height containers (path boxes, settings fields, badges, etc.).
+///
+/// Usage:
+///   let field = NSTextField()
+///   field.cell = VerticallyCenteredTextFieldCell()
+///   field.font = ...
+///   field.stringValue = "text"
+///   field.frame = NSRect(x: 0, y: 0, width: 200, height: 36)
+///   // Text will be vertically centered in the 36px height
+class VerticallyCenteredTextFieldCell: NSTextFieldCell {
+
+    override func titleRect(forBounds rect: NSRect) -> NSRect {
+        var titleRect = super.titleRect(forBounds: rect)
+        let textH = cellSize(forBounds: rect).height
+        guard textH < rect.height else { return titleRect }
+        titleRect.origin.y = rect.origin.y + (rect.height - textH) / 2
+        titleRect.size.height = textH
+        return titleRect
+    }
+
+    override func drawInterior(withFrame cellFrame: NSRect, in controlView: NSView) {
+        super.drawInterior(withFrame: titleRect(forBounds: cellFrame), in: controlView)
+    }
+
+    override func select(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, start selStart: Int, length selLength: Int) {
+        super.select(withFrame: titleRect(forBounds: rect), in: controlView, editor: textObj, delegate: delegate, start: selStart, length: selLength)
+    }
+
+    override func edit(withFrame rect: NSRect, in controlView: NSView, editor textObj: NSText, delegate: Any?, event: NSEvent?) {
+        super.edit(withFrame: titleRect(forBounds: rect), in: controlView, editor: textObj, delegate: delegate, event: event)
+    }
 }

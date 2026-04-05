@@ -80,13 +80,9 @@ final class HotkeyManager {
             return event
         }
 
-        let trusted = isTrusted()
-        NSLog("Vibeliner: Accessibility trusted = %@", trusted ? "YES" : "NO")
-        if !trusted {
-            // Prompt for accessibility access
-            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
-            _ = AXIsProcessTrustedWithOptions(options)
-        }
+        // Note: do NOT prompt for accessibility here — the setup window handles that.
+        // Prompting here triggers a macOS system dialog that interrupts the setup flow.
+        NSLog("Vibeliner: Accessibility trusted = %@", isTrusted() ? "YES" : "NO")
     }
 
     /// Check if the event matches ⌘⇧6. Uses .contains instead of == to tolerate
