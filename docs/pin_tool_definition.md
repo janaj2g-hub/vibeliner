@@ -146,7 +146,7 @@ Click + drag the note pill to reposition it independently from the pin.
 
 - Pins are numbered sequentially: 1, 2, 3, etc.
 - The badge number and the note prefix always match
-- Deleting a pin causes all subsequent pins to renumber (delete pin 2 → pin 3 becomes pin 2)
+- Deleting a pin renumbers the remaining annotations sequentially
 - The note prefixes update to match when renumbering occurs
 
 ## What gets exported
@@ -216,7 +216,7 @@ If the note pill would extend beyond the right edge of the canvas, the note repo
 The note pill grows horizontally up to 25 characters of user text. Beyond 25 characters, the pill's width is capped and the text wraps — the pill grows vertically (downward) to accommodate additional lines. Text is never clipped or truncated. All note text must be fully visible at all times during editing. It is acceptable for the note pill to extend beyond the canvas edge, since notes are NOT saved into the exported screenshot image — only the numbered pin badges are baked into the export.
 
 ### 4. Deleting a pin
-Deleting a pin removes both the badge/stake AND its associated note pill. All subsequent pins renumber (delete pin 2 → pin 3 becomes pin 2, etc.). The note prefixes update to match. Deletion is undoable — Cmd+Z restores the pin and note in their exact prior position with their original number.
+Deleting a pin removes both the badge/stake AND its associated note pill. The remaining annotations renumber sequentially and the note prefixes update to match. Deletion is undoable.
 
 ### 5. Undo / Redo
 Full undo/redo support for:

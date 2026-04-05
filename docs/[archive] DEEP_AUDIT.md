@@ -1,4 +1,7 @@
-# Deep Architecture Audit — VIB-173B
+# [archive] Deep Architecture Audit — VIB-173B
+
+> Historical snapshot: this audit reflects the codebase as of 2026-04-02 and is not a current source of truth.
+> Use it for historical context only; prefer the current code and active product docs for implementation decisions.
 
 **Date:** 2026-04-02
 **Codebase:** 45 Swift files, ~6,750 lines total

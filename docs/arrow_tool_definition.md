@@ -162,7 +162,7 @@ When dragging either endpoint, the note re-evaluates its position in real time a
 Same rules as the pin tool:
 - Sequential numbering: 1, 2, 3, etc.
 - Shared number sequence with ALL annotation tools (pins, arrows, rectangles, circles, freehand all share one counter)
-- Deleting renumbers all subsequent annotations
+- Deleting renumbers the remaining annotations sequentially
 - Badge number and note prefix always match
 
 ## What gets exported

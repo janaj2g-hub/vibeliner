@@ -71,7 +71,7 @@ Every line from the prompt's `Verification` section must be included with `Pass`
 - No force unwraps (`!`)
 - Prefer `let` over `var`
 - Use `guard` for early returns
-- Config lives at `~/Documents/vibeliner/config.toml`
+- Config lives at `[captures folder]/config.toml` (default: `~/Documents/vibeliner/config.toml`)
 - Captures save to `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/` with `screenshot.png` and `prompt.txt`
 - Built app is `dist/Vibeliner.app`
 - Read `docs/TECHNICAL_DECISIONS.md` before trying a new approach — check if it already failed

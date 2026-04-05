@@ -13,11 +13,11 @@ Vibeliner saves each capture as a self-contained folder with two files: the anno
 
 | Property | Value |
 |---|---|
-| Location | `~/Documents/vibeliner/` |
+| Location | Configured captures folder (default `~/Documents/vibeliner/`) |
 | Set during | First-launch setup flow |
 | Configurable | Yes, via settings (can change to any writable directory) |
 
-This was locked in the setup flow definition. The folder is created during setup.
+This is chosen during setup. The configured captures folder also stores `config.toml` at its root.
 
 ## Capture folder structure
 
@@ -69,13 +69,17 @@ A plain text file containing the prompt for LLM tools.
 #### Saved prompt.txt content (relative path)
 
 ```
-View the screenshot at ./screenshot.png
+This is a screenshot of my running app. View it at ./screenshot.png
 
-It shows my running app with red numbered annotations indicating issues to fix.
+Numbered pins point to a specific issue and arrows point at or between elements. Each annotation has a number and a description.
 
-1  padding too tight
-2  wrong border radius
-3  font weight too heavy
+Fix each issue:
+
+1  [pin] padding too tight
+2  [arrow] wrong border radius
+3  [arrow] move this element left
+
+Make the changes and verify they match the design.
 ```
 
 The saved file uses a relative path (`./screenshot.png`) so the prompt makes sense when reading the file from within the capture folder.
@@ -85,13 +89,17 @@ The saved file uses a relative path (`./screenshot.png`) so the prompt makes sen
 When the user clicks "Copy Prompt," the clipboard gets a version with the absolute path:
 
 ```
-View the screenshot at /Users/yourname/Documents/vibeliner/2026-03-30_091545/screenshot.png
+This is a screenshot of my running app. View it at /Users/yourname/Documents/vibeliner/2026-03-30_091545/screenshot.png
 
-It shows my running app with red numbered annotations indicating issues to fix.
+Numbered pins point to a specific issue and arrows point at or between elements. Each annotation has a number and a description.
 
-1  padding too tight
-2  wrong border radius
-3  font weight too heavy
+Fix each issue:
+
+1  [pin] padding too tight
+2  [arrow] wrong border radius
+3  [arrow] move this element left
+
+Make the changes and verify they match the design.
 ```
 
 The absolute path ensures the prompt works when pasted into Claude Code or Cursor from any working directory.
@@ -100,15 +108,15 @@ The absolute path ensures the prompt works when pasted into Claude Code or Curso
 
 The prompt has three parts:
 
-1. **Screenshot reference** — one line pointing to the image file
-2. **Context line** — one line explaining what the annotations mean
-3. **Numbered list** — one line per annotation, number + description
+1. **Preamble** — user-configurable text with `[Screenshot Path]`
+2. **Tool description** — `[Tool Description]` expands based on the tools used in the capture
+3. **Annotation list + footer** — one line per annotation in `number  [tool] note` format, followed by the configured footer
 
-The preamble text ("View the screenshot at..." and "It shows my running app...") is user-configurable in settings. The default is shown above. The `{{SCREENSHOT_PATH}}` token is replaced with the appropriate path (relative for saved, absolute for clipboard).
+The preamble and footer are user-configurable in settings. `[Screenshot Path]` is replaced with a relative path in saved files and an absolute path in IDE clipboard mode. In App clipboard mode, that line is omitted because the image is pasted separately.
 
 ## Two clipboard modes
 
-Both copy actions are always visible as buttons in the editor toolbar. "Copy Prompt" is visually primary (purple outlined). "Copy Image" is visually secondary (subtle white outlined).
+In App mode, both copy actions are visible in the editor toolbar. In IDE mode, only "Copy Prompt" is shown.
 
 ### Copy Prompt (primary)
 
@@ -116,7 +124,7 @@ Copies the prompt text (with absolute screenshot path) to the clipboard. One pas
 
 ### Copy Image (secondary)
 
-Copies the annotated screenshot image to the system clipboard. The user can then paste it into Claude.ai, ChatGPT, or any web tool that accepts image paste. Always visible in the toolbar alongside Copy Prompt.
+Copies the annotated screenshot image to the system clipboard. The user can then paste it into Claude.ai, ChatGPT, or any web tool that accepts image paste. Visible in App mode alongside Copy Prompt.
 
 ### Web workflow (two-paste)
 
@@ -126,9 +134,9 @@ For web-based LLM tools:
 
 Two separate paste actions. The two-button model makes this explicit and reliable.
 
-### The difference is explained once during setup
+### The difference is explained once in the editor
 
-After both setup steps complete, a purple tip card appears explaining: "Copy Prompt for terminal tools (Claude Code, Cursor). Copy Image for web/app tools (Claude.ai, ChatGPT)." Shown once, never reappears.
+The current setup flow does not show a copy-mode tip card. The IDE/App distinction is explained in the editor's first-use tooltip instead.
 
 ## LLM access patterns
 

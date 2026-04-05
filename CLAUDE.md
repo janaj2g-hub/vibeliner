@@ -84,7 +84,7 @@ Vibeliner/
 ├── Design/
 │   └── DesignTokens.swift              # ALL colors, dimensions, fonts — single source of truth
 ├── Config/
-│   ├── ConfigManager.swift             # Read/write config.toml
+│   ├── ConfigManager.swift             # Read/write config.toml in the captures folder
 │   └── CapturesManager.swift           # Folder creation, listing captures
 ├── Hotkey/
 │   └── HotkeyManager.swift            # Global Cmd+Shift+6 registration
@@ -92,7 +92,6 @@ Vibeliner/
 │   ├── CaptureCoordinator.swift        # Orchestrates overlay → capture → editor
 │   ├── CaptureOverlayWindow.swift      # Full-screen dim overlay
 │   ├── CrosshairView.swift             # Purple crosshair cursor
-│   ├── RegionSelectionView.swift       # Drag-to-select with bright cutout
 │   ├── DimensionLabelView.swift        # Live w/h pill during drag
 │   └── ScreenCapture.swift             # CGWindowListCreateImage → PNG
 ├── Editor/
@@ -101,7 +100,6 @@ Vibeliner/
 │   ├── CanvasView.swift                # Marks layer + Notes layer
 │   ├── ToolbarView.swift               # Pill-shaped floating toolbar
 │   ├── ToolButton.swift                # Reusable circular button
-│   ├── PinCounterIcon.swift            # Special pin icon with counter
 │   ├── StatusPillView.swift            # Floating status pill below screenshot
 │   └── FirstUseTooltipView.swift       # One-time IDE/App mode explanation
 ├── Annotations/
@@ -126,16 +124,11 @@ Vibeliner/
 │   ├── ClipboardManager.swift          # NSPasteboard for text and image
 │   └── AutoSaveManager.swift           # Save on every annotation change
 ├── Setup/
-│   ├── SetupWindowController.swift     # One-time welcome window
-│   ├── SetupPanelView.swift            # Reusable 3-state panel
-│   ├── PermissionPanel.swift           # Screen recording permission
-│   ├── FolderPanel.swift               # Captures folder creation
-│   └── ShareExplanationPanel.swift     # How to share explanation
+│   └── SetupWindowController.swift     # One-time welcome window: Screen Recording → Accessibility → Captures Folder
 ├── Settings/
 │   ├── SettingsWindowController.swift  # 3-tab settings window
 │   ├── GeneralTabView.swift            # Hotkey, folder, launch at login
 │   ├── PromptTabView.swift             # Sub-tabs: Preamble, Tools, Footer
-│   ├── ToolDescriptionRow.swift        # Icon + name + editable field
 │   ├── PromptPreviewView.swift         # Live preview at bottom
 │   └── AboutTabView.swift              # Version, links
 └── Popover/
@@ -166,7 +159,7 @@ Vibeliner/
 - **Renderer protocol:** all 5 renderers conform to a shared `AnnotationRenderer` protocol with `drawMarks(in:)` and `drawNotes(in:)` methods
 
 ### File paths
-- Config: `~/Documents/vibeliner/config.toml`
+- Config: `[captures folder]/config.toml` (default: `~/Documents/vibeliner/config.toml`)
 - Captures: `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/screenshot.png + prompt.txt`
 - Built app: `dist/Vibeliner.app` (git-ignored, built by xcodebuild)
 

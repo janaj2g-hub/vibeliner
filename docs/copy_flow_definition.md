@@ -129,18 +129,12 @@ copy the prompt and the image in two steps.
 
 - Appears once on first editor open
 - Dismisses permanently when "Got it" is clicked
-- Stores dismissal in `UserDefaults` — never shows again
+- Stores dismissal in `config.toml` — never shows again
 - Does not reappear on subsequent launches
 
 ## Setup flow integration
 
-The setup flow's third panel ("How to share") introduces the same concept with slightly more detail. The setup explanation uses two purple-accented cards:
-
-**Copy Prompt** — "For tools that read files, like Claude Code, Codex, or any terminal tool. Paste the text directly — the AI reads the screenshot from your disk."
-
-**Copy Image** — "For chat apps like Claude.ai, ChatGPT, and Gemini. Paste the image alongside the prompt."
-
-This primes the user before they ever see the editor. The first-use tooltip reinforces it.
+The current setup flow does not include a dedicated "How to share" panel. The IDE/App distinction is introduced in the editor via the first-use tooltip above the toggle.
 
 ## Keyboard shortcuts
 
@@ -153,7 +147,6 @@ This primes the user before they ever see the editor. The first-use tooltip rein
 
 When either copy button is clicked, the floating status pill below the screenshot reflects the action:
 - "Prompt copied" or "Image copied" briefly
-- Both buttons turning green simultaneously shows "Both copied"
 - The pill reverts to showing dimensions + note count after 2 seconds
 
 ## Edge cases

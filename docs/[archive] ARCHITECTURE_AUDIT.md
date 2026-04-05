@@ -1,4 +1,7 @@
-# Architecture Audit — VIB-173
+# [archive] Architecture Audit — VIB-173
+
+> Historical snapshot: this audit reflects the codebase as of 2026-04-02 and is not a current source of truth.
+> Use it for historical context only; prefer the current code and active product docs for implementation decisions.
 
 **Date:** 2026-04-02
 **Codebase:** 7,189 lines across 50 Swift files (pre-audit)
@@ -9,7 +12,7 @@
 | File | Lines | Reason |
 |---|---|---|
 | `Setup/SetupPanelView.swift` | 128 | Dead code — `SetupWindowController` was rewritten as self-contained; this reusable panel class is no longer referenced |
-| `Setup/ShareExplanationPanel.swift` | 69 | Dead code — "How to share" card is now inline in `SetupWindowController` |
+| `Setup/ShareExplanationPanel.swift` | 69 | Dead code — setup no longer has a dedicated share-explanation panel |
 | `Setup/PermissionPanel.swift` | 76 | Dead code — permission step is inline in `SetupWindowController` |
 | `Setup/FolderPanel.swift` | 110 | Dead code — folder step is inline in `SetupWindowController` |
 | `Editor/PinCounterIcon.swift` | 45 | Dead code — pin icon is now drawn inline in `ToolbarView.drawPinIcon()` using the same pattern as all other tool icons. No counter number. |
