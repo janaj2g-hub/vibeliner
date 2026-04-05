@@ -70,14 +70,12 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
-        // Refresh layer-backed colors on the edit frame
         SettingsUI.styleFrameSurface(editFrame)
-        // Refresh any editor containers currently in the active content stack
-        for sub in activeContentStack.arrangedSubviews {
-            if !(sub is NSTextField), !(sub is NSStackView) {
-                // This is likely an editor container
-                SettingsUI.styleFieldSurface(sub)
-            }
+        // Rebuild the active sub-tab so NSTextView colors and editor container
+        // layer colors re-resolve for the new appearance
+        if contentLoaded {
+            selectSubTab(activeSubTab)
+            refreshPreview()
         }
     }
 
