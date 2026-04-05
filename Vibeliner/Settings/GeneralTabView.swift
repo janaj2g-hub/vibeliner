@@ -9,8 +9,7 @@ final class GeneralTabView: NSView {
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
     private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"])
-    private var hotkeyCaptureMonitor: Any?
-    private var hotkeyCaptureSheet: NSWindow?
+    // Hotkey capture uses shared HotkeyCapturePanel
 
     init() {
         super.init(frame: .zero)
@@ -151,57 +150,9 @@ final class GeneralTabView: NSView {
     // MARK: - Actions
 
     @objc private func changeHotkey() {
-        guard hotkeyCaptureSheet == nil, let parentWindow = window else { return }
-
-        let panel = NSPanel(
-            contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
-            styleMask: [.titled],
-            backing: .buffered,
-            defer: false
-        )
-        panel.title = "Record Hotkey"
-        panel.isReleasedWhenClosed = false
-
-        let content = NSView(frame: panel.contentRect(forFrameRect: panel.frame))
-
-        let title = NSTextField(labelWithString: "Press your new capture shortcut")
-        title.font = NSFont.systemFont(ofSize: 15, weight: .semibold)
-        title.alignment = .center
-        title.frame = NSRect(x: 20, y: 86, width: 320, height: 22)
-        content.addSubview(title)
-
-        let helper = NSTextField(labelWithString: "Use at least one modifier key. Press Escape to cancel.")
-        helper.font = NSFont.systemFont(ofSize: 12)
-        helper.textColor = .secondaryLabelColor
-        helper.alignment = .center
-        helper.frame = NSRect(x: 20, y: 58, width: 320, height: 18)
-        content.addSubview(helper)
-
-        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancelHotkeyCapture))
-        cancelButton.frame = NSRect(x: 140, y: 16, width: 80, height: 28)
-        content.addSubview(cancelButton)
-
-        panel.contentView = content
-        hotkeyCaptureSheet = panel
-        parentWindow.beginSheet(panel)
-
-        hotkeyCaptureMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, self.hotkeyCaptureSheet != nil else { return event }
-
-            if event.keyCode == 53 {
-                self.cancelHotkeyCapture()
-                return nil
-            }
-
-            guard let spec = HotkeyManager.shared.hotkeySpec(for: event) else {
-                NSSound.beep()
-                return nil
-            }
-
-            HotkeyManager.shared.updateHotkey(to: spec.configValue)
-            self.hotkeyRow.setKeys(spec.displayParts)
-            self.closeHotkeyCaptureSheet()
-            return nil
+        guard let parentWindow = window else { return }
+        HotkeyCapturePanel.present(from: parentWindow) { [weak self] newKeys in
+            self?.hotkeyRow.setKeys(newKeys)
         }
     }
 
@@ -253,19 +204,4 @@ final class GeneralTabView: NSView {
         NSApp.appearance = appearance
     }
 
-    @objc private func cancelHotkeyCapture() {
-        closeHotkeyCaptureSheet()
-    }
-
-    private func closeHotkeyCaptureSheet() {
-        if let monitor = hotkeyCaptureMonitor {
-            NSEvent.removeMonitor(monitor)
-            hotkeyCaptureMonitor = nil
-        }
-        if let sheet = hotkeyCaptureSheet, let parentWindow = window {
-            parentWindow.endSheet(sheet)
-            sheet.orderOut(nil)
-        }
-        hotkeyCaptureSheet = nil
-    }
 }

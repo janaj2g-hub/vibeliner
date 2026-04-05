@@ -133,6 +133,10 @@ final class SetupWindowController: NSWindowController {
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
+        let note = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
+        note.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
+        c.addSubview(note)
+
         // Action row (label + arrow button)
         step1ActionRow = makeActionRow(label: "Open Screen Recording Settings", action: #selector(openSystemSettings), width: contentW)
         step1ActionRow.frame.origin = NSPoint(x: pad, y: 10)
@@ -207,13 +211,15 @@ final class SetupWindowController: NSWindowController {
         pathDisplay = NSTextField()
         let centeredCell = VerticallyCenteredTextFieldCell()
         centeredCell.isEditable = false
+        centeredCell.isSelectable = true  // Allow click + arrow key navigation
         centeredCell.isBezeled = false
         centeredCell.drawsBackground = false
         centeredCell.font = DesignTokens.setupPathFont
         centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
         centeredCell.stringValue = pathText
         centeredCell.usesSingleLineMode = true
-        centeredCell.truncatesLastVisibleLine = true
+        centeredCell.lineBreakMode = .byTruncatingHead  // Show rightmost part of path
+        centeredCell.truncatesLastVisibleLine = false
         pathDisplay.cell = centeredCell
         pathDisplay.wantsLayer = true
         pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
@@ -619,7 +625,8 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Actions
 
     @objc private func openSystemSettings() {
-        CGRequestScreenCaptureAccess()
+        // Open System Settings directly — no macOS dialog
+        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
     }
 
     @objc private func openAccessibilitySettings() {
@@ -659,14 +666,9 @@ final class SetupWindowController: NSWindowController {
     }
 
     @objc private func editShortcut() {
-        // Open Settings to the General tab
-        if let delegate = NSApp.delegate as? AppDelegate {
-            if delegate.settingsWindowController == nil {
-                delegate.settingsWindowController = SettingsWindowController()
-            }
-            delegate.settingsWindowController?.showWindow(nil)
-            delegate.settingsWindowController?.window?.makeKeyAndOrderFront(nil)
-            NSApp.activate(ignoringOtherApps: true)
+        guard let win = window else { return }
+        HotkeyCapturePanel.present(from: win) { [weak self] _ in
+            self?.updateFooter()
         }
     }
 

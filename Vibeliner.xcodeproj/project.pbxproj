@@ -53,6 +53,7 @@
 		A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* FirstUseTooltipView.swift */; };
 		A10000010000000000000032 /* NotePillRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* NotePillRenderer.swift */; };
 		A10000010000000000000033 /* SettingsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* SettingsUI.swift */; };
+		A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* HotkeyCapturePanel.swift */; };
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
@@ -65,6 +66,7 @@
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000006 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
+		A20000010000000000000036 /* HotkeyCapturePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCapturePanel.swift; sourceTree = "<group>"; };
 		A20000010000000000000007 /* CaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayWindow.swift; sourceTree = "<group>"; };
 		A20000010000000000000008 /* CrosshairView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CrosshairView.swift; sourceTree = "<group>"; };
 		A20000010000000000000009 /* CaptureCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureCoordinator.swift; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000006 /* HotkeyManager.swift */,
+				A20000010000000000000036 /* HotkeyCapturePanel.swift */,
 			);
 			path = Hotkey;
 			sourceTree = "<group>";
@@ -375,6 +378,7 @@
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
 				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
+				A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */,
 				A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */,
 				A10000010000000000000007 /* CrosshairView.swift in Sources */,
 				A10000010000000000000008 /* CaptureCoordinator.swift in Sources */,
