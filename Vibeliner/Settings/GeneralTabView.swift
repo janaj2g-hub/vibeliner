@@ -8,6 +8,7 @@ final class GeneralTabView: NSView {
     private let folderPathLabel = SettingsUI.fieldLabel("", monospaced: true)
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
+    private let appearanceSegment = NSSegmentedControl()
     private var hotkeyCaptureMonitor: Any?
     private var hotkeyCaptureSheet: NSWindow?
 
@@ -20,7 +21,6 @@ final class GeneralTabView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-
         contentStack.orientation = .vertical
         contentStack.alignment = .leading
         contentStack.spacing = DesignTokens.settingsSectionGap
@@ -38,13 +38,15 @@ final class GeneralTabView: NSView {
         let firstDivider = SettingsUI.divider()
         let folderSection = makeFolderSection()
         let secondDivider = SettingsUI.divider()
-        let loginSection = makeLoginSection()
+        let otherSection = makeOtherSettingsSection()
 
-        [hotkeySection, firstDivider, folderSection, secondDivider, loginSection].forEach { view in
+        [hotkeySection, firstDivider, folderSection, secondDivider, otherSection].forEach { view in
             contentStack.addArrangedSubview(view)
             view.widthAnchor.constraint(equalTo: contentStack.widthAnchor).isActive = true
         }
     }
+
+    // MARK: - Sections
 
     private func makeHotkeySection() -> NSView {
         hotkeyRow.setKeys(HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey))
@@ -95,26 +97,59 @@ final class GeneralTabView: NSView {
         return SettingsUI.makeSection(title: "Captures folder", contentView: content)
     }
 
-    private func makeLoginSection() -> NSView {
+    private func makeOtherSettingsSection() -> NSView {
+        // Login checkbox
         loginCheckbox.state = ConfigManager.shared.launchAtLogin ? .on : .off
         loginCheckbox.target = self
         loginCheckbox.action = #selector(loginToggled)
         loginCheckbox.translatesAutoresizingMaskIntoConstraints = false
-
         loginLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
 
-        let row = NSStackView(views: [loginCheckbox, loginLabel])
-        row.orientation = .horizontal
-        row.alignment = .centerY
-        row.spacing = 12
-        row.translatesAutoresizingMaskIntoConstraints = false
+        let loginRow = NSStackView(views: [loginCheckbox, loginLabel])
+        loginRow.orientation = .horizontal
+        loginRow.alignment = .centerY
+        loginRow.spacing = 12
+        loginRow.translatesAutoresizingMaskIntoConstraints = false
+        loginCheckbox.widthAnchor.constraint(equalToConstant: 18).isActive = true
 
-        NSLayoutConstraint.activate([
-            loginCheckbox.widthAnchor.constraint(equalToConstant: 18)
-        ])
+        // Appearance toggle
+        let appearanceLabel = SettingsUI.bodyCopy("Appearance")
+        appearanceLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
+        appearanceLabel.textColor = .labelColor
 
-        return SettingsUI.makeSection(title: "Launch at login", contentView: row)
+        appearanceSegment.segmentCount = 3
+        appearanceSegment.setLabel("Light", forSegment: 0)
+        appearanceSegment.setLabel("Dark", forSegment: 1)
+        appearanceSegment.setLabel("System", forSegment: 2)
+        appearanceSegment.segmentStyle = .rounded
+        appearanceSegment.target = self
+        appearanceSegment.action = #selector(appearanceChanged)
+        appearanceSegment.translatesAutoresizingMaskIntoConstraints = false
+
+        // Set initial selection
+        switch ConfigManager.shared.appearance {
+        case "light":  appearanceSegment.selectedSegment = 0
+        case "dark":   appearanceSegment.selectedSegment = 1
+        default:       appearanceSegment.selectedSegment = 2
+        }
+
+        let appearanceRow = NSStackView(views: [appearanceLabel, appearanceSegment])
+        appearanceRow.orientation = .horizontal
+        appearanceRow.alignment = .centerY
+        appearanceRow.spacing = 16
+        appearanceRow.translatesAutoresizingMaskIntoConstraints = false
+
+        // Stack both settings vertically
+        let content = NSStackView(views: [loginRow, appearanceRow])
+        content.orientation = .vertical
+        content.alignment = .leading
+        content.spacing = 18
+        content.translatesAutoresizingMaskIntoConstraints = false
+
+        return SettingsUI.makeSection(title: "Other settings", contentView: content)
     }
+
+    // MARK: - Actions
 
     @objc private func changeHotkey() {
         guard hotkeyCaptureSheet == nil, let parentWindow = window else { return }
@@ -197,6 +232,27 @@ final class GeneralTabView: NSView {
                 print("Vibeliner: Login item registration failed: \(error)")
             }
         }
+    }
+
+    @objc private func appearanceChanged() {
+        let mode: String
+        switch appearanceSegment.selectedSegment {
+        case 0:  mode = "light"
+        case 1:  mode = "dark"
+        default: mode = "system"
+        }
+
+        ConfigManager.shared.appearance = mode
+        ConfigManager.shared.save()
+
+        // Apply to the app immediately
+        let appearance: NSAppearance?
+        switch mode {
+        case "light": appearance = NSAppearance(named: .aqua)
+        case "dark":  appearance = NSAppearance(named: .darkAqua)
+        default:      appearance = nil // follow system
+        }
+        NSApp.appearance = appearance
     }
 
     @objc private func cancelHotkeyCapture() {

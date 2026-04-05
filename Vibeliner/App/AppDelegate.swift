@@ -23,6 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()
+        applyAppearanceSetting()
         setupMenuBarIcon()
 
         HotkeyManager.shared.onHotkeyPressed = {
@@ -63,6 +64,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setup.window?.center()
         NSApp.activate(ignoringOtherApps: true)
         setupWindowController = setup
+    }
+
+    private func applyAppearanceSetting() {
+        switch ConfigManager.shared.appearance {
+        case "light": NSApp.appearance = NSAppearance(named: .aqua)
+        case "dark":  NSApp.appearance = NSAppearance(named: .darkAqua)
+        default:      NSApp.appearance = nil // follow system
+        }
     }
 
     private func setupMenuBarIcon() {
