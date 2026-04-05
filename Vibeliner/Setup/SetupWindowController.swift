@@ -203,19 +203,24 @@ final class SetupWindowController: NSWindowController {
 
         // Path box
         let pathBoxY = desc.frame.origin.y - 14 - 36
-        pathDisplay = NSTextField(labelWithString: isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected")
-        pathDisplay.cell = VerticallyCenteredTextFieldCell()
-        pathDisplay.font = DesignTokens.setupPathFont
-        pathDisplay.stringValue = isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected"
-        pathDisplay.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
+        let pathText = isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected"
+        pathDisplay = NSTextField()
+        let centeredCell = VerticallyCenteredTextFieldCell()
+        centeredCell.isEditable = false
+        centeredCell.isBezeled = false
+        centeredCell.drawsBackground = false
+        centeredCell.font = DesignTokens.setupPathFont
+        centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
+        centeredCell.stringValue = pathText
+        centeredCell.usesSingleLineMode = true
+        centeredCell.truncatesLastVisibleLine = true
+        pathDisplay.cell = centeredCell
         pathDisplay.wantsLayer = true
         pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
         pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
         pathDisplay.layer?.borderWidth = 1
         pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
         pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
-        pathDisplay.usesSingleLineMode = true
-        pathDisplay.cell?.truncatesLastVisibleLine = true
         c.addSubview(pathDisplay)
 
         // Action row (choose folder)
@@ -537,8 +542,10 @@ final class SetupWindowController: NSWindowController {
         step3ActionRow.isHidden = false
         status3.isHidden = true
 
-        // If re-running with existing folder, pre-fill path
-        if isRerun && !folderPath.isEmpty {
+        // If re-running with existing valid folder, auto-complete step 3
+        if isRerun && !folderPath.isEmpty && ConfigManager.shared.capturesFolderExists {
+            completeStep3()
+        } else if !folderPath.isEmpty {
             pathDisplay.stringValue = abbreviatePath(folderPath)
             pathDisplay.textColor = DesignTokens.setupTextPrimary
         } else {

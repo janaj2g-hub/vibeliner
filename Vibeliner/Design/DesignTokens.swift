@@ -129,12 +129,13 @@ enum DesignTokens {
     /// #FF5F57 — close icon hover color
     static let closeIconHover = NSColor(red: 255/255, green: 95/255, blue: 87/255, alpha: 1.0)
 
-    /// Settings field surface
+    /// Settings field surface — prototype: --surface-field
     static let settingsFieldSurface = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {
             return NSColor(white: 1.0, alpha: 0.06)
         }
-        return NSColor(red: 250/255, green: 251/255, blue: 253/255, alpha: 1.0)
+        // #eef0f6
+        return NSColor(red: 238/255, green: 240/255, blue: 246/255, alpha: 1.0)
     }
 
     /// Settings framed section surface
@@ -515,9 +516,20 @@ enum DesignTokens {
 ///   // Text will be vertically centered in the 36px height
 class VerticallyCenteredTextFieldCell: NSTextFieldCell {
 
+    /// Horizontal padding applied to left and right of text. Default 12px.
+    var horizontalPadding: CGFloat = 12
+
+    private func paddedRect(_ rect: NSRect) -> NSRect {
+        return NSRect(x: rect.origin.x + horizontalPadding,
+                      y: rect.origin.y,
+                      width: rect.width - horizontalPadding * 2,
+                      height: rect.height)
+    }
+
     override func titleRect(forBounds rect: NSRect) -> NSRect {
-        var titleRect = super.titleRect(forBounds: rect)
-        let textH = cellSize(forBounds: rect).height
+        let padded = paddedRect(rect)
+        var titleRect = super.titleRect(forBounds: padded)
+        let textH = cellSize(forBounds: padded).height
         guard textH < rect.height else { return titleRect }
         titleRect.origin.y = rect.origin.y + (rect.height - textH) / 2
         titleRect.size.height = textH
