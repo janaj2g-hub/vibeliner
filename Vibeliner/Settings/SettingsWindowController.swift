@@ -2,21 +2,28 @@ import AppKit
 
 final class SettingsWindowController: NSWindowController {
 
+    // MARK: - State
+
     private var tabButtons: [NSButton] = []
     private var tabUnderlines: [NSView] = []
-    private var tabViews: [NSView] = []
     private let contentContainer = NSView()
-    private var activeTabIndex = 0
+    private var activeTabIndex = -1 // nothing selected yet
 
-    /// Maximum content width so sections stay readable when the window is wide.
+    /// Cached tab views — created lazily on first display.
+    private var cachedTabViews: [Int: NSView] = [:]
+
+    /// Maximum content width so sections stay readable on wide windows.
     private static let maxContentWidth: CGFloat = 484
+    private static let tabBarHeight: CGFloat = 36
+
+    // MARK: - Lifecycle
 
     convenience init() {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 540, height: 580),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
-            defer: false
+            defer: true // defer rendering until we finish setup
         )
         window.title = "Vibeliner Settings"
         window.center()
@@ -24,18 +31,17 @@ final class SettingsWindowController: NSWindowController {
         window.level = .floating
         window.minSize = NSSize(width: 480, height: 520)
         self.init(window: window)
-        setupTabs()
+        buildWindowLayout()
     }
 
-    // MARK: - Setup
+    // MARK: - Layout
 
-    private func setupTabs() {
+    private func buildWindowLayout() {
         guard let contentView = window?.contentView else { return }
         contentView.wantsLayer = true
 
-        let tabBarHeight: CGFloat = 36
+        // ── Tab bar ──
 
-        // --- Tab bar ---
         let tabBar = NSView()
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabBar)
@@ -56,94 +62,111 @@ final class SettingsWindowController: NSWindowController {
         ])
 
         for (index, title) in tabTitles.enumerated() {
-            let buttonContainer = NSView()
-            buttonContainer.translatesAutoresizingMaskIntoConstraints = false
+            let container = NSView()
+            container.translatesAutoresizingMaskIntoConstraints = false
 
             let button = NSButton(title: title, target: self, action: #selector(tabClicked(_:)))
             button.isBordered = false
             button.font = NSFont.systemFont(ofSize: 13, weight: .medium)
             button.tag = index
             button.translatesAutoresizingMaskIntoConstraints = false
-            buttonContainer.addSubview(button)
+            container.addSubview(button)
 
-            let underlineWidth: CGFloat = 56
             let underline = NSView()
             underline.translatesAutoresizingMaskIntoConstraints = false
             underline.wantsLayer = true
             underline.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
             underline.layer?.cornerRadius = 1
-            underline.isHidden = index != 0
-            buttonContainer.addSubview(underline)
+            underline.isHidden = true
+            container.addSubview(underline)
 
             NSLayoutConstraint.activate([
-                buttonContainer.widthAnchor.constraint(equalToConstant: tabWidth),
-                buttonContainer.heightAnchor.constraint(equalToConstant: tabBarHeight),
-                button.centerXAnchor.constraint(equalTo: buttonContainer.centerXAnchor),
-                button.centerYAnchor.constraint(equalTo: buttonContainer.centerYAnchor),
-                underline.centerXAnchor.constraint(equalTo: buttonContainer.centerXAnchor),
-                underline.bottomAnchor.constraint(equalTo: buttonContainer.bottomAnchor, constant: -2),
-                underline.widthAnchor.constraint(equalToConstant: underlineWidth),
+                container.widthAnchor.constraint(equalToConstant: tabWidth),
+                container.heightAnchor.constraint(equalToConstant: Self.tabBarHeight),
+                button.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+                button.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+                underline.centerXAnchor.constraint(equalTo: container.centerXAnchor),
+                underline.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -2),
+                underline.widthAnchor.constraint(equalToConstant: 56),
                 underline.heightAnchor.constraint(equalToConstant: 2),
             ])
 
-            tabStack.addArrangedSubview(buttonContainer)
+            tabStack.addArrangedSubview(container)
             tabButtons.append(button)
             tabUnderlines.append(underline)
         }
 
-        // --- Divider ---
+        // ── Divider ──
+
         let divider = NSView()
         divider.translatesAutoresizingMaskIntoConstraints = false
         divider.wantsLayer = true
         divider.layer?.backgroundColor = NSColor.separatorColor.cgColor
         contentView.addSubview(divider)
 
-        // --- Content container ---
+        // ── Scroll view wrapping the content area ──
+
+        let scrollView = NSScrollView()
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.borderType = .noBorder
+        scrollView.automaticallyAdjustsContentInsets = false
+        scrollView.contentInsets = NSEdgeInsetsZero
+        contentView.addSubview(scrollView)
+
+        // Flipped document view so content flows top-down
+        let documentView = FlippedDocumentView()
+        documentView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.documentView = documentView
+
+        // Content container lives inside the document view, centered with max-width
         contentContainer.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(contentContainer)
+        documentView.addSubview(contentContainer)
+
+        // ── Top-level layout: tab bar → divider → scroll view ──
 
         NSLayoutConstraint.activate([
             tabBar.topAnchor.constraint(equalTo: contentView.topAnchor),
             tabBar.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             tabBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            tabBar.heightAnchor.constraint(equalToConstant: tabBarHeight),
+            tabBar.heightAnchor.constraint(equalToConstant: Self.tabBarHeight),
 
             divider.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
             divider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             divider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             divider.heightAnchor.constraint(equalToConstant: 0.5),
 
-            contentContainer.topAnchor.constraint(equalTo: divider.bottomAnchor),
-            contentContainer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            contentContainer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            contentContainer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: divider.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
 
-        // --- Create all tab views once, add them all, show/hide to switch ---
-        let generalTab = GeneralTabView()
-        let promptTab = PromptTabView()
-        let aboutTab = AboutTabView()
-        tabViews = [generalTab, promptTab, aboutTab]
+        // Pin document view to clip view so it fills horizontally
+        let clipView = scrollView.contentView
+        NSLayoutConstraint.activate([
+            documentView.topAnchor.constraint(equalTo: clipView.topAnchor),
+            documentView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
+            documentView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor),
+            // No bottom pin — documentView grows with its content
+        ])
 
-        for (index, tabView) in tabViews.enumerated() {
-            tabView.translatesAutoresizingMaskIntoConstraints = false
-            tabView.isHidden = index != 0
-            contentContainer.addSubview(tabView)
+        // Center contentContainer horizontally, cap its width
+        let fillWidth = contentContainer.widthAnchor.constraint(equalTo: documentView.widthAnchor)
+        fillWidth.priority = .defaultHigh // 750 — fill, but yield to cap
+        let capWidth = contentContainer.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContentWidth)
 
-            // Centering wrapper: constrain width with max, center horizontally
-            let widthFill = tabView.widthAnchor.constraint(equalTo: contentContainer.widthAnchor)
-            widthFill.priority = .defaultHigh // 750
-            let widthCap = tabView.widthAnchor.constraint(lessThanOrEqualToConstant: Self.maxContentWidth)
+        NSLayoutConstraint.activate([
+            contentContainer.topAnchor.constraint(equalTo: documentView.topAnchor),
+            contentContainer.centerXAnchor.constraint(equalTo: documentView.centerXAnchor),
+            contentContainer.bottomAnchor.constraint(equalTo: documentView.bottomAnchor),
+            fillWidth,
+            capWidth,
+        ])
 
-            NSLayoutConstraint.activate([
-                tabView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
-                tabView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
-                tabView.centerXAnchor.constraint(equalTo: contentContainer.centerXAnchor),
-                widthFill,
-                widthCap,
-            ])
-        }
-
+        // Show the first tab
         selectTab(0)
     }
 
@@ -154,19 +177,69 @@ final class SettingsWindowController: NSWindowController {
     }
 
     private func selectTab(_ index: Int) {
-        guard index >= 0, index < tabViews.count else { return }
+        guard index >= 0, index < 3, index != activeTabIndex else { return }
 
-        // Hide all, show selected
-        for (i, tabView) in tabViews.enumerated() {
-            tabView.isHidden = i != index
+        // Remove the current tab view from the hierarchy (keep it cached)
+        if let oldView = cachedTabViews[activeTabIndex] {
+            oldView.removeFromSuperview()
         }
+
         activeTabIndex = index
 
+        // Create or reuse the tab view
+        let tabView: NSView
+        if let cached = cachedTabViews[index] {
+            tabView = cached
+        } else {
+            tabView = createTabView(for: index)
+            cachedTabViews[index] = tabView
+        }
+
+        // Add to container and constrain
+        tabView.translatesAutoresizingMaskIntoConstraints = false
+        contentContainer.addSubview(tabView)
+        NSLayoutConstraint.activate([
+            tabView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
+            tabView.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
+            tabView.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor),
+            tabView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor),
+        ])
+
+        // Scroll to top when switching tabs
+        if let scrollView = contentContainer.enclosingScrollView,
+           let documentView = scrollView.documentView {
+            documentView.scroll(.zero)
+        }
+
         // Update tab bar styling
-        for (buttonIndex, button) in tabButtons.enumerated() {
-            let isActive = buttonIndex == index
-            button.contentTintColor = isActive ? DesignTokens.purpleLight : .secondaryLabelColor
-            tabUnderlines[buttonIndex].isHidden = !isActive
+        for (i, button) in tabButtons.enumerated() {
+            let active = i == index
+            button.contentTintColor = active ? DesignTokens.purpleLight : .secondaryLabelColor
+            tabUnderlines[i].isHidden = !active
         }
     }
+
+    private func createTabView(for index: Int) -> NSView {
+        switch index {
+        case 0:
+            return GeneralTabView()
+        case 1:
+            let prompt = PromptTabView()
+            // Defer content loading until the view is in the hierarchy
+            DispatchQueue.main.async {
+                prompt.loadContent()
+            }
+            return prompt
+        case 2:
+            return AboutTabView()
+        default:
+            return NSView() // Should never happen
+        }
+    }
+}
+
+// MARK: - Flipped document view (origin at top-left for natural scrolling)
+
+private final class FlippedDocumentView: NSView {
+    override var isFlipped: Bool { true }
 }

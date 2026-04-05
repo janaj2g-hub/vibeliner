@@ -2,16 +2,16 @@ import AppKit
 
 final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
+    // MARK: - Sub-tab model
+
     private enum PromptSubTab: Int, CaseIterable {
-        case preamble
-        case tools
-        case footer
+        case preamble, tools, footer
 
         var title: String {
             switch self {
             case .preamble: return "Preamble"
-            case .tools: return "Tools"
-            case .footer: return "Footer"
+            case .tools:    return "Tools"
+            case .footer:   return "Footer"
             }
         }
     }
@@ -30,8 +30,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         }
     }
 
-    private let scrollView = NSScrollView()
-    private let documentView = FlippedView()
+    // MARK: - Views
+
     private let rootStack = NSStackView()
     private let previewView = PromptPreviewView(frame: .zero)
     private let editFrame = NSView()
@@ -42,80 +42,65 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private let activeContentStack = NSStackView()
     private let resetButton = NSButton(title: "Reset to default", target: nil, action: nil)
 
+    // MARK: - State
+
     private var drafts = PromptDrafts.current()
     private var activeSubTab: PromptSubTab = .preamble
     private weak var preambleEditor: NSTextView?
     private weak var footerEditor: NSTextView?
     private var toolFields: [String: SettingsTextField] = [:]
+    private var contentLoaded = false
+
+    // MARK: - Init
 
     init() {
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
-        setupView()
-        refreshPreview()
-        selectSubTab(.preamble, syncDrafts: false)
+        buildLayout()
     }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         translatesAutoresizingMaskIntoConstraints = false
-        setupView()
-        refreshPreview()
-        selectSubTab(.preamble, syncDrafts: false)
+        buildLayout()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    private func setupView() {
-        // Wrap everything in a scroll view so tall content doesn't break constraints
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.drawsBackground = false
-        scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = false
-        scrollView.borderType = .noBorder
-        scrollView.automaticallyAdjustsContentInsets = false
-        scrollView.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
-        addSubview(scrollView)
+    /// Called by SettingsWindowController after the view is in the hierarchy.
+    /// Loads preview data and selects the first sub-tab.
+    func loadContent() {
+        guard !contentLoaded else { return }
+        contentLoaded = true
+        refreshPreview()
+        selectSubTab(.preamble, syncDrafts: false)
+    }
 
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-        ])
+    // MARK: - Layout
 
-        documentView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.documentView = documentView
-
-        // Pin documentView width to the clipView so it fills horizontally
-        if let clipView = scrollView.contentView as? NSClipView {
-            NSLayoutConstraint.activate([
-                documentView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
-                documentView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor),
-                documentView.topAnchor.constraint(equalTo: clipView.topAnchor),
-            ])
-        }
-
+    private func buildLayout() {
         rootStack.orientation = .vertical
         rootStack.alignment = .leading
         rootStack.spacing = 24
         rootStack.translatesAutoresizingMaskIntoConstraints = false
-        documentView.addSubview(rootStack)
+        addSubview(rootStack)
 
         NSLayoutConstraint.activate([
-            rootStack.topAnchor.constraint(equalTo: documentView.topAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.trailingAnchor.constraint(equalTo: documentView.trailingAnchor, constant: -DesignTokens.settingsContentPadding),
-            rootStack.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -DesignTokens.settingsContentPadding),
+            rootStack.topAnchor.constraint(equalTo: topAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -DesignTokens.settingsContentPadding),
+            rootStack.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -DesignTokens.settingsContentPadding),
         ])
 
+        // Preview section
         previewView.translatesAutoresizingMaskIntoConstraints = false
+        rootStack.addArrangedSubview(previewView)
         NSLayoutConstraint.activate([
             previewView.heightAnchor.constraint(equalToConstant: 288),
-            previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor)
+            previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor),
         ])
-        rootStack.addArrangedSubview(previewView)
 
+        // Edit frame
         SettingsUI.styleFrameSurface(editFrame)
         editFrame.translatesAutoresizingMaskIntoConstraints = false
         rootStack.addArrangedSubview(editFrame)
@@ -131,14 +116,13 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             editStack.topAnchor.constraint(equalTo: editFrame.topAnchor, constant: DesignTokens.settingsFramePadding),
             editStack.leadingAnchor.constraint(equalTo: editFrame.leadingAnchor, constant: DesignTokens.settingsFramePadding),
             editStack.trailingAnchor.constraint(equalTo: editFrame.trailingAnchor, constant: -DesignTokens.settingsFramePadding),
-            editStack.bottomAnchor.constraint(equalTo: editFrame.bottomAnchor, constant: -DesignTokens.settingsFramePadding)
+            editStack.bottomAnchor.constraint(equalTo: editFrame.bottomAnchor, constant: -DesignTokens.settingsFramePadding),
         ])
 
+        // Header row: "Edit Prompt Sections" + Save button
         saveButton.target = self
         saveButton.action = #selector(saveAllPromptSections)
-        NSLayoutConstraint.activate([
-            saveButton.widthAnchor.constraint(equalToConstant: 108)
-        ])
+        saveButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
 
         let headerRow = NSStackView()
         headerRow.orientation = .horizontal
@@ -148,25 +132,28 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         let spacer = NSView()
         spacer.translatesAutoresizingMaskIntoConstraints = false
+        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
         headerRow.addArrangedSubview(editHeaderLabel)
         headerRow.addArrangedSubview(spacer)
         headerRow.addArrangedSubview(saveButton)
-        spacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
-        spacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         editStack.addArrangedSubview(headerRow)
         headerRow.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
 
+        // Segmented control row
         let segmentedRow = NSView()
         segmentedRow.translatesAutoresizingMaskIntoConstraints = false
         segmentedRow.addSubview(segmentedControl)
         editStack.addArrangedSubview(segmentedRow)
 
+        let segmentWidth = min(360, 360) // explicit constant
         NSLayoutConstraint.activate([
             segmentedRow.widthAnchor.constraint(equalTo: editStack.widthAnchor),
             segmentedControl.centerXAnchor.constraint(equalTo: segmentedRow.centerXAnchor),
             segmentedControl.topAnchor.constraint(equalTo: segmentedRow.topAnchor),
             segmentedControl.bottomAnchor.constraint(equalTo: segmentedRow.bottomAnchor),
-            segmentedControl.widthAnchor.constraint(equalToConstant: 360)
+            segmentedControl.widthAnchor.constraint(equalToConstant: CGFloat(segmentWidth)),
         ])
 
         segmentedControl.onSelectionChanged = { [weak self] index in
@@ -174,6 +161,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             self?.selectSubTab(tab)
         }
 
+        // Active content area (swapped per sub-tab)
         activeContentStack.orientation = .vertical
         activeContentStack.alignment = .leading
         activeContentStack.spacing = 18
@@ -181,6 +169,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         editStack.addArrangedSubview(activeContentStack)
         activeContentStack.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
 
+        // Reset button row
         resetButton.isBordered = false
         resetButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
         resetButton.contentTintColor = DesignTokens.settingsPillText
@@ -198,6 +187,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         resetSpacer.translatesAutoresizingMaskIntoConstraints = false
         resetSpacer.setContentHuggingPriority(.defaultLow, for: .horizontal)
         resetSpacer.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
+
         resetRow.addArrangedSubview(resetSpacer)
         resetRow.addArrangedSubview(resetButton)
         editStack.addArrangedSubview(resetRow)
@@ -207,43 +197,41 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     // MARK: - Sub-tab switching
 
     private func selectSubTab(_ tab: PromptSubTab, syncDrafts: Bool = true) {
-        if syncDrafts {
-            captureActiveDrafts()
-        }
+        if syncDrafts { captureActiveDrafts() }
 
         activeSubTab = tab
         if segmentedControl.selectedIndex != tab.rawValue {
             segmentedControl.setSelectedIndex(tab.rawValue)
         }
 
+        // Clear active content
         activeContentStack.arrangedSubviews.forEach { view in
             activeContentStack.removeArrangedSubview(view)
             view.removeFromSuperview()
         }
-
         toolFields.removeAll()
         preambleEditor = nil
         footerEditor = nil
 
         switch tab {
-        case .preamble:
-            buildPreambleContent()
-        case .tools:
-            buildToolsContent()
-        case .footer:
-            buildFooterContent()
+        case .preamble: buildPreambleContent()
+        case .tools:    buildToolsContent()
+        case .footer:   buildFooterContent()
         }
     }
 
     private func buildPreambleContent() {
-        let description = SettingsUI.bodyCopy("Text before the annotation list. [Screenshot Path] inserts the image path. [Tool Description] auto-generates based on tools used.")
+        let description = SettingsUI.bodyCopy(
+            "Text before the annotation list. [Screenshot Path] inserts the image path. "
+            + "[Tool Description] auto-generates based on tools used."
+        )
         let editor = makeEditor(text: drafts.preamble)
         preambleEditor = editor.documentView as? NSTextView
         preambleEditor?.delegate = self
 
         NSLayoutConstraint.activate([
             editor.heightAnchor.constraint(equalToConstant: 184),
-            editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor)
+            editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
 
         activeContentStack.addArrangedSubview(description)
@@ -251,7 +239,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     private func buildToolsContent() {
-        let description = SettingsUI.bodyCopy("Each tool's description feeds into [Tool Description] when that tool is used. The tool type also appears in brackets next to each annotation.")
+        let description = SettingsUI.bodyCopy(
+            "Each tool's description feeds into [Tool Description] when that tool is used. "
+            + "The tool type also appears in brackets next to each annotation."
+        )
         activeContentStack.addArrangedSubview(description)
 
         let rowsStack = NSStackView()
@@ -275,12 +266,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         NSLayoutConstraint.activate([
             editor.heightAnchor.constraint(equalToConstant: 160),
-            editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor)
+            editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
 
         activeContentStack.addArrangedSubview(description)
         activeContentStack.addArrangedSubview(editor)
     }
+
+    // MARK: - Helpers
 
     private func makeEditor(text: String) -> NSScrollView {
         let scroll = NSScrollView()
@@ -342,23 +335,18 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             field.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 16),
             field.trailingAnchor.constraint(equalTo: row.trailingAnchor),
             field.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            field.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight)
+            field.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
         ])
 
         return row
     }
 
     private func toolRows() -> [(String, String)] {
-        [
-            ("Pin", "pin"),
-            ("Arrow", "arrow"),
-            ("Rectangle", "rectangle"),
-            ("Circle", "circle"),
-            ("Freehand", "freehand"),
-        ]
+        [("Pin", "pin"), ("Arrow", "arrow"), ("Rectangle", "rectangle"),
+         ("Circle", "circle"), ("Freehand", "freehand")]
     }
 
-    // MARK: - Data persistence
+    // MARK: - Data
 
     private func captureActiveDrafts() {
         switch activeSubTab {
@@ -404,9 +392,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             drafts.footer = Self.defaultFooter
             footerEditor?.string = Self.defaultFooter
         }
-
         refreshPreview()
     }
+
+    // MARK: - NSTextViewDelegate / NSTextFieldDelegate
 
     func textDidChange(_ notification: Notification) {
         if let textView = notification.object as? NSTextView {
@@ -420,26 +409,25 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     func controlTextDidChange(_ notification: Notification) {
-        guard let field = notification.object as? NSTextField, let key = field.identifier?.rawValue else { return }
+        guard let field = notification.object as? NSTextField,
+              let key = field.identifier?.rawValue else { return }
         drafts.toolDescriptions[key] = field.stringValue
         refreshPreview()
     }
 
+    // MARK: - Defaults
+
     private static let defaultPreamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
+
     private static let defaultFooter = "Make the changes and verify they match the design."
-    private static let defaultToolDescriptions = [
+
+    private static let defaultToolDescriptions: [String: String] = [
         "pin": "points to a specific issue",
         "arrow": "points at or between elements",
         "rectangle": "highlights a region or container",
         "circle": "calls out a specific element",
-        "freehand": "marks an irregular area"
+        "freehand": "marks an irregular area",
     ]
-}
-
-// MARK: - Flipped document view for scroll view (origin at top-left)
-
-private final class FlippedView: NSView {
-    override var isFlipped: Bool { true }
 }
 
 // MARK: - Tool icon view
@@ -469,18 +457,12 @@ private final class ToolIconView: NSView {
         )
         let color = NSColor.secondaryLabelColor
         switch toolKey {
-        case "pin":
-            ToolbarView.drawPinIcon(iconRect, color)
-        case "arrow":
-            ToolbarView.drawArrowIcon(iconRect, color)
-        case "rectangle":
-            ToolbarView.drawRectIcon(iconRect, color)
-        case "circle":
-            ToolbarView.drawCircleIcon(iconRect, color)
-        case "freehand":
-            ToolbarView.drawFreehandIcon(iconRect, color)
-        default:
-            break
+        case "pin":      ToolbarView.drawPinIcon(iconRect, color)
+        case "arrow":    ToolbarView.drawArrowIcon(iconRect, color)
+        case "rectangle": ToolbarView.drawRectIcon(iconRect, color)
+        case "circle":   ToolbarView.drawCircleIcon(iconRect, color)
+        case "freehand": ToolbarView.drawFreehandIcon(iconRect, color)
+        default: break
         }
     }
 }

@@ -17,12 +17,6 @@ final class GeneralTabView: NSView {
         setupView()
     }
 
-    override init(frame frameRect: NSRect) {
-        super.init(frame: frameRect)
-        translatesAutoresizingMaskIntoConstraints = false
-        setupView()
-    }
-
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
