@@ -30,6 +30,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         }
     }
 
+    private let scrollView = NSScrollView()
+    private let documentView = FlippedView()
     private let rootStack = NSStackView()
     private let previewView = PromptPreviewView(frame: .zero)
     private let editFrame = NSView()
@@ -65,18 +67,46 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
+        // Wrap everything in a scroll view so tall content doesn't break constraints
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.drawsBackground = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.borderType = .noBorder
+        scrollView.automaticallyAdjustsContentInsets = false
+        scrollView.contentInsets = NSEdgeInsets(top: 0, left: 0, bottom: 0, right: 0)
+        addSubview(scrollView)
+
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
+        ])
+
+        documentView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.documentView = documentView
+
+        // Pin documentView width to the clipView so it fills horizontally
+        if let clipView = scrollView.contentView as? NSClipView {
+            NSLayoutConstraint.activate([
+                documentView.leadingAnchor.constraint(equalTo: clipView.leadingAnchor),
+                documentView.trailingAnchor.constraint(equalTo: clipView.trailingAnchor),
+                documentView.topAnchor.constraint(equalTo: clipView.topAnchor),
+            ])
+        }
 
         rootStack.orientation = .vertical
         rootStack.alignment = .leading
         rootStack.spacing = 24
         rootStack.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(rootStack)
+        documentView.addSubview(rootStack)
 
         NSLayoutConstraint.activate([
-            rootStack.topAnchor.constraint(equalTo: topAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -DesignTokens.settingsContentPadding),
-            rootStack.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -DesignTokens.settingsContentPadding)
+            rootStack.topAnchor.constraint(equalTo: documentView.topAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.trailingAnchor.constraint(equalTo: documentView.trailingAnchor, constant: -DesignTokens.settingsContentPadding),
+            rootStack.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -DesignTokens.settingsContentPadding),
         ])
 
         previewView.translatesAutoresizingMaskIntoConstraints = false
@@ -173,6 +203,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         editStack.addArrangedSubview(resetRow)
         resetRow.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
     }
+
+    // MARK: - Sub-tab switching
 
     private func selectSubTab(_ tab: PromptSubTab, syncDrafts: Bool = true) {
         if syncDrafts {
@@ -326,6 +358,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ]
     }
 
+    // MARK: - Data persistence
+
     private func captureActiveDrafts() {
         switch activeSubTab {
         case .preamble:
@@ -401,6 +435,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         "freehand": "marks an irregular area"
     ]
 }
+
+// MARK: - Flipped document view for scroll view (origin at top-left)
+
+private final class FlippedView: NSView {
+    override var isFlipped: Bool { true }
+}
+
+// MARK: - Tool icon view
 
 private final class ToolIconView: NSView {
 
