@@ -17,7 +17,7 @@ final class PopoverWindow: NSPanel {
         )
         isOpaque = false
         backgroundColor = .clear
-        hasShadow = false  // we draw our own shadow via the content's boxShadow
+        hasShadow = true
         level = .popUpMenu
         isMovableByWindowBackground = false
         isReleasedWhenClosed = false
@@ -40,9 +40,9 @@ final class PopoverWindow: NSPanel {
         let popW: CGFloat = 240
         let contentH = content.frame.height
 
-        // Position: centered below the status bar button
+        // Position: centered below the status bar button with small gap
         let x = screenFrame.midX - popW / 2
-        let y = screenFrame.minY - contentH
+        let y = screenFrame.minY - contentH - 4
 
         // Set window frame to exactly fit content
         let winFrame = NSRect(x: x, y: y, width: popW, height: contentH)
@@ -77,8 +77,6 @@ final class PopoverWindow: NSPanel {
 final class PopoverContentView: NSView {
 
     weak var popoverWindow: PopoverWindow?
-    private let arrowHeight: CGFloat = 8
-    private let arrowWidth: CGFloat = 16
     private let cornerRadius: CGFloat = 10
     private let popWidth: CGFloat = 240
 
@@ -109,15 +107,25 @@ final class PopoverContentView: NSView {
             MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: { [weak self] in self?.captureNow() }, hasArrow: false),
             MenuItem(label: "Recent Captures", keys: nil, action: { [weak self] in self?.showRecentSubmenu() }, hasArrow: true),
             MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false),
-            MenuItem(label: "Settings", keys: ["⌘", ","], action: { [weak self] in self?.openSettings() }, hasArrow: false),
+            MenuItem(label: "Settings", keys: nil, action: { [weak self] in self?.openSettings() }, hasArrow: false),
             MenuItem(label: "Re-run Setup", keys: nil, action: { [weak self] in self?.reRunSetup() }, hasArrow: false),
         ]
 
-        // Calculate total height: vPad + items + divider + quit + vPad + arrow
+        // Calculate total height: vPad + items + divider + quit + vPad (no arrow)
         let bodyH = vPad + CGFloat(items.count) * (rowH + rowGap) + dividerH + (rowH + rowGap) + vPad
-        let totalH = bodyH + arrowHeight
 
-        setFrameSize(NSSize(width: popWidth, height: totalH))
+        setFrameSize(NSSize(width: popWidth, height: bodyH))
+
+        // NSVisualEffectView for frosted glass background
+        let effectView = NSVisualEffectView(frame: NSRect(origin: .zero, size: NSSize(width: popWidth, height: bodyH)))
+        effectView.material = .menu
+        effectView.state = .active
+        effectView.blendingMode = .behindWindow
+        effectView.autoresizingMask = [.width, .height]
+        effectView.wantsLayer = true
+        effectView.layer?.cornerRadius = cornerRadius
+        effectView.layer?.masksToBounds = true
+        addSubview(effectView, positioned: .below, relativeTo: nil)
 
         // Layout rows top-down (AppKit y=0 is bottom, so start from bodyH and subtract)
         var y = bodyH - vPad
@@ -144,7 +152,7 @@ final class PopoverContentView: NSView {
 
         // Quit row
         y -= rowH
-        let quitRow = makeRow(label: "Quit Vibeliner", keys: ["⌘", "Q"], onAction: { [weak self] in self?.quitApp() }, hasArrow: false, y: y, rowH: rowH, hPad: hPad)
+        let quitRow = makeRow(label: "Quit Vibeliner", keys: nil, onAction: { [weak self] in self?.quitApp() }, hasArrow: false, y: y, rowH: rowH, hPad: hPad)
         addSubview(quitRow)
     }
 
@@ -209,46 +217,14 @@ final class PopoverContentView: NSView {
         return pill
     }
 
-    // MARK: - Drawing (dark bg with arrow)
+    // MARK: - Drawing (border only — NSVisualEffectView handles background)
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-
-        let bodyRect = NSRect(x: 0, y: 0, width: bounds.width, height: bounds.height - arrowHeight)
-
-        // Shadow
-        let shadowPath = NSBezierPath(roundedRect: bodyRect, xRadius: cornerRadius, yRadius: cornerRadius)
-        let shadow = NSShadow()
-        shadow.shadowColor = NSColor.black.withAlphaComponent(0.25)
-        shadow.shadowOffset = NSSize(width: 0, height: -8)
-        shadow.shadowBlurRadius = 32
-        NSGraphicsContext.saveGraphicsState()
-        shadow.set()
-        NSColor.black.setFill()
-        shadowPath.fill()
-        NSGraphicsContext.restoreGraphicsState()
-
-        // Background: rgba(30,30,30,0.95) with rounded corners
-        let bgColor = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.95)
-        let path = NSBezierPath(roundedRect: bodyRect, xRadius: cornerRadius, yRadius: cornerRadius)
-        bgColor.setFill()
-        path.fill()
-
-        // Arrow pointing up (centered at top)
-        let arrowPath = NSBezierPath()
-        let arrowCenterX = bounds.width / 2
-        let arrowBaseY = bodyRect.maxY
-        arrowPath.move(to: NSPoint(x: arrowCenterX - arrowWidth / 2, y: arrowBaseY))
-        arrowPath.line(to: NSPoint(x: arrowCenterX, y: arrowBaseY + arrowHeight))
-        arrowPath.line(to: NSPoint(x: arrowCenterX + arrowWidth / 2, y: arrowBaseY))
-        arrowPath.close()
-        bgColor.setFill()
-        arrowPath.fill()
-
-        // Border: 0.5px solid rgba(255,255,255,0.08)
+        // Subtle border on top of the vibrancy effect
         let borderColor = NSColor(white: 1, alpha: 0.08)
         borderColor.setStroke()
-        let borderPath = NSBezierPath(roundedRect: bodyRect.insetBy(dx: 0.25, dy: 0.25), xRadius: cornerRadius, yRadius: cornerRadius)
+        let borderPath = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), xRadius: cornerRadius, yRadius: cornerRadius)
         borderPath.lineWidth = 0.5
         borderPath.stroke()
     }
@@ -364,8 +340,8 @@ final class PopoverRowView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.06).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill()
+            NSColor(white: 1, alpha: 0.1).setFill()
+            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }
 

@@ -63,7 +63,7 @@ final class CaptureRowView: NSView {
         addSubview(noteCountLabel)
 
         // Copy Prompt button (hidden until hover)
-        let promptBtn = NSButton(title: "Prompt", target: self, action: #selector(copyPrompt))
+        let promptBtn = HoverButton(title: "Prompt", target: self, action: #selector(copyPrompt))
         promptBtn.isBordered = false
         promptBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         promptBtn.wantsLayer = true
@@ -76,7 +76,7 @@ final class CaptureRowView: NSView {
         self.promptButton = promptBtn
 
         // Copy Image button (hidden until hover)
-        let imgBtn = NSButton(title: "Image", target: self, action: #selector(copyImage))
+        let imgBtn = HoverButton(title: "Image", target: self, action: #selector(copyImage))
         imgBtn.isBordered = false
         imgBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         imgBtn.wantsLayer = true
@@ -99,12 +99,12 @@ final class CaptureRowView: NSView {
     }
 
     @objc private func copyPrompt() {
-        // Load annotations from prompt.txt and copy
         let promptURL = capture.folderURL.appendingPathComponent("prompt.txt")
         if let text = try? String(contentsOf: promptURL, encoding: .utf8) {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.setString(text, forType: .string)
         }
+        showCopiedFeedback(on: promptButton, originalTitle: "Prompt")
     }
 
     @objc private func copyImage() {
@@ -112,13 +112,26 @@ final class CaptureRowView: NSView {
             NSPasteboard.general.clearContents()
             NSPasteboard.general.writeObjects([image])
         }
+        showCopiedFeedback(on: imageButton, originalTitle: "Image")
+    }
+
+    private func showCopiedFeedback(on button: NSButton?, originalTitle: String) {
+        guard let button else { return }
+        button.title = "Copied"
+        button.contentTintColor = .systemGreen
+        button.layer?.backgroundColor = NSColor.systemGreen.withAlphaComponent(0.12).cgColor
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak button] in
+            button?.title = originalTitle
+            button?.contentTintColor = DesignTokens.purpleLight
+            button?.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+        }
     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.06).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 5, yRadius: 5).fill()
+            NSColor(white: 1, alpha: 0.1).setFill()
+            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }
 
@@ -145,5 +158,34 @@ final class CaptureRowView: NSView {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMM d"
         return formatter.string(from: date)
+    }
+}
+
+// MARK: - Button with hover highlight
+
+private final class HoverButton: NSButton {
+
+    private var defaultBgColor: CGColor?
+
+    convenience init(title: String, target: AnyObject?, action: Selector?) {
+        self.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        defaultBgColor = layer?.backgroundColor
+        layer?.backgroundColor = NSColor(white: 1, alpha: 0.15).cgColor
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        layer?.backgroundColor = defaultBgColor
     }
 }
