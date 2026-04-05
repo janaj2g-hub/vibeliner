@@ -68,6 +68,19 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        // Refresh layer-backed colors on the edit frame
+        SettingsUI.styleFrameSurface(editFrame)
+        // Refresh any editor containers currently in the active content stack
+        for sub in activeContentStack.arrangedSubviews {
+            if !(sub is NSTextField), !(sub is NSStackView) {
+                // This is likely an editor container
+                SettingsUI.styleFieldSurface(sub)
+            }
+        }
+    }
+
     func loadContent() {
         guard !contentLoaded else { return }
         contentLoaded = true

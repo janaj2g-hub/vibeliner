@@ -60,27 +60,29 @@ enum SettingsUI {
         return view
     }
 
+    /// Apply field surface styling. Call again from viewDidChangeEffectiveAppearance
+    /// to refresh CGColor values when dark/light mode changes.
     static func styleFieldSurface(_ view: NSView, cornerRadius: CGFloat = 10) {
         view.wantsLayer = true
         view.layer?.cornerRadius = cornerRadius
-        view.layer?.backgroundColor = DesignTokens.settingsFieldSurface.cgColor
-        view.layer?.borderColor = DesignTokens.settingsFieldBorder.cgColor
+        view.layer?.backgroundColor = DesignTokens.settingsFieldSurface.resolvedColor(for: view).cgColor
+        view.layer?.borderColor = DesignTokens.settingsFieldBorder.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
     }
 
     static func styleFrameSurface(_ view: NSView) {
         view.wantsLayer = true
         view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.backgroundColor = DesignTokens.settingsFrameSurface.cgColor
-        view.layer?.borderColor = NSColor.separatorColor.cgColor
+        view.layer?.backgroundColor = DesignTokens.settingsFrameSurface.resolvedColor(for: view).cgColor
+        view.layer?.borderColor = NSColor.separatorColor.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
     }
 
     static func stylePreviewSurface(_ view: NSView) {
         view.wantsLayer = true
         view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.backgroundColor = DesignTokens.settingsPreviewSurface.cgColor
-        view.layer?.borderColor = DesignTokens.settingsFieldBorder.cgColor
+        view.layer?.backgroundColor = DesignTokens.settingsPreviewSurface.resolvedColor(for: view).cgColor
+        view.layer?.borderColor = DesignTokens.settingsFieldBorder.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
     }
 
@@ -108,6 +110,22 @@ enum SettingsUI {
     }
 }
 
+// MARK: - NSColor appearance resolution helper
+
+extension NSColor {
+    /// Resolve a dynamic NSColor to a concrete color for the given view's appearance.
+    func resolvedColor(for view: NSView) -> NSColor {
+        guard let appearance = view.effectiveAppearance as NSAppearance? else { return self }
+        var resolved = self
+        appearance.performAsCurrentDrawingAppearance {
+            resolved = NSColor(cgColor: self.cgColor) ?? self
+        }
+        return resolved
+    }
+}
+
+// MARK: - Pill button (Save, Change, etc.)
+
 final class SettingsPillButton: NSButton {
 
     init(title: String, target: AnyObject?, action: Selector?) {
@@ -124,9 +142,8 @@ final class SettingsPillButton: NSButton {
         translatesAutoresizingMaskIntoConstraints = false
         setButtonType(.momentaryPushIn)
         layer?.cornerRadius = DesignTokens.settingsPillHeight / 2
-        layer?.backgroundColor = DesignTokens.settingsPillFill.cgColor
-        layer?.borderColor = DesignTokens.settingsPillBorder.cgColor
         layer?.borderWidth = 1
+        refreshColors()
 
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: DesignTokens.settingsPillHeight)
@@ -134,13 +151,25 @@ final class SettingsPillButton: NSButton {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshColors()
+    }
+
+    func refreshColors() {
+        contentTintColor = DesignTokens.settingsPillText
+        layer?.backgroundColor = DesignTokens.settingsPillFill.resolvedColor(for: self).cgColor
+        layer?.borderColor = DesignTokens.settingsPillBorder.resolvedColor(for: self).cgColor
+    }
 }
+
+// MARK: - Text field with vertical centering and field surface
 
 final class SettingsTextField: NSTextField {
 
     init(monospaced: Bool = true) {
         super.init(frame: .zero)
-        // Swap to vertically centered cell for proper alignment in fixed-height containers
         let savedFont = monospaced
             ? NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
             : DesignTokens.settingsFieldFont
@@ -155,7 +184,14 @@ final class SettingsTextField: NSTextField {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        SettingsUI.styleFieldSurface(self)
+    }
 }
+
+// MARK: - Hotkey key pill row
 
 final class SettingsKeyPillRow: NSStackView {
 
@@ -183,7 +219,7 @@ final class SettingsKeyPillRow: NSStackView {
             label.alignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
 
-            let container = NSView()
+            let container = AppearanceAwareFieldView()
             container.translatesAutoresizingMaskIntoConstraints = false
             SettingsUI.styleFieldSurface(container, cornerRadius: 10)
             container.addSubview(label)
@@ -200,6 +236,8 @@ final class SettingsKeyPillRow: NSStackView {
         }
     }
 }
+
+// MARK: - Segmented control (Preamble/Tools/Footer + Light/Dark/System)
 
 final class SettingsSegmentedControl: NSView {
 
@@ -227,6 +265,11 @@ final class SettingsSegmentedControl: NSView {
         updateHighlightFrame()
     }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshColors()
+    }
+
     func setSelectedIndex(_ index: Int, notify: Bool = true) {
         guard index >= 0, index < buttons.count else { return }
         selectedIndex = index
@@ -242,14 +285,10 @@ final class SettingsSegmentedControl: NSView {
 
         trackView.wantsLayer = true
         trackView.layer?.cornerRadius = DesignTokens.settingsSegmentedHeight / 2
-        trackView.layer?.backgroundColor = DesignTokens.settingsSegmentedTrack.cgColor
-        trackView.layer?.borderColor = NSColor.separatorColor.cgColor
         trackView.layer?.borderWidth = 1
 
         highlightView.wantsLayer = true
         highlightView.layer?.cornerRadius = (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
-        highlightView.layer?.backgroundColor = DesignTokens.settingsSegmentedActive.cgColor
-        highlightView.layer?.borderColor = DesignTokens.settingsPillBorder.cgColor
         highlightView.layer?.borderWidth = 1
 
         stackView.orientation = .horizontal
@@ -260,6 +299,8 @@ final class SettingsSegmentedControl: NSView {
         addSubview(trackView)
         trackView.addSubview(highlightView)
         trackView.addSubview(stackView)
+
+        refreshColors()
 
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: DesignTokens.settingsSegmentedHeight),
@@ -272,6 +313,13 @@ final class SettingsSegmentedControl: NSView {
             stackView.topAnchor.constraint(equalTo: trackView.topAnchor, constant: DesignTokens.settingsSegmentedInset),
             stackView.bottomAnchor.constraint(equalTo: trackView.bottomAnchor, constant: -DesignTokens.settingsSegmentedInset)
         ])
+    }
+
+    private func refreshColors() {
+        trackView.layer?.backgroundColor = DesignTokens.settingsSegmentedTrack.resolvedColor(for: self).cgColor
+        trackView.layer?.borderColor = NSColor.separatorColor.resolvedColor(for: self).cgColor
+        highlightView.layer?.backgroundColor = DesignTokens.settingsSegmentedActive.resolvedColor(for: self).cgColor
+        highlightView.layer?.borderColor = DesignTokens.settingsPillBorder.resolvedColor(for: self).cgColor
     }
 
     private func configureButtons(_ items: [String]) {
@@ -308,5 +356,16 @@ final class SettingsSegmentedControl: NSView {
 
     @objc private func buttonClicked(_ sender: NSButton) {
         setSelectedIndex(sender.tag)
+    }
+}
+
+// MARK: - Appearance-aware field view (refreshes layer colors on theme change)
+
+final class AppearanceAwareFieldView: NSView {
+    var fieldCornerRadius: CGFloat = 10
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        SettingsUI.styleFieldSurface(self, cornerRadius: fieldCornerRadius)
     }
 }
