@@ -1,0 +1,882 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vibeliner Setup Flow Prototype</title>
+  <style>
+    :root {
+      --purple-light: #afa9ec;
+      --purple-dark: #534ab7;
+      --green: #22c55e;
+      --green-text: #16a34a;
+      --amber-bg: rgba(234, 179, 8, 0.08);
+      --amber-text: #b45309;
+      --gray-status: rgba(255, 255, 255, 0.03);
+      --gray-status-text: #555555;
+      --surface-page: #141519;
+      --surface-window: #1e1e1e;
+      --surface-title: #2a2a2a;
+      --surface-footer: #222222;
+      --surface-field: rgba(255, 255, 255, 0.05);
+      --border-soft: #333333;
+      --border-field: rgba(255, 255, 255, 0.08);
+      --text-primary: #e0e0e0;
+      --text-secondary: #888888;
+      --text-dim: #666666;
+      --button-fill: rgba(175, 169, 236, 0.08);
+      --button-text: #6f69df;
+      --button-border: rgba(175, 169, 236, 0.55);
+      --shadow-window: 0 34px 80px rgba(0, 0, 0, 0.4);
+      --window-width: 700px;
+      --window-radius: 18px;
+      --panel-pad: 28px;
+      --footer-height: 56px;
+      --panel-height: 310px;
+      --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+      --transition-fast: 160ms ease;
+    }
+
+    body.light-mode {
+      --surface-page: #ececf3;
+      --surface-window: #f8f8fc;
+      --surface-title: #fbfbff;
+      --surface-footer: #f1f2f8;
+      --surface-field: rgba(15, 23, 42, 0.04);
+      --border-soft: rgba(15, 23, 42, 0.1);
+      --border-field: rgba(15, 23, 42, 0.09);
+      --text-primary: #1f2937;
+      --text-secondary: #5b6474;
+      --text-dim: #7a8394;
+      --gray-status: rgba(15, 23, 42, 0.04);
+      --gray-status-text: #748093;
+      --button-fill: rgba(83, 74, 183, 0.08);
+      --button-text: #534ab7;
+      --button-border: rgba(83, 74, 183, 0.45);
+      --shadow-window: 0 28px 64px rgba(15, 23, 42, 0.16);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at top, rgba(175, 169, 236, 0.12), transparent 28%),
+        linear-gradient(180deg, #121318 0%, var(--surface-page) 100%);
+    }
+
+    .stage {
+      width: min(100%, 960px);
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .stage-toolbar {
+      width: min(100%, 820px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .mode-toggle,
+    .state-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px;
+      border-radius: 999px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    body.light-mode .mode-toggle,
+    body.light-mode .state-toggle {
+      border-color: rgba(15, 23, 42, 0.08);
+      background: rgba(15, 23, 42, 0.03);
+    }
+
+    .mode-toggle button,
+    .state-toggle button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 7px 12px;
+      font: inherit;
+      font-size: 11px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .mode-toggle button.active,
+    .state-toggle button.active {
+      background: rgba(175, 169, 236, 0.16);
+      color: var(--purple-light);
+    }
+
+    .window {
+      width: min(100%, var(--window-width));
+      background: linear-gradient(180deg, var(--surface-title) 0%, var(--surface-window) 84px, var(--surface-window) 100%);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--window-radius);
+      box-shadow: var(--shadow-window);
+      overflow: hidden;
+    }
+
+    .titlebar {
+      position: relative;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .traffic-lights {
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .traffic-lights span {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+    }
+
+    .traffic-lights span:nth-child(1) { background: #ff5f57; }
+    .traffic-lights span:nth-child(2) { background: #febc2e; }
+    .traffic-lights span:nth-child(3) { background: #28c840; }
+
+    .window-title {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      color: var(--text-primary);
+    }
+
+    .body {
+      display: grid;
+      grid-template-columns: 1fr 1px 1fr 1px 1fr;
+      min-height: calc(var(--panel-height) + var(--footer-height));
+    }
+
+    .divider {
+      background: var(--border-soft);
+      margin-top: var(--footer-height);
+    }
+
+    .panel {
+      position: relative;
+      min-height: var(--panel-height);
+      padding: var(--panel-pad);
+      padding-bottom: calc(var(--panel-pad) + 26px);
+      transition: opacity var(--transition-fast);
+    }
+
+    .panel.locked { opacity: 0.35; }
+    .panel.done { opacity: 0.45; }
+    /* keep-bright only used when step3 is active/locked, not done */
+    .panel.keep-bright.done { opacity: 0.45; }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .step-badge {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+      font-weight: 600;
+      border: 2px solid;
+      flex: 0 0 auto;
+    }
+
+    .step-badge.active {
+      border-color: var(--purple-dark);
+      background: rgba(83, 74, 183, 0.08);
+      color: var(--purple-dark);
+    }
+
+    .step-badge.locked {
+      border-color: #555555;
+      background: rgba(255, 255, 255, 0.03);
+      color: #555555;
+    }
+
+    .step-badge.done {
+      border-color: var(--green);
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--green);
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      color: var(--text-primary);
+    }
+
+    .panel-copy {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .desc {
+      font-size: 13px;
+      line-height: 1.45;
+      color: var(--text-secondary);
+    }
+
+    .helper {
+      font-size: 11px;
+      line-height: 1.4;
+      color: var(--text-dim);
+    }
+
+    .pill-button {
+      appearance: none;
+      border: 1px solid var(--button-border);
+      border-radius: 20px;
+      background: var(--button-fill);
+      color: var(--button-text);
+      font: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1;
+      padding: 11px 24px;
+      min-height: 36px;
+      width: max-content;
+      cursor: default;
+    }
+
+    .path-box {
+      min-height: 36px;
+      border-radius: 8px;
+      border: 1px solid var(--border-field);
+      background: var(--surface-field);
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      line-height: 1;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .path-box.ready {
+      color: var(--text-primary);
+    }
+
+    .status-pill {
+      position: absolute;
+      left: var(--panel-pad);
+      right: var(--panel-pad);
+      bottom: 10px;
+      min-height: 72px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      padding: 0;
+    }
+
+    .status-pill.amber {
+      background: var(--amber-bg);
+      color: var(--amber-text);
+    }
+
+    .status-pill.green {
+      background: transparent;
+      color: var(--green-text);
+    }
+
+    .status-pill.gray {
+      background: transparent;
+      color: var(--gray-status-text);
+      padding: 0;
+    }
+
+    .status-pill[hidden] {
+      display: none;
+    }
+
+    .panel-action {
+      position: absolute;
+      left: var(--panel-pad);
+      right: var(--panel-pad);
+      bottom: 10px;
+      width: auto;
+      justify-content: center;
+    }
+
+    .panel-action[hidden] {
+      display: none;
+    }
+
+    .panel-action-row {
+      position: absolute;
+      left: var(--panel-pad);
+      right: var(--panel-pad);
+      bottom: 10px;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 8px;
+    }
+
+    .panel-action-row[hidden] {
+      display: none;
+    }
+
+    .panel-action-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--button-text);
+      white-space: nowrap;
+      line-height: 1;
+      text-align: center;
+    }
+
+    .panel-action-arrow {
+      appearance: none;
+      width: 36px;
+      min-width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 1px solid var(--button-border);
+      background: var(--button-fill);
+      color: var(--button-text);
+      font: inherit;
+      font-size: 18px;
+      font-weight: 600;
+      line-height: 1;
+      display: grid;
+      place-items: center;
+      cursor: default;
+      padding: 0;
+    }
+
+    .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      min-height: var(--footer-height);
+      padding: 0 24px;
+      border-top: 1px solid var(--border-soft);
+      background: var(--surface-footer);
+    }
+
+    .footer-left,
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 36px;
+    }
+
+    .footer-left {
+      flex-wrap: wrap;
+    }
+
+    .footer-copy {
+      margin-left: auto;
+      font-size: 13px;
+      color: #555555;
+    }
+
+    .kbd-hint {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .kbd-row {
+      display: flex;
+      gap: 3px;
+    }
+
+    .kbd-pill {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 8px;
+      border-radius: 5px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.55);
+      display: grid;
+      place-items: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    body.light-mode .kbd-pill {
+      border-color: rgba(15, 23, 42, 0.12);
+      background: rgba(15, 23, 42, 0.05);
+      color: rgba(15, 23, 42, 0.58);
+    }
+
+    .footer-action {
+      white-space: nowrap;
+    }
+
+    .pill-button.green {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.08);
+      color: var(--green-text);
+    }
+
+    .pill-button.small {
+      min-height: 22px;
+      height: 22px;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 500;
+      border-color: #a796eb;
+      background: rgba(116, 97, 194, 0.25);
+      color: #a796eb;
+    }
+
+    body.light-mode .pill-button.small {
+      border-color: rgba(83, 74, 183, 0.5);
+      background: rgba(83, 74, 183, 0.1);
+      color: #534ab7;
+    }
+
+    .pill-button.small.green {
+      border-color: rgba(34, 197, 94, 0.5);
+      background: rgba(34, 197, 94, 0.08);
+      color: var(--green-text);
+    }
+
+    .panel-action-arrow {
+      cursor: pointer;
+    }
+
+    .panel-action-arrow:hover {
+      background: rgba(175, 169, 236, 0.16);
+    }
+
+    .vis-hidden {
+      visibility: hidden;
+    }
+
+    .status-with-action {
+      position: absolute;
+      left: var(--panel-pad);
+      right: var(--panel-pad);
+      bottom: 10px;
+      min-height: 72px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 6px;
+    }
+
+    .status-with-action[hidden] {
+      display: none;
+    }
+
+    .status-with-action .status-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--green-text);
+    }
+
+    .footer-info-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 3px 3px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border-field);
+      background: var(--surface-field);
+    }
+
+    .footer-path {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .note {
+      color: var(--text-tertiary, var(--text-dim));
+      font-size: 12px;
+      text-align: center;
+      max-width: 760px;
+    }
+
+    @media (max-width: 820px) {
+      .body {
+        grid-template-columns: 1fr;
+      }
+
+      .divider {
+        display: none;
+      }
+
+      .panel {
+        border-bottom: 1px solid var(--border-soft);
+      }
+
+      .stage-toolbar {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body class="dark-mode">
+  <div class="stage">
+    <div class="stage-toolbar">
+      <div class="state-toggle" aria-label="Setup state">
+        <button type="button" data-state="initial" class="active">Initial</button>
+        <button type="button" data-state="step1">Step 1 Done</button>
+        <button type="button" data-state="step2">Step 2 Done</button>
+        <button type="button" data-state="step3">Step 3 Done</button>
+      </div>
+      <div class="mode-toggle" aria-label="Theme">
+        <button type="button" data-mode="dark" class="active">Dark</button>
+        <button type="button" data-mode="light">Light</button>
+      </div>
+    </div>
+
+    <div class="window">
+      <div class="titlebar">
+        <div class="traffic-lights" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <h1 class="window-title">Welcome to Vibeliner</h1>
+      </div>
+
+      <div class="body">
+        <section class="panel" data-panel="step1">
+          <div class="panel-header">
+            <div class="step-badge active" data-badge="step1">1</div>
+            <div class="panel-title">Screen recording</div>
+          </div>
+          <div class="panel-copy">
+            <div class="desc">Vibeliner needs screen recording permission to capture screenshots of your running app.</div>
+          </div>
+          <div class="panel-action-row" data-step1-button>
+            <div class="panel-action-label">Open Screen Recording Settings</div>
+            <button class="panel-action-arrow" aria-label="Open Screen Recording Settings">→</button>
+          </div>
+          <div class="status-pill amber" data-status="step1">Not yet granted</div>
+        </section>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <section class="panel locked" data-panel="step2">
+          <div class="panel-header">
+            <div class="step-badge locked" data-badge="step2">2</div>
+            <div class="panel-title">Accessibility</div>
+          </div>
+          <div class="panel-copy">
+            <div class="desc">Vibeliner needs accessibility permission so the capture hotkey works from any app.</div>
+            <div class="helper vis-hidden" data-step2-note>You may need to relaunch after granting.</div>
+          </div>
+          <div class="panel-action-row" data-step2-button hidden>
+            <div class="panel-action-label">Open Accessibility Settings</div>
+            <button class="panel-action-arrow" aria-label="Open Accessibility Settings">→</button>
+          </div>
+          <div class="status-pill gray" data-status="step2">Complete step 1 first</div>
+        </section>
+
+        <div class="divider" aria-hidden="true"></div>
+
+        <section class="panel locked keep-bright" data-panel="step3">
+          <div class="panel-header">
+            <div class="step-badge locked" data-badge="step3">3</div>
+            <div class="panel-title">Captures folder</div>
+          </div>
+          <div class="panel-copy">
+            <div class="desc">Choose where Vibeliner saves screenshots and prompts.</div>
+            <div class="path-box" data-path-box>No folder selected</div>
+          </div>
+          <div class="panel-action-row" data-step3-button hidden>
+            <div class="panel-action-label">Choose folder…</div>
+            <button class="panel-action-arrow" aria-label="Choose folder">→</button>
+          </div>
+          <div class="status-with-action" data-step3-done hidden>
+            <div class="status-text">Folder ready</div>
+            <button class="pill-button small green">Change folder</button>
+          </div>
+          <div class="status-pill gray" data-status="step3">Complete step 2 first</div>
+        </section>
+      </div>
+
+      <div class="footer">
+        <div class="footer-left" data-footer-left></div>
+        <div class="footer-right" data-footer-right>
+          <div class="footer-copy">Complete all steps to continue</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      This prototype mirrors the current native setup code: a fixed dark-style 3-panel welcome window with sequential unlocking, status pills, and a footer that switches to a hotkey hint plus “Start using Vibeliner →” only after all 3 steps are complete. The light/dark toggle is prototype-only for review. Note: the dark-mode purple tokens (--button-text, --button-border, --button-fill) are too washed-out for light backgrounds. This prototype uses --purple-dark (#534ab7) overrides in light mode — verify DesignTokens.swift has equivalent light-mode values when implementing.
+    </div>
+  </div>
+
+  <script>
+    const body = document.body;
+    const modeButtons = document.querySelectorAll('[data-mode]');
+    const stateButtons = document.querySelectorAll('[data-state]');
+
+    const panels = {
+      step1: document.querySelector('[data-panel="step1"]'),
+      step2: document.querySelector('[data-panel="step2"]'),
+      step3: document.querySelector('[data-panel="step3"]')
+    };
+
+    const badges = {
+      step1: document.querySelector('[data-badge="step1"]'),
+      step2: document.querySelector('[data-badge="step2"]'),
+      step3: document.querySelector('[data-badge="step3"]')
+    };
+
+    const statuses = {
+      step1: document.querySelector('[data-status="step1"]'),
+      step2: document.querySelector('[data-status="step2"]'),
+      step3: document.querySelector('[data-status="step3"]')
+    };
+
+    const step1Button = document.querySelector('[data-step1-button]');
+    const step2Button = document.querySelector('[data-step2-button]');
+    const step2Note = document.querySelector('[data-step2-note]');
+    const step3Button = document.querySelector('[data-step3-button]');
+    const step3Done = document.querySelector('[data-step3-done]');
+    const pathBox = document.querySelector('[data-path-box]');
+    const footerLeft = document.querySelector('[data-footer-left]');
+    const footerRight = document.querySelector('[data-footer-right]');
+
+    let currentState = 'initial';
+
+    function setMode(mode) {
+      body.classList.toggle('light-mode', mode === 'light');
+      modeButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.mode === mode);
+      });
+    }
+
+    function setBadgeState(key, state, text) {
+      badges[key].className = `step-badge ${state}`;
+      badges[key].textContent = text;
+    }
+
+    function setStatus(key, style, text) {
+      statuses[key].className = `status-pill ${style}`;
+      statuses[key].textContent = text;
+    }
+
+    function setPanelState(key, state) {
+      const panel = panels[key];
+      panel.classList.remove('locked', 'done');
+      if (key === 'step3') {
+        panel.classList.add('keep-bright');
+      }
+      if (state === 'locked') panel.classList.add('locked');
+      if (state === 'done') panel.classList.add('done');
+    }
+
+    function renderFooter(complete) {
+      footerLeft.innerHTML = '';
+      footerRight.innerHTML = '';
+
+      if (complete) {
+        /* Shortcut group */
+        const shortcutGroup = document.createElement('div');
+        shortcutGroup.className = 'footer-info-group';
+
+        const hint = document.createElement('div');
+        hint.className = 'kbd-hint';
+        hint.textContent = 'Shortcut:';
+
+        const row = document.createElement('div');
+        row.className = 'kbd-row';
+        ['⌘', '⇧', '6'].forEach(key => {
+          const pill = document.createElement('div');
+          pill.className = 'kbd-pill';
+          pill.textContent = key;
+          row.appendChild(pill);
+        });
+
+        const editShortcut = document.createElement('button');
+        editShortcut.className = 'pill-button small';
+        editShortcut.textContent = 'Edit';
+
+        shortcutGroup.appendChild(hint);
+        shortcutGroup.appendChild(row);
+        shortcutGroup.appendChild(editShortcut);
+
+        const start = document.createElement('button');
+        start.className = 'pill-button footer-action green';
+        start.textContent = 'Start using Vibeliner →';
+
+        footerLeft.appendChild(shortcutGroup);
+        footerRight.appendChild(start);
+      } else {
+        const copy = document.createElement('div');
+        copy.className = 'footer-copy';
+        copy.textContent = 'Complete all steps to continue';
+        footerRight.appendChild(copy);
+      }
+    }
+
+    function renderState(state) {
+      currentState = state;
+      stateButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.state === state);
+      });
+
+      /* Reset all — then selectively show */
+      step1Button.hidden = true;
+      step2Button.hidden = true;
+      step3Button.hidden = true;
+      step3Done.hidden = true;
+      statuses.step1.hidden = false;
+      statuses.step2.hidden = false;
+      statuses.step3.hidden = false;
+
+      /* Keep helper text in DOM for stable height, show only when step2 is active */
+      step2Note.classList.add('vis-hidden');
+
+      /* Path box is always visible in step3 panel — just change text */
+      pathBox.textContent = '~/Documents/vibeliner';
+      pathBox.classList.add('ready');
+
+      if (state === 'initial') {
+        setPanelState('step1', 'active');
+        setPanelState('step2', 'locked');
+        setPanelState('step3', 'locked');
+        setBadgeState('step1', 'active', '1');
+        setBadgeState('step2', 'locked', '2');
+        setBadgeState('step3', 'locked', '3');
+        setStatus('step1', 'amber', 'Not yet granted');
+        setStatus('step2', 'gray', 'Complete step 1 first');
+        setStatus('step3', 'gray', 'Complete step 2 first');
+        /* Step 1: show action, hide status */
+        step1Button.hidden = false;
+        statuses.step1.hidden = true;
+        pathBox.textContent = 'No folder selected';
+        pathBox.classList.remove('ready');
+        renderFooter(false);
+        return;
+      }
+
+      if (state === 'step1') {
+        setPanelState('step1', 'done');
+        setPanelState('step2', 'active');
+        setPanelState('step3', 'locked');
+        setBadgeState('step1', 'done', '✓');
+        setBadgeState('step2', 'active', '2');
+        setBadgeState('step3', 'locked', '3');
+        setStatus('step1', 'green', 'Permission granted');
+        setStatus('step2', 'amber', 'Not yet granted');
+        setStatus('step3', 'gray', 'Complete step 2 first');
+        /* Step 2: show action, hide status, show helper */
+        step2Button.hidden = false;
+        statuses.step2.hidden = true;
+        step2Note.classList.remove('vis-hidden');
+        pathBox.textContent = 'No folder selected';
+        pathBox.classList.remove('ready');
+        renderFooter(false);
+        return;
+      }
+
+      if (state === 'step2') {
+        setPanelState('step1', 'done');
+        setPanelState('step2', 'done');
+        setPanelState('step3', 'active');
+        setBadgeState('step1', 'done', '✓');
+        setBadgeState('step2', 'done', '✓');
+        setBadgeState('step3', 'active', '3');
+        setStatus('step1', 'green', 'Permission granted');
+        setStatus('step2', 'green', 'Permission granted');
+        setStatus('step3', 'amber', 'No folder selected');
+        /* Step 3: show action, hide status */
+        step3Button.hidden = false;
+        statuses.step3.hidden = true;
+        step2Note.classList.add('vis-hidden');
+        pathBox.textContent = 'No folder selected';
+        pathBox.classList.remove('ready');
+        renderFooter(false);
+        return;
+      }
+
+      if (state === 'step3') {
+        setPanelState('step1', 'done');
+        setPanelState('step2', 'done');
+        setPanelState('step3', 'done');
+        setBadgeState('step1', 'done', '✓');
+        setBadgeState('step2', 'done', '✓');
+        setBadgeState('step3', 'done', '✓');
+        setStatus('step1', 'green', 'Permission granted');
+        setStatus('step2', 'green', 'Permission granted');
+        /* Step 3 done: hide plain status, show status+action combo */
+        statuses.step3.hidden = true;
+        step3Done.hidden = false;
+        step2Note.classList.add('vis-hidden');
+        pathBox.textContent = '~/Documents/vibeliner';
+        pathBox.classList.add('ready');
+        renderFooter(true);
+        return;
+      }
+    }
+
+    /* Theme toggle */
+    modeButtons.forEach(button => {
+      button.addEventListener('click', () => setMode(button.dataset.mode));
+    });
+
+    /* State toolbar toggle */
+    stateButtons.forEach(button => {
+      button.addEventListener('click', () => renderState(button.dataset.state));
+    });
+
+    /* Interactive buttons — clicking the arrow advances to the next state */
+    step1Button.querySelector('.panel-action-arrow').addEventListener('click', () => {
+      renderState('step1');
+    });
+    step2Button.querySelector('.panel-action-arrow').addEventListener('click', () => {
+      renderState('step2');
+    });
+    step3Button.querySelector('.panel-action-arrow').addEventListener('click', () => {
+      renderState('step3');
+    });
+
+    setMode('dark');
+    renderState('initial');
+  </script>
+</body>
+</html>
