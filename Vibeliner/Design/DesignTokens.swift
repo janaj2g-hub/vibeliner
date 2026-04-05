@@ -2,6 +2,11 @@ import AppKit
 
 enum DesignTokens {
 
+    private static func isDarkAppearance(_ appearance: NSAppearance) -> Bool {
+        let best = appearance.bestMatch(from: [.darkAqua, .aqua])
+        return best == .darkAqua
+    }
+
     // MARK: - Colors
 
     /// #AFA9EC — crosshair, selection border, active tool highlight
@@ -124,6 +129,78 @@ enum DesignTokens {
     /// #FF5F57 — close icon hover color
     static let closeIconHover = NSColor(red: 255/255, green: 95/255, blue: 87/255, alpha: 1.0)
 
+    /// Settings field surface
+    static let settingsFieldSurface = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.06)
+        }
+        return NSColor(red: 250/255, green: 251/255, blue: 253/255, alpha: 1.0)
+    }
+
+    /// Settings framed section surface
+    static let settingsFrameSurface = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.02)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.02)
+    }
+
+    /// Settings preview surface
+    static let settingsPreviewSurface = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 21/255, green: 22/255, blue: 26/255, alpha: 1.0)
+        }
+        return NSColor(red: 248/255, green: 250/255, blue: 252/255, alpha: 1.0)
+    }
+
+    /// Settings segmented control track
+    static let settingsSegmentedTrack = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.03)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.04)
+    }
+
+    /// Settings segmented control active fill
+    static let settingsSegmentedActive = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
+        }
+        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.18)
+    }
+
+    /// Settings pill border color
+    static let settingsPillBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36)
+        }
+        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.26)
+    }
+
+    /// Settings pill fill color
+    static let settingsPillFill = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.10)
+        }
+        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
+    }
+
+    /// Settings pill title color
+    static let settingsPillText = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return purpleLight
+        }
+        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
+    }
+
+    /// Settings field border color
+    static let settingsFieldBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.12)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
+    }
+
     // MARK: - Dimensions
 
     /// 18px badge diameter (radius 9)
@@ -179,6 +256,36 @@ enum DesignTokens {
 
     /// 24px close button size
     static let closeButtonSize: CGFloat = 24
+
+    /// Settings content horizontal padding
+    static let settingsContentPadding: CGFloat = 28
+
+    /// Settings section title width
+    static let settingsSectionLabelWidth: CGFloat = 128
+
+    /// Settings section vertical spacing
+    static let settingsSectionPadding: CGFloat = 24
+
+    /// Settings section inner gap
+    static let settingsSectionGap: CGFloat = 14
+
+    /// Settings framed section radius
+    static let settingsFrameRadius: CGFloat = 18
+
+    /// Settings framed section padding
+    static let settingsFramePadding: CGFloat = 18
+
+    /// Settings field height
+    static let settingsFieldHeight: CGFloat = 32
+
+    /// Settings segmented control height
+    static let settingsSegmentedHeight: CGFloat = 28
+
+    /// Settings segmented control inset
+    static let settingsSegmentedInset: CGFloat = 2
+
+    /// Settings pill button height
+    static let settingsPillHeight: CGFloat = 28
 
     /// 12px arrow chevron arm length
     static let arrowChevronLength: CGFloat = 12
@@ -255,4 +362,16 @@ enum DesignTokens {
 
     /// Tooltip label: system 13px weight 600
     static let tooltipLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
+
+    /// Settings section label: system 13px weight 500
+    static let settingsSectionFont = NSFont.systemFont(ofSize: 13, weight: .medium)
+
+    /// Settings body copy: system 12px weight regular
+    static let settingsBodyFont = NSFont.systemFont(ofSize: 12, weight: .regular)
+
+    /// Settings field text: monospace 12px regular
+    static let settingsFieldFont = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+
+    /// Settings pill text: system 11px weight 600
+    static let settingsPillFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
 }

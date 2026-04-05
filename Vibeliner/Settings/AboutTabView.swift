@@ -2,8 +2,6 @@ import AppKit
 
 final class AboutTabView: NSView {
 
-    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
-
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupView()
@@ -61,7 +59,7 @@ final class AboutTabView: NSView {
             let btn = NSButton(title: title, target: self, action: #selector(linkClicked(_:)))
             btn.isBordered = false
             btn.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-            btn.contentTintColor = purpleAccent
+            btn.contentTintColor = DesignTokens.settingsPillText
             btn.frame = NSRect(x: (frame.width - 160) / 2, y: y, width: 160, height: 20)
             addSubview(btn)
             y -= 24

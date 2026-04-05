@@ -1,13 +1,19 @@
 # Vibeliner — Product Definition: Settings Panel
 
 **Status:** Locked
-**Defined via:** Prototype iteration 2026-03-30
+**Defined via:** Prototype iteration 2026-04-04
 
 ---
 
 ## Overview
 
-Settings is a separate macOS window (not in the popover or editor). Standard light appearance with three tabs: General, Prompt, and About. The Prompt tab has three centered sub-tabs with a persistent live preview at the bottom.
+Settings is a separate macOS window with three tabs: `General`, `Prompt`, and `About`.
+
+- `General` is a stack of reusable settings sections
+- `Prompt` is split into a persistent top preview plus a framed editing subsection
+- `About` is a centered static information tab
+
+The shipped implementation is section-driven so future sections can be inserted into any tab without rewriting vertical frame math.
 
 ## Window
 
@@ -15,35 +21,45 @@ Settings is a separate macOS window (not in the popover or editor). Standard lig
 |---|---|
 | Type | Standard macOS window |
 | Title | "Vibeliner Settings" |
-| Style | Light, native macOS controls |
+| Style | Native macOS controls using the current system appearance |
 | Traffic lights | Standard macOS (close, minimize, zoom) |
-| Size | ~540px wide, height adapts to content |
-| Access | From menu bar popover or `Cmd+,` |
+| Size | ~540px wide, fixed preferences-style height |
+| Access | Menu bar popover or `Cmd+,` |
 
 ## Tab bar
 
-Three tabs centered at the top, below the title bar. Purple underline on the active tab.
+Three tabs centered below the title bar:
 
-| Tab | Contents |
-|---|---|
-| General | Hotkey, captures folder, launch at login |
-| Prompt | Preamble, tool descriptions, footer, live preview |
-| About | App icon, version, links |
+- `General`
+- `Prompt`
+- `About`
 
-Active tab: `#534AB7` text + 2px bottom border.
-Inactive tab: `#888` text, no border.
+Active tab styling:
+- light purple text
+- short centered underline
+
+Inactive tabs use secondary text with no underline.
 
 ---
 
 ## General tab
+
+The General tab is a vertical stack of reusable settings sections. Every section follows the same rhythm:
+
+1. title in the left column
+2. content in the right column
+3. divider between sections
 
 ### Capture hotkey
 
 | Property | Value |
 |---|---|
 | Label | "Capture hotkey" |
-| Display | Pill showing current keys (e.g., `⌘` `⇧` `6`) |
-| Action | "Change" link opens key recorder |
+| Display | Current shortcut rendered as separate key pills |
+| Surface | Same field background and border treatment as the captures-folder field |
+| Text color | Light purple key glyphs in both light and dark mode |
+| Action | Pill-style `Change` button opens a recorder sheet |
+| Save behavior | The next modified keypress is saved immediately |
 | Default | `⌘⇧6` |
 
 ### Captures folder
@@ -51,9 +67,9 @@ Inactive tab: `#888` text, no border.
 | Property | Value |
 |---|---|
 | Label | "Captures folder" |
-| Display | Monospace path in a gray box |
-| Action | "Change" button opens `NSOpenPanel` folder picker |
+| Display | Monospace path in a boxed field surface |
 | Helper text | "Screenshots and prompts are saved here." |
+| Action | Pill-style `Change` button opens `NSOpenPanel` |
 | Default | `~/Documents/vibeliner` |
 
 ### Launch at login
@@ -62,33 +78,62 @@ Inactive tab: `#888` text, no border.
 |---|---|
 | Label | "Launch at login" |
 | Control | Checkbox |
-| Helper text | "Start Vibeliner when you log in" |
+| Helper text | Regular-weight label: "Start Vibeliner when you log in" |
 | Default | Unchecked |
 
 ---
 
 ## Prompt tab
 
-The Prompt tab has three centered sub-tabs: **Preamble**, **Tool descriptions**, **Footer**. Clicking a sub-tab changes the editing area above while the live preview stays pinned at the bottom.
+The Prompt tab is composed of two stacked sections:
 
-### Sub-tab bar
+1. `Full Prompt Preview`
+2. `Edit Prompt Sections`
 
-Centered horizontally. Purple underline on active sub-tab. Same styling as main tabs but smaller (12px font).
+### Full Prompt Preview
 
-### Preamble sub-tab
+This section stays visible at the top of the Prompt tab at all times.
 
-**Description (above editor):**
-Three lines:
-- "Text before the annotation list."
-- `[Screenshot Path]` inserts the image path.
-- `[Tool Description]` auto-generates based on tools used in the capture.
+| Property | Value |
+|---|---|
+| Label | "Full Prompt Preview" |
+| Surface | Read-only preview surface, visually distinct from editable text fields |
+| Content | Full generated prompt using the configured captures folder path and sample annotations |
+| Typography | Monospaced |
+| Behavior | Refreshes as prompt drafts change, and also reflects saves/resets |
 
-The token tags use the light purple pill style (`#f0edf9` background, `#534AB7` text, `#d4cef0` border).
+### Edit Prompt Sections
 
-**Editor:** Multi-line monospace text area.
+This area is a framed subsection below the preview.
 
-**Default preamble:**
-```
+Header row:
+- `Edit Prompt Sections` title aligned left
+- shared `Save` pill aligned right
+
+Below the header is a centered pill-style segmented control with three items:
+
+- `Preamble`
+- `Tools`
+- `Footer`
+
+The outer track is pill-shaped and the active selector is pill-shaped. Switching segments changes the active editor inside the same frame.
+
+`Reset to default` is scoped to the currently visible segment and appears below that segment’s content area.
+
+### Preamble
+
+Description:
+
+`Text before the annotation list. [Screenshot Path] inserts the image path. [Tool Description] auto-generates based on tools used.`
+
+Editor:
+- multi-line
+- monospaced
+- uses the editable field surface, not the preview surface
+
+Default preamble:
+
+```text
 This is a screenshot of my running app. View it at [Screenshot Path]
 
 [Tool Description] Each annotation has a number and a description.
@@ -96,18 +141,22 @@ This is a screenshot of my running app. View it at [Screenshot Path]
 Fix each issue:
 ```
 
-**Buttons:** "Save" (purple filled) on the left, "Reset to default" (purple text link) on the right.
+Actions:
+- `Save` writes all Prompt-section drafts
+- `Reset to default` resets only the Preamble content
 
-### Tool descriptions sub-tab
+### Tools
 
-**Description:** "Each tool's description feeds into `[Tool Description]` when that tool is used. The tool type also appears in brackets next to each annotation."
+Description:
 
-**Five rows, each containing:**
-1. Tool icon (28px square, gray background, rounded)
-2. Tool name label (12px, weight 500): Pin, Arrow, Rectangle, Circle, Freehand
-3. Editable text field with the description
+`Each tool's description feeds into [Tool Description] when that tool is used. The tool type also appears in brackets next to each annotation.`
 
-**Default descriptions:**
+Rows:
+1. icon tile
+2. tool name
+3. editable monospace field
+
+Tool list:
 
 | Tool | Default description |
 |---|---|
@@ -118,52 +167,33 @@ Fix each issue:
 | Freehand | marks an irregular area |
 
 These descriptions are used in two places:
-1. **In `[Tool Description]`** — combined into a sentence listing only the tools used in the capture
-2. **Per annotation** — the tool type appears in brackets: `1  [pin] padding too tight`
+1. `[Tool Description]` output
+2. per-annotation tool labels such as `1  [pin] ...`
 
-**Buttons:** Save + Reset to default.
+Actions:
+- `Save` writes all Prompt-section drafts
+- `Reset to default` resets only the Tools fields
 
-### Footer sub-tab
+### Footer
 
-**Description:** "Text after the annotation list. Leave empty for no footer."
+Description:
 
-**Editor:** Multi-line monospace text area (shorter than preamble).
+`Text after the annotation list. Leave empty for no footer.`
 
-**Default footer:**
-```
+Editor:
+- multi-line
+- monospaced
+- uses the editable field surface
+
+Default footer:
+
+```text
 Make the changes and verify they match the design.
 ```
 
-**Buttons:** Save + Reset to default.
-
-### Live preview (persistent)
-
-Always visible at the bottom of the Prompt tab, regardless of which sub-tab is active. Separated by a top border.
-
-| Property | Value |
-|---|---|
-| Label | "Live preview" (12px, gray, weight 500) |
-| Style | Gray background box, monospace, 11px |
-| Content | Full generated prompt with sample annotations |
-| Path | Uses the actual configured captures folder path |
-| Max height | 180px, scrollable |
-
-The preview updates in real time as the user edits the preamble, tool descriptions, or footer.
-
-**Sample preview content:**
-```
-This is a screenshot of my running app. View it at /Users/jon/Documents/vibeliner/2026-03-30_143022/screenshot.png
-
-Numbered pins point to specific issues and arrows point at or between elements. Each annotation has a number and a description.
-
-Fix each issue:
-
-1  [pin] padding too tight
-2  [arrow] wrong border radius
-3  [arrow] move this element left
-
-Make the changes and verify they match the design.
-```
+Actions:
+- `Save` writes all Prompt-section drafts
+- `Reset to default` resets only the Footer content
 
 ---
 
@@ -181,28 +211,12 @@ Centered layout:
 
 ---
 
-## Updates to Prompt Template definition
+## Implementation Architecture
 
-This settings panel changes how templates work compared to the earlier prompt template definition:
+The settings UI is intentionally designed for extension:
 
-### Annotation list format (updated)
-
-Each annotation line now includes the tool type in brackets:
-
-```
-1  [pin] padding too tight
-2  [arrow] wrong border radius
-3  [rectangle] this card needs more height
-4  [circle] wrong icon size
-5  [freehand] this whole area is off
-```
-
-The bracketed tool type gives the LLM per-annotation context about what kind of mark was made. The bracket labels match the tool names from settings (lowercase).
-
-### [Tool Description] generation (updated)
-
-The `[Tool Description]` token resolves to a sentence listing only the tools used in the capture, using the editable descriptions from settings:
-
-- If only pins used: "Numbered pins point to specific issues."
-- If pins + arrows: "Numbered pins point to specific issues and arrows point at or between elements."
-- If all five tools: "Annotations use pins (points to specific issues), arrows (points at or between elements), rectangles (highlights a region or container), circles (calls out a specific element), and freehand marks (marks an irregular area)."
+- Top-level tabs are created from a small tab model in `SettingsWindowController`
+- Shared settings visuals live in `DesignTokens.swift`
+- Reusable Settings UI components live in `Vibeliner/Settings/SettingsUI.swift`
+- General and Prompt are built from reusable section containers rather than manual absolute `y` offsets
+- Prompt uses a reusable segmented control so more prompt sections can be added without redesigning the outer frame
