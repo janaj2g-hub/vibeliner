@@ -50,6 +50,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private weak var footerEditor: NSTextView?
     private var toolFields: [String: SettingsTextField] = [:]
     private var contentLoaded = false
+    private var savedResetTimer: Timer?
 
     // MARK: - Init
 
@@ -67,8 +68,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    /// Called by SettingsWindowController after the view is in the hierarchy.
-    /// Loads preview data and selects the first sub-tab.
     func loadContent() {
         guard !contentLoaded else { return }
         contentLoaded = true
@@ -81,7 +80,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private func buildLayout() {
         rootStack.orientation = .vertical
         rootStack.alignment = .leading
-        rootStack.spacing = 24
+        rootStack.spacing = 20
         rootStack.translatesAutoresizingMaskIntoConstraints = false
         addSubview(rootStack)
 
@@ -108,7 +107,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         editStack.orientation = .vertical
         editStack.alignment = .leading
-        editStack.spacing = 18
+        editStack.spacing = 14
         editStack.translatesAutoresizingMaskIntoConstraints = false
         editFrame.addSubview(editStack)
 
@@ -119,7 +118,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             editStack.bottomAnchor.constraint(equalTo: editFrame.bottomAnchor, constant: -DesignTokens.settingsFramePadding),
         ])
 
-        // Header row: "Edit Prompt Sections" + Save button
+        // Header row
         saveButton.target = self
         saveButton.action = #selector(saveAllPromptSections)
         saveButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
@@ -141,19 +140,19 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         editStack.addArrangedSubview(headerRow)
         headerRow.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
 
-        // Segmented control row
+        // Segmented control
         let segmentedRow = NSView()
         segmentedRow.translatesAutoresizingMaskIntoConstraints = false
         segmentedRow.addSubview(segmentedControl)
         editStack.addArrangedSubview(segmentedRow)
 
-        let segmentWidth = min(360, 360) // explicit constant
         NSLayoutConstraint.activate([
             segmentedRow.widthAnchor.constraint(equalTo: editStack.widthAnchor),
             segmentedControl.centerXAnchor.constraint(equalTo: segmentedRow.centerXAnchor),
             segmentedControl.topAnchor.constraint(equalTo: segmentedRow.topAnchor),
             segmentedControl.bottomAnchor.constraint(equalTo: segmentedRow.bottomAnchor),
-            segmentedControl.widthAnchor.constraint(equalToConstant: CGFloat(segmentWidth)),
+            segmentedControl.widthAnchor.constraint(lessThanOrEqualToConstant: 360),
+            segmentedControl.widthAnchor.constraint(equalTo: segmentedRow.widthAnchor, multiplier: 0.75),
         ])
 
         segmentedControl.onSelectionChanged = { [weak self] index in
@@ -161,10 +160,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             self?.selectSubTab(tab)
         }
 
-        // Active content area (swapped per sub-tab)
+        // Active content area
         activeContentStack.orientation = .vertical
         activeContentStack.alignment = .leading
-        activeContentStack.spacing = 18
+        activeContentStack.spacing = 14
         activeContentStack.translatesAutoresizingMaskIntoConstraints = false
         editStack.addArrangedSubview(activeContentStack)
         activeContentStack.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
@@ -204,7 +203,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             segmentedControl.setSelectedIndex(tab.rawValue)
         }
 
-        // Clear active content
         activeContentStack.arrangedSubviews.forEach { view in
             activeContentStack.removeArrangedSubview(view)
             view.removeFromSuperview()
@@ -229,12 +227,11 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         preambleEditor = editor.documentView as? NSTextView
         preambleEditor?.delegate = self
 
-        // Add to hierarchy BEFORE activating cross-view constraints
         activeContentStack.addArrangedSubview(description)
         activeContentStack.addArrangedSubview(editor)
 
         NSLayoutConstraint.activate([
-            editor.heightAnchor.constraint(equalToConstant: 184),
+            editor.heightAnchor.constraint(equalToConstant: 140),
             editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
     }
@@ -249,16 +246,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         let rowsStack = NSStackView()
         rowsStack.orientation = .vertical
         rowsStack.alignment = .leading
-        rowsStack.spacing = 14
+        rowsStack.spacing = 10
         rowsStack.translatesAutoresizingMaskIntoConstraints = false
 
-        // Add rowsStack to hierarchy first, then build rows inside it
         activeContentStack.addArrangedSubview(rowsStack)
 
         for (title, key) in toolRows() {
             let row = makeToolRow(title: title, key: key)
             rowsStack.addArrangedSubview(row)
-            // Cross-view constraint: row width = activeContentStack width
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
     }
@@ -269,12 +264,11 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         footerEditor = editor.documentView as? NSTextView
         footerEditor?.delegate = self
 
-        // Add to hierarchy BEFORE activating cross-view constraints
         activeContentStack.addArrangedSubview(description)
         activeContentStack.addArrangedSubview(editor)
 
         NSLayoutConstraint.activate([
-            editor.heightAnchor.constraint(equalToConstant: 160),
+            editor.heightAnchor.constraint(equalToConstant: 100),
             editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
     }
@@ -299,10 +293,9 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         textView.isSelectable = true
         textView.drawsBackground = false
         textView.string = text
-        textView.textContainerInset = NSSize(width: 10, height: 12)
+        textView.textContainerInset = NSSize(width: 10, height: 10)
         textView.insertionPointColor = DesignTokens.purpleLight
 
-        // Text wrapping
         textView.isHorizontallyResizable = false
         textView.isVerticallyResizable = true
         textView.textContainer?.widthTracksTextView = true
@@ -312,6 +305,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         return scroll
     }
+
+    private static let toolRowHeight: CGFloat = 40
 
     private func makeToolRow(title: String, key: String) -> NSView {
         let row = NSView()
@@ -336,23 +331,21 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            // Note: row width constraint to activeContentStack is set in buildToolsContent()
-            // after the row is added to the hierarchy (cross-view constraints require a common ancestor)
-            row.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
+            row.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
             icon.leadingAnchor.constraint(equalTo: row.leadingAnchor),
             icon.centerYAnchor.constraint(equalTo: row.centerYAnchor),
             icon.widthAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
             icon.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
 
-            nameLabel.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 16),
+            nameLabel.leadingAnchor.constraint(equalTo: icon.trailingAnchor, constant: 14),
             nameLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            nameLabel.widthAnchor.constraint(equalToConstant: 92),
+            nameLabel.widthAnchor.constraint(equalToConstant: 80),
 
-            field.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 16),
+            field.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 14),
             field.trailingAnchor.constraint(equalTo: row.trailingAnchor),
             field.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            field.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
+            field.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
         ])
 
         return row
@@ -393,6 +386,20 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ConfigManager.shared.toolDescriptions = drafts.toolDescriptions
         ConfigManager.shared.save()
         refreshPreview()
+
+        // Flash "Saved" green confirmation (matches editor toolbar copy buttons)
+        savedResetTimer?.invalidate()
+        saveButton.title = "Saved"
+        saveButton.contentTintColor = DesignTokens.copiedGreenText
+        saveButton.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+        saveButton.layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
+
+        savedResetTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
+            self?.saveButton.title = "Save"
+            self?.saveButton.contentTintColor = DesignTokens.settingsPillText
+            self?.saveButton.layer?.backgroundColor = DesignTokens.settingsPillFill.cgColor
+            self?.saveButton.layer?.borderColor = DesignTokens.settingsPillBorder.cgColor
+        }
     }
 
     @objc private func resetCurrentPromptSection() {
