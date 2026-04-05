@@ -44,7 +44,7 @@ Vibeliner is a native macOS menu bar app that captures, annotates, and packages 
 
 ## 2. Setup Flow
 
-**Goal:** Get the user through two prerequisites (screen recording permission and a captures folder) quickly, then explain the two copy modes, and never show this window again.
+**Goal:** Get the user through the required permissions and captures-folder setup quickly, then never show this window again after completion.
 
 ### Window
 
@@ -67,31 +67,30 @@ Three vertical panels with 0.5px dividers between them:
 - Bottom status bar: amber "Not yet granted" → green "Permission granted"
 - Panel dims to 50% opacity when complete
 
-**Panel 2: Captures folder**
-- Locked at 40% opacity until Panel 1 completes
-- Default path: `~/Documents/vibeliner`
-- "Create folder" (primary) and "Choose different…" (secondary) buttons
-- Validates path is writable
-- Bottom status bar: amber "Folder not yet created" → green "Folder ready"
-- Panel dims to 50% opacity when complete
+**Panel 2: Accessibility**
+- Locked until Panel 1 completes
+- "Open Accessibility Settings →" button links directly to Privacy & Security → Accessibility
+- Helper text notes the app may need relaunch after granting permission
+- Bottom status bar: gray "Complete step 1 first" → amber "Not yet granted" → green "Permission granted"
+- Panel dims after completion
 
-**Panel 3: How to share** (active only after both steps complete)
-- Blue "3" badge
-- Two purple-accented explanation cards:
-  - **Copy Prompt** — "For tools that read files, like Claude Code, Codex, or any terminal tool. Paste the text directly — the AI reads the screenshot from your disk."
-  - **Copy Image** — "For chat apps like Claude.ai, ChatGPT, and Gemini. Paste the image alongside the prompt."
-- Bottom status: "You can always change this in settings"
+**Panel 3: Captures folder**
+- Locked until Panel 2 completes
+- Pre-fills `~/Documents/vibeliner` if that folder already exists
+- "Choose folder…" button opens a directory picker and saves the selected path
+- Bottom status bar: gray "Complete step 2 first" → amber "Folder not yet chosen" → green "Folder ready"
+- Panel stays fully visible after completion
 
 ### Footer bar
 
-- Left: Hotkey reminder — `Capture shortcut: ⌘ ⇧ 6`
-- Right: Green "Start using Vibeliner →" button (enabled only when all steps complete)
+- Before completion: right-aligned text "Complete all steps to continue"
+- After completion: left hotkey reminder `Capture shortcut: ⌘ ⇧ 6`, right green "Start using Vibeliner →" button
 - Clicking "Start using Vibeliner" closes the window permanently and activates the menu bar icon
 
 ### Edge cases
 
 - Closing the window without completing: reappears on next launch
-- Permission requires app restart: helper text notes this; on relaunch Step 1 is pre-checked
+- Permissions are polled while the window is open; on relaunch completed steps are pre-checked
 - User deletes captures folder later: warning surfaces in menu bar popover, not this window
 
 ---
@@ -187,6 +186,7 @@ Custom overlay using borderless `NSWindow` + Core Graphics rendering. NOT `scree
 - **Notes:** Overflow beyond canvas edge (never clipped)
 - **Shapes/strokes:** Can clip at canvas edge
 - **Auto-numbering:** Sequential across all tools
+- **Deletion:** Removing an annotation renumbers the remaining annotations sequentially
 - **Undo/redo:** Full support in shared stack for all operations
 - **What gets exported to image:** Marks + badges only. Notes, handles, and hover states are NOT in the image.
 - **What gets exported to prompt:** Numbered list with `[tool type]` tag and note text
@@ -339,7 +339,7 @@ On copy: transitions to green `rgba(22,163,74,0.9)` showing "Copied" for 2 secon
 | Cmd+Shift+Z | Redo |
 | Cmd+C (no text field focused) | Copy Prompt |
 | Delete / Backspace | Delete selected annotation |
-| 1–5 | Switch tools |
+| 1–6 | Switch tools (`1=Select`, `2=Pin`, `3=Arrow`, `4=Rectangle`, `5=Circle`, `6=Freehand`) |
 
 ---
 
@@ -369,7 +369,7 @@ The toggle persists across sessions.
 
 ### First-use tooltip
 
-A light purple tooltip (`#f0edf9` bg, `#d4cef0` border) appears above the toggle on first editor open:
+A dark tooltip appears above the toggle on first editor open:
 
 > Terminal tools can read files on your computer. Web chat apps cannot. Select a mode based on your workflow.
 >
@@ -379,7 +379,7 @@ A light purple tooltip (`#f0edf9` bg, `#d4cef0` border) appears above the toggle
 >
 > Got it
 
-Dismisses permanently on "Got it" click. Stored in UserDefaults.
+Dismisses permanently on "Got it" click. Stored in `config.toml`.
 
 ---
 
@@ -389,7 +389,7 @@ Dismisses permanently on "Got it" click. Stored in UserDefaults.
 
 ### Base folder
 
-`~/Documents/vibeliner/` — set during setup, configurable in settings.
+Configured captures folder — default `~/Documents/vibeliner/`, set during setup and configurable in settings.
 
 ### Capture folder structure
 
@@ -513,7 +513,7 @@ Make the changes and verify they match the design.
 
 ## 9. Settings Panel
 
-**Goal:** A clean, standard macOS preferences window with only the essential settings. The Prompt tab uses sub-tabs with a persistent live preview so users can see exactly what their changes produce.
+**Goal:** A clean, standard macOS preferences window with only the essential settings. The Prompt tab uses a persistent top preview and a framed editing subsection so users can see exactly what their changes produce while keeping the layout extensible.
 
 ### Window
 
@@ -529,29 +529,48 @@ Make the changes and verify they match the design.
 
 | Setting | Control | Default |
 |---|---|---|
-| Capture hotkey | Key recorder display | `⌘⇧6` |
-| Captures folder | Path display + "Change" button | `~/Documents/vibeliner` |
-| Launch at login | Checkbox | Unchecked |
+| Capture hotkey | Key-pill display + shared field surface + pill "Change" button | `⌘⇧6` |
+| Captures folder | Boxed path field + helper text + pill "Change" button | `~/Documents/vibeliner` |
+| Launch at login | Checkbox + regular-weight helper label | Unchecked |
 
 ### Prompt tab
 
-Three centered sub-tabs: **Preamble** | **Tool descriptions** | **Footer**
+Prompt is split into two sections:
 
-The editing area changes per sub-tab. The **live preview** stays pinned at the bottom, always visible, showing the full generated prompt with the actual captures path and sample annotations. It updates in real time as the user edits.
+1. **Full Prompt Preview** at the top
+2. **Edit Prompt Sections** inside a framed container below
+
+The frame header uses:
+- left-aligned `Edit Prompt Sections`
+- right-aligned shared `Save`
+
+Centered below the header is a segmented control with three items:
+- **Preamble**
+- **Tools**
+- **Footer**
+
+The active segment changes the editing area inside the frame. `Reset to default` is scoped to the currently visible segment and appears below that segment’s content.
 
 **Preamble sub-tab:**
 - Description explains the two tokens: `[Screenshot Path]` and `[Tool Description]`
 - Multi-line monospace text editor with the default preamble
-- Save button (left) + Reset to default (right)
+- Shared Save button in the frame header
+- Per-section Reset to default below the editor
 
-**Tool descriptions sub-tab:**
+**Tools sub-tab:**
 - Five rows: tool icon → tool name → editable text field
 - Each description feeds into `[Tool Description]` and appears as `[tool type]` per annotation
-- Save + Reset to default
+- Shared Save + per-section Reset to default
 
 **Footer sub-tab:**
 - Multi-line monospace text editor
-- Save + Reset to default
+- Shared Save + per-section Reset to default
+
+**Full Prompt Preview section:**
+- Sits above the editing frame, not below it
+- Uses a read-only preview surface visually distinct from editable fields
+- Shows the full generated prompt with the actual captures path and sample annotations
+- Refreshes as prompt drafts change
 
 ### About tab
 

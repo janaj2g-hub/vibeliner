@@ -8,8 +8,15 @@ enum PromptMode {
 
 final class PromptGenerator {
 
-    static func generatePrompt(annotations: [Annotation], screenshotPath: String, mode: PromptMode) -> String {
-        var preamble = ConfigManager.shared.preamble
+    static func generatePrompt(
+        annotations: [Annotation],
+        screenshotPath: String,
+        mode: PromptMode,
+        preambleOverride: String? = nil,
+        footerOverride: String? = nil,
+        toolDescriptionsOverride: [String: String]? = nil
+    ) -> String {
+        var preamble = preambleOverride ?? ConfigManager.shared.preamble
 
         // Replace [Screenshot Path]
         switch mode {
@@ -25,7 +32,7 @@ final class PromptGenerator {
         }
 
         // Replace [Tool Description]
-        let toolDescription = generateToolDescription(from: annotations)
+        let toolDescription = generateToolDescription(from: annotations, toolDescriptions: toolDescriptionsOverride)
         preamble = preamble.replacingOccurrences(of: "[Tool Description]", with: toolDescription)
 
         // Annotation list
@@ -38,7 +45,7 @@ final class PromptGenerator {
         let annotationList = annotationLines.joined(separator: "\n")
 
         // Footer
-        let footer = ConfigManager.shared.footer
+        let footer = footerOverride ?? ConfigManager.shared.footer
 
         // Assemble
         var parts: [String] = [preamble]
@@ -73,11 +80,11 @@ final class PromptGenerator {
 
     // MARK: - Tool description
 
-    private static func generateToolDescription(from annotations: [Annotation]) -> String {
+    private static func generateToolDescription(from annotations: [Annotation], toolDescriptions: [String: String]? = nil) -> String {
         let toolTypes = Set(annotations.map { $0.type })
         guard !toolTypes.isEmpty else { return "" }
 
-        let descriptions = ConfigManager.shared.toolDescriptions
+        let descriptions = toolDescriptions ?? ConfigManager.shared.toolDescriptions
         let ordered: [AnnotationToolType] = [.pin, .arrow, .rectangle, .circle, .freehand]
         let used = ordered.filter { toolTypes.contains($0) }
 

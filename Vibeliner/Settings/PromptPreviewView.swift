@@ -2,13 +2,12 @@ import AppKit
 
 final class PromptPreviewView: NSView {
 
-    private let titleLabel = NSTextField(labelWithString: "Live preview")
-    private let previewText: NSTextView
-    private let scrollView: NSScrollView
+    private let titleLabel = SettingsUI.sectionTitle("Full Prompt Preview")
+    private let previewContainer = NSView()
+    private let previewText = NSTextView()
+    private let scrollView = NSScrollView()
 
     override init(frame frameRect: NSRect) {
-        scrollView = NSScrollView(frame: NSRect(x: 0, y: 0, width: frameRect.width, height: frameRect.height - 24))
-        previewText = NSTextView(frame: NSRect(origin: .zero, size: scrollView.contentSize))
         super.init(frame: frameRect)
         setupView()
         refresh()
@@ -17,29 +16,53 @@ final class PromptPreviewView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        titleLabel.textColor = .secondaryLabelColor
-        titleLabel.frame = NSRect(x: 0, y: frame.height - 20, width: 100, height: 16)
+        translatesAutoresizingMaskIntoConstraints = false
+
+        titleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(titleLabel)
 
-        previewText.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        previewContainer.translatesAutoresizingMaskIntoConstraints = false
+        SettingsUI.stylePreviewSurface(previewContainer)
+        addSubview(previewContainer)
+
+        previewText.translatesAutoresizingMaskIntoConstraints = false
+        previewText.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
         previewText.textColor = .labelColor
         previewText.isEditable = false
         previewText.isRichText = false
         previewText.drawsBackground = false
+        previewText.textContainerInset = NSSize(width: 8, height: 10)
 
-        scrollView.frame = NSRect(x: 0, y: 0, width: frame.width, height: frame.height - 28)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.documentView = previewText
+        scrollView.drawsBackground = false
         scrollView.hasVerticalScroller = false
-        scrollView.wantsLayer = true
-        scrollView.layer?.backgroundColor = NSColor.textBackgroundColor.cgColor
-        scrollView.layer?.borderWidth = 1
-        scrollView.layer?.borderColor = NSColor.separatorColor.cgColor
-        scrollView.layer?.cornerRadius = 8
-        addSubview(scrollView)
+        scrollView.hasHorizontalScroller = false
+        scrollView.borderType = .noBorder
+        previewContainer.addSubview(scrollView)
+
+        NSLayoutConstraint.activate([
+            titleLabel.topAnchor.constraint(equalTo: topAnchor),
+            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
+            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
+
+            previewContainer.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 18),
+            previewContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
+            previewContainer.trailingAnchor.constraint(equalTo: trailingAnchor),
+            previewContainer.bottomAnchor.constraint(equalTo: bottomAnchor),
+
+            scrollView.topAnchor.constraint(equalTo: previewContainer.topAnchor, constant: 16),
+            scrollView.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 18),
+            scrollView.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -18),
+            scrollView.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -16)
+        ])
     }
 
-    func refresh() {
+    func refresh(
+        preamble: String? = nil,
+        footer: String? = nil,
+        toolDescriptions: [String: String]? = nil
+    ) {
         let sampleAnnotations: [Annotation] = [
             Annotation(type: .pin, number: 1, noteText: "padding too tight", position: .pin(tip: .zero), badgePosition: .zero),
             Annotation(type: .arrow, number: 2, noteText: "wrong border radius", position: .arrow(start: .zero, end: .zero), badgePosition: .zero),
@@ -51,16 +74,12 @@ final class PromptPreviewView: NSView {
         let prompt = PromptGenerator.generatePrompt(
             annotations: sampleAnnotations,
             screenshotPath: samplePath,
-            mode: .clipboardIDE(absolutePath: samplePath)
+            mode: .clipboardIDE(absolutePath: samplePath),
+            preambleOverride: preamble,
+            footerOverride: footer,
+            toolDescriptionsOverride: toolDescriptions
         )
-        previewText.string = prompt
 
-        // VIB-224: Auto-size preview height to content, up to 180px
-        previewText.sizeToFit()
-        let textHeight = previewText.frame.height + 16
-        let maxH: CGFloat = 180
-        let newH = min(textHeight, maxH)
-        scrollView.frame = NSRect(x: 0, y: 0, width: frame.width, height: newH)
-        frame = NSRect(x: frame.origin.x, y: frame.origin.y, width: frame.width, height: newH + 28)
+        previewText.string = prompt
     }
 }

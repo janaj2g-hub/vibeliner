@@ -3,12 +3,13 @@ import ServiceManagement
 
 final class GeneralTabView: NSView {
 
-    private let folderPathLabel = NSTextField(labelWithString: "")
-    private let loginCheckbox = NSButton(checkboxWithTitle: "Start Vibeliner when you log in", target: nil, action: nil)
-
-    private let purpleAccent = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1)
-    private let labelWidth: CGFloat = 120
-    private let pad: CGFloat = 28
+    private let contentStack = NSStackView()
+    private let hotkeyRow = SettingsKeyPillRow()
+    private let folderPathLabel = SettingsUI.fieldLabel("", monospaced: true)
+    private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
+    private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
+    private var hotkeyCaptureMonitor: Any?
+    private var hotkeyCaptureSheet: NSWindow?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -18,102 +19,155 @@ final class GeneralTabView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        var y = frame.height - 36
+        autoresizingMask = [.width, .height]
 
-        // Hotkey row
-        addSubview(makeRowLabel("Capture hotkey", y: y + 3))
+        contentStack.orientation = .vertical
+        contentStack.alignment = .leading
+        contentStack.spacing = DesignTokens.settingsSectionGap
+        contentStack.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(contentStack)
 
-        let hotkeyContainer = NSView(frame: NSRect(x: pad + labelWidth + 12, y: y - 2, width: 120, height: 28))
-        let keys = ["⌘", "⇧", "6"]
-        var kx: CGFloat = 0
-        for key in keys {
-            let pill = NSTextField(labelWithString: key)
-            pill.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
-            pill.textColor = .labelColor
-            pill.alignment = .center
-            pill.wantsLayer = true
-            pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
-            pill.layer?.cornerRadius = 5
-            pill.layer?.borderWidth = 1
-            pill.layer?.borderColor = NSColor(white: 1, alpha: 0.12).cgColor
-            pill.frame = NSRect(x: kx, y: 2, width: 28, height: 24)
-            hotkeyContainer.addSubview(pill)
-            kx += 32
+        NSLayoutConstraint.activate([
+            contentStack.topAnchor.constraint(equalTo: topAnchor, constant: DesignTokens.settingsContentPadding),
+            contentStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: DesignTokens.settingsContentPadding),
+            contentStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -DesignTokens.settingsContentPadding)
+        ])
+
+        let hotkeySection = makeHotkeySection()
+        let firstDivider = SettingsUI.divider()
+        let folderSection = makeFolderSection()
+        let secondDivider = SettingsUI.divider()
+        let loginSection = makeLoginSection()
+
+        [hotkeySection, firstDivider, folderSection, secondDivider, loginSection].forEach { view in
+            contentStack.addArrangedSubview(view)
+            view.widthAnchor.constraint(equalTo: contentStack.widthAnchor).isActive = true
         }
-        addSubview(hotkeyContainer)
+    }
 
-        let changeHotkey = makePurpleLink("Change", action: #selector(changeHotkey))
-        changeHotkey.frame = NSRect(x: pad + labelWidth + 122, y: y + 1, width: 50, height: 20)
-        addSubview(changeHotkey)
+    private func makeHotkeySection() -> NSView {
+        hotkeyRow.setKeys(HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey))
 
-        y -= 52
-        addDivider(at: y + 20)
+        let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeHotkey))
+        NSLayoutConstraint.activate([
+            changeButton.widthAnchor.constraint(equalToConstant: 108)
+        ])
 
-        // Folder row
-        addSubview(makeRowLabel("Captures folder", y: y + 3))
+        let content = NSStackView(views: [hotkeyRow, changeButton])
+        content.orientation = .vertical
+        content.alignment = .leading
+        content.spacing = 18
+        content.translatesAutoresizingMaskIntoConstraints = false
 
-        let folderFieldX = pad + labelWidth + 12
-        let folderW = frame.width - folderFieldX - 80  // reserve 80px for Change button
+        return SettingsUI.makeSection(title: "Capture hotkey", contentView: content)
+    }
+
+    private func makeFolderSection() -> NSView {
         folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
-        folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
-        folderPathLabel.textColor = .secondaryLabelColor
-        folderPathLabel.wantsLayer = true
-        folderPathLabel.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-        folderPathLabel.layer?.cornerRadius = 6
-        folderPathLabel.layer?.borderWidth = 1
-        folderPathLabel.layer?.borderColor = NSColor.separatorColor.cgColor
-        folderPathLabel.frame = NSRect(x: folderFieldX, y: y - 2, width: folderW, height: 26)
-        addSubview(folderPathLabel)
 
-        let changeFolder = makePurpleLink("Change", action: #selector(changeFolderClicked))
-        changeFolder.frame = NSRect(x: folderFieldX + folderW + 8, y: y + 1, width: 50, height: 20)
-        addSubview(changeFolder)
+        let fieldContainer = NSView()
+        fieldContainer.translatesAutoresizingMaskIntoConstraints = false
+        SettingsUI.styleFieldSurface(fieldContainer)
+        fieldContainer.addSubview(folderPathLabel)
 
-        let folderHelper = NSTextField(labelWithString: "Screenshots and prompts are saved here.")
-        folderHelper.font = NSFont.systemFont(ofSize: 12)
-        folderHelper.textColor = .tertiaryLabelColor
-        folderHelper.frame = NSRect(x: folderFieldX, y: y - 22, width: 300, height: 16)
-        addSubview(folderHelper)
+        folderPathLabel.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            fieldContainer.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
+            folderPathLabel.leadingAnchor.constraint(equalTo: fieldContainer.leadingAnchor, constant: 16),
+            folderPathLabel.trailingAnchor.constraint(equalTo: fieldContainer.trailingAnchor, constant: -16),
+            folderPathLabel.centerYAnchor.constraint(equalTo: fieldContainer.centerYAnchor)
+        ])
 
-        y -= 72
-        addDivider(at: y + 20)
+        let helper = SettingsUI.bodyCopy("Screenshots and prompts are saved here.")
 
-        // Login row
-        addSubview(makeRowLabel("Launch at login", y: y + 3))
+        let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeFolderClicked))
+        NSLayoutConstraint.activate([
+            changeButton.widthAnchor.constraint(equalToConstant: 108)
+        ])
 
+        let content = NSStackView(views: [fieldContainer, helper, changeButton])
+        content.orientation = .vertical
+        content.alignment = .leading
+        content.spacing = 18
+        content.translatesAutoresizingMaskIntoConstraints = false
+
+        return SettingsUI.makeSection(title: "Captures folder", contentView: content)
+    }
+
+    private func makeLoginSection() -> NSView {
         loginCheckbox.state = ConfigManager.shared.launchAtLogin ? .on : .off
         loginCheckbox.target = self
         loginCheckbox.action = #selector(loginToggled)
-        loginCheckbox.font = NSFont.systemFont(ofSize: 13)
-        loginCheckbox.frame = NSRect(x: pad + labelWidth + 12, y: y - 2, width: 260, height: 20)
-        addSubview(loginCheckbox)
-    }
+        loginCheckbox.translatesAutoresizingMaskIntoConstraints = false
 
-    private func makeRowLabel(_ text: String, y: CGFloat) -> NSTextField {
-        let label = NSTextField(labelWithString: text)
-        label.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-        label.textColor = .secondaryLabelColor
-        label.frame = NSRect(x: pad, y: y, width: labelWidth, height: 20)
-        return label
-    }
+        loginLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
 
-    private func makePurpleLink(_ text: String, action: Selector) -> NSButton {
-        let btn = NSButton(title: text, target: self, action: action)
-        btn.isBordered = false
-        btn.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-        btn.contentTintColor = purpleAccent
-        return btn
-    }
+        let row = NSStackView(views: [loginCheckbox, loginLabel])
+        row.orientation = .horizontal
+        row.alignment = .centerY
+        row.spacing = 12
+        row.translatesAutoresizingMaskIntoConstraints = false
 
-    private func addDivider(at y: CGFloat) {
-        let div = NSView(frame: NSRect(x: pad, y: y, width: frame.width - pad * 2, height: 0.5))
-        div.wantsLayer = true
-        div.layer?.backgroundColor = NSColor.separatorColor.cgColor
-        addSubview(div)
+        NSLayoutConstraint.activate([
+            loginCheckbox.widthAnchor.constraint(equalToConstant: 18)
+        ])
+
+        return SettingsUI.makeSection(title: "Launch at login", contentView: row)
     }
 
     @objc private func changeHotkey() {
-        // Hotkey change not yet implemented
+        guard hotkeyCaptureSheet == nil, let parentWindow = window else { return }
+
+        let panel = NSPanel(
+            contentRect: NSRect(x: 0, y: 0, width: 360, height: 150),
+            styleMask: [.titled],
+            backing: .buffered,
+            defer: false
+        )
+        panel.title = "Record Hotkey"
+        panel.isReleasedWhenClosed = false
+
+        let content = NSView(frame: panel.contentRect(forFrameRect: panel.frame))
+
+        let title = NSTextField(labelWithString: "Press your new capture shortcut")
+        title.font = NSFont.systemFont(ofSize: 15, weight: .semibold)
+        title.alignment = .center
+        title.frame = NSRect(x: 20, y: 86, width: 320, height: 22)
+        content.addSubview(title)
+
+        let helper = NSTextField(labelWithString: "Use at least one modifier key. Press Escape to cancel.")
+        helper.font = NSFont.systemFont(ofSize: 12)
+        helper.textColor = .secondaryLabelColor
+        helper.alignment = .center
+        helper.frame = NSRect(x: 20, y: 58, width: 320, height: 18)
+        content.addSubview(helper)
+
+        let cancelButton = NSButton(title: "Cancel", target: self, action: #selector(cancelHotkeyCapture))
+        cancelButton.frame = NSRect(x: 140, y: 16, width: 80, height: 28)
+        content.addSubview(cancelButton)
+
+        panel.contentView = content
+        hotkeyCaptureSheet = panel
+        parentWindow.beginSheet(panel)
+
+        hotkeyCaptureMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.hotkeyCaptureSheet != nil else { return event }
+
+            if event.keyCode == 53 {
+                self.cancelHotkeyCapture()
+                return nil
+            }
+
+            guard let spec = HotkeyManager.shared.hotkeySpec(for: event) else {
+                NSSound.beep()
+                return nil
+            }
+
+            HotkeyManager.shared.updateHotkey(to: spec.configValue)
+            self.hotkeyRow.setKeys(spec.displayParts)
+            self.closeHotkeyCaptureSheet()
+            return nil
+        }
     }
 
     @objc private func changeFolderClicked() {
@@ -142,5 +196,21 @@ final class GeneralTabView: NSView {
                 print("Vibeliner: Login item registration failed: \(error)")
             }
         }
+    }
+
+    @objc private func cancelHotkeyCapture() {
+        closeHotkeyCaptureSheet()
+    }
+
+    private func closeHotkeyCaptureSheet() {
+        if let monitor = hotkeyCaptureMonitor {
+            NSEvent.removeMonitor(monitor)
+            hotkeyCaptureMonitor = nil
+        }
+        if let sheet = hotkeyCaptureSheet, let parentWindow = window {
+            parentWindow.endSheet(sheet)
+            sheet.orderOut(nil)
+        }
+        hotkeyCaptureSheet = nil
     }
 }
