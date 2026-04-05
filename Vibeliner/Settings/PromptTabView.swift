@@ -96,7 +96,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         previewView.translatesAutoresizingMaskIntoConstraints = false
         rootStack.addArrangedSubview(previewView)
         NSLayoutConstraint.activate([
-            previewView.heightAnchor.constraint(equalToConstant: 288),
+            previewView.heightAnchor.constraint(equalToConstant: 188),
             previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor),
         ])
 
@@ -286,18 +286,28 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         scroll.translatesAutoresizingMaskIntoConstraints = false
         scroll.drawsBackground = false
         scroll.hasVerticalScroller = true
+        scroll.autohidesScrollers = true
         scroll.hasHorizontalScroller = false
         scroll.borderType = .noBorder
         SettingsUI.styleFieldSurface(scroll)
 
         let textView = NSTextView()
-        textView.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        textView.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
         textView.textColor = .labelColor
         textView.isRichText = false
         textView.isEditable = true
+        textView.isSelectable = true
         textView.drawsBackground = false
         textView.string = text
         textView.textContainerInset = NSSize(width: 10, height: 12)
+        textView.insertionPointColor = DesignTokens.purpleLight
+
+        // Text wrapping
+        textView.isHorizontallyResizable = false
+        textView.isVerticallyResizable = true
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.heightTracksTextView = false
+
         scroll.documentView = textView
 
         return scroll
