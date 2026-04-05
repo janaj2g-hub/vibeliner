@@ -46,8 +46,17 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private weak var footerEditor: NSTextView?
     private var toolFields: [String: SettingsTextField] = [:]
 
+    init() {
+        super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
+        setupView()
+        refreshPreview()
+        selectSubTab(.preamble, syncDrafts: false)
+    }
+
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
+        translatesAutoresizingMaskIntoConstraints = false
         setupView()
         refreshPreview()
         selectSubTab(.preamble, syncDrafts: false)
@@ -56,7 +65,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        autoresizingMask = [.width, .height]
 
         rootStack.orientation = .vertical
         rootStack.alignment = .leading

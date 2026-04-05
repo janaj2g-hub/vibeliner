@@ -11,15 +11,21 @@ final class GeneralTabView: NSView {
     private var hotkeyCaptureMonitor: Any?
     private var hotkeyCaptureSheet: NSWindow?
 
+    init() {
+        super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
+        setupView()
+    }
+
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
+        translatesAutoresizingMaskIntoConstraints = false
         setupView()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        autoresizingMask = [.width, .height]
 
         contentStack.orientation = .vertical
         contentStack.alignment = .leading
