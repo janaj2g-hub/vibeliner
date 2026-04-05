@@ -229,13 +229,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         preambleEditor = editor.documentView as? NSTextView
         preambleEditor?.delegate = self
 
+        // Add to hierarchy BEFORE activating cross-view constraints
+        activeContentStack.addArrangedSubview(description)
+        activeContentStack.addArrangedSubview(editor)
+
         NSLayoutConstraint.activate([
             editor.heightAnchor.constraint(equalToConstant: 184),
             editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
-
-        activeContentStack.addArrangedSubview(description)
-        activeContentStack.addArrangedSubview(editor)
     }
 
     private func buildToolsContent() {
@@ -251,11 +252,15 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         rowsStack.spacing = 14
         rowsStack.translatesAutoresizingMaskIntoConstraints = false
 
-        for (title, key) in toolRows() {
-            rowsStack.addArrangedSubview(makeToolRow(title: title, key: key))
-        }
-
+        // Add rowsStack to hierarchy first, then build rows inside it
         activeContentStack.addArrangedSubview(rowsStack)
+
+        for (title, key) in toolRows() {
+            let row = makeToolRow(title: title, key: key)
+            rowsStack.addArrangedSubview(row)
+            // Cross-view constraint: row width = activeContentStack width
+            row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
+        }
     }
 
     private func buildFooterContent() {
@@ -264,13 +269,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         footerEditor = editor.documentView as? NSTextView
         footerEditor?.delegate = self
 
+        // Add to hierarchy BEFORE activating cross-view constraints
+        activeContentStack.addArrangedSubview(description)
+        activeContentStack.addArrangedSubview(editor)
+
         NSLayoutConstraint.activate([
             editor.heightAnchor.constraint(equalToConstant: 160),
             editor.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
         ])
-
-        activeContentStack.addArrangedSubview(description)
-        activeContentStack.addArrangedSubview(editor)
     }
 
     // MARK: - Helpers
@@ -320,7 +326,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor),
+            // Note: row width constraint to activeContentStack is set in buildToolsContent()
+            // after the row is added to the hierarchy (cross-view constraints require a common ancestor)
             row.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
 
             icon.leadingAnchor.constraint(equalTo: row.leadingAnchor),

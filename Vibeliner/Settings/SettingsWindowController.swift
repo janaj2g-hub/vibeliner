@@ -235,7 +235,7 @@ final class SettingsWindowController: NSWindowController {
         case 2:
             return AboutTabView()
         default:
-            return NSView() // Should never happen
+            return NSView()
         }
     }
 }
