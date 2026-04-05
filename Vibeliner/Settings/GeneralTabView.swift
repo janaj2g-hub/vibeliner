@@ -8,7 +8,7 @@ final class GeneralTabView: NSView {
     private let folderPathLabel = SettingsUI.fieldLabel("", monospaced: true)
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
-    private let appearanceSegment = NSSegmentedControl()
+    private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"])
     private var hotkeyCaptureMonitor: Any?
     private var hotkeyCaptureSheet: NSWindow?
 
@@ -52,9 +52,7 @@ final class GeneralTabView: NSView {
         hotkeyRow.setKeys(HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey))
 
         let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeHotkey))
-        NSLayoutConstraint.activate([
-            changeButton.widthAnchor.constraint(equalToConstant: 108)
-        ])
+        changeButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
 
         let content = NSStackView(views: [hotkeyRow, changeButton])
         content.orientation = .vertical
@@ -66,7 +64,14 @@ final class GeneralTabView: NSView {
     }
 
     private func makeFolderSection() -> NSView {
-        folderPathLabel.stringValue = ConfigManager.shared.capturesFolder
+        // Apply VerticallyCenteredTextFieldCell for proper vertical centering in the fixed-height box
+        let savedPath = ConfigManager.shared.capturesFolder
+        folderPathLabel.cell = VerticallyCenteredTextFieldCell()
+        folderPathLabel.font = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        folderPathLabel.textColor = .secondaryLabelColor
+        folderPathLabel.lineBreakMode = .byTruncatingMiddle
+        folderPathLabel.maximumNumberOfLines = 1
+        folderPathLabel.stringValue = savedPath
 
         let fieldContainer = NSView()
         fieldContainer.translatesAutoresizingMaskIntoConstraints = false
@@ -76,17 +81,16 @@ final class GeneralTabView: NSView {
         folderPathLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             fieldContainer.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
-            folderPathLabel.leadingAnchor.constraint(equalTo: fieldContainer.leadingAnchor, constant: 16),
-            folderPathLabel.trailingAnchor.constraint(equalTo: fieldContainer.trailingAnchor, constant: -16),
-            folderPathLabel.centerYAnchor.constraint(equalTo: fieldContainer.centerYAnchor)
+            folderPathLabel.leadingAnchor.constraint(equalTo: fieldContainer.leadingAnchor, constant: 12),
+            folderPathLabel.trailingAnchor.constraint(equalTo: fieldContainer.trailingAnchor, constant: -12),
+            folderPathLabel.topAnchor.constraint(equalTo: fieldContainer.topAnchor),
+            folderPathLabel.bottomAnchor.constraint(equalTo: fieldContainer.bottomAnchor),
         ])
 
         let helper = SettingsUI.bodyCopy("Screenshots and prompts are saved here.")
 
         let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeFolderClicked))
-        NSLayoutConstraint.activate([
-            changeButton.widthAnchor.constraint(equalToConstant: 108)
-        ])
+        changeButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
 
         let content = NSStackView(views: [fieldContainer, helper, changeButton])
         content.orientation = .vertical
@@ -112,34 +116,29 @@ final class GeneralTabView: NSView {
         loginRow.translatesAutoresizingMaskIntoConstraints = false
         loginCheckbox.widthAnchor.constraint(equalToConstant: 18).isActive = true
 
-        // Appearance toggle
-        let appearanceLabel = SettingsUI.bodyCopy("Appearance")
-        appearanceLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-        appearanceLabel.textColor = .labelColor
+        // Appearance toggle — reusable SettingsSegmentedControl
+        let appearanceLabel = SettingsUI.regularLabel("Appearance")
 
-        appearanceSegment.segmentCount = 3
-        appearanceSegment.setLabel("Light", forSegment: 0)
-        appearanceSegment.setLabel("Dark", forSegment: 1)
-        appearanceSegment.setLabel("System", forSegment: 2)
-        appearanceSegment.segmentStyle = .rounded
-        appearanceSegment.target = self
-        appearanceSegment.action = #selector(appearanceChanged)
-        appearanceSegment.translatesAutoresizingMaskIntoConstraints = false
-
-        // Set initial selection
+        // Set initial selection without firing the callback
         switch ConfigManager.shared.appearance {
-        case "light":  appearanceSegment.selectedSegment = 0
-        case "dark":   appearanceSegment.selectedSegment = 1
-        default:       appearanceSegment.selectedSegment = 2
+        case "light":  appearanceControl.setSelectedIndex(0, notify: false)
+        case "dark":   appearanceControl.setSelectedIndex(1, notify: false)
+        default:       appearanceControl.setSelectedIndex(2, notify: false)
+        }
+        appearanceControl.onSelectionChanged = { [weak self] index in
+            self?.appearanceChanged(index)
         }
 
-        let appearanceRow = NSStackView(views: [appearanceLabel, appearanceSegment])
+        NSLayoutConstraint.activate([
+            appearanceControl.widthAnchor.constraint(equalToConstant: 240),
+        ])
+
+        let appearanceRow = NSStackView(views: [appearanceLabel, appearanceControl])
         appearanceRow.orientation = .horizontal
         appearanceRow.alignment = .centerY
         appearanceRow.spacing = 16
         appearanceRow.translatesAutoresizingMaskIntoConstraints = false
 
-        // Stack both settings vertically
         let content = NSStackView(views: [loginRow, appearanceRow])
         content.orientation = .vertical
         content.alignment = .leading
@@ -234,9 +233,9 @@ final class GeneralTabView: NSView {
         }
     }
 
-    @objc private func appearanceChanged() {
+    private func appearanceChanged(_ index: Int) {
         let mode: String
-        switch appearanceSegment.selectedSegment {
+        switch index {
         case 0:  mode = "light"
         case 1:  mode = "dark"
         default: mode = "system"
@@ -245,12 +244,11 @@ final class GeneralTabView: NSView {
         ConfigManager.shared.appearance = mode
         ConfigManager.shared.save()
 
-        // Apply to the app immediately
         let appearance: NSAppearance?
         switch mode {
         case "light": appearance = NSAppearance(named: .aqua)
         case "dark":  appearance = NSAppearance(named: .darkAqua)
-        default:      appearance = nil // follow system
+        default:      appearance = nil
         }
         NSApp.appearance = appearance
     }

@@ -140,9 +140,12 @@ final class SettingsTextField: NSTextField {
 
     init(monospaced: Bool = true) {
         super.init(frame: .zero)
-        font = monospaced
-            ? NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
+        // Swap to vertically centered cell for proper alignment in fixed-height containers
+        let savedFont = monospaced
+            ? NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
             : DesignTokens.settingsFieldFont
+        cell = VerticallyCenteredTextFieldCell()
+        font = savedFont
         textColor = .labelColor
         isBordered = false
         drawsBackground = false
@@ -224,12 +227,12 @@ final class SettingsSegmentedControl: NSView {
         updateHighlightFrame()
     }
 
-    func setSelectedIndex(_ index: Int) {
+    func setSelectedIndex(_ index: Int, notify: Bool = true) {
         guard index >= 0, index < buttons.count else { return }
         selectedIndex = index
         updateButtonStates()
         needsLayout = true
-        onSelectionChanged?(index)
+        if notify { onSelectionChanged?(index) }
     }
 
     private func setupTrack() {
