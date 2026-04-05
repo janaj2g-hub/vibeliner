@@ -30,8 +30,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         }
     }
 
-    private let scrollView = NSScrollView()
-    private let documentView = FlippedContentView()
     private let rootStack = NSStackView()
     private let previewView = PromptPreviewView(frame: .zero)
     private let editFrame = NSView()
@@ -60,33 +58,17 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private func setupView() {
         autoresizingMask = [.width, .height]
 
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.drawsBackground = false
-        scrollView.hasVerticalScroller = true
-        scrollView.hasHorizontalScroller = false
-        scrollView.borderType = .noBorder
-        addSubview(scrollView)
-
-        documentView.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.documentView = documentView
-
         rootStack.orientation = .vertical
         rootStack.alignment = .leading
         rootStack.spacing = 24
         rootStack.translatesAutoresizingMaskIntoConstraints = false
-        documentView.addSubview(rootStack)
+        addSubview(rootStack)
 
         NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: topAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-
-            rootStack.topAnchor.constraint(equalTo: documentView.topAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.leadingAnchor.constraint(equalTo: documentView.leadingAnchor, constant: DesignTokens.settingsContentPadding),
-            rootStack.trailingAnchor.constraint(equalTo: documentView.trailingAnchor, constant: -DesignTokens.settingsContentPadding),
-            rootStack.bottomAnchor.constraint(equalTo: documentView.bottomAnchor, constant: -DesignTokens.settingsContentPadding),
-            rootStack.widthAnchor.constraint(equalTo: scrollView.contentView.widthAnchor, constant: -(DesignTokens.settingsContentPadding * 2))
+            rootStack.topAnchor.constraint(equalTo: topAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.leadingAnchor.constraint(equalTo: leadingAnchor, constant: DesignTokens.settingsContentPadding),
+            rootStack.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -DesignTokens.settingsContentPadding),
+            rootStack.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -DesignTokens.settingsContentPadding)
         ])
 
         previewView.translatesAutoresizingMaskIntoConstraints = false
@@ -111,7 +93,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             editStack.topAnchor.constraint(equalTo: editFrame.topAnchor, constant: DesignTokens.settingsFramePadding),
             editStack.leadingAnchor.constraint(equalTo: editFrame.leadingAnchor, constant: DesignTokens.settingsFramePadding),
             editStack.trailingAnchor.constraint(equalTo: editFrame.trailingAnchor, constant: -DesignTokens.settingsFramePadding),
-            editStack.bottomAnchor.constraint(equalTo: editFrame.bottomAnchor, constant: -20)
+            editStack.bottomAnchor.constraint(equalTo: editFrame.bottomAnchor, constant: -DesignTokens.settingsFramePadding)
         ])
 
         saveButton.target = self
@@ -451,8 +433,4 @@ private final class ToolIconView: NSView {
             break
         }
     }
-}
-
-private final class FlippedContentView: NSView {
-    override var isFlipped: Bool { true }
 }

@@ -219,4 +219,5 @@ The settings UI is intentionally designed for extension:
 - Shared settings visuals live in `DesignTokens.swift`
 - Reusable Settings UI components live in `Vibeliner/Settings/SettingsUI.swift`
 - General and Prompt are built from reusable section containers rather than manual absolute `y` offsets
+- Settings tabs are runtime-safe under zero-frame initialization; layout is constraint-driven rather than frame-driven
 - Prompt uses a reusable segmented control so more prompt sections can be added without redesigning the outer frame
