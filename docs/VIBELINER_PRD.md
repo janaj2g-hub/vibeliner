@@ -515,6 +515,8 @@ Make the changes and verify they match the design.
 
 **Goal:** A clean, standard macOS preferences window with only the essential settings. The Prompt tab uses a persistent top preview and a framed editing subsection so users can see exactly what their changes produce while keeping the layout extensible.
 
+Implementation note: the native Settings UI is fully Auto Layout-based and safe to construct at zero size before being hosted by the window shell. Future sections and tabs should be added by composition, not by frame math.
+
 ### Window
 
 | Property | Value |

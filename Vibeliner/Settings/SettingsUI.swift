@@ -85,28 +85,26 @@ enum SettingsUI {
     }
 
     static func makeSection(title: String, contentView: NSView, labelWidth: CGFloat = DesignTokens.settingsSectionLabelWidth) -> NSView {
-        let container = NSView()
-        container.translatesAutoresizingMaskIntoConstraints = false
-
         let label = rowTitle(title)
         label.translatesAutoresizingMaskIntoConstraints = false
         contentView.translatesAutoresizingMaskIntoConstraints = false
-
-        container.addSubview(label)
-        container.addSubview(contentView)
+        label.setContentHuggingPriority(.required, for: .horizontal)
+        label.setContentCompressionResistancePriority(.required, for: .horizontal)
+        contentView.setContentHuggingPriority(.defaultLow, for: .horizontal)
+        contentView.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
 
         NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-            label.topAnchor.constraint(equalTo: container.topAnchor, constant: 4),
-            label.widthAnchor.constraint(equalToConstant: labelWidth),
-
-            contentView.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: 28),
-            contentView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-            contentView.topAnchor.constraint(equalTo: container.topAnchor),
-            contentView.bottomAnchor.constraint(equalTo: container.bottomAnchor)
+            label.widthAnchor.constraint(equalToConstant: labelWidth)
         ])
 
-        return container
+        let row = NSStackView(views: [label, contentView])
+        row.orientation = .horizontal
+        row.alignment = .top
+        row.distribution = .fill
+        row.spacing = 28
+        row.translatesAutoresizingMaskIntoConstraints = false
+
+        return row
     }
 }
 

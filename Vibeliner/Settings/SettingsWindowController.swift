@@ -90,9 +90,14 @@ final class SettingsWindowController: NSWindowController {
         contentContainer.subviews.forEach { $0.removeFromSuperview() }
 
         let tabView = tabDefinitions[index].makeView()
-        tabView.frame = contentContainer.bounds
-        tabView.autoresizingMask = [.width, .height]
+        tabView.translatesAutoresizingMaskIntoConstraints = false
         contentContainer.addSubview(tabView)
+        NSLayoutConstraint.activate([
+            tabView.topAnchor.constraint(equalTo: contentContainer.topAnchor),
+            tabView.leadingAnchor.constraint(equalTo: contentContainer.leadingAnchor),
+            tabView.trailingAnchor.constraint(equalTo: contentContainer.trailingAnchor),
+            tabView.bottomAnchor.constraint(equalTo: contentContainer.bottomAnchor)
+        ])
 
         for (buttonIndex, button) in tabButtons.enumerated() {
             let isActive = buttonIndex == index
