@@ -7,7 +7,7 @@
 
 ## Overview
 
-Setup is a one-time welcome window that appears on first launch. It guides the user through two prerequisites, then closes and never reappears. The menu bar popover is the day-to-day interface — setup does not live there.
+Setup is a one-time welcome window that appears on first launch. It guides the user through three steps, then closes and never reappears after completion. The menu bar popover is the day-to-day interface — setup does not live there.
 
 ## Window specification
 
@@ -19,10 +19,11 @@ Setup is a one-time welcome window that appears on first launch. It guides the u
 
 ## Layout
 
-The window body is split vertically into two equal panels with a 0.5px divider:
+The window body is split vertically into three panels with 0.5px dividers:
 
 - **Left panel:** Step 1 — Screen recording permission
-- **Right panel:** Step 2 — Captures folder
+- **Middle panel:** Step 2 — Accessibility
+- **Right panel:** Step 3 — Captures folder
 
 Each panel has:
 1. **Header** (top) — Step number badge + step label
@@ -59,69 +60,69 @@ The app polls or checks on window focus whether screen recording permission has 
 ### Restart handling
 macOS may require an app restart after granting screen recording. If the app detects it needs a restart, show a note in the helper text area. On relaunch, the setup window reappears with Step 1 already in the "granted" state.
 
-## Step 2: Captures folder
+## Step 2: Accessibility
 
 ### Purpose
-Vibeliner needs a writable folder to save capture bundles (screenshot + prompt.md + meta.json).
+Vibeliner needs accessibility permission so the global `⌘⇧6` hotkey works from any app.
 
 ### Locked state
-Step 2 is locked (40% opacity, non-interactive) until Step 1 is complete. The bottom status bar shows a lock icon with "Complete step 1 first."
+Step 2 is locked until Step 1 is complete. The bottom status bar shows "Complete step 1 first."
 
 ### States
 
-**Unlocked, folder not created (active):**
+**Unlocked, not granted (active):**
 - Step number: Blue circle with "2"
-- Description: "Choose where Vibeliner saves screenshots and prompts. We recommend a folder in Documents."
-- Folder path display: Monospace box showing `~/Documents/vibeliner`
-- Note: "Each capture gets its own subfolder with the annotated screenshot, prompt, and metadata."
-- Action buttons (side by side in one row):
-  - "Create folder" (primary/dark button) — creates `~/Documents/vibeliner` and transitions to done
-  - "Choose different…" (secondary button) — opens a native macOS folder picker dialog
-- Bottom status bar: Warning/amber — "Folder not yet created"
+- Description: "Vibeliner needs accessibility permission so the capture hotkey (⌘⇧6) works from any app."
+- Action button: "Open Accessibility Settings →"
+- Helper text: "You may need to relaunch after granting."
+- Bottom status bar: Warning/amber — "Not yet granted"
 
-**Folder created (done):**
+**Granted (done):**
 - Step number: Green circle with checkmark
-- Helper text: "~/Documents/vibeliner is ready to receive captures."
 - Buttons removed
-- Bottom status bar: Green — "Folder created and ready"
-- Panel opacity: 50%
+- Bottom status bar: Green — "Permission granted"
+- Panel opacity: 45%
+
+## Step 3: Captures folder
+
+### Purpose
+Vibeliner needs a writable folder to save capture bundles and the base `config.toml`.
+
+### Locked state
+Step 3 is locked until Step 2 is complete. The bottom status bar shows "Complete step 2 first."
+
+### States
+
+**Unlocked, folder not chosen (active):**
+- Step number: Blue circle with "3"
+- Description: "Choose where Vibeliner saves screenshots and prompts."
+- Folder path display: Monospace box showing the chosen folder, pre-filled with `~/Documents/vibeliner` if it already exists
+- Action button: "Choose folder…"
+- Bottom status bar: Warning/amber — "Folder not yet chosen"
+
+**Folder ready (done):**
+- Step number: Green circle with checkmark
+- Path display shows the selected folder
+- Bottom status bar: Green — "Folder ready"
+- Panel opacity: stays fully visible
 
 ### Default folder location
-`~/Documents/vibeliner` — visible in Finder, accessible to LLM tools. NOT a hidden dotfile.
+Default: `~/Documents/vibeliner` — visible in Finder, accessible to LLM tools. NOT a hidden dotfile.
 
 ### Custom folder
-If the user clicks "Choose different…", a native `NSOpenPanel` in directory-selection mode appears. The selected path replaces the default in the folder path display. "Create folder" then creates that path instead.
-
-### Validation
-- Path must be writable
-- Path must be a directory (not a file)
-- If validation fails, show an error in the status bar area
+If the user clicks "Choose folder…", a native `NSOpenPanel` in directory-selection mode appears. The selected path is saved directly as the captures folder.
 
 ## Footer bar
 
 A bottom bar spanning the full window width with a secondary background.
 
 **Before completion:**
-- Right side: Disabled button — "Complete both steps to continue"
+- Right side: Text only — "Complete all steps to continue"
 - Left side: Empty
 
-**After completion (both steps done):**
+**After completion (all three steps done):**
 - Left side: Subtle hotkey hint — "Capture shortcut: ⌘ ⇧ 6" (each key in a kbd-style pill)
 - Right side: Green button — "Start using Vibeliner →"
-
-### Copy mode tip (shown after both steps complete)
-
-A purple-tinted card appears below the two setup panels, above the footer bar. It explains the two copy modes:
-
-> **How to share with AI tools**
->
-> **Copy Prompt** — for terminal tools (Claude Code, Cursor, Aider). Paste the text and the AI reads the screenshot from your disk.
->
-> **Copy Image** — for web/app tools (Claude.ai, ChatGPT). Paste the image into the chat alongside the prompt.
-
-This tip appears only after both setup steps are complete and before the user clicks "Start using Vibeliner." It is shown once and never reappears.
-
-Style: purple-tinted background (`#EEEDFE`), purple border (`#AFA9EC`), dark purple text (`#3C3489`). Bold for button names.
 
 Clicking "Start using Vibeliner" closes the setup window permanently and activates the menu bar icon as the primary interface.
 
@@ -136,7 +137,7 @@ Clicking "Start using Vibeliner" closes the setup window permanently and activat
 
 ## Persistence
 
-- Store setup-complete flag in `UserDefaults` or `config.toml`
+- Store setup-complete flag in `config.toml`
 - Store chosen captures folder path in `config.toml`
 - On subsequent launches: skip setup window, go straight to menu bar icon
 - If screen recording permission is revoked after setup: surface warning in menu bar popover, NOT the setup window
@@ -144,7 +145,5 @@ Clicking "Start using Vibeliner" closes the setup window permanently and activat
 ## Edge cases
 
 1. **User closes window without completing setup:** Window reappears on next launch. The app's menu bar icon is visible but capture is disabled.
-2. **User grants permission but doesn't restart:** Show restart note if needed. On relaunch, Step 1 is pre-checked.
-3. **User picks a folder they don't have write access to:** Validation error in status bar. "Create folder" button stays available.
-4. **User deletes the captures folder after setup:** Menu bar popover shows a warning. Setup window does NOT reappear. User fixes via Settings or "Open captures folder" recreates it.
-5. **Existing Vibeliner user (already has ~/.vibeliner):** If migrating from a hidden dotfile layout, setup could detect existing captures and offer to keep the old path or migrate. This is a future concern — v1 always shows setup on first launch.
+2. **User grants permission but doesn't relaunch:** Step 2 helper text notes a relaunch may be needed. On relaunch, completed steps are pre-checked.
+3. **User deletes the captures folder after setup:** Setup does NOT reappear. The user fixes it via Settings or by choosing a new folder.

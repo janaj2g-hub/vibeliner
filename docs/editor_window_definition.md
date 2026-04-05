@@ -17,7 +17,7 @@ The aesthetic is inspired by macOS Markup tools — minimal, tool-like, and non-
 |---|---|
 | Type | Borderless floating `NSPanel` |
 | Level | Above all other windows (floating) |
-| Size | Matches the screenshot dimensions (window resizes to image) |
+| Size | Canvas matches the displayed screenshot; the panel adds overflow space for notes plus separate toolbar/status positioning |
 | Position | Centered on screen after capture |
 | Background | None — the screenshot is the window content |
 | Close | X button or Esc key. Auto-saves before closing. |
@@ -47,10 +47,12 @@ The toolbar and status pill float independently — they are not contained in a 
 ### Toolbar layout (left to right)
 
 ```
-[sm] [X close] [xl spacer] [divider] [md] [Pin] [Arrow] [Rect] [Circle] [Freehand] [md] [divider] [lg] [Trash] [md] [Undo][Redo] [lg] [divider] [md] [Copy Prompt] [4px] [Copy Image] [sm]
+[sm] [X close] [xl spacer] [divider] [md] [Select] [Pin] [Arrow] [Rect] [Circle] [Freehand] [md] [Trash] [md] [Undo][Redo] [lg] [divider] [md] [IDE/App toggle] [md] [divider] [md] [Copy Prompt] [4px] [Copy Image*] [sm]
 ```
 
 Spacer sizes: sm = 4px, md = 10px, lg = 20px, xl = 30px
+
+`*` Copy Image is only visible in App mode.
 
 ### Close button (X)
 
@@ -74,17 +76,14 @@ All tool buttons are circular: 30px × 30px, `border-radius: 15px`.
 | Hover | `rgba(255, 255, 255, 0.08)` | `rgba(255, 255, 255, 0.8)` |
 | Active (selected) | `rgba(175, 169, 236, 0.2)` | `#AFA9EC` |
 
-#### Pin icon (special)
+#### Pin icon
 
-The pin tool icon is unique — it's a **filled purple circle with a small line** (like a mini pin), and the annotation counter number sits **inside** the circle. This number updates as annotations are added or removed across ALL tools (not just pins).
+The pin tool icon is a filled circle with a small line, matching the current toolbar icon drawing used elsewhere in settings.
 
 | Property | Value |
 |---|---|
-| Circle | Filled, `#AFA9EC` when active, `rgba(175, 169, 236, 0.6)` when inactive |
+| Circle | Filled, uses the active/inactive toolbar icon colors |
 | Line | Same color as circle, 1.8px stroke |
-| Counter text | Dark (`#1e1e1e`), 8px font (7px for 10+), weight 700, centered in circle |
-
-When no annotations exist, the circle shows no number (or "0" — TBD during implementation).
 
 #### Other tool icons
 
@@ -102,7 +101,7 @@ Each tool shows a tooltip on hover: "Pin", "Arrow", "Rectangle", "Circle", "Free
 | Hover | Background `rgba(255, 87, 87, 0.15)`, icon color `#EF4444` |
 | Tooltip | "Delete" |
 
-Deletes the currently selected annotation (or the entire capture if nothing is selected — TBD).
+Deletes the currently selected annotation only.
 
 ### Undo / Redo buttons
 
@@ -151,7 +150,7 @@ Deletes the currently selected annotation (or the entire capture if nothing is s
 #### Behavior
 Copies the prompt text (with absolute screenshot path) to the clipboard. Changes the status pill to "Copied" in green for 2 seconds. `Cmd+C` (when no text field is focused) triggers this action.
 
-### Copy Image button (secondary)
+### Copy Image button (secondary, App mode only)
 
 | Property | Value |
 |---|---|
@@ -181,7 +180,7 @@ Copies the annotated screenshot image to the system clipboard. Changes the statu
 
 ### Two-button layout
 
-The buttons sit side by side at the right end of the toolbar, with 4px gap between them. "Copy Prompt" is visually primary (purple outlined). "Copy Image" is visually secondary (subtle white outlined). The difference in styling signals which is the default action.
+In App mode, the buttons sit side by side at the right end of the toolbar, with 4px gap between them. In IDE mode, only "Copy Prompt" is shown.
 
 ## Screenshot canvas
 
@@ -208,9 +207,9 @@ The canvas contains two SVG layers:
 
 ### Copy confirmation state
 
-When "Copy for LLM" is clicked:
+When a copy button is clicked:
 - Background transitions to `rgba(22, 163, 74, 0.9)` (green)
-- Text changes to "Copied"
+- Text changes to the specific action message such as "Prompt copied" or "Image copied"
 - Reverts to normal after 2 seconds
 - Transition: 0.3s ease
 
@@ -223,7 +222,7 @@ When "Copy for LLM" is clicked:
 | Cmd+Shift+Z | Redo |
 | Cmd+C (no text field focused) | Copy Prompt |
 | Delete / Backspace | Delete selected annotation |
-| 1-5 | Switch tools (1=Pin, 2=Arrow, 3=Rect, 4=Circle, 5=Freehand) |
+| 1-6 | Switch tools (1=Select, 2=Pin, 3=Arrow, 4=Rect, 5=Circle, 6=Freehand) |
 
 ## Auto-save behavior
 
@@ -245,4 +244,4 @@ The toolbar may be wider than the screenshot. The toolbar stays centered and ext
 The editor appears on the same screen where the capture was taken.
 
 ### 4. No annotations placed
-The pin icon shows no counter number (or shows "0"). The status pill shows "0 notes". Copy for LLM still works — it copies the screenshot path with an empty annotation list.
+The status pill shows "0 notes". Copy actions still work with an empty annotation list.

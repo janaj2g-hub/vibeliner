@@ -27,9 +27,9 @@ This document records architectural decisions and failed approaches. Claude Code
 **Why:** Reduces build complexity, avoids license issues, keeps the binary small. Everything Vibeliner needs is in the macOS SDK (AppKit, Core Graphics, CGWindowListCreateImage).
 **Exception:** If hotkey registration via NSEvent proves unreliable for global shortcuts across all Spaces and full-screen apps, KeyboardShortcuts (MIT licensed) may be added as a single dependency.
 
-### Sequential annotation numbering is permanent
-**Decision:** When an annotation is deleted, its number is NOT reassigned. If annotation 2 is deleted, the next annotation is still 4 (not 3).
-**Why:** The badge numbers are baked into the exported screenshot. If numbers were reassigned after deletion, the image and prompt would be out of sync during editing (user deletes 2, remaining badges still show the old numbers until re-rendered). Permanent numbers are simpler and match what the user sees.
+### Sequential annotation numbering renumbers after deletion
+**Decision:** When an annotation is deleted, the remaining annotations are renumbered sequentially.
+**Why:** This matches the current `AnnotationStore` implementation and keeps the exported prompt list contiguous while editing.
 
 ### Two rendering layers: marks (clips) and notes (overflows)
 **Decision:** The annotation canvas has two overlapping NSViews — MarksLayer with `clipsToBounds = true` and NotesLayer with `clipsToBounds = false`.

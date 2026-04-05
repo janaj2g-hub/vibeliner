@@ -63,10 +63,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let alert = NSAlert()
         alert.alertStyle = .warning
         alert.messageText = "Vibeliner needs permission"
+        let hotkeyDisplay = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey).joined()
 
         var msgs: [String] = []
         if missingScreenRecording { msgs.append("Screen Recording is required to capture screenshots.") }
-        if missingAccessibility { msgs.append("Accessibility is required for the ⌘⇧6 hotkey.") }
+        if missingAccessibility { msgs.append("Accessibility is required for the \(hotkeyDisplay) hotkey.") }
         alert.informativeText = msgs.joined(separator: "\n")
 
         alert.addButton(withTitle: "Open Settings")
