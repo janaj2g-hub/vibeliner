@@ -10,7 +10,10 @@ final class PromptPreviewView: NSView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
         setupView()
-        refresh()
+        // NOTE: Do NOT call refresh() here.
+        // PromptPreviewView is created as a stored property of PromptTabView,
+        // which means this init runs before PromptTabView.super.init().
+        // refresh() is called later by PromptTabView.loadContent().
     }
 
     required init?(coder: NSCoder) { fatalError() }
