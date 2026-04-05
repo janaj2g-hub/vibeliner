@@ -24,9 +24,8 @@ final class RecentCapturesSubmenu: NSView {
         let rowH: CGFloat = 42
 
         wantsLayer = true
-        // VIB-174: rgba(30,30,30,0.95) bg, 10px radius, 0.5px border
-        layer?.backgroundColor = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.95).cgColor
         layer?.cornerRadius = 10
+        layer?.masksToBounds = true
         layer?.borderWidth = 0.5
         layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
 
@@ -48,7 +47,9 @@ final class RecentCapturesSubmenu: NSView {
             addOpenFolderRow(at: 4, width: submenuW)
             let divY = openFolderH + 2
             addDivider(at: divY, width: submenuW)
-            setFrameSize(NSSize(width: submenuW, height: openFolderH + dividerH + 50))
+            let emptyH = openFolderH + dividerH + 50
+            setFrameSize(NSSize(width: submenuW, height: emptyH))
+            addEffectView(size: NSSize(width: submenuW, height: emptyH))
             return
         }
 
@@ -77,6 +78,16 @@ final class RecentCapturesSubmenu: NSView {
         y += 22
 
         setFrameSize(NSSize(width: submenuW, height: y))
+        addEffectView(size: NSSize(width: submenuW, height: y))
+    }
+
+    private func addEffectView(size: NSSize) {
+        let effectView = NSVisualEffectView(frame: NSRect(origin: .zero, size: size))
+        effectView.material = .menu
+        effectView.state = .active
+        effectView.blendingMode = .behindWindow
+        effectView.autoresizingMask = [.width, .height]
+        addSubview(effectView, positioned: .below, relativeTo: nil)
     }
 
     private func addDivider(at y: CGFloat, width: CGFloat) {
@@ -139,8 +150,8 @@ final class OpenFolderRowView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.06).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 6, yRadius: 6).fill()
+            NSColor(white: 1, alpha: 0.1).setFill()
+            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }
 
