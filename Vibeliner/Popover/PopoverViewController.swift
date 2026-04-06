@@ -146,7 +146,7 @@ final class PopoverContentView: NSView {
         y -= dividerH / 2
         let divider = NSView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = NSColor(white: 1, alpha: 0.06).cgColor
+        divider.layer?.backgroundColor = NSColor.separatorColor.cgColor
         addSubview(divider)
         y -= dividerH / 2
 
@@ -163,7 +163,7 @@ final class PopoverContentView: NSView {
 
         let textLabel = NSTextField(labelWithString: label)
         textLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-        textLabel.textColor = NSColor(white: 1, alpha: 0.85)
+        textLabel.textColor = .labelColor
         textLabel.sizeToFit()
         textLabel.frame.origin = NSPoint(x: 8, y: (rowH - textLabel.frame.height) / 2)
         row.addSubview(textLabel)
@@ -182,7 +182,7 @@ final class PopoverContentView: NSView {
         if hasArrow {
             let arrowLabel = NSTextField(labelWithString: "›")
             arrowLabel.font = NSFont.systemFont(ofSize: 16)
-            arrowLabel.textColor = NSColor(white: 1, alpha: 0.35)
+            arrowLabel.textColor = .tertiaryLabelColor
             arrowLabel.isBezeled = false
             arrowLabel.drawsBackground = false
             arrowLabel.sizeToFit()
@@ -196,7 +196,7 @@ final class PopoverContentView: NSView {
     private func makeKbdPill(_ text: String) -> NSView {
         let label = NSTextField(labelWithString: text)
         label.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
-        label.textColor = NSColor(white: 1, alpha: 0.55)
+        label.textColor = .secondaryLabelColor
         label.isBezeled = false
         label.drawsBackground = false
         label.alignment = .center
@@ -206,8 +206,8 @@ final class PopoverContentView: NSView {
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
         pill.wantsLayer = true
-        pill.layer?.backgroundColor = NSColor(white: 1, alpha: 0.08).cgColor
-        pill.layer?.borderColor = NSColor(white: 1, alpha: 0.12).cgColor
+        pill.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
+        pill.layer?.borderColor = NSColor.separatorColor.cgColor
         pill.layer?.borderWidth = 1
         pill.layer?.cornerRadius = 5
 
@@ -222,7 +222,7 @@ final class PopoverContentView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         // Subtle border on top of the vibrancy effect
-        let borderColor = NSColor(white: 1, alpha: 0.08)
+        let borderColor = NSColor.separatorColor
         borderColor.setStroke()
         let borderPath = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), xRadius: cornerRadius, yRadius: cornerRadius)
         borderPath.lineWidth = 0.5
@@ -340,7 +340,8 @@ final class PopoverRowView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.1).setFill()
+            // Uses labelColor at low opacity — works in both dark (white tint) and light (dark tint)
+            NSColor.labelColor.withAlphaComponent(0.08).setFill()
             NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }

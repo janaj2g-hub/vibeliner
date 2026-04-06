@@ -14,6 +14,11 @@ final class PromptPreviewView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        SettingsUI.stylePreviewSurface(previewContainer)
+    }
+
     private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false
 

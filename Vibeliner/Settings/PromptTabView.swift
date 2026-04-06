@@ -68,6 +68,17 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        SettingsUI.styleFrameSurface(editFrame)
+        // Rebuild the active sub-tab so NSTextView colors and editor container
+        // layer colors re-resolve for the new appearance
+        if contentLoaded {
+            selectSubTab(activeSubTab)
+            refreshPreview()
+        }
+    }
+
     func loadContent() {
         guard !contentLoaded else { return }
         contentLoaded = true
@@ -224,7 +235,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             + "[Tool Description] auto-generates based on tools used."
         )
         let editor = makeEditor(text: drafts.preamble)
-        preambleEditor = editor.documentView as? NSTextView
+        preambleEditor = findTextView(in: editor)
         preambleEditor?.delegate = self
 
         activeContentStack.addArrangedSubview(description)
@@ -261,7 +272,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private func buildFooterContent() {
         let description = SettingsUI.bodyCopy("Text after the annotation list. Leave empty for no footer.")
         let editor = makeEditor(text: drafts.footer)
-        footerEditor = editor.documentView as? NSTextView
+        footerEditor = findTextView(in: editor)
         footerEditor?.delegate = self
 
         activeContentStack.addArrangedSubview(description)
@@ -275,7 +286,26 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     // MARK: - Helpers
 
-    private func makeEditor(text: String) -> NSScrollView {
+    /// Finds the NSTextView inside an editor container (container → scroll → textView).
+    private func findTextView(in container: NSView) -> NSTextView? {
+        for sub in container.subviews {
+            if let scroll = sub as? NSScrollView {
+                return scroll.documentView as? NSTextView
+            }
+        }
+        return nil
+    }
+
+    /// Creates an editable text box with visible field surface styling.
+    /// Returns a wrapper NSView (not the scroll view directly) so the
+    /// rounded-rect background and border are visible around the editor.
+    private func makeEditor(text: String) -> NSView {
+        // Outer container provides the visible field surface (bg + border + radius)
+        let container = NSView()
+        container.translatesAutoresizingMaskIntoConstraints = false
+        SettingsUI.styleFieldSurface(container)
+
+        // Scroll view inside the container
         let scroll = NSScrollView()
         scroll.translatesAutoresizingMaskIntoConstraints = false
         scroll.drawsBackground = false
@@ -283,8 +313,16 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         scroll.autohidesScrollers = true
         scroll.hasHorizontalScroller = false
         scroll.borderType = .noBorder
-        SettingsUI.styleFieldSurface(scroll)
+        container.addSubview(scroll)
 
+        NSLayoutConstraint.activate([
+            scroll.topAnchor.constraint(equalTo: container.topAnchor, constant: 4),
+            scroll.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: 4),
+            scroll.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -4),
+            scroll.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -4),
+        ])
+
+        // Text view
         let textView = NSTextView()
         textView.font = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
         textView.textColor = .labelColor
@@ -293,7 +331,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         textView.isSelectable = true
         textView.drawsBackground = false
         textView.string = text
-        textView.textContainerInset = NSSize(width: 10, height: 10)
+        textView.textContainerInset = NSSize(width: 8, height: 8)
         textView.insertionPointColor = DesignTokens.purpleLight
 
         textView.isHorizontallyResizable = false
@@ -303,7 +341,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         scroll.documentView = textView
 
-        return scroll
+        return container
     }
 
     private static let toolRowHeight: CGFloat = 40
