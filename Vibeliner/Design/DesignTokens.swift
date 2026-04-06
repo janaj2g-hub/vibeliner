@@ -33,29 +33,29 @@ enum DesignTokens {
     /// rgba(239, 68, 68, 0.06) — shape fills
     static let redFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.06)
 
-    /// Note pill default: rgba(255, 248, 248, 0.82)
-    static let redNoteBg = NSColor(red: 255/255, green: 248/255, blue: 248/255, alpha: 0.82)
+    /// Note pill default: rgba(255, 244, 244, 0.72) — reconciled to match shipped renderer
+    static let redNoteBg = NSColor(red: 255/255, green: 244/255, blue: 244/255, alpha: 0.72)
 
-    /// Note pill default border: rgba(239, 68, 68, 0.18)
-    static let redNoteBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.18)
+    /// Note pill default border: rgba(180, 180, 180, 0.22) — reconciled to match shipped renderer (gray, not red)
+    static let redNoteBorder = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22)
 
-    /// Note pill hover: rgba(255, 245, 245, 0.88)
-    static let noteHoverBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.88)
+    /// Note pill hover: rgba(255, 244, 244, 0.80) — reconciled to match shipped renderer
+    static let noteHoverBg = NSColor(red: 255/255, green: 244/255, blue: 244/255, alpha: 0.80)
 
-    /// Note pill hover border: rgba(239, 68, 68, 0.4)
-    static let noteHoverBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.4)
+    /// Note pill hover border: rgba(239, 68, 68, 0.45) — reconciled to match shipped renderer
+    static let noteHoverBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45)
 
-    /// Note pill selected: rgba(255, 245, 245, 0.9)
-    static let noteSelectedBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.9)
+    /// Note pill selected: rgba(255, 244, 244, 0.88) — reconciled to match shipped renderer
+    static let noteSelectedBg = NSColor(red: 255/255, green: 244/255, blue: 244/255, alpha: 0.88)
 
-    /// Note pill selected border: rgba(239, 68, 68, 0.5)
-    static let noteSelectedBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.5)
+    /// Note pill selected border: rgba(239, 68, 68, 0.55) — reconciled to match shipped renderer
+    static let noteSelectedBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55)
 
-    /// Note pill editing: rgba(255, 245, 245, 0.92)
-    static let noteEditingBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.92)
+    /// Note pill editing: rgba(255, 250, 250, 0.96) — reconciled to match shipped renderer
+    static let noteEditingBg = NSColor(red: 255/255, green: 250/255, blue: 250/255, alpha: 0.96)
 
-    /// Note prefix color: rgba(153, 27, 27, 0.4)
-    static let notePrefixColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
+    /// Note prefix color: rgba(153, 27, 27, 0.45) — reconciled to match shipped renderer
+    static let notePrefixColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.45)
 
     /// Note text color: #7f1d1d
     static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
@@ -264,9 +264,6 @@ enum DesignTokens {
     /// Settings section title width
     static let settingsSectionLabelWidth: CGFloat = 128
 
-    /// Settings section vertical spacing
-    static let settingsSectionPadding: CGFloat = 24
-
     /// Settings section inner gap
     static let settingsSectionGap: CGFloat = 14
 
@@ -317,6 +314,25 @@ enum DesignTokens {
 
     /// 10px minimum selection size
     static let minimumSelectionSize: CGFloat = 10
+
+    // MARK: - Popover Dimensions
+
+    /// 240px popover width
+    static let popoverWidth: CGFloat = 240
+
+    /// 32px popover row height
+    static let popoverRowHeight: CGFloat = 32
+
+    /// 10px popover corner radius
+    static let popoverCornerRadius: CGFloat = 10
+
+    /// 300px popover submenu width
+    static let popoverSubmenuWidth: CGFloat = 300
+
+    // MARK: - Note Pill Dimensions
+
+    /// 12px note pill internal horizontal padding
+    static let notePadding: CGFloat = 12
 
     // MARK: - Ghost preview
 
@@ -393,17 +409,11 @@ enum DesignTokens {
     /// rgba(34, 197, 94, 0.5) — green button border
     static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
 
-    /// rgba(234, 179, 8, 0.08) — amber status background
-    static let setupAmberBg = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 0.08)
-
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
     /// #1e1e1e — setup window background
     static let setupWindowBg = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
-
-    /// #2a2a2a — setup title bar background
-    static let setupTitleBarBg = NSColor(red: 42/255, green: 42/255, blue: 42/255, alpha: 1.0)
 
     /// #222222 — setup footer background
     static let setupFooterBg = NSColor(red: 34/255, green: 34/255, blue: 34/255, alpha: 1.0)
@@ -440,9 +450,6 @@ enum DesignTokens {
 
     /// #6f69df — setup action button/label text
     static let setupButtonText = NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
-
-    /// rgba(175, 169, 236, 0.16) — setup arrow hover bg
-    static let setupButtonHoverBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
 
     /// rgba(255, 255, 255, 0.12) — setup kbd pill border
     static let setupKbdBorder = NSColor(white: 1.0, alpha: 0.12)
