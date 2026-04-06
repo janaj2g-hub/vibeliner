@@ -1,0 +1,1791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibeliner Design System</title>
+<style>
+/* ============================================================
+   CSS Custom Properties — names match Swift DesignTokens
+   ============================================================ */
+:root {
+  /* Purple Family */
+  --purpleLight: #AFA9EC;
+  --purpleDark: #534AB7;
+  --purpleButton: #A796EB;
+  --purpleButtonHover: #C4B8F5;
+  --purpleButtonBg: rgba(116,97,194,0.25);
+  --purpleButtonBgHover: rgba(116,97,194,0.35);
+
+  /* Red / Annotation Family */
+  --red: #EF4444;
+  --redFill: rgba(239,68,68,0.06);
+  --redNoteBg: rgba(255,244,244,0.72);
+  --redNoteBorder: rgba(180,180,180,0.22);
+  --noteHoverBg: rgba(255,244,244,0.80);
+  --noteHoverBorder: rgba(239,68,68,0.45);
+  --noteSelectedBg: rgba(255,244,244,0.88);
+  --noteSelectedBorder: rgba(239,68,68,0.55);
+  --noteEditingBg: rgba(255,250,250,0.96);
+  --notePrefixColor: rgba(153,27,27,0.45);
+  --noteTextColor: #7F1D1D;
+
+  /* Green / Copied Family */
+  --copiedGreen: rgba(22,163,74,0.9);
+  --copiedGreenBorder: rgba(22,163,74,0.5);
+  --copiedGreenText: rgba(22,163,74,0.8);
+  --copiedGreenBg: rgba(22,163,74,0.12);
+
+  /* Dark Chrome Family */
+  --darkChrome: rgba(30,30,30,0.92);
+  --darkChromeStatus: rgba(30,30,30,0.88);
+  --darkChromePopover: rgba(30,30,30,0.95);
+
+  /* Tooltip */
+  --tooltipDarkBg: rgba(28,28,32,0.96);
+  --tooltipDarkBorder: rgba(255,255,255,0.1);
+
+  /* UI Chrome */
+  --dimOverlay: rgba(0,0,0,0.5);
+  --dividerColor: rgba(255,255,255,0.08);
+  --closeHoverBg: rgba(255,87,87,0.2);
+  --trashHoverBg: rgba(255,87,87,0.15);
+  --chromeBorder: rgba(175,169,236,0.12);
+  --iconDefault: rgba(255,255,255,0.4);
+  --iconHover: rgba(255,255,255,0.8);
+  --buttonHoverBg: rgba(255,255,255,0.08);
+  --toolActiveBg: rgba(175,169,236,0.2);
+  --closeIconHover: #FF5F57;
+
+  /* Toggle */
+  --toggleActiveBg: rgba(175,169,236,0.25);
+  --toggleBg: rgba(255,255,255,0.06);
+  --toggleInactiveText: rgba(255,255,255,0.3);
+
+  /* Ghost Preview */
+  --ghostDotColor: rgba(175,169,236,0.85);
+  --ghostStrokeColor: rgba(239,68,68,0.22);
+
+  /* Settings — appearance-aware (light defaults shown, dark overrides below) */
+  --settingsFieldSurface: #EEF0F6;
+  --settingsFrameSurface: rgba(15,23,42,0.02);
+  --settingsPreviewSurface: #F8FAFC;
+  --settingsSegmentedTrack: rgba(15,23,42,0.04);
+  --settingsSegmentedActive: rgba(175,169,236,0.18);
+  --settingsPillBorder: rgba(114,103,221,0.26);
+  --settingsPillFill: rgba(175,169,236,0.16);
+  --settingsPillText: #7267DD;
+  --settingsFieldBorder: rgba(15,23,42,0.08);
+
+  /* Setup */
+  --setupAmberText: #B45309;
+
+  /* Page chrome */
+  --page-bg: #ffffff;
+  --page-fg: #1a1a2e;
+  --page-fg-secondary: #555;
+  --page-fg-tertiary: #888;
+  --section-bg: #f5f5f8;
+  --section-border: #e0e0e6;
+  --card-bg: #ffffff;
+  --card-border: #e0e0e6;
+  --code-bg: #f0f0f4;
+  --swatch-shadow: rgba(0,0,0,0.08);
+}
+
+[data-theme="dark"] {
+  --settingsFieldSurface: rgba(255,255,255,0.06);
+  --settingsFrameSurface: rgba(255,255,255,0.02);
+  --settingsPreviewSurface: #15161A;
+  --settingsSegmentedTrack: rgba(255,255,255,0.03);
+  --settingsSegmentedActive: rgba(175,169,236,0.22);
+  --settingsPillBorder: rgba(175,169,236,0.36);
+  --settingsPillFill: rgba(175,169,236,0.10);
+  --settingsPillText: #AFA9EC;
+  --settingsFieldBorder: rgba(255,255,255,0.12);
+
+  --page-bg: #1a1a2e;
+  --page-fg: #e8e8f0;
+  --page-fg-secondary: #aaa;
+  --page-fg-tertiary: #777;
+  --section-bg: #222238;
+  --section-border: #333350;
+  --card-bg: #262640;
+  --card-border: #3a3a56;
+  --code-bg: #2a2a44;
+  --swatch-shadow: rgba(0,0,0,0.3);
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+  background: var(--page-bg);
+  color: var(--page-fg);
+  line-height: 1.5;
+  transition: background 0.25s, color 0.25s;
+}
+
+/* ============================================================
+   Sticky Header
+   ============================================================ */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 28px;
+  background: var(--page-bg);
+  border-bottom: 1px solid var(--section-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+}
+
+.header-title span {
+  color: var(--purpleLight);
+}
+
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--section-bg);
+  border: 1px solid var(--section-border);
+  border-radius: 20px;
+  padding: 4px;
+  cursor: pointer;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.theme-toggle button {
+  border: none;
+  background: transparent;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--page-fg-secondary);
+  transition: background 0.2s, color 0.2s;
+}
+
+.theme-toggle button.active {
+  background: var(--purpleLight);
+  color: #1a1a2e;
+}
+
+/* ============================================================
+   Content
+   ============================================================ */
+.content {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 28px 80px;
+}
+
+/* ============================================================
+   Collapsible Section
+   ============================================================ */
+.section {
+  margin-bottom: 28px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 12px 16px;
+  background: var(--section-bg);
+  border: 1px solid var(--section-border);
+  border-radius: 12px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.section-header:hover {
+  border-color: var(--purpleLight);
+}
+
+.section-header .chevron {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  transition: transform 0.2s;
+  color: var(--page-fg-tertiary);
+}
+
+.section.collapsed .chevron {
+  transform: rotate(-90deg);
+}
+
+.section-header h2 {
+  font-size: 16px;
+  font-weight: 600;
+  flex: 1;
+}
+
+.section-header .count {
+  font-size: 12px;
+  color: var(--page-fg-tertiary);
+  font-weight: 400;
+}
+
+.section-body {
+  padding: 16px 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.section.collapsed .section-body {
+  display: none;
+}
+
+/* ============================================================
+   Subsection
+   ============================================================ */
+.subsection {
+  margin-bottom: 20px;
+}
+
+.subsection h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--page-fg-tertiary);
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+/* ============================================================
+   Color Swatches
+   ============================================================ */
+.swatch-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.swatch {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.swatch:hover {
+  border-color: var(--purpleLight);
+}
+
+.swatch-color {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  border: 1px solid var(--card-border);
+  box-shadow: 0 1px 3px var(--swatch-shadow);
+}
+
+/* Checkerboard background for alpha colors */
+.swatch-color.alpha {
+  background-image:
+    linear-gradient(45deg, #ccc 25%, transparent 25%),
+    linear-gradient(-45deg, #ccc 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #ccc 75%),
+    linear-gradient(-45deg, transparent 75%, #ccc 75%);
+  background-size: 8px 8px;
+  background-position: 0 0, 0 4px, 4px -4px, -4px 0px;
+  position: relative;
+}
+
+.swatch-color.alpha .swatch-color-inner {
+  position: absolute;
+  inset: 0;
+  border-radius: 7px;
+}
+
+.swatch-info {
+  min-width: 0;
+  flex: 1;
+}
+
+.swatch-name {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swatch-value {
+  font-size: 10px;
+  color: var(--page-fg-tertiary);
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.swatch-usage {
+  font-size: 10px;
+  color: var(--page-fg-secondary);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+
+/* Dual-mode swatches for appearance-aware tokens */
+.dual-swatch {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.dual-swatch:hover {
+  border-color: var(--purpleLight);
+}
+
+.dual-swatch-half {
+  flex: 1;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dual-swatch-half.light-half {
+  background: #ffffff;
+  color: #1a1a2e;
+}
+
+.dual-swatch-half.dark-half {
+  background: #1a1a2e;
+  color: #e8e8f0;
+}
+
+.dual-swatch-half .swatch-color {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+}
+
+.dual-swatch-half .swatch-name {
+  font-size: 11px;
+}
+
+.dual-swatch-half .swatch-value {
+  font-size: 9px;
+}
+
+.dual-label {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  padding: 6px 12px;
+  background: var(--section-bg);
+  border-bottom: 1px solid var(--card-border);
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.dual-swatch-wrap {
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.25s;
+}
+
+.dual-swatch-wrap:hover {
+  border-color: var(--purpleLight);
+}
+
+.dual-swatch-wrap .swatch-usage {
+  padding: 4px 12px 8px;
+  background: var(--card-bg);
+  transition: background 0.25s;
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+.type-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.type-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 16px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.type-meta {
+  width: 240px;
+  flex-shrink: 0;
+}
+
+.type-token {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+}
+
+.type-spec {
+  font-size: 10px;
+  color: var(--page-fg-tertiary);
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+}
+
+.type-sample {
+  flex: 1;
+  min-width: 0;
+}
+
+/* ============================================================
+   Dimensions
+   ============================================================ */
+.dim-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+}
+
+.dim-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 10px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.dim-visual {
+  width: 60px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dim-bar {
+  background: var(--purpleLight);
+  border-radius: 3px;
+  opacity: 0.6;
+}
+
+.dim-meta {
+  flex: 1;
+  min-width: 0;
+}
+
+.dim-token {
+  font-size: 12px;
+  font-weight: 600;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+}
+
+.dim-value {
+  font-size: 11px;
+  color: var(--page-fg-tertiary);
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+}
+
+.dim-usage {
+  font-size: 10px;
+  color: var(--page-fg-secondary);
+}
+
+/* ============================================================
+   Component Samples
+   ============================================================ */
+.component-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.component-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.component-card:hover {
+  border-color: var(--purpleLight);
+}
+
+.component-card-header {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--card-border);
+  font-size: 13px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: border-color 0.25s;
+}
+
+.component-card-body {
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+}
+
+.component-card-tokens {
+  padding: 8px 14px 10px;
+  border-top: 1px solid var(--card-border);
+  font-size: 10px;
+  color: var(--page-fg-tertiary);
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  line-height: 1.6;
+  transition: border-color 0.25s;
+}
+
+/* Screenshot background for annotation demos */
+.screenshot-bg {
+  background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 50%, #94a3b8 100%);
+  border-radius: 8px;
+  position: relative;
+  width: 100%;
+  min-height: 80px;
+}
+
+/* Dark surface for editor component demos */
+.dark-surface {
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 16px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================================
+   Component: Pin
+   ============================================================ */
+.pin-demo {
+  display: flex;
+  gap: 40px;
+  align-items: flex-end;
+  padding: 20px;
+}
+
+.pin-sample {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.pin-badge {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--red);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 600;
+  color: white;
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.2);
+}
+
+.pin-stake {
+  width: 2px;
+  height: 10px;
+  background: var(--red);
+}
+
+.pin-label {
+  font-size: 10px;
+  color: var(--page-fg-tertiary);
+  margin-top: 4px;
+}
+
+/* Note pill states */
+.note-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  border-radius: 13px;
+  padding: 0 12px;
+  font-size: 12px;
+  gap: 4px;
+  border-width: 1px;
+  border-style: solid;
+}
+
+.note-pill .prefix {
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.note-default {
+  background: var(--redNoteBg);
+  border-color: var(--redNoteBorder);
+}
+
+.note-default .prefix { color: var(--notePrefixColor); }
+.note-default .text { color: var(--noteTextColor); }
+
+.note-hover {
+  background: var(--noteHoverBg);
+  border-color: var(--noteHoverBorder);
+}
+
+.note-hover .prefix { color: var(--notePrefixColor); }
+.note-hover .text { color: var(--noteTextColor); }
+
+.note-selected {
+  background: var(--noteSelectedBg);
+  border-color: var(--noteSelectedBorder);
+}
+
+.note-selected .prefix { color: var(--notePrefixColor); }
+.note-selected .text { color: var(--noteTextColor); }
+
+.note-editing {
+  background: var(--noteEditingBg);
+  border-color: var(--red);
+  box-shadow: 0 0 0 2px rgba(239,68,68,0.12);
+}
+
+.note-editing .prefix { color: var(--notePrefixColor); }
+.note-editing .text { color: var(--noteTextColor); }
+
+/* ============================================================
+   Component: Copy Buttons
+   ============================================================ */
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  border: 1px solid;
+  cursor: default;
+}
+
+.copy-default {
+  border-color: var(--purpleButton);
+  background: var(--purpleButtonBg);
+  color: var(--purpleButton);
+}
+
+.copy-hover-state {
+  border-color: var(--purpleButtonHover);
+  background: var(--purpleButtonBgHover);
+  color: var(--purpleButtonHover);
+}
+
+.copy-copied {
+  border-color: var(--copiedGreenBorder);
+  background: var(--copiedGreenBg);
+  color: var(--copiedGreenText);
+}
+
+/* ============================================================
+   Component: Toolbar
+   ============================================================ */
+.toolbar-demo {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  background: var(--darkChrome);
+  border: 1px solid var(--chromeBorder);
+  border-radius: 20px;
+  padding: 0 6px;
+  gap: 2px;
+  backdrop-filter: blur(12px);
+}
+
+.tb-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  cursor: default;
+  transition: background 0.15s;
+}
+
+.tb-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.tb-btn.default svg { stroke: var(--iconDefault); fill: none; }
+.tb-btn.hover-state { background: var(--buttonHoverBg); }
+.tb-btn.hover-state svg { stroke: var(--iconHover); fill: none; }
+.tb-btn.active { background: var(--toolActiveBg); }
+.tb-btn.active svg { stroke: var(--purpleLight); fill: none; }
+
+.tb-divider {
+  width: 1px;
+  height: 20px;
+  background: var(--dividerColor);
+  margin: 0 2px;
+}
+
+.tb-toggle {
+  display: inline-flex;
+  border-radius: 6px;
+  overflow: hidden;
+  height: 24px;
+}
+
+.tb-toggle-opt {
+  padding: 0 8px;
+  font-size: 10px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  cursor: default;
+  border: none;
+}
+
+.tb-toggle-opt.inactive {
+  background: var(--toggleBg);
+  color: var(--toggleInactiveText);
+}
+
+.tb-toggle-opt.toggle-active {
+  background: var(--toggleActiveBg);
+  color: var(--purpleLight);
+}
+
+.tb-close {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--closeHoverBg);
+  border: none;
+  cursor: default;
+}
+
+.tb-close svg {
+  width: 10px;
+  height: 10px;
+  stroke: var(--closeIconHover);
+  stroke-width: 2;
+  fill: none;
+}
+
+/* ============================================================
+   Component: Status Pill
+   ============================================================ */
+.status-pill-demo {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  background: var(--darkChromeStatus);
+  border-radius: 12px;
+  padding: 0 12px;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  font-size: 10px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+}
+
+/* ============================================================
+   Component: Popover
+   ============================================================ */
+.popover-demo {
+  width: 240px;
+  background: var(--darkChromePopover);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 4px 0;
+  backdrop-filter: blur(20px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+
+.popover-row {
+  height: 32px;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 8px;
+  font-size: 13px;
+  color: rgba(255,255,255,0.85);
+  cursor: default;
+}
+
+.popover-row:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.popover-row svg {
+  width: 14px;
+  height: 14px;
+  stroke: rgba(255,255,255,0.5);
+  fill: none;
+  flex-shrink: 0;
+}
+
+.popover-row .shortcut {
+  margin-left: auto;
+  font-size: 11px;
+  color: rgba(255,255,255,0.3);
+}
+
+.popover-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.06);
+  margin: 4px 8px;
+}
+
+/* ============================================================
+   Component: Settings Pill
+   ============================================================ */
+.settings-pill-demo {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border-radius: 14px;
+  padding: 0 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--settingsPillBorder);
+  background: var(--settingsPillFill);
+  color: var(--settingsPillText);
+  cursor: default;
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
+}
+
+/* ============================================================
+   Component: Setup Panel (minimal)
+   ============================================================ */
+.setup-demo {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.setup-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.setup-badge {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.setup-badge.inactive {
+  background: var(--settingsFrameSurface);
+  color: var(--page-fg-tertiary);
+  border: 1px solid var(--card-border);
+}
+
+.setup-badge.active-badge {
+  background: var(--settingsPillFill);
+  color: var(--settingsPillText);
+  border: 1px solid var(--settingsPillBorder);
+}
+
+.setup-badge.completed {
+  background: var(--copiedGreenBg);
+  color: var(--copiedGreenText);
+  border: 1px solid var(--copiedGreenBorder);
+}
+
+.setup-badge-label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.setup-desc {
+  font-size: 12px;
+  color: var(--page-fg-secondary);
+  padding-left: 44px;
+}
+
+.setup-status {
+  font-size: 13px;
+  font-weight: 500;
+  padding-left: 44px;
+}
+
+.setup-status.amber { color: var(--setupAmberText); }
+.setup-status.ready { color: var(--copiedGreenText); }
+
+.setup-action-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  border-radius: 14px;
+  padding: 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--settingsPillBorder);
+  background: var(--settingsPillFill);
+  color: var(--settingsPillText);
+  margin-left: 44px;
+  cursor: default;
+  transition: border-color 0.25s, background 0.25s, color 0.25s;
+}
+
+.setup-path-box {
+  height: 32px;
+  border-radius: 8px;
+  background: var(--settingsFieldSurface);
+  border: 1px solid var(--settingsFieldBorder);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  font-family: "SF Mono", SFMono-Regular, Consolas, monospace;
+  font-size: 12px;
+  color: var(--page-fg-secondary);
+  margin-left: 44px;
+  transition: background 0.25s, border-color 0.25s;
+}
+
+.setup-hotkey-pill {
+  display: inline-flex;
+  align-items: center;
+  height: 22px;
+  border-radius: 11px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 600;
+  border: 1px solid var(--settingsFieldBorder);
+  background: var(--settingsFieldSurface);
+  color: var(--page-fg);
+  margin-left: 44px;
+  transition: background 0.25s, border-color 0.25s, color 0.25s;
+}
+
+/* ============================================================
+   Annotation SVG demos
+   ============================================================ */
+.annotation-canvas {
+  position: relative;
+  width: 100%;
+  min-height: 80px;
+}
+
+.annotation-canvas svg {
+  width: 100%;
+  height: 80px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<div class="header">
+  <div class="header-title"><span>V</span>ibeliner Design System</div>
+  <div class="theme-toggle" role="group" aria-label="Theme toggle">
+    <button class="active" data-theme-btn="light" onclick="setTheme('light')">Light</button>
+    <button data-theme-btn="dark" onclick="setTheme('dark')">Dark</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     CONTENT
+     ============================================================ -->
+<div class="content">
+
+<!-- ============================
+     SECTION 1: Color Palette
+     ============================ -->
+<div class="section" id="colors">
+  <div class="section-header" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 18 18"><polyline points="6 4 12 9 6 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Color Palette</h2>
+    <span class="count">55 tokens</span>
+  </div>
+  <div class="section-body">
+
+    <!-- Purple Family -->
+    <div class="subsection">
+      <h3>Purple Family (brand, interactive)</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#AFA9EC"></div><div class="swatch-info"><div class="swatch-name">purpleLight</div><div class="swatch-value">#AFA9EC</div><div class="swatch-usage">Crosshair, selection border, active tool highlight</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#534AB7"></div><div class="swatch-info"><div class="swatch-name">purpleDark</div><div class="swatch-value">#534AB7</div><div class="swatch-usage">Dimension label bg, settings accents</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#A796EB"></div><div class="swatch-info"><div class="swatch-name">purpleButton</div><div class="swatch-value">#A796EB</div><div class="swatch-usage">Copy button outline/text</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#C4B8F5"></div><div class="swatch-info"><div class="swatch-name">purpleButtonHover</div><div class="swatch-value">#C4B8F5</div><div class="swatch-usage">Copy button hover state</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(116,97,194,0.25)"></div></div><div class="swatch-info"><div class="swatch-name">purpleButtonBg</div><div class="swatch-value">rgba(116,97,194,0.25)</div><div class="swatch-usage">Copy button fill</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(116,97,194,0.35)"></div></div><div class="swatch-info"><div class="swatch-name">purpleButtonBgHover</div><div class="swatch-value">rgba(116,97,194,0.35)</div><div class="swatch-usage">Copy button hover fill</div></div></div>
+      </div>
+    </div>
+
+    <!-- Red / Annotation Family -->
+    <div class="subsection">
+      <h3>Red / Annotation Family (static)</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#EF4444"></div><div class="swatch-info"><div class="swatch-name">red</div><div class="swatch-value">#EF4444</div><div class="swatch-usage">All annotation marks, editing border/shadow</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(239,68,68,0.06)"></div></div><div class="swatch-info"><div class="swatch-name">redFill</div><div class="swatch-value">rgba(239,68,68,0.06)</div><div class="swatch-usage">Shape fills (rect, circle)</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,244,244,0.72)"></div></div><div class="swatch-info"><div class="swatch-name">redNoteBg</div><div class="swatch-value">rgba(255,244,244,0.72)</div><div class="swatch-usage">Note pill default background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(180,180,180,0.22)"></div></div><div class="swatch-info"><div class="swatch-name">redNoteBorder</div><div class="swatch-value">rgba(180,180,180,0.22)</div><div class="swatch-usage">Note pill default border (gray)</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,244,244,0.80)"></div></div><div class="swatch-info"><div class="swatch-name">noteHoverBg</div><div class="swatch-value">rgba(255,244,244,0.80)</div><div class="swatch-usage">Note pill hover background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(239,68,68,0.45)"></div></div><div class="swatch-info"><div class="swatch-name">noteHoverBorder</div><div class="swatch-value">rgba(239,68,68,0.45)</div><div class="swatch-usage">Note pill hover border</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,244,244,0.88)"></div></div><div class="swatch-info"><div class="swatch-name">noteSelectedBg</div><div class="swatch-value">rgba(255,244,244,0.88)</div><div class="swatch-usage">Note pill selected background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(239,68,68,0.55)"></div></div><div class="swatch-info"><div class="swatch-name">noteSelectedBorder</div><div class="swatch-value">rgba(239,68,68,0.55)</div><div class="swatch-usage">Note pill selected border</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,250,250,0.96)"></div></div><div class="swatch-info"><div class="swatch-name">noteEditingBg</div><div class="swatch-value">rgba(255,250,250,0.96)</div><div class="swatch-usage">Note pill editing background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(153,27,27,0.45)"></div></div><div class="swatch-info"><div class="swatch-name">notePrefixColor</div><div class="swatch-value">rgba(153,27,27,0.45)</div><div class="swatch-usage">Note pill number prefix</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#7F1D1D"></div><div class="swatch-info"><div class="swatch-name">noteTextColor</div><div class="swatch-value">#7F1D1D</div><div class="swatch-usage">Note pill text color</div></div></div>
+      </div>
+    </div>
+
+    <!-- Green / Copied Family -->
+    <div class="subsection">
+      <h3>Green / Copied Family (success states)</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(22,163,74,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreen</div><div class="swatch-value">rgba(22,163,74,0.9)</div><div class="swatch-usage">Copied state icon/badge, setup completed badge</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(22,163,74,0.5)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenBorder</div><div class="swatch-value">rgba(22,163,74,0.5)</div><div class="swatch-usage">Copied state border</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(22,163,74,0.8)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenText</div><div class="swatch-value">rgba(22,163,74,0.8)</div><div class="swatch-usage">Copied state text, setup ready label</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(22,163,74,0.12)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenBg</div><div class="swatch-value">rgba(22,163,74,0.12)</div><div class="swatch-usage">Copied state background, setup completed bg</div></div></div>
+      </div>
+    </div>
+
+    <!-- Dark Chrome Family -->
+    <div class="subsection">
+      <h3>Dark Chrome (editor overlay surfaces)</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:rgba(30,30,30,0.92);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-name">darkChrome</div><div class="swatch-value">rgba(30,30,30,0.92)</div><div class="swatch-usage">Editor toolbar background</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:rgba(30,30,30,0.88);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-name">darkChromeStatus</div><div class="swatch-value">rgba(30,30,30,0.88)</div><div class="swatch-usage">Status pill background</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:rgba(30,30,30,0.95);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-name">darkChromePopover</div><div class="swatch-value">rgba(30,30,30,0.95)</div><div class="swatch-usage">Popover background (defined; system vibrancy used)</div></div></div>
+      </div>
+    </div>
+
+    <!-- Tooltip Family -->
+    <div class="subsection">
+      <h3>Tooltip Family</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:rgba(28,28,32,0.96);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-name">tooltipDarkBg</div><div class="swatch-value">rgba(28,28,32,0.96)</div><div class="swatch-usage">First-use tooltip background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.1)"></div></div><div class="swatch-info"><div class="swatch-name">tooltipDarkBorder</div><div class="swatch-value">rgba(255,255,255,0.1)</div><div class="swatch-usage">First-use tooltip border</div></div></div>
+      </div>
+    </div>
+
+    <!-- UI Chrome Colors -->
+    <div class="subsection">
+      <h3>UI Chrome Colors</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:rgba(0,0,0,0.5)"></div><div class="swatch-info"><div class="swatch-name">dimOverlay</div><div class="swatch-value">rgba(0,0,0,0.5)</div><div class="swatch-usage">Capture overlay dim</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.08)"></div></div><div class="swatch-info"><div class="swatch-name">dividerColor</div><div class="swatch-value">rgba(255,255,255,0.08)</div><div class="swatch-usage">Toolbar divider</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,87,87,0.2)"></div></div><div class="swatch-info"><div class="swatch-name">closeHoverBg</div><div class="swatch-value">rgba(255,87,87,0.2)</div><div class="swatch-usage">Close button hover bg</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,87,87,0.15)"></div></div><div class="swatch-info"><div class="swatch-name">trashHoverBg</div><div class="swatch-value">rgba(255,87,87,0.15)</div><div class="swatch-usage">Trash button hover bg</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(175,169,236,0.12)"></div></div><div class="swatch-info"><div class="swatch-name">chromeBorder</div><div class="swatch-value">rgba(175,169,236,0.12)</div><div class="swatch-usage">Toolbar/canvas border</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.4)"></div></div><div class="swatch-info"><div class="swatch-name">iconDefault</div><div class="swatch-value">rgba(255,255,255,0.4)</div><div class="swatch-usage">Default icon stroke</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.8)"></div></div><div class="swatch-info"><div class="swatch-name">iconHover</div><div class="swatch-value">rgba(255,255,255,0.8)</div><div class="swatch-usage">Hover icon stroke</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.08)"></div></div><div class="swatch-info"><div class="swatch-name">buttonHoverBg</div><div class="swatch-value">rgba(255,255,255,0.08)</div><div class="swatch-usage">Button hover background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(175,169,236,0.2)"></div></div><div class="swatch-info"><div class="swatch-name">toolActiveBg</div><div class="swatch-value">rgba(175,169,236,0.2)</div><div class="swatch-usage">Active tool background</div></div></div>
+        <div class="swatch"><div class="swatch-color" style="background:#FF5F57"></div><div class="swatch-info"><div class="swatch-name">closeIconHover</div><div class="swatch-value">#FF5F57</div><div class="swatch-usage">Close icon hover color</div></div></div>
+      </div>
+    </div>
+
+    <!-- Toggle Family -->
+    <div class="subsection">
+      <h3>Toggle Family</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(175,169,236,0.25)"></div></div><div class="swatch-info"><div class="swatch-name">toggleActiveBg</div><div class="swatch-value">rgba(175,169,236,0.25)</div><div class="swatch-usage">Toggle active background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.06)"></div></div><div class="swatch-info"><div class="swatch-name">toggleBg</div><div class="swatch-value">rgba(255,255,255,0.06)</div><div class="swatch-usage">Toggle background</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(255,255,255,0.3)"></div></div><div class="swatch-info"><div class="swatch-name">toggleInactiveText</div><div class="swatch-value">rgba(255,255,255,0.3)</div><div class="swatch-usage">Toggle inactive text</div></div></div>
+      </div>
+    </div>
+
+    <!-- Ghost Preview -->
+    <div class="subsection">
+      <h3>Ghost Preview</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(175,169,236,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">ghostDotColor</div><div class="swatch-value">rgba(175,169,236,0.85)</div><div class="swatch-usage">Ghost anchor dot</div></div></div>
+        <div class="swatch"><div class="swatch-color alpha" style="position:relative"><div class="swatch-color-inner" style="background:rgba(239,68,68,0.22)"></div></div><div class="swatch-info"><div class="swatch-name">ghostStrokeColor</div><div class="swatch-value">rgba(239,68,68,0.22)</div><div class="swatch-usage">Ghost silhouette stroke</div></div></div>
+      </div>
+    </div>
+
+    <!-- Settings Family (appearance-aware) -->
+    <div class="subsection">
+      <h3>Settings Family (appearance-aware)</h3>
+      <div class="swatch-grid" style="grid-template-columns: repeat(auto-fill, minmax(340px, 1fr))">
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsFieldSurface</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:#EEF0F6"></div><div class="swatch-info"><div class="swatch-value">#EEF0F6</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(255,255,255,0.06);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(255,255,255,0.06)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings text field bg, setup path box bg</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsFrameSurface</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(15,23,42,0.02)"></div><div class="swatch-info"><div class="swatch-value">rgba(15,23,42,0.02)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(255,255,255,0.02);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(255,255,255,0.02)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings framed section bg, setup inactive badge</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsPreviewSurface</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:#F8FAFC"></div><div class="swatch-info"><div class="swatch-value">#F8FAFC</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:#15161A;border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">#15161A</div></div></div>
+          </div>
+          <div class="swatch-usage">Prompt preview surface</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsSegmentedTrack</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(15,23,42,0.04)"></div><div class="swatch-info"><div class="swatch-value">rgba(15,23,42,0.04)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(255,255,255,0.03);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(255,255,255,0.03)</div></div></div>
+          </div>
+          <div class="swatch-usage">Segmented control track</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsSegmentedActive</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(175,169,236,0.18)"></div><div class="swatch-info"><div class="swatch-value">rgba(175,169,236,0.18)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(175,169,236,0.22);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(175,169,236,0.22)</div></div></div>
+          </div>
+          <div class="swatch-usage">Segmented control active fill</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsPillBorder</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(114,103,221,0.26)"></div><div class="swatch-info"><div class="swatch-value">rgba(114,103,221,0.26)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(175,169,236,0.36);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(175,169,236,0.36)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings pill border, setup action button border</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsPillFill</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(175,169,236,0.16)"></div><div class="swatch-info"><div class="swatch-value">rgba(175,169,236,0.16)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(175,169,236,0.10);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(175,169,236,0.10)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings pill fill, setup action button fill</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsPillText</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:#7267DD"></div><div class="swatch-info"><div class="swatch-value">#7267DD</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:#AFA9EC;border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">#AFA9EC (purpleLight)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings pill title, setup action text</div>
+        </div>
+
+        <div class="dual-swatch-wrap">
+          <div class="dual-label">settingsFieldBorder</div>
+          <div class="dual-swatch">
+            <div class="dual-swatch-half light-half"><div class="swatch-color" style="background:rgba(15,23,42,0.08)"></div><div class="swatch-info"><div class="swatch-value">rgba(15,23,42,0.08)</div></div></div>
+            <div class="dual-swatch-half dark-half"><div class="swatch-color" style="background:rgba(255,255,255,0.12);border-color:rgba(255,255,255,0.1)"></div><div class="swatch-info"><div class="swatch-value">rgba(255,255,255,0.12)</div></div></div>
+          </div>
+          <div class="swatch-usage">Settings field border, setup path box border</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Setup -->
+    <div class="subsection">
+      <h3>Setup (dedicated token)</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-color" style="background:#B45309"></div><div class="swatch-info"><div class="swatch-name">setupAmberText</div><div class="swatch-value">#B45309</div><div class="swatch-usage">Amber status text in setup panels</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================
+     SECTION 2: Typography
+     ============================ -->
+<div class="section" id="typography">
+  <div class="section-header" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 18 18"><polyline points="6 4 12 9 6 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Typography</h2>
+    <span class="count">16 tokens</span>
+  </div>
+  <div class="section-body">
+
+    <div class="subsection">
+      <h3>Annotation Fonts</h3>
+      <div class="type-grid">
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">badgeFont</div><div class="type-spec">system 9px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:9px;font-weight:600">1 2 3 Badge Number</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">noteNumberFont</div><div class="type-spec">system 8px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:8px;font-weight:600">#1 Note Number Prefix</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">noteTextFont</div><div class="type-spec">system 12px regular</div></div>
+          <div class="type-sample" style="font-size:12px;font-weight:400">Note pill body text sample</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Editor Fonts</h3>
+      <div class="type-grid">
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">dimensionLabelFont</div><div class="type-spec">monospace 11px medium (500)</div></div>
+          <div class="type-sample" style="font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:11px;font-weight:500">420 x 280</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">statusPillFont</div><div class="type-spec">monospace 10px medium (500)</div></div>
+          <div class="type-sample" style="font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:10px;font-weight:500">screenshot.png + prompt.txt</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">toolbarButtonFont</div><div class="type-spec">system 11px medium (500)</div></div>
+          <div class="type-sample" style="font-size:11px;font-weight:500">IDE App Copy</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">tooltipBodyFont</div><div class="type-spec">system 12px regular</div></div>
+          <div class="type-sample" style="font-size:12px;font-weight:400">Tooltip body text for first-use guidance</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">tooltipLabelFont</div><div class="type-spec">system 13px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:13px;font-weight:600">Tooltip Label</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Settings Fonts</h3>
+      <div class="type-grid">
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">settingsSectionFont</div><div class="type-spec">system 13px medium (500)</div></div>
+          <div class="type-sample" style="font-size:13px;font-weight:500">Section Label</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">settingsBodyFont</div><div class="type-spec">system 12px regular</div></div>
+          <div class="type-sample" style="font-size:12px;font-weight:400">Body copy for settings descriptions</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">settingsFieldFont</div><div class="type-spec">monospace 12px regular</div></div>
+          <div class="type-sample" style="font-family:'SF Mono',SFMono-Regular,Consolas,monospace;font-size:12px;font-weight:400">~/Documents/vibeliner</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">settingsPillFont</div><div class="type-spec">system 11px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:11px;font-weight:600">Pill Button</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Setup Fonts</h3>
+      <div class="type-grid">
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">setupPanelTitleFont</div><div class="type-spec">system 16px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:16px;font-weight:600">Screen Recording</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">setupHelperFont</div><div class="type-spec">system 11px regular</div></div>
+          <div class="type-sample" style="font-size:11px;font-weight:400">Restart may be needed after granting permission</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">setupBadgeFont</div><div class="type-spec">system 14px semibold (600)</div></div>
+          <div class="type-sample" style="font-size:14px;font-weight:600">1 2 3</div>
+        </div>
+        <div class="type-row">
+          <div class="type-meta"><div class="type-token">setupBadgeCheckFont</div><div class="type-spec">system 16px bold (700)</div></div>
+          <div class="type-sample" style="font-size:16px;font-weight:700">&#10003;</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================
+     SECTION 3: Dimensions
+     ============================ -->
+<div class="section" id="dimensions">
+  <div class="section-header" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 18 18"><polyline points="6 4 12 9 6 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Dimensions</h2>
+    <span class="count">42 tokens</span>
+  </div>
+  <div class="section-body">
+
+    <div class="subsection">
+      <h3>Annotation</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:18px;height:18px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">badgeDiameter</div><div class="dim-value">18px</div><div class="dim-usage">Pin badge circle</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:26px;border-radius:13px"></div></div><div class="dim-meta"><div class="dim-token">noteHeight</div><div class="dim-value">26px</div><div class="dim-usage">Note pill minimum height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:26px;height:26px;border-radius:13px"></div></div><div class="dim-meta"><div class="dim-token">noteCornerRadius</div><div class="dim-value">13px</div><div class="dim-usage">Note pill corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:12px;height:16px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">notePadding</div><div class="dim-value">12px</div><div class="dim-usage">Note pill internal horizontal padding</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:2.5px"></div></div><div class="dim-meta"><div class="dim-token">strokeWidth</div><div class="dim-value">2.5px</div><div class="dim-usage">All annotation tool strokes</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:2px;height:10px"></div></div><div class="dim-meta"><div class="dim-token">stakeLength</div><div class="dim-value">10px</div><div class="dim-usage">Pin stake length</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:2px;height:14px"></div></div><div class="dim-meta"><div class="dim-token">stakeWidth</div><div class="dim-value">2px</div><div class="dim-usage">Pin stake width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:12px;height:12px;border-radius:2px;transform:rotate(30deg)"></div></div><div class="dim-meta"><div class="dim-token">arrowChevronLength</div><div class="dim-value">12px</div><div class="dim-usage">Arrow chevron arm length</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">28deg</span></div><div class="dim-meta"><div class="dim-token">arrowChevronAngle</div><div class="dim-value">28deg</div><div class="dim-usage">Arrow chevron angle</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:20px;height:16px;border-radius:3px"></div></div><div class="dim-meta"><div class="dim-token">rectCornerRadius</div><div class="dim-value">3px</div><div class="dim-usage">Rectangle corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">3</span></div><div class="dim-meta"><div class="dim-token">freehandMinPoints</div><div class="dim-value">3</div><div class="dim-usage">Minimum points for freehand</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:3px;height:3px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">freehandSampleInterval</div><div class="dim-value">3px</div><div class="dim-usage">Freehand sample interval</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Capture Overlay</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:10px;height:2.3px"></div></div><div class="dim-meta"><div class="dim-token">crosshairTickLength</div><div class="dim-value">10px</div><div class="dim-usage">Crosshair tick length</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:2.3px"></div></div><div class="dim-meta"><div class="dim-token">crosshairThickness</div><div class="dim-value">2.3px</div><div class="dim-usage">Crosshair line thickness</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">0.85</span></div><div class="dim-meta"><div class="dim-token">crosshairOpacity</div><div class="dim-value">0.85</div><div class="dim-usage">Crosshair opacity</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:1.5px"></div></div><div class="dim-meta"><div class="dim-token">selectionBorderWidth</div><div class="dim-value">1.5px</div><div class="dim-usage">Selection border width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:10px;height:10px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">minimumSelectionSize</div><div class="dim-value">10px</div><div class="dim-usage">Minimum selection size</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:24px;border-radius:5px"></div></div><div class="dim-meta"><div class="dim-token">dimensionLabelCornerRadius</div><div class="dim-value">5px</div><div class="dim-usage">Dimension label corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:10px;height:16px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">dimensionLabelPaddingH</div><div class="dim-value">10px</div><div class="dim-usage">Dimension label horizontal padding</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:24px;border-radius:5px"></div></div><div class="dim-meta"><div class="dim-token">dimensionLabelHeight</div><div class="dim-value">24px</div><div class="dim-usage">Dimension label height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:1px;height:10px;opacity:0.3"></div></div><div class="dim-meta"><div class="dim-token">dimensionLabelGap</div><div class="dim-value">10px</div><div class="dim-usage">Gap below selection to label</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Editor</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:40px;border-radius:20px"></div></div><div class="dim-meta"><div class="dim-token">toolbarHeight</div><div class="dim-value">40px</div><div class="dim-usage">Toolbar height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:40px;border-radius:20px"></div></div><div class="dim-meta"><div class="dim-token">toolbarCornerRadius</div><div class="dim-value">20px</div><div class="dim-usage">Toolbar corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">12px</span></div><div class="dim-meta"><div class="dim-token">toolbarBlur</div><div class="dim-value">12px</div><div class="dim-usage">Toolbar blur radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:24px;border-radius:12px"></div></div><div class="dim-meta"><div class="dim-token">statusPillCornerRadius</div><div class="dim-value">12px</div><div class="dim-usage">Status pill corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">8px</span></div><div class="dim-meta"><div class="dim-token">statusPillBlur</div><div class="dim-value">8px</div><div class="dim-usage">Status pill shadow blur</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:30px;height:30px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">toolButtonSize</div><div class="dim-value">30px</div><div class="dim-usage">Tool button size</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:28px;height:28px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">iconButtonSize</div><div class="dim-value">28px</div><div class="dim-usage">Icon button size</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:24px;height:24px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">closeButtonSize</div><div class="dim-value">24px</div><div class="dim-usage">Close button size</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Popover</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:48px;height:20px;border-radius:3px"></div></div><div class="dim-meta"><div class="dim-token">popoverWidth</div><div class="dim-value">240px</div><div class="dim-usage">Popover menu width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:48px;height:12px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">popoverRowHeight</div><div class="dim-value">32px</div><div class="dim-usage">Popover menu row height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:24px;height:24px;border-radius:10px"></div></div><div class="dim-meta"><div class="dim-token">popoverCornerRadius</div><div class="dim-value">10px</div><div class="dim-usage">Popover corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:56px;height:20px;border-radius:3px"></div></div><div class="dim-meta"><div class="dim-token">popoverSubmenuWidth</div><div class="dim-value">300px</div><div class="dim-usage">Recent captures submenu width</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Settings</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:28px;height:16px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">settingsContentPadding</div><div class="dim-value">28px</div><div class="dim-usage">Content horizontal padding</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:48px;height:12px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">settingsSectionLabelWidth</div><div class="dim-value">128px</div><div class="dim-usage">Section title width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:14px;height:14px;border-radius:2px;opacity:0.3"></div></div><div class="dim-meta"><div class="dim-token">settingsSectionGap</div><div class="dim-value">14px</div><div class="dim-usage">Section inner gap</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:36px;height:36px;border-radius:18px"></div></div><div class="dim-meta"><div class="dim-token">settingsFrameRadius</div><div class="dim-value">18px</div><div class="dim-usage">Framed section radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:18px;height:16px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">settingsFramePadding</div><div class="dim-value">18px</div><div class="dim-usage">Framed section padding</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:32px;border-radius:6px"></div></div><div class="dim-meta"><div class="dim-token">settingsFieldHeight</div><div class="dim-value">32px</div><div class="dim-usage">Field height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:28px;border-radius:6px"></div></div><div class="dim-meta"><div class="dim-token">settingsSegmentedHeight</div><div class="dim-value">28px</div><div class="dim-usage">Segmented control height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">2px</span></div><div class="dim-meta"><div class="dim-token">settingsSegmentedInset</div><div class="dim-value">2px</div><div class="dim-usage">Segmented control inset</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:50px;height:28px;border-radius:14px"></div></div><div class="dim-meta"><div class="dim-token">settingsPillHeight</div><div class="dim-value">28px</div><div class="dim-usage">Pill button height</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Setup</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">700px</span></div><div class="dim-meta"><div class="dim-token">setupWindowWidth</div><div class="dim-value">700px</div><div class="dim-usage">Setup window width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">310px</span></div><div class="dim-meta"><div class="dim-token">setupPanelHeight</div><div class="dim-value">310px</div><div class="dim-usage">Setup panel height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">56px</span></div><div class="dim-meta"><div class="dim-token">setupFooterHeight</div><div class="dim-value">56px</div><div class="dim-usage">Setup footer height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:28px;height:16px;border-radius:2px"></div></div><div class="dim-meta"><div class="dim-token">setupPanelPad</div><div class="dim-value">28px</div><div class="dim-usage">Setup panel padding</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:32px;height:32px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">setupBadgeSize</div><div class="dim-value">32px</div><div class="dim-usage">Setup step badge size</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:36px;height:36px;border-radius:50%"></div></div><div class="dim-meta"><div class="dim-token">setupArrowSize</div><div class="dim-value">36px</div><div class="dim-usage">Setup arrow button size</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:22px;border-radius:11px"></div></div><div class="dim-meta"><div class="dim-token">setupSmallPillHeight</div><div class="dim-value">22px</div><div class="dim-usage">Setup small pill height</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:36px;height:36px;border-radius:18px"></div></div><div class="dim-meta"><div class="dim-token">setupWindowRadius</div><div class="dim-value">18px</div><div class="dim-usage">Setup window corner radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:30px;height:22px;border-radius:8px"></div></div><div class="dim-meta"><div class="dim-token">setupPathBoxRadius</div><div class="dim-value">8px</div><div class="dim-usage">Setup path box corner radius</div></div></div>
+      </div>
+    </div>
+
+    <div class="subsection">
+      <h3>Ghost Preview</h3>
+      <div class="dim-grid">
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:6px;height:6px;border-radius:50%;background:var(--ghostDotColor)"></div></div><div class="dim-meta"><div class="dim-token">ghostDotRadius</div><div class="dim-value">3px</div><div class="dim-usage">Ghost anchor dot radius</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><div class="dim-bar" style="width:40px;height:1.5px;background:var(--ghostStrokeColor)"></div></div><div class="dim-meta"><div class="dim-token">ghostStrokeWidth</div><div class="dim-value">1.5px</div><div class="dim-usage">Ghost silhouette stroke width</div></div></div>
+        <div class="dim-row"><div class="dim-visual"><span style="font-size:12px;color:var(--page-fg-tertiary)">[3, 2]</span></div><div class="dim-meta"><div class="dim-token">ghostDashPattern</div><div class="dim-value">[3, 2]</div><div class="dim-usage">Ghost silhouette dash pattern</div></div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ============================
+     SECTION 4: Component Samples
+     ============================ -->
+<div class="section" id="components">
+  <div class="section-header" onclick="toggleSection(this)">
+    <svg class="chevron" viewBox="0 0 18 18"><polyline points="6 4 12 9 6 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Component Samples</h2>
+    <span class="count">11 components</span>
+  </div>
+  <div class="section-body">
+
+    <div class="component-grid">
+
+      <!-- PIN (3 states) -->
+      <div class="component-card">
+        <div class="component-card-header">Pin (3 states)</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:20px;display:flex;gap:40px;align-items:flex-end;justify-content:center">
+            <div class="pin-sample">
+              <div class="pin-badge">1</div>
+              <div class="pin-stake"></div>
+              <div class="pin-label">Default</div>
+            </div>
+            <div class="pin-sample">
+              <div class="pin-badge" style="box-shadow:0 0 0 3px rgba(239,68,68,0.2),0 0 8px rgba(239,68,68,0.15)">2</div>
+              <div class="pin-stake"></div>
+              <div class="pin-label">Selected</div>
+            </div>
+            <div class="pin-sample" style="opacity:0.5">
+              <div class="pin-badge" style="background:transparent;border:1.5px dashed rgba(239,68,68,0.22)">
+                <svg width="6" height="6"><circle cx="3" cy="3" r="3" fill="rgba(175,169,236,0.85)"/></svg>
+              </div>
+              <div class="pin-stake" style="background:rgba(239,68,68,0.22);border-style:dashed"></div>
+              <div class="pin-label">Ghost</div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card-tokens">red, badgeDiameter (18), badgeFont (9 semibold), stakeLength (10), stakeWidth (2), ghostDotColor, ghostStrokeColor</div>
+      </div>
+
+      <!-- NOTE PILLS (4 states) -->
+      <div class="component-card">
+        <div class="component-card-header">Note Pills (4 states)</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:16px;display:flex;flex-direction:column;gap:8px;align-items:flex-start">
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:10px;color:#64748b;width:56px">Default</span>
+              <div class="note-pill note-default"><span class="prefix">#1</span><span class="text">Header area</span></div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:10px;color:#64748b;width:56px">Hover</span>
+              <div class="note-pill note-hover"><span class="prefix">#2</span><span class="text">Nav links</span></div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:10px;color:#64748b;width:56px">Selected</span>
+              <div class="note-pill note-selected"><span class="prefix">#3</span><span class="text">Search bar</span></div>
+            </div>
+            <div style="display:flex;gap:6px;align-items:center">
+              <span style="font-size:10px;color:#64748b;width:56px">Editing</span>
+              <div class="note-pill note-editing"><span class="prefix">#4</span><span class="text">Typing here...</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card-tokens">redNoteBg, redNoteBorder, noteHoverBg/Border, noteSelectedBg/Border, noteEditingBg, noteTextColor, notePrefixColor, noteHeight (26), noteCornerRadius (13), notePadding (12)</div>
+      </div>
+
+      <!-- ARROW -->
+      <div class="component-card">
+        <div class="component-card-header">Arrow</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:20px">
+            <svg width="100%" height="60" viewBox="0 0 260 60">
+              <line x1="20" y1="40" x2="220" y2="20" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+              <polyline points="207,12 220,20 210,30" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="component-card-tokens">red, strokeWidth (2.5), arrowChevronLength (12), arrowChevronAngle (28)</div>
+      </div>
+
+      <!-- RECTANGLE -->
+      <div class="component-card">
+        <div class="component-card-header">Rectangle</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:20px">
+            <svg width="100%" height="60" viewBox="0 0 260 60">
+              <rect x="30" y="10" width="200" height="40" rx="3" ry="3" fill="rgba(239,68,68,0.06)" stroke="#EF4444" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="component-card-tokens">red, redFill, strokeWidth (2.5), rectCornerRadius (3)</div>
+      </div>
+
+      <!-- CIRCLE -->
+      <div class="component-card">
+        <div class="component-card-header">Circle</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:20px">
+            <svg width="100%" height="70" viewBox="0 0 260 70">
+              <ellipse cx="130" cy="35" rx="90" ry="28" fill="rgba(239,68,68,0.06)" stroke="#EF4444" stroke-width="2.5"/>
+            </svg>
+          </div>
+        </div>
+        <div class="component-card-tokens">red, redFill, strokeWidth (2.5)</div>
+      </div>
+
+      <!-- FREEHAND -->
+      <div class="component-card">
+        <div class="component-card-header">Freehand</div>
+        <div class="component-card-body">
+          <div class="screenshot-bg" style="padding:20px">
+            <svg width="100%" height="60" viewBox="0 0 260 60">
+              <path d="M 20,40 C 40,10 80,50 120,30 C 160,10 200,45 240,25" fill="none" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="component-card-tokens">red, strokeWidth (2.5), freehandMinPoints (3), freehandSampleInterval (3)</div>
+      </div>
+
+      <!-- COPY BUTTONS (3 states) -->
+      <div class="component-card">
+        <div class="component-card-header">Copy Buttons (3 states)</div>
+        <div class="component-card-body">
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <div style="text-align:center">
+              <div class="copy-btn copy-default">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h8"/></svg>
+                Copy
+              </div>
+              <div style="font-size:10px;color:var(--page-fg-tertiary);margin-top:4px">Default</div>
+            </div>
+            <div style="text-align:center">
+              <div class="copy-btn copy-hover-state">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="5" y="5" width="9" height="9" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h8"/></svg>
+                Copy
+              </div>
+              <div style="font-size:10px;color:var(--page-fg-tertiary);margin-top:4px">Hover</div>
+            </div>
+            <div style="text-align:center">
+              <div class="copy-btn copy-copied">
+                <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3,9 6,12 13,4"/></svg>
+                Copied
+              </div>
+              <div style="font-size:10px;color:var(--page-fg-tertiary);margin-top:4px">Copied</div>
+            </div>
+          </div>
+        </div>
+        <div class="component-card-tokens">purpleButton, purpleButtonHover, purpleButtonBg, purpleButtonBgHover, copiedGreenBorder, copiedGreenText, copiedGreenBg</div>
+      </div>
+
+      <!-- TOOLBAR -->
+      <div class="component-card" style="grid-column: 1 / -1">
+        <div class="component-card-header">Toolbar</div>
+        <div class="component-card-body" style="background:#3a3a4a;border-radius:0;padding:24px">
+          <div class="toolbar-demo">
+            <!-- Pin tool (active) -->
+            <div class="tb-btn active">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><circle cx="8" cy="5" r="3.5"/><line x1="8" y1="8.5" x2="8" y2="13"/></svg>
+            </div>
+            <!-- Arrow tool (default) -->
+            <div class="tb-btn default">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="8,3 13,3 13,8"/></svg>
+            </div>
+            <!-- Rect tool (hover) -->
+            <div class="tb-btn hover-state">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/></svg>
+            </div>
+            <!-- Circle tool -->
+            <div class="tb-btn default">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/></svg>
+            </div>
+            <!-- Freehand tool -->
+            <div class="tb-btn default">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><path d="M3,12 C5,6 8,14 11,8 C12,6 13,4 13,4" fill="none"/></svg>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Mode toggle -->
+            <div class="tb-toggle">
+              <div class="tb-toggle-opt toggle-active">IDE</div>
+              <div class="tb-toggle-opt inactive">App</div>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Copy -->
+            <div class="tb-btn default">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><rect x="5" y="5" width="8" height="8" rx="1.5"/><path d="M3 11V3a1 1 0 011-1h8"/></svg>
+            </div>
+            <!-- Trash -->
+            <div class="tb-btn default">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><path d="M3 5h10M6 5V3.5a1 1 0 011-1h2a1 1 0 011 1V5M5 5l.5 8.5h5L11 5" fill="none"/></svg>
+            </div>
+
+            <div class="tb-divider"></div>
+
+            <!-- Close -->
+            <div class="tb-close">
+              <svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="component-card-tokens">darkChrome, chromeBorder, toolbarHeight (40), toolbarCornerRadius (20), toolButtonSize (30), iconDefault, iconHover, buttonHoverBg, toolActiveBg, purpleLight, toggleBg, toggleActiveBg, toggleInactiveText, dividerColor, closeHoverBg, closeIconHover, closeButtonSize (24)</div>
+      </div>
+
+      <!-- STATUS PILL -->
+      <div class="component-card">
+        <div class="component-card-header">Status Pill</div>
+        <div class="component-card-body" style="background:#3a3a4a;border-radius:0">
+          <div class="status-pill-demo">screenshot.png + prompt.txt</div>
+        </div>
+        <div class="component-card-tokens">darkChromeStatus, statusPillCornerRadius (12), statusPillBlur (8), statusPillFont (mono 10 medium)</div>
+      </div>
+
+      <!-- POPOVER -->
+      <div class="component-card">
+        <div class="component-card-header">Popover Menu</div>
+        <div class="component-card-body" style="background:#2a2a3a;border-radius:0;padding:24px">
+          <div class="popover-demo">
+            <div class="popover-row">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><line x1="8" y1="5" x2="8" y2="11"/><line x1="5" y1="8" x2="11" y2="8"/></svg>
+              New capture
+              <span class="shortcut">Cmd+Shift+6</span>
+            </div>
+            <div class="popover-row">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/></svg>
+              Recent captures
+              <span class="shortcut">&#9656;</span>
+            </div>
+            <div class="popover-sep"></div>
+            <div class="popover-row">
+              <svg viewBox="0 0 16 16" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 5v3l2 2" fill="none"/></svg>
+              Settings...
+            </div>
+            <div class="popover-sep"></div>
+            <div class="popover-row" style="color:rgba(255,255,255,0.45)">
+              <svg viewBox="0 0 16 16" stroke-width="1.5" style="stroke:rgba(255,255,255,0.3)"><path d="M4 12L12 4M12 4H6M12 4v6" fill="none"/></svg>
+              Quit Vibeliner
+            </div>
+          </div>
+        </div>
+        <div class="component-card-tokens">darkChromePopover, popoverWidth (240), popoverRowHeight (32), popoverCornerRadius (10), system label/separator colors, purpleButton*, copiedGreen*</div>
+      </div>
+
+      <!-- SETTINGS PILL -->
+      <div class="component-card">
+        <div class="component-card-header">Settings Pill Button</div>
+        <div class="component-card-body" style="flex-direction:column;gap:12px">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="settings-pill-demo">Change Folder</div>
+            <div class="settings-pill-demo">Record Hotkey</div>
+          </div>
+          <div style="font-size:10px;color:var(--page-fg-tertiary)">Appearance-aware: updates with light/dark toggle above</div>
+        </div>
+        <div class="component-card-tokens">settingsPillBorder, settingsPillFill, settingsPillText, settingsPillFont (11 semibold), settingsPillHeight (28)</div>
+      </div>
+
+      <!-- SETUP PANEL (minimal) -->
+      <div class="component-card" style="grid-column: 1 / -1">
+        <div class="component-card-header">Setup Panel (uses shared tokens)</div>
+        <div class="component-card-body" style="justify-content:flex-start;padding:24px">
+          <div class="setup-demo">
+            <!-- Step 1: completed -->
+            <div class="setup-badge-row">
+              <div class="setup-badge completed" style="font-size:16px;font-weight:700">&#10003;</div>
+              <div class="setup-badge-label">Screen Recording</div>
+            </div>
+            <div class="setup-status ready">Ready</div>
+
+            <!-- Step 2: active -->
+            <div class="setup-badge-row">
+              <div class="setup-badge active-badge">2</div>
+              <div class="setup-badge-label">Accessibility</div>
+            </div>
+            <div class="setup-desc">Required for global hotkey to work</div>
+            <div class="setup-status amber">Not granted</div>
+            <div class="setup-action-btn">Open System Preferences</div>
+
+            <!-- Step 3: inactive -->
+            <div class="setup-badge-row">
+              <div class="setup-badge inactive">3</div>
+              <div class="setup-badge-label">Captures Folder</div>
+            </div>
+            <div class="setup-path-box">~/Documents/vibeliner</div>
+            <div class="setup-hotkey-pill">Cmd+Shift+6</div>
+          </div>
+        </div>
+        <div class="component-card-tokens">setupAmberText, copiedGreen/Border/Text/Bg (success), settingsPillBorder/Fill/Text (action btn), settingsFieldSurface/Border (path box), settingsFrameSurface (inactive badge), purpleDark + settingsPillFill (active badge), setupBadgeSize (32), setupPanelTitleFont (16 semibold), setupHelperFont (11 regular), setupBadgeFont (14 semibold), setupBadgeCheckFont (16 bold)</div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /.content -->
+
+<!-- ============================================================
+     SCRIPT
+     ============================================================ -->
+<script>
+function setTheme(theme) {
+  if (theme === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+  document.querySelectorAll('.theme-toggle button').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-theme-btn') === theme);
+  });
+}
+
+function toggleSection(header) {
+  header.parentElement.classList.toggle('collapsed');
+}
+
+// Respect system preference on load
+if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  setTheme('dark');
+}
+</script>
+
+</body>
+</html>
