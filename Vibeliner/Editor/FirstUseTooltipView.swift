@@ -38,7 +38,7 @@ final class FirstUseTooltipView: NSView {
         // Divider: 1px solid rgba(255,255,255,0.06)
         let divider = NSView(frame: NSRect(x: 16, y: y, width: width - 32, height: 1))
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+        divider.layer?.backgroundColor = DesignTokens.dividerColor.cgColor
         addSubview(divider)
         y += 11
 
@@ -62,7 +62,7 @@ final class FirstUseTooltipView: NSView {
 
         // Intro text
         let intro = makeDesc("Terminal tools can read files. Web chat apps cannot.")
-        intro.textColor = NSColor(white: 1.0, alpha: 0.5)
+        intro.textColor = NSColor.white.withAlphaComponent(0.5)
         intro.frame = NSRect(x: 16, y: y, width: width - 32, height: 16)
         addSubview(intro)
         y += 28
@@ -91,7 +91,7 @@ final class FirstUseTooltipView: NSView {
 
         let badge = NSView(frame: NSRect(x: 0, y: 0, width: label.frame.width + 20, height: 20))
         badge.wantsLayer = true
-        badge.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2).cgColor
+        badge.layer?.backgroundColor = DesignTokens.toolActiveBg.cgColor
         badge.layer?.cornerRadius = 10
 
         label.frame.origin = NSPoint(x: 10, y: (20 - label.frame.height) / 2)
@@ -102,8 +102,8 @@ final class FirstUseTooltipView: NSView {
 
     private func makeDesc(_ text: String) -> NSTextField {
         let field = NSTextField(labelWithString: text)
-        field.font = NSFont.systemFont(ofSize: 12)
-        field.textColor = NSColor(white: 1.0, alpha: 0.45)
+        field.font = DesignTokens.tooltipBodyFont
+        field.textColor = NSColor.white.withAlphaComponent(0.45)
         field.isBezeled = false
         field.drawsBackground = false
         field.lineBreakMode = .byWordWrapping

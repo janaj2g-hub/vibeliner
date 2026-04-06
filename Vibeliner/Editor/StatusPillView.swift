@@ -18,9 +18,9 @@ final class StatusPillView: NSView {
         wantsLayer = true
         layer?.cornerRadius = DesignTokens.statusPillCornerRadius
         layer?.masksToBounds = false
-        layer?.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.15).cgColor
+        layer?.shadowColor = NSColor.black.withAlphaComponent(0.15).cgColor
         layer?.shadowOffset = NSSize(width: 0, height: -2)
-        layer?.shadowRadius = 8
+        layer?.shadowRadius = DesignTokens.statusPillBlur
         layer?.shadowOpacity = 1.0
 
         blurView.material = .hudWindow
