@@ -317,7 +317,7 @@ final class CanvasView: NSView, NotePillDelegate {
         let chrome = PillChromeBuilder.build(size: NSSize(width: maxPillW, height: pillH), number: annotation.number)
         pillContainer.layer?.addSublayer(chrome.blurLayer)
         // Apply editing state colors directly
-        chrome.tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
+        chrome.tintView.layer?.backgroundColor = DesignTokens.noteEditingBg.cgColor
         chrome.tintView.layer?.borderColor = DesignTokens.red.cgColor
         pillContainer.addSubview(chrome.tintView)
         pillContainer.addSubview(chrome.prefixLabel)
@@ -520,19 +520,19 @@ final class MarksLayerView: NSView {
 
             // Badge glow (keep existing)
             let glowRadius = DesignTokens.badgeDiameter / 2 + 7 // prototype: badgeR + 7
-            context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor)
+            context.setFillColor(DesignTokens.red.withAlphaComponent(0.08).cgColor)
             context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
 
             // VIB-203: Shape halo — draw thicker/warmer version behind the shape with soft shadow
             context.saveGState()
-            context.setShadow(offset: .zero, blur: 6, color: NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.20).cgColor)
+            context.setShadow(offset: .zero, blur: 6, color: DesignTokens.red.withAlphaComponent(0.20).cgColor)
 
             switch annotation.position {
             case .pin:
                 // Stake halo
                 let stakeTopY = bp.y - DesignTokens.badgeDiameter / 2
                 let stakeBottomY = stakeTopY - DesignTokens.stakeLength
-                context.setStrokeColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.3).cgColor)
+                context.setStrokeColor(DesignTokens.red.withAlphaComponent(0.3).cgColor)
                 context.setLineWidth(6)
                 context.setLineCap(.round)
                 context.move(to: CGPoint(x: bp.x, y: stakeTopY))
@@ -540,7 +540,7 @@ final class MarksLayerView: NSView {
                 context.strokePath()
 
             case .rectangle(let origin, let size):
-                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                context.setFillColor(DesignTokens.red.withAlphaComponent(0.14).cgColor)
                 let path = CGPath(roundedRect: CGRect(origin: origin, size: size), cornerWidth: 3, cornerHeight: 3, transform: nil)
                 context.addPath(path)
                 context.fillPath()
@@ -550,7 +550,7 @@ final class MarksLayerView: NSView {
                 context.strokePath()
 
             case .circle(let center, let radius):
-                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                context.setFillColor(DesignTokens.red.withAlphaComponent(0.14).cgColor)
                 let circleRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
                 context.fillEllipse(in: circleRect)
                 context.setStrokeColor(DesignTokens.red.cgColor)

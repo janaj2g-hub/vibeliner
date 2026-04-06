@@ -472,18 +472,21 @@ final class ModeToggleView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    static let toggleCornerRadius: CGFloat = 14
+    static let toggleSegmentRadius: CGFloat = 12
+
     private func setupView() {
         wantsLayer = true
-        layer?.cornerRadius = 14
+        layer?.cornerRadius = Self.toggleCornerRadius
         layer?.backgroundColor = DesignTokens.toggleBg.cgColor
 
         highlightView.wantsLayer = true
-        highlightView.layer?.cornerRadius = 12
+        highlightView.layer?.cornerRadius = Self.toggleSegmentRadius
         highlightView.layer?.backgroundColor = DesignTokens.toggleActiveBg.cgColor
         addSubview(highlightView)
 
         for label in [ideLabel, appLabel] {
-            label.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
+            label.font = DesignTokens.badgeFont
             label.alignment = .center
             label.isBezeled = false
             label.drawsBackground = false
@@ -542,11 +545,11 @@ final class CopyPillButton: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
-        layer?.cornerRadius = 14
+        layer?.cornerRadius = ModeToggleView.toggleCornerRadius
         layer?.masksToBounds = true
         layer?.borderWidth = 1.5
 
-        label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
+        label.font = DesignTokens.settingsBodyFont
         label.textColor = DesignTokens.purpleButton
         label.isBezeled = false
         label.drawsBackground = false
