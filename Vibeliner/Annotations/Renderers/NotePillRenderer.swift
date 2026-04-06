@@ -258,12 +258,12 @@ enum PillChromeBuilder {
 
         // Number prefix
         let prefixLabel = NSTextField(labelWithString: "\(number)")
-        prefixLabel.font = NSFont.systemFont(ofSize: 8, weight: .semibold)
-        prefixLabel.textColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.45)
+        prefixLabel.font = DesignTokens.noteNumberFont
+        prefixLabel.textColor = DesignTokens.notePrefixColor
         prefixLabel.isBezeled = false
         prefixLabel.drawsBackground = false
         prefixLabel.sizeToFit()
-        prefixLabel.frame.origin = NSPoint(x: 12, y: (size.height - prefixLabel.frame.height) / 2)
+        prefixLabel.frame.origin = NSPoint(x: DesignTokens.notePadding, y: (size.height - prefixLabel.frame.height) / 2)
 
         return PillChrome(blurLayer: blurLayer, tintView: tintView, prefixLabel: prefixLabel)
     }
@@ -284,13 +284,13 @@ enum PillChromeBuilder {
         textField.lineBreakMode = .byWordWrapping
         textField.maximumNumberOfLines = 0
         let placeholderAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFontManager.shared.convert(NSFont.systemFont(ofSize: 12), toHaveTrait: .italicFontMask),
-            .foregroundColor: NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 0.35)
+            .font: NSFontManager.shared.convert(DesignTokens.noteTextFont, toHaveTrait: .italicFontMask),
+            .foregroundColor: DesignTokens.noteTextColor.withAlphaComponent(0.35)
         ]
         textField.placeholderAttributedString = NSAttributedString(string: "describe…", attributes: placeholderAttrs)
         textField.stringValue = text
-        let textX = 12 + prefixWidth + 7
-        textField.frame = NSRect(x: textX, y: 4, width: pillWidth - textX - 12, height: pillHeight - 8)
+        let textX = DesignTokens.notePadding + prefixWidth + 7
+        textField.frame = NSRect(x: textX, y: 4, width: pillWidth - textX - DesignTokens.notePadding, height: pillHeight - 8)
         return textField
     }
 }
@@ -315,14 +315,14 @@ final class NotePillView: NSView {
         self.currentState = state
 
         // VIB-161/VIB-166: Proper max width, wrapping, and vertical centering
-        let padding: CGFloat = 12
+        let padding: CGFloat = DesignTokens.notePadding
         let vertPad: CGFloat = 4
         let prefixGap: CGFloat = 7
         let maxPillW: CGFloat = 180  // VIB-161: max width resting
         let lineH: CGFloat = 16
 
         // Number prefix label (separate from text for independent sizing)
-        let numberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
+        let numberFont = DesignTokens.noteNumberFont
         let prefixStr = "\(number)" as NSString
         let prefixAttrs: [NSAttributedString.Key: Any] = [.font: numberFont]
         let prefixSize = prefixStr.size(withAttributes: prefixAttrs)
@@ -402,27 +402,27 @@ final class NotePillView: NSView {
         switch state {
         case .default:
             // Translucent warm white, neutral GRAY border (barely visible)
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.72).cgColor
-            tintView.layer?.borderColor = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.redNoteBg.cgColor
+            tintView.layer?.borderColor = DesignTokens.redNoteBorder.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .hover:
             // Slightly more opaque, RED border appears
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.80).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.noteHoverBg.cgColor
+            tintView.layer?.borderColor = DesignTokens.noteHoverBorder.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .selected:
             // More opaque, stronger red border
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.88).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.noteSelectedBg.cgColor
+            tintView.layer?.borderColor = DesignTokens.noteSelectedBorder.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .editing:
             // Nearly opaque, solid red border + red glow halo
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.980, blue: 0.980, alpha: 0.96).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.noteEditingBg.cgColor
             tintView.layer?.borderColor = DesignTokens.red.cgColor
-            layer?.shadowColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0).cgColor
+            layer?.shadowColor = DesignTokens.red.cgColor
             layer?.shadowOffset = .zero
             layer?.shadowRadius = 10
             layer?.shadowOpacity = 0.22
