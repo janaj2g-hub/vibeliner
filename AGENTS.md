@@ -63,6 +63,10 @@ Post this on the Linear ticket after completing work:
 
 Every line from the prompt's `Verification` section must be included with `Pass` or `Fail`.
 
+## Design system
+
+Before adding any color, dimension, or font: check `docs/design-system/DESIGN_SYSTEM.md` for an existing token. Use `DesignTokens.swift` — never hardcode values. See the "Design system" section in `CLAUDE.md` for full rules.
+
 ## Key rules
 
 - All colors/dimensions come from `Vibeliner/Design/DesignTokens.swift` — never hardcode
