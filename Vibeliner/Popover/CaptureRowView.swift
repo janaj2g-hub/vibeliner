@@ -34,7 +34,7 @@ final class CaptureRowView: NSView {
         thumbView.layer?.cornerRadius = 4
         thumbView.layer?.masksToBounds = true
         thumbView.layer?.borderWidth = 0.5
-        thumbView.layer?.borderColor = NSColor(white: 1, alpha: 0.06).cgColor
+        thumbView.layer?.borderColor = NSColor.separatorColor.cgColor
         thumbView.imageScaling = .scaleProportionallyUpOrDown
 
         // Load thumbnail async
@@ -51,14 +51,14 @@ final class CaptureRowView: NSView {
         let textX: CGFloat = 58  // 44 thumb + 10 gap + 4 pad
         timestampLabel.stringValue = relativeTime(from: capture.timestamp)
         timestampLabel.font = NSFont.systemFont(ofSize: 12)
-        timestampLabel.textColor = NSColor(white: 1, alpha: 0.85)
+        timestampLabel.textColor = .labelColor
         timestampLabel.frame = NSRect(x: textX, y: h / 2 + 1, width: 120, height: 16)
         addSubview(timestampLabel)
 
         // VIB-174: Note count 10px rgba(255,255,255,0.25)
         noteCountLabel.stringValue = "\(capture.noteCount) notes"
         noteCountLabel.font = NSFont.systemFont(ofSize: 10)
-        noteCountLabel.textColor = NSColor(white: 1, alpha: 0.25)
+        noteCountLabel.textColor = .tertiaryLabelColor
         noteCountLabel.frame = NSRect(x: textX, y: h / 2 - 14, width: 60, height: 14)
         addSubview(noteCountLabel)
 
@@ -67,7 +67,7 @@ final class CaptureRowView: NSView {
         promptBtn.isBordered = false
         promptBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         promptBtn.wantsLayer = true
-        promptBtn.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+        promptBtn.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
         promptBtn.layer?.cornerRadius = 6
         promptBtn.contentTintColor = DesignTokens.purpleLight
         promptBtn.frame = NSRect(x: 150, y: 8, width: 52, height: 20)
@@ -80,7 +80,7 @@ final class CaptureRowView: NSView {
         imgBtn.isBordered = false
         imgBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         imgBtn.wantsLayer = true
-        imgBtn.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+        imgBtn.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
         imgBtn.layer?.cornerRadius = 6
         imgBtn.contentTintColor = DesignTokens.purpleLight
         imgBtn.frame = NSRect(x: 155, y: 8, width: 48, height: 20)
@@ -123,14 +123,14 @@ final class CaptureRowView: NSView {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak button] in
             button?.title = originalTitle
             button?.contentTintColor = DesignTokens.purpleLight
-            button?.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12).cgColor
+            button?.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
         }
     }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.1).setFill()
+            NSColor.labelColor.withAlphaComponent(0.1).setFill()
             NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }
@@ -182,7 +182,7 @@ private final class HoverButton: NSButton {
 
     override func mouseEntered(with event: NSEvent) {
         defaultBgColor = layer?.backgroundColor
-        layer?.backgroundColor = NSColor(white: 1, alpha: 0.15).cgColor
+        layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.15).cgColor
     }
 
     override func mouseExited(with event: NSEvent) {

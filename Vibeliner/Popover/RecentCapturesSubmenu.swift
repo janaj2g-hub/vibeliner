@@ -24,10 +24,10 @@ final class RecentCapturesSubmenu: NSView {
         let rowH: CGFloat = 42
 
         wantsLayer = true
-        layer?.cornerRadius = 10
+        layer?.cornerRadius = DesignTokens.popoverCornerRadius
         layer?.masksToBounds = true
         layer?.borderWidth = 0.5
-        layer?.borderColor = NSColor(white: 1, alpha: 0.08).cgColor
+        layer?.borderColor = NSColor.separatorColor.cgColor
 
         // VIB-183: Use async version with cache, but fall back to sync for initial render
         // (async completion will rebuild if cache was stale)
@@ -40,7 +40,7 @@ final class RecentCapturesSubmenu: NSView {
         if captures.isEmpty {
             let empty = NSTextField(labelWithString: "No captures yet")
             empty.font = NSFont.systemFont(ofSize: 12)
-            empty.textColor = NSColor(white: 1, alpha: 0.3)
+            empty.textColor = .tertiaryLabelColor
             empty.alignment = .center
             empty.frame = NSRect(x: 0, y: openFolderH + dividerH + 10, width: submenuW, height: 20)
             addSubview(empty)
@@ -72,7 +72,7 @@ final class RecentCapturesSubmenu: NSView {
         // RECENT header
         let header = NSTextField(labelWithString: "RECENT")
         header.font = NSFont.systemFont(ofSize: 10, weight: .semibold)
-        header.textColor = NSColor(white: 1, alpha: 0.2)
+        header.textColor = .quaternaryLabelColor
         header.frame = NSRect(x: 14, y: y, width: submenuW - 28, height: 14)
         addSubview(header)
         y += 22
@@ -93,7 +93,7 @@ final class RecentCapturesSubmenu: NSView {
     private func addDivider(at y: CGFloat, width: CGFloat) {
         let div = NSView(frame: NSRect(x: 12, y: y + 4, width: width - 24, height: 1))
         div.wantsLayer = true
-        div.layer?.backgroundColor = NSColor(white: 1, alpha: 0.06).cgColor
+        div.layer?.backgroundColor = NSColor.separatorColor.cgColor
         addSubview(div)
     }
 
@@ -138,7 +138,7 @@ final class OpenFolderRowView: NSView {
 
         let label = NSTextField(labelWithString: "Open Captures Folder")
         label.font = NSFont.systemFont(ofSize: 12)
-        label.textColor = NSColor(white: 1, alpha: 0.6)
+        label.textColor = .secondaryLabelColor
         label.isBezeled = false
         label.drawsBackground = false
         label.frame = NSRect(x: 28, y: (frame.height - 16) / 2, width: 180, height: 16)
@@ -150,7 +150,7 @@ final class OpenFolderRowView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         if isHovered {
-            NSColor(white: 1, alpha: 0.1).setFill()
+            NSColor.labelColor.withAlphaComponent(0.1).setFill()
             NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
     }
