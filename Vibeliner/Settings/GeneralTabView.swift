@@ -6,10 +6,10 @@ final class GeneralTabView: NSView {
     private let contentStack = NSStackView()
     private let hotkeyRow = SettingsKeyPillRow()
     private let folderPathLabel = SettingsUI.fieldLabel("", monospaced: true)
+    private let folderFieldContainer = NSView()
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
     private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"])
-    // Hotkey capture uses shared HotkeyCapturePanel
 
     init() {
         super.init(frame: .zero)
@@ -18,6 +18,11 @@ final class GeneralTabView: NSView {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        SettingsUI.styleFieldSurface(folderFieldContainer)
+    }
 
     private func setupView() {
         contentStack.orientation = .vertical
@@ -72,18 +77,17 @@ final class GeneralTabView: NSView {
         folderPathLabel.maximumNumberOfLines = 1
         folderPathLabel.stringValue = savedPath
 
-        let fieldContainer = NSView()
-        fieldContainer.translatesAutoresizingMaskIntoConstraints = false
-        SettingsUI.styleFieldSurface(fieldContainer)
-        fieldContainer.addSubview(folderPathLabel)
+        folderFieldContainer.translatesAutoresizingMaskIntoConstraints = false
+        SettingsUI.styleFieldSurface(folderFieldContainer)
+        folderFieldContainer.addSubview(folderPathLabel)
 
         folderPathLabel.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            fieldContainer.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
-            folderPathLabel.leadingAnchor.constraint(equalTo: fieldContainer.leadingAnchor, constant: 12),
-            folderPathLabel.trailingAnchor.constraint(equalTo: fieldContainer.trailingAnchor, constant: -12),
-            folderPathLabel.topAnchor.constraint(equalTo: fieldContainer.topAnchor),
-            folderPathLabel.bottomAnchor.constraint(equalTo: fieldContainer.bottomAnchor),
+            folderFieldContainer.heightAnchor.constraint(equalToConstant: DesignTokens.settingsFieldHeight),
+            folderPathLabel.leadingAnchor.constraint(equalTo: folderFieldContainer.leadingAnchor, constant: 12),
+            folderPathLabel.trailingAnchor.constraint(equalTo: folderFieldContainer.trailingAnchor, constant: -12),
+            folderPathLabel.topAnchor.constraint(equalTo: folderFieldContainer.topAnchor),
+            folderPathLabel.bottomAnchor.constraint(equalTo: folderFieldContainer.bottomAnchor),
         ])
 
         let helper = SettingsUI.bodyCopy("Screenshots and prompts are saved here.")
@@ -91,7 +95,7 @@ final class GeneralTabView: NSView {
         let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeFolderClicked))
         changeButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
 
-        let content = NSStackView(views: [fieldContainer, helper, changeButton])
+        let content = NSStackView(views: [folderFieldContainer, helper, changeButton])
         content.orientation = .vertical
         content.alignment = .leading
         content.spacing = 18

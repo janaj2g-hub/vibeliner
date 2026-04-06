@@ -65,25 +65,25 @@ enum SettingsUI {
     static func styleFieldSurface(_ view: NSView, cornerRadius: CGFloat = 10) {
         view.wantsLayer = true
         view.layer?.cornerRadius = cornerRadius
-        view.layer?.backgroundColor = DesignTokens.settingsFieldSurface.resolvedColor(for: view).cgColor
-        view.layer?.borderColor = DesignTokens.settingsFieldBorder.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
+        view.setLayerBackground(DesignTokens.settingsFieldSurface)
+        view.setLayerBorder(DesignTokens.settingsFieldBorder)
     }
 
     static func styleFrameSurface(_ view: NSView) {
         view.wantsLayer = true
         view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.backgroundColor = DesignTokens.settingsFrameSurface.resolvedColor(for: view).cgColor
-        view.layer?.borderColor = NSColor.separatorColor.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
+        view.setLayerBackground(DesignTokens.settingsFrameSurface)
+        view.setLayerBorder(NSColor.separatorColor)
     }
 
     static func stylePreviewSurface(_ view: NSView) {
         view.wantsLayer = true
         view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.backgroundColor = DesignTokens.settingsPreviewSurface.resolvedColor(for: view).cgColor
-        view.layer?.borderColor = DesignTokens.settingsFieldBorder.resolvedColor(for: view).cgColor
         view.layer?.borderWidth = 1
+        view.setLayerBackground(DesignTokens.settingsPreviewSurface)
+        view.setLayerBorder(DesignTokens.settingsFieldBorder)
     }
 
     static func makeSection(title: String, contentView: NSView, labelWidth: CGFloat = DesignTokens.settingsSectionLabelWidth) -> NSView {
@@ -110,17 +110,23 @@ enum SettingsUI {
     }
 }
 
-// MARK: - NSColor appearance resolution helper
+// MARK: - Appearance-safe layer color helper
 
-extension NSColor {
-    /// Resolve a dynamic NSColor to a concrete color for the given view's appearance.
-    func resolvedColor(for view: NSView) -> NSColor {
-        guard let appearance = view.effectiveAppearance as NSAppearance? else { return self }
-        var resolved = self
-        appearance.performAsCurrentDrawingAppearance {
-            resolved = NSColor(cgColor: self.cgColor) ?? self
+extension NSView {
+    /// Set a layer color property using the view's current effective appearance.
+    /// Must be called from viewDidChangeEffectiveAppearance or after the view is in the hierarchy.
+    func setLayerBackground(_ color: NSColor) {
+        wantsLayer = true
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            self.layer?.backgroundColor = color.cgColor
         }
-        return resolved
+    }
+
+    func setLayerBorder(_ color: NSColor) {
+        wantsLayer = true
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            self.layer?.borderColor = color.cgColor
+        }
     }
 }
 
@@ -159,8 +165,8 @@ final class SettingsPillButton: NSButton {
 
     func refreshColors() {
         contentTintColor = DesignTokens.settingsPillText
-        layer?.backgroundColor = DesignTokens.settingsPillFill.resolvedColor(for: self).cgColor
-        layer?.borderColor = DesignTokens.settingsPillBorder.resolvedColor(for: self).cgColor
+        setLayerBackground(DesignTokens.settingsPillFill)
+        setLayerBorder(DesignTokens.settingsPillBorder)
     }
 }
 
@@ -316,10 +322,10 @@ final class SettingsSegmentedControl: NSView {
     }
 
     private func refreshColors() {
-        trackView.layer?.backgroundColor = DesignTokens.settingsSegmentedTrack.resolvedColor(for: self).cgColor
-        trackView.layer?.borderColor = NSColor.separatorColor.resolvedColor(for: self).cgColor
-        highlightView.layer?.backgroundColor = DesignTokens.settingsSegmentedActive.resolvedColor(for: self).cgColor
-        highlightView.layer?.borderColor = DesignTokens.settingsPillBorder.resolvedColor(for: self).cgColor
+        trackView.setLayerBackground(DesignTokens.settingsSegmentedTrack)
+        trackView.setLayerBorder(NSColor.separatorColor)
+        highlightView.setLayerBackground(DesignTokens.settingsSegmentedActive)
+        highlightView.setLayerBorder(DesignTokens.settingsPillBorder)
     }
 
     private func configureButtons(_ items: [String]) {
