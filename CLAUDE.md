@@ -190,8 +190,31 @@ Vibeliner/
 | In Review | `96216108-e645-49fd-9bb8-8c3952f09f82` |
 | Done | `d2b05df9-b63f-4261-8dcf-12b0241c2e18` |
 
+## Design system
+
+Vibeliner has a formalized design system. Before adding any color, dimension, or font value:
+
+1. Check `docs/design-system/DESIGN_SYSTEM.md` for an existing token
+2. Use the token from `Vibeliner/Design/DesignTokens.swift` — never hardcode values
+3. If no token exists, propose one in the PR description
+
+**Reference files:**
+- `docs/design-system/DESIGN_SYSTEM.md` — token tables, component maps, consolidation proposals (machine-readable, read this first)
+- `docs/design-system/design-system.html` — visual reference with light/dark toggle (open in browser)
+- `docs/design-system/buttons.html` — interactive button & control playground with token mappings
+- `Vibeliner/Design/DesignTokens.swift` — runtime token definitions (source of truth for values)
+
+**Rules:**
+- All colors, dimensions, and fonts must come from DesignTokens.swift
+- Annotation colors (red family) are static — they don't change with system appearance
+- UI chrome (toolbar, popover, settings) must be appearance-aware where noted in the design system
+- When adding or modifying tokens, update both design system files to match
+- When creating or modifying any button, control, or interactive element, consult `docs/design-system/buttons.html` first. Reuse an existing pattern rather than creating a new one. If a new button style is truly needed, add it to `buttons.html` as part of the same ticket.
+- Any ticket that adds a new UI component, button, or control must also update the relevant design system file(s) to keep them current. This includes adding new buttons to `buttons.html`, new tokens to `DESIGN_SYSTEM.md`, and new component samples to `design-system.html`.
+
 ## Reference docs
 
 - `docs/VIBELINER_PRD.md` — master product spec (all 13 locked product definitions)
 - `docs/TECHNICAL_DECISIONS.md` — failed approaches, architectural decisions
+- `docs/design-system/DESIGN_SYSTEM.md` — design system token reference
 - `CLAUDE.md` — this file (Claude Code instructions)
