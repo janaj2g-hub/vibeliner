@@ -394,71 +394,8 @@ enum DesignTokens {
 
     // MARK: - Setup Window Colors
 
-    /// #22c55e — badge done border/text
-    static let setupGreen = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
-
-    /// rgba(34, 197, 94, 0.1) — badge done fill
-    static let setupGreenBadgeBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.1)
-
-    /// #16a34a — status text, green button text
-    static let setupGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1.0)
-
-    /// rgba(34, 197, 94, 0.08) — green button fill
-    static let setupGreenBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08)
-
-    /// rgba(34, 197, 94, 0.5) — green button border
-    static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
-
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
-
-    /// #1e1e1e — setup window background
-    static let setupWindowBg = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
-
-    /// #222222 — setup footer background
-    static let setupFooterBg = NSColor(red: 34/255, green: 34/255, blue: 34/255, alpha: 1.0)
-
-    /// #333333 — setup dividers and borders
-    static let setupBorder = NSColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0)
-
-    /// rgba(255, 255, 255, 0.05) — setup field background
-    static let setupFieldBg = NSColor(white: 1.0, alpha: 0.05)
-
-    /// rgba(255, 255, 255, 0.08) — setup field border
-    static let setupFieldBorder = NSColor(white: 1.0, alpha: 0.08)
-
-    /// #e0e0e0 — setup primary text
-    static let setupTextPrimary = NSColor(red: 224/255, green: 224/255, blue: 224/255, alpha: 1.0)
-
-    /// #888888 — setup secondary text
-    static let setupTextSecondary = NSColor(red: 136/255, green: 136/255, blue: 136/255, alpha: 1.0)
-
-    /// #666666 — setup dim/helper text
-    static let setupTextDim = NSColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0)
-
-    /// #555555 — setup locked badge/gray status text
-    static let setupGrayText = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1.0)
-
-    /// rgba(255, 255, 255, 0.03) — setup locked badge bg
-    static let setupGrayBg = NSColor(white: 1.0, alpha: 0.03)
-
-    /// rgba(175, 169, 236, 0.08) — setup action button fill
-    static let setupButtonFill = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.08)
-
-    /// rgba(175, 169, 236, 0.55) — setup action button border
-    static let setupButtonBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.55)
-
-    /// #6f69df — setup action button/label text
-    static let setupButtonText = NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
-
-    /// rgba(255, 255, 255, 0.12) — setup kbd pill border
-    static let setupKbdBorder = NSColor(white: 1.0, alpha: 0.12)
-
-    /// rgba(255, 255, 255, 0.08) — setup kbd pill bg
-    static let setupKbdBg = NSColor(white: 1.0, alpha: 0.08)
-
-    /// rgba(255, 255, 255, 0.55) — setup kbd pill text
-    static let setupKbdText = NSColor(white: 1.0, alpha: 0.55)
 
     // MARK: - Setup Window Dimensions
 
@@ -474,18 +411,10 @@ enum DesignTokens {
 
     // MARK: - Setup Window Fonts
 
-    static let setupWindowTitleFont = NSFont.systemFont(ofSize: 18, weight: .semibold)
     static let setupPanelTitleFont = NSFont.systemFont(ofSize: 16, weight: .semibold)
-    static let setupDescFont = NSFont.systemFont(ofSize: 13, weight: .regular)
-    static let setupActionLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
     static let setupHelperFont = NSFont.systemFont(ofSize: 11, weight: .regular)
-    static let setupPathFont = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-    static let setupStatusFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
-    static let setupSmallPillFont = NSFont.systemFont(ofSize: 11, weight: .medium)
     static let setupBadgeFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
     static let setupBadgeCheckFont = NSFont.systemFont(ofSize: 16, weight: .bold)
-    static let setupKbdFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
-    static let setupShortcutHintFont = NSFont.systemFont(ofSize: 12, weight: .regular)
 
     // MARK: - Vertically Centered Text Field
 

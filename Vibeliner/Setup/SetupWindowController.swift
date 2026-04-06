@@ -47,7 +47,7 @@ final class SetupWindowController: NSWindowController {
         window.center()
         window.isReleasedWhenClosed = false
         window.appearance = NSAppearance(named: .darkAqua)
-        window.backgroundColor = DesignTokens.setupWindowBg
+        window.backgroundColor = NSColor.windowBackgroundColor
         self.init(window: window)
         buildUI()
         startPermissionPolling()
@@ -67,7 +67,7 @@ final class SetupWindowController: NSWindowController {
     private func buildUI() {
         guard let cv = window?.contentView else { return }
         cv.wantsLayer = true
-        cv.layer?.backgroundColor = DesignTokens.setupWindowBg.cgColor
+        cv.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
 
         let winW = DesignTokens.setupWindowWidth
         let footerH = DesignTokens.setupFooterHeight
@@ -104,7 +104,7 @@ final class SetupWindowController: NSWindowController {
         // Footer
         footerContent = NSView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
         footerContent.wantsLayer = true
-        footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
+        footerContent.layer?.backgroundColor = NSColor.underPageBackgroundColor.cgColor
         cv.addSubview(footerContent)
 
         let footerBorder = makeDivider(x: 0, y: footerH - 1, height: 1)
@@ -125,15 +125,15 @@ final class SetupWindowController: NSWindowController {
         badge1View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge1View)
 
-        let title = makeLabel("Screen recording", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Screen recording", font: DesignTokens.setupPanelTitleFont, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.settingsBodyFont, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
-        let note = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
+        let note = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: NSColor.tertiaryLabelColor)
         note.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
         c.addSubview(note)
 
@@ -160,16 +160,16 @@ final class SetupWindowController: NSWindowController {
         badge2View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge2View)
 
-        let title = makeLabel("Accessibility", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Accessibility", font: DesignTokens.setupPanelTitleFont, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Vibeliner needs accessibility permission so the capture hotkey works from any app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Vibeliner needs accessibility permission so the capture hotkey works from any app.", font: DesignTokens.settingsBodyFont, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
         // Helper text — always positioned for stable layout, visibility toggled
-        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
+        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: NSColor.tertiaryLabelColor)
         step2Helper.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
         step2Helper.isHidden = true  // visible only when step 2 is active
         c.addSubview(step2Helper)
@@ -197,11 +197,11 @@ final class SetupWindowController: NSWindowController {
         badge3View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge3View)
 
-        let title = makeLabel("Captures folder", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Captures folder", font: DesignTokens.setupPanelTitleFont, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.settingsBodyFont, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
@@ -214,16 +214,16 @@ final class SetupWindowController: NSWindowController {
         centeredCell.isSelectable = true  // Allow click + arrow key navigation
         centeredCell.isBezeled = false
         centeredCell.drawsBackground = false
-        centeredCell.font = DesignTokens.setupPathFont
-        centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
+        centeredCell.font = DesignTokens.settingsFieldFont
+        centeredCell.textColor = isRerun ? NSColor.labelColor : NSColor.secondaryLabelColor
         centeredCell.stringValue = pathText
         centeredCell.usesSingleLineMode = true
         centeredCell.lineBreakMode = .byTruncatingHead  // Show rightmost part of path
         centeredCell.truncatesLastVisibleLine = false
         pathDisplay.cell = centeredCell
         pathDisplay.wantsLayer = true
-        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        pathDisplay.layer?.backgroundColor = DesignTokens.settingsFieldSurface.cgColor
+        pathDisplay.layer?.borderColor = DesignTokens.settingsFieldBorder.cgColor
         pathDisplay.layer?.borderWidth = 1
         pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
         pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
@@ -239,7 +239,7 @@ final class SetupWindowController: NSWindowController {
         step3DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 50))
         step3DoneArea.isHidden = true
 
-        let readyLabel = makeLabel("Folder ready", font: DesignTokens.setupStatusFont, color: DesignTokens.setupGreenText)
+        let readyLabel = makeLabel("Folder ready", font: DesignTokens.settingsSectionFont, color: DesignTokens.copiedGreenText)
         readyLabel.alignment = .center
         readyLabel.frame = NSRect(x: 0, y: 30, width: contentW, height: 18)
         step3DoneArea.addSubview(readyLabel)
@@ -278,18 +278,18 @@ final class SetupWindowController: NSWindowController {
         let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
-            view.layer?.borderColor = DesignTokens.setupGreen.cgColor
-            view.layer?.backgroundColor = DesignTokens.setupGreenBadgeBg.cgColor
-            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, in: badgeRect)
+            view.layer?.borderColor = DesignTokens.copiedGreen.cgColor
+            view.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.copiedGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            view.layer?.borderColor = DesignTokens.setupGrayText.cgColor
-            view.layer?.backgroundColor = DesignTokens.setupGrayBg.cgColor
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
+            view.layer?.borderColor = NSColor.quaternaryLabelColor.cgColor
+            view.layer?.backgroundColor = DesignTokens.settingsFrameSurface.cgColor
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: NSColor.quaternaryLabelColor, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
             view.layer?.borderColor = DesignTokens.purpleDark.cgColor
-            view.layer?.backgroundColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08).cgColor
+            view.layer?.backgroundColor = DesignTokens.settingsPillFill.cgColor
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark, in: badgeRect)
             view.addSubview(numLabel)
         }
@@ -315,8 +315,8 @@ final class SetupWindowController: NSWindowController {
         let labelBtn = NSButton(title: label, target: self, action: action)
         labelBtn.isBordered = false
         labelBtn.wantsLayer = true
-        labelBtn.font = DesignTokens.setupActionLabelFont
-        labelBtn.contentTintColor = DesignTokens.setupButtonText
+        labelBtn.font = DesignTokens.settingsPillFont
+        labelBtn.contentTintColor = DesignTokens.settingsPillText
         labelBtn.sizeToFit()
         let labelW = labelBtn.frame.width
         labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)
@@ -328,9 +328,9 @@ final class SetupWindowController: NSWindowController {
         arrow.isBordered = false
         arrow.wantsLayer = true
         arrow.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
-        arrow.contentTintColor = DesignTokens.setupButtonText
-        arrow.layer?.backgroundColor = DesignTokens.setupButtonFill.cgColor
-        arrow.layer?.borderColor = DesignTokens.setupButtonBorder.cgColor
+        arrow.contentTintColor = DesignTokens.settingsPillText
+        arrow.layer?.backgroundColor = DesignTokens.settingsPillFill.cgColor
+        arrow.layer?.borderColor = DesignTokens.settingsPillBorder.cgColor
         arrow.layer?.borderWidth = 1
         arrow.layer?.cornerRadius = arrowSize / 2
         arrow.frame = NSRect(x: (width - arrowSize) / 2, y: rowH - 18 - 8 - arrowSize, width: arrowSize, height: arrowSize)
@@ -349,7 +349,7 @@ final class SetupWindowController: NSWindowController {
 
     private func makeStatusLabel(_ text: String, style: StatusStyle) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = DesignTokens.setupStatusFont
+        label.font = DesignTokens.settingsSectionFont
         label.alignment = .center
         applyStatusStyle(label, style: style)
         return label
@@ -360,9 +360,9 @@ final class SetupWindowController: NSWindowController {
         case .amber:
             label.textColor = DesignTokens.setupAmberText
         case .green:
-            label.textColor = DesignTokens.setupGreenText
+            label.textColor = DesignTokens.copiedGreenText
         case .gray:
-            label.textColor = DesignTokens.setupGrayText
+            label.textColor = NSColor.quaternaryLabelColor
         }
     }
 
@@ -372,13 +372,13 @@ final class SetupWindowController: NSWindowController {
         let btn = NSButton(title: title, target: nil, action: nil)
         btn.isBordered = false
         btn.wantsLayer = true
-        btn.font = DesignTokens.setupSmallPillFont
+        btn.font = DesignTokens.settingsPillFont
         let pillH = DesignTokens.setupSmallPillHeight
 
         if green {
-            btn.contentTintColor = DesignTokens.setupGreenText
-            btn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
-            btn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
+            btn.contentTintColor = DesignTokens.copiedGreenText
+            btn.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+            btn.layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
         } else {
             btn.contentTintColor = DesignTokens.purpleButton
             btn.layer?.backgroundColor = DesignTokens.purpleButtonBg.cgColor
@@ -409,10 +409,10 @@ final class SetupWindowController: NSWindowController {
             let startBtn = NSButton(title: "Start using Vibeliner →", target: self, action: #selector(startClicked))
             startBtn.isBordered = false
             startBtn.wantsLayer = true
-            startBtn.font = DesignTokens.setupActionLabelFont
-            startBtn.contentTintColor = DesignTokens.setupGreenText
-            startBtn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
-            startBtn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
+            startBtn.font = DesignTokens.settingsPillFont
+            startBtn.contentTintColor = DesignTokens.copiedGreenText
+            startBtn.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+            startBtn.layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
             startBtn.layer?.borderWidth = 1
             startBtn.layer?.cornerRadius = 20
             startBtn.sizeToFit()
@@ -421,7 +421,7 @@ final class SetupWindowController: NSWindowController {
             startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
             footerContent.addSubview(startBtn)
         } else {
-            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
+            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.settingsBodyFont, color: NSColor.quaternaryLabelColor)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
             footerContent.addSubview(msg)
         }
@@ -429,7 +429,7 @@ final class SetupWindowController: NSWindowController {
 
     private func buildShortcutGroup() -> NSView {
         // Build all children first to measure total width
-        let hint = makeLabel("Shortcut:", font: DesignTokens.setupShortcutHintFont, color: DesignTokens.setupTextSecondary)
+        let hint = makeLabel("Shortcut:", font: DesignTokens.settingsBodyFont, color: NSColor.secondaryLabelColor)
         let keys = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey)
         var kbdPills: [NSView] = []
         for key in keys {
@@ -452,8 +452,8 @@ final class SetupWindowController: NSWindowController {
         let groupH: CGFloat = 28
         let group = NSView(frame: NSRect(x: 0, y: 0, width: totalW, height: groupH))
         group.wantsLayer = true
-        group.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        group.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        group.layer?.backgroundColor = DesignTokens.settingsFieldSurface.cgColor
+        group.layer?.borderColor = DesignTokens.settingsFieldBorder.cgColor
         group.layer?.borderWidth = 1
         group.layer?.cornerRadius = groupH / 2
 
@@ -476,14 +476,14 @@ final class SetupWindowController: NSWindowController {
     }
 
     private func makeKbdPill(_ text: String) -> NSView {
-        let label = makeLabel(text, font: DesignTokens.setupKbdFont, color: DesignTokens.setupKbdText)
+        let label = makeLabel(text, font: DesignTokens.settingsPillFont, color: NSColor.secondaryLabelColor)
         label.alignment = .center
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
         pill.wantsLayer = true
-        pill.layer?.backgroundColor = DesignTokens.setupKbdBg.cgColor
-        pill.layer?.borderColor = DesignTokens.setupKbdBorder.cgColor
+        pill.layer?.backgroundColor = DesignTokens.settingsFieldSurface.cgColor
+        pill.layer?.borderColor = DesignTokens.settingsFieldBorder.cgColor
         pill.layer?.borderWidth = 1
         pill.layer?.cornerRadius = 5
         label.frame = NSRect(x: 0, y: (h - label.frame.height) / 2, width: w, height: label.frame.height)
@@ -553,10 +553,10 @@ final class SetupWindowController: NSWindowController {
             completeStep3()
         } else if !folderPath.isEmpty {
             pathDisplay.stringValue = abbreviatePath(folderPath)
-            pathDisplay.textColor = DesignTokens.setupTextPrimary
+            pathDisplay.textColor = NSColor.labelColor
         } else {
             pathDisplay.stringValue = "No folder selected"
-            pathDisplay.textColor = DesignTokens.setupTextSecondary
+            pathDisplay.textColor = NSColor.secondaryLabelColor
         }
 
         checkCompletion()
@@ -577,7 +577,7 @@ final class SetupWindowController: NSWindowController {
         step3DoneArea.isHidden = false
 
         pathDisplay.stringValue = abbreviatePath(folderPath)
-        pathDisplay.textColor = DesignTokens.setupTextPrimary
+        pathDisplay.textColor = NSColor.labelColor
 
         checkCompletion()
     }
@@ -697,7 +697,7 @@ final class SetupWindowController: NSWindowController {
     private func makeDivider(x: CGFloat, y: CGFloat, height: CGFloat) -> NSView {
         let d = NSView(frame: NSRect(x: x, y: y, width: 1, height: height))
         d.wantsLayer = true
-        d.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        d.layer?.backgroundColor = NSColor.separatorColor.cgColor
         return d
     }
 
