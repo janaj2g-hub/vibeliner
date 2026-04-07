@@ -177,6 +177,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     override func close() {
+        // VIB-326: Remove key monitor on close, not just deinit.
+        // Prevents stale monitor from intercepting keys in the next editor.
+        if let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
+            keyMonitor = nil
+        }
         CursorManager.shared.forceShow()
         super.close()
     }
