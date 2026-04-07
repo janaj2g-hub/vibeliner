@@ -14,7 +14,8 @@ final class PromptGenerator {
         mode: PromptMode,
         preambleOverride: String? = nil,
         footerOverride: String? = nil,
-        toolDescriptionsOverride: [String: String]? = nil
+        toolDescriptionsOverride: [String: String]? = nil,
+        roleDescriptionsOverride: [String: String]? = nil
     ) -> String {
         var preamble = preambleOverride ?? ConfigManager.shared.preamble
 
@@ -60,6 +61,19 @@ final class PromptGenerator {
         }
 
         return parts.joined(separator: "\n\n")
+    }
+
+    /// Generate a role descriptions block for multi-image prompts.
+    /// Returns a "Roles:" section listing each role with its description.
+    static func generateRoleDescription(roles: [String], roleDescriptions: [String: String]? = nil) -> String {
+        guard !roles.isEmpty else { return "" }
+        let descriptions = roleDescriptions ?? ConfigManager.shared.roleDescriptions
+        var lines = ["Roles:"]
+        for role in roles {
+            let desc = descriptions[role] ?? ""
+            lines.append("- \(role.capitalized): \(desc)")
+        }
+        return lines.joined(separator: "\n")
     }
 
     static func savePromptFile(to folderURL: URL, annotations: [Annotation]) {

@@ -194,6 +194,15 @@ enum DesignTokens {
         return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
     }
 
+    /// Role observed border: #AFA9EC (purple)
+    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
+
+    /// Role expected border: #22C55E (green)
+    static let roleExpectedBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
+
+    /// Role reference border: #3B82F6 (blue)
+    static let roleReferenceBorder = NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 1.0)
+
     /// Settings field border color
     static let settingsFieldBorder = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {

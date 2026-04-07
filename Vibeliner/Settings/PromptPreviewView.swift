@@ -77,7 +77,8 @@ final class PromptPreviewView: NSView {
     func refresh(
         preamble: String? = nil,
         footer: String? = nil,
-        toolDescriptions: [String: String]? = nil
+        toolDescriptions: [String: String]? = nil,
+        roleDescriptions: [String: String]? = nil
     ) {
         let sampleAnnotations: [Annotation] = [
             Annotation(type: .pin, number: 1, noteText: "padding too tight", position: .pin(tip: .zero), badgePosition: .zero),
@@ -93,7 +94,8 @@ final class PromptPreviewView: NSView {
             mode: .clipboardIDE(absolutePath: samplePath),
             preambleOverride: preamble,
             footerOverride: footer,
-            toolDescriptionsOverride: toolDescriptions
+            toolDescriptionsOverride: toolDescriptions,
+            roleDescriptionsOverride: roleDescriptions
         )
 
         previewText.string = prompt
