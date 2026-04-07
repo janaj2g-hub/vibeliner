@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A4FBC164B13DB84291343D /* CursorManager.swift */; };
 		A10000010000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* AppDelegate.swift */; };
 		A10000010000000000000002 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* DesignTokens.swift */; };
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
@@ -60,6 +61,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		D2A4FBC164B13DB84291343D /* CursorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A20000010000000000000002 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		A20000010000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -125,6 +127,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		74CC6D134E7FEDDA6B308270 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				D2A4FBC164B13DB84291343D /* CursorManager.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
 		A40000010000000000000001 = {
 			isa = PBXGroup;
 			children = (
@@ -145,6 +155,7 @@
 				A40000010000000000000006 /* Hotkey */,
 				A4000001000000000000000C /* Output */,
 				A4000001000000000000000D /* Setup */,
+				74CC6D134E7FEDDA6B308270 /* Utilities */,
 				A4000001000000000000000E /* Settings */,
 				A4000001000000000000000F /* Popover */,
 				A20000010000000000000003 /* Info.plist */,
@@ -373,6 +384,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */,
 				A10000010000000000000001 /* AppDelegate.swift in Sources */,
 				A10000010000000000000002 /* DesignTokens.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,

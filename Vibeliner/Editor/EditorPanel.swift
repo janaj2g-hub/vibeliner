@@ -170,6 +170,17 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         }
     }
 
+    // VIB-318: Safety nets — always restore cursor on deactivation or close
+    override func resignKey() {
+        super.resignKey()
+        CursorManager.shared.forceShow()
+    }
+
+    override func close() {
+        CursorManager.shared.forceShow()
+        super.close()
+    }
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 

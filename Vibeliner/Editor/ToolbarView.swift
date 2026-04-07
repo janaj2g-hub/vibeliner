@@ -327,7 +327,7 @@ final class ToolbarView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        NSCursor.unhide()
+        CursorManager.shared.showCursor()
     }
 
     func selectTool(_ tool: AnnotationToolType) {

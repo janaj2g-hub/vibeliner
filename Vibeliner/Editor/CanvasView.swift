@@ -76,18 +76,16 @@ final class CanvasView: NSView, NotePillDelegate {
         let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
         marksLayer.suppressGhost = shouldSuppressGhost
 
-        // VIB-201/VIB-221/VIB-223: Cursor management
-        // Use setHiddenUntilMouseMoves(true) instead of hide() — it auto-unhides when
-        // the cursor enters a different NSView (e.g. toolbar), avoiding reference-count imbalance.
+        // VIB-318: Cursor management via CursorManager (balanced hide/unhide)
         if isDrawingToolActive && !isEditingNote {
             if shouldSuppressGhost {
-                NSCursor.unhide()
+                CursorManager.shared.showCursor()
                 NSCursor.arrow.set()
             } else {
-                NSCursor.setHiddenUntilMouseMoves(true)
+                CursorManager.shared.hideCursor()
             }
         } else {
-            NSCursor.unhide()
+            CursorManager.shared.showCursor()
         }
 
         marksLayer.needsDisplay = true
@@ -238,7 +236,7 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
-        NSCursor.unhide()
+        CursorManager.shared.showCursor()
         marksLayer.suppressGhost = false
         ghostPosition = nil
         marksLayer.ghostPosition = nil
@@ -263,7 +261,7 @@ final class CanvasView: NSView, NotePillDelegate {
             refreshNotePills()
             // VIB-221: Show arrow cursor when pill hovered with drawing tool
             if isDrawingToolActive && !isEditingNote && pillHoveredId != nil {
-                NSCursor.unhide()
+                CursorManager.shared.showCursor()
                 NSCursor.arrow.set()
             }
         }
@@ -285,7 +283,7 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
-        NSCursor.unhide()  // VIB-201: Restore cursor when editor opens
+        CursorManager.shared.showCursor()  // VIB-201: Restore cursor when editor opens
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 

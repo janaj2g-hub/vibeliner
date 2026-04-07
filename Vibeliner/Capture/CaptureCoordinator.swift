@@ -17,7 +17,7 @@ final class CaptureCoordinator {
         guard !isCapturing else { return }
         isCapturing = true
 
-        NSCursor.hide()
+        CursorManager.shared.hideCursor()
 
         for screen in NSScreen.screens {
             let window = CaptureOverlayWindow(screen: screen)
@@ -161,7 +161,7 @@ final class CaptureCoordinator {
     }
 
     private func cleanupAfterCapture() {
-        NSCursor.unhide()
+        CursorManager.shared.forceShow()
         removeDimensionLabel()
         overlayWindows.removeAll()
         crosshairViews.removeAll()
@@ -171,7 +171,7 @@ final class CaptureCoordinator {
     }
 
     private func dismissOverlays() {
-        NSCursor.unhide()
+        CursorManager.shared.forceShow()
         removeDimensionLabel()
 
         for window in overlayWindows {
