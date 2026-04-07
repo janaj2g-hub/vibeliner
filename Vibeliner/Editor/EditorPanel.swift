@@ -118,6 +118,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         if let folder = captureFolder {
             let capture = CaptureStore(image: image)
             self.captureStore = capture
+            // VIB-269: Wire capture store for image prefix computation in note pills.
+            canvas.captureStore = capture
             autoSaveManager = AutoSaveManager(
                 store: annotationStore,
                 captureFolder: folder,
@@ -446,6 +448,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // Wire callbacks to update the data model
             grid.onTitleChanged = { [weak self] idx, title in
                 self?.captureStore?.updateTitle(at: idx, title: title)
+                // VIB-269: Refresh note pills so image prefixes update with the new title
+                self?.canvasOverlay?.refreshNotePills()
             }
             grid.onRoleChanged = { [weak self] idx, role in
                 self?.captureStore?.updateRole(at: idx, role: role)

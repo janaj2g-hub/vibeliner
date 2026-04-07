@@ -59,7 +59,22 @@ final class PromptGenerator {
         var annotationLines: [String] = []
         for a in sorted {
             let text = a.noteText.isEmpty ? "(no description)" : a.noteText
-            annotationLines.append("\(a.number)  [\(a.type.label)] \(text)")
+            // VIB-269: Prepend image title prefix in composite mode
+            let imagePrefix: String
+            if let store = captureStore, store.isComposite {
+                let images = store.images
+                let parentIdx = a.parentImageIndex
+                let parentTitle = parentIdx < images.count ? images[parentIdx].title : "Image \(parentIdx + 1)"
+                if case .arrow = a.position, let endIdx = a.endImageIndex, endIdx != parentIdx {
+                    let endTitle = endIdx < images.count ? images[endIdx].title : "Image \(endIdx + 1)"
+                    imagePrefix = "\(parentTitle) → \(endTitle) — "
+                } else {
+                    imagePrefix = "\(parentTitle) — "
+                }
+            } else {
+                imagePrefix = ""
+            }
+            annotationLines.append("\(a.number)  [\(a.type.label)] \(imagePrefix)\(text)")
         }
         let annotationList = annotationLines.joined(separator: "\n")
 

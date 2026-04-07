@@ -10,6 +10,8 @@ final class CanvasView: NSView, NotePillDelegate {
     var undoManager_: UndoRedoManager?
     /// VIB-294: Reference to the filmstrip grid for title pill hit-testing.
     weak var filmstripGrid: FilmstripGridView?
+    /// VIB-269: Reference to capture store for image prefix computation.
+    weak var captureStore: CaptureStore?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
 
@@ -315,7 +317,27 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     func refreshNotePills() {
-        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: pillHoveredId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self)
+        let prefixes = computeImagePrefixes()
+        NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: pillHoveredId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self, imagePrefixes: prefixes)
+    }
+
+    /// VIB-269: Compute image prefix strings for annotations in composite mode.
+    /// Returns a map of annotation ID → prefix string (e.g., "Image 2" or "Image 1 → Image 3").
+    private func computeImagePrefixes() -> [UUID: String] {
+        guard let capStore = captureStore, capStore.isComposite else { return [:] }
+        var prefixes: [UUID: String] = [:]
+        let images = capStore.images
+        for a in store.annotations {
+            let parentIdx = a.parentImageIndex
+            let parentTitle = parentIdx < images.count ? images[parentIdx].title : "Image \(parentIdx + 1)"
+            if case .arrow = a.position, let endIdx = a.endImageIndex, endIdx != parentIdx {
+                let endTitle = endIdx < images.count ? images[endIdx].title : "Image \(endIdx + 1)"
+                prefixes[a.id] = "\(parentTitle) → \(endTitle)"
+            } else {
+                prefixes[a.id] = parentTitle
+            }
+        }
+        return prefixes
     }
 
     // MARK: - NotePillDelegate
@@ -362,7 +384,15 @@ final class CanvasView: NSView, NotePillDelegate {
         let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
         let maxPillW: CGFloat = 180  // VIB-209: match resting pill max width to prevent reflow on commit
         // VIB-192 (attempt 5): Configure temp field with wrapping to get correct multi-line height
-        let estTextX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
+        // VIB-269: Account for image prefix width in composite mode
+        let estPrefixW: CGFloat
+        if let capStore = captureStore, capStore.isComposite {
+            // number (~12) + gap (4) + image prefix (~50) + gap (7) = ~73
+            estPrefixW = 70
+        } else {
+            estPrefixW = 20  // just number prefix
+        }
+        let estTextX: CGFloat = 12 + estPrefixW + 7  // prefix area + gap
         let maxTextW = maxPillW - estTextX - 12
         let tempField = NSTextField(labelWithString: annotation.noteText)
         tempField.font = DesignTokens.noteTextFont
@@ -397,9 +427,37 @@ final class CanvasView: NSView, NotePillDelegate {
 
         // VIB-197: Use PillChromeBuilder for editable text field
         let numberLabel = chrome.prefixLabel
+        var totalPrefixWidth = numberLabel.frame.width
+
+        // VIB-269: Add non-editable image prefix label in composite mode
+        if let capStore = captureStore, capStore.isComposite {
+            let images = capStore.images
+            let parentIdx = annotation.parentImageIndex
+            let parentTitle = parentIdx < images.count ? images[parentIdx].title : "Image \(parentIdx + 1)"
+            let prefixText: String
+            if case .arrow = annotation.position, let endIdx = annotation.endImageIndex, endIdx != parentIdx {
+                let endTitle = endIdx < images.count ? images[endIdx].title : "Image \(endIdx + 1)"
+                prefixText = "\(parentTitle) → \(endTitle):"
+            } else {
+                prefixText = "\(parentTitle):"
+            }
+            let imgPrefixLabel = NSTextField(labelWithString: prefixText)
+            imgPrefixLabel.font = NSFont.systemFont(ofSize: 10, weight: .medium)
+            imgPrefixLabel.textColor = DesignTokens.notePrefixColor
+            imgPrefixLabel.isBezeled = false
+            imgPrefixLabel.drawsBackground = false
+            imgPrefixLabel.sizeToFit()
+            imgPrefixLabel.frame.origin = NSPoint(
+                x: numberLabel.frame.maxX + 4,
+                y: (pillH - imgPrefixLabel.frame.height) / 2
+            )
+            pillContainer.addSubview(imgPrefixLabel)
+            totalPrefixWidth = numberLabel.frame.width + 4 + imgPrefixLabel.frame.width
+        }
+
         let textField = PillChromeBuilder.createEditableTextField(
             pillWidth: maxPillW, pillHeight: pillH,
-            text: annotation.noteText, prefixWidth: numberLabel.frame.width
+            text: annotation.noteText, prefixWidth: totalPrefixWidth
         )
 
         // Red caret color

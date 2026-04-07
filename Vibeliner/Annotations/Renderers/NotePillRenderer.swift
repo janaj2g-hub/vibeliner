@@ -11,7 +11,8 @@ final class NotePillRenderer {
     static let pillIdentifier = "notePill"
 
     /// VIB-181: Reuse pool — update existing pills, add/remove only as needed
-    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil, selectedId: UUID? = nil, editingId: UUID? = nil, delegate: NotePillDelegate? = nil) {
+    /// VIB-269: `imagePrefixes` maps annotation ID → image prefix string (e.g., "Image 2") for composite mode.
+    static func drawNotePills(in view: NSView, annotations: [Annotation], canvasSize: NSSize, hoveredId: UUID? = nil, selectedId: UUID? = nil, editingId: UUID? = nil, delegate: NotePillDelegate? = nil, imagePrefixes: [UUID: String] = [:]) {
         // Collect existing pills by annotation ID
         let existingPills = view.subviews.compactMap { $0 as? NotePillView }
         var pillsByID: [UUID: NotePillView] = [:]
@@ -40,7 +41,9 @@ final class NotePillRenderer {
 
             let placement = notePlacement(for: annotation)
 
-            if let existing = pillsByID[annotation.id] {
+            let currentPrefix = imagePrefixes[annotation.id]
+            if let existing = pillsByID[annotation.id],
+               existing.currentImagePrefix == currentPrefix {
                 // VIB-194: Update state always. Only reposition if badge moved.
                 existing.updateState(state)
                 let badgeMoved = hypot(
@@ -57,11 +60,14 @@ final class NotePillRenderer {
                     existing.lastBadgePosition = annotation.badgePosition
                 }
             } else {
+                // VIB-269: Remove stale pill if prefix changed (e.g., image title renamed)
+                pillsByID[annotation.id]?.removeFromSuperview()
                 // Create new pill
                 let pill = NotePillView(
                     annotationId: annotation.id,
                     number: annotation.number,
                     text: annotation.noteText,
+                    imagePrefix: imagePrefixes[annotation.id],
                     state: state,
                     delegate: delegate
                 )
@@ -304,15 +310,18 @@ final class NotePillView: NSView {
     var lastBadgePosition: CGPoint = .zero
     /// VIB-194 (attempt 5): Cache offset from badge to pill origin — apply directly on drag
     var pillOffsetFromBadge: CGPoint = .zero
+    /// VIB-269: Track image prefix to detect changes (e.g., title rename)
+    var currentImagePrefix: String?
     private weak var pillDelegate: NotePillDelegate?
     private var tintView: NSView!
     private var currentState: NotePillRenderer.NotePillState
     private var isHoveredByMouse = false
 
-    init(annotationId: UUID, number: Int, text: String, state: NotePillRenderer.NotePillState, delegate: NotePillDelegate?) {
+    init(annotationId: UUID, number: Int, text: String, imagePrefix: String? = nil, state: NotePillRenderer.NotePillState, delegate: NotePillDelegate?) {
         self.annotationId = annotationId
         self.pillDelegate = delegate
         self.currentState = state
+        self.currentImagePrefix = imagePrefix
 
         // VIB-161/VIB-166: Proper max width, wrapping, and vertical centering
         let padding: CGFloat = 12
@@ -329,20 +338,36 @@ final class NotePillView: NSView {
 
         // Text label
         let textFont = DesignTokens.noteTextFont
-        let textAttrs: [NSAttributedString.Key: Any] = [
-            .font: textFont,
-            .foregroundColor: DesignTokens.noteTextColor
-        ]
 
         // Calculate text width: maxPillW - prefix area - padding
         let prefixW = prefixSize.width
         let textX = padding + prefixW + prefixGap
         let maxTextW = maxPillW - textX - padding
 
-        // Create text field with wrapping
-        let textField = NSTextField(labelWithString: text)
+        // VIB-269: Build attributed text with optional image prefix in dimmer color
+        let displayAttrString: NSAttributedString
+        if let imgPrefix = imagePrefix {
+            let attrText = NSMutableAttributedString()
+            attrText.append(NSAttributedString(string: "\(imgPrefix): ", attributes: [
+                .font: textFont,
+                .foregroundColor: DesignTokens.notePrefixColor
+            ]))
+            attrText.append(NSAttributedString(string: text, attributes: [
+                .font: textFont,
+                .foregroundColor: DesignTokens.noteTextColor
+            ]))
+            displayAttrString = attrText
+        } else {
+            displayAttrString = NSAttributedString(string: text, attributes: [
+                .font: textFont,
+                .foregroundColor: DesignTokens.noteTextColor
+            ])
+        }
+
+        // Create text field with wrapping and attributed text
+        let textField = NSTextField(labelWithString: "")
+        textField.attributedStringValue = displayAttrString
         textField.font = textFont
-        textField.textColor = DesignTokens.noteTextColor
         textField.isBezeled = false
         textField.drawsBackground = false
         textField.isEditable = false
