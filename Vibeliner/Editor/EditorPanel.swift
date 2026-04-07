@@ -332,6 +332,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         toolbarView.markCopyState(.prompt)
     }
 
+    func toolbarDidRequestNewCapture() {
+        autoSaveManager?.saveNow()
+        close()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            CaptureCoordinator.shared.startCapture()
+        }
+    }
+
     func toolbarDidRequestCopyImage() {
         let canvasSize = CGSize(width: displayWidth, height: displayHeight)
         ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)

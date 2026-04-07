@@ -8,6 +8,7 @@ protocol ToolbarDelegate: AnyObject {
     func toolbarDidRequestRedo()
     func toolbarDidRequestCopyPrompt()
     func toolbarDidRequestCopyImage()
+    func toolbarDidRequestNewCapture()
 }
 
 final class ToolbarView: NSView {
@@ -17,6 +18,7 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var trashButton: ToolButton?  // VIB-202: enabled/disabled based on selection
+    private var captureButtonEnabled = true  // VIB-236: debounce new capture
     private var copyImageButton: NSView?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
@@ -78,7 +80,40 @@ final class ToolbarView: NSView {
         let closeY = (DesignTokens.toolbarHeight - DesignTokens.closeButtonSize) / 2
         closeBtn.setFrameOrigin(NSPoint(x: x, y: closeY))
         addSubview(closeBtn)
-        x += DesignTokens.closeButtonSize + 30
+        x += DesignTokens.closeButtonSize + 6
+
+        // VIB-236: New capture button — crosshair/viewfinder icon
+        let captureBtn = ToolButton(style: .icon, tooltip: "New capture (closes this editor)") { rect, color in
+            let cx = rect.midX, cy = rect.midY
+            let arm: CGFloat = rect.width * 0.42
+            let gap: CGFloat = rect.width * 0.12
+            let path = NSBezierPath()
+            // Vertical line (top)
+            path.move(to: NSPoint(x: cx, y: cy + gap))
+            path.line(to: NSPoint(x: cx, y: cy + arm))
+            // Vertical line (bottom)
+            path.move(to: NSPoint(x: cx, y: cy - gap))
+            path.line(to: NSPoint(x: cx, y: cy - arm))
+            // Horizontal line (right)
+            path.move(to: NSPoint(x: cx + gap, y: cy))
+            path.line(to: NSPoint(x: cx + arm, y: cy))
+            // Horizontal line (left)
+            path.move(to: NSPoint(x: cx - gap, y: cy))
+            path.line(to: NSPoint(x: cx - arm, y: cy))
+            path.lineWidth = 1.4
+            path.lineCapStyle = .round
+            color.setStroke()
+            path.stroke()
+        }
+        captureBtn.onClick = { [weak self] in
+            guard let self, self.captureButtonEnabled else { return }
+            self.captureButtonEnabled = false
+            self.delegate?.toolbarDidRequestNewCapture()
+        }
+        let captureY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2
+        captureBtn.setFrameOrigin(NSPoint(x: x, y: captureY))
+        addSubview(captureBtn)
+        x += DesignTokens.iconButtonSize + 6
 
         // Divider
         x = addDivider(at: x)
