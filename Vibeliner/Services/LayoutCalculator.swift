@@ -13,8 +13,9 @@ struct LayoutFrame {
 /// widths proportional to aspect ratio. No multi-row chunking.
 final class LayoutCalculator {
 
-    /// Maximum row height — prevents rows from being taller than the screen.
-    static let maxRowHeight: CGFloat = 500
+    /// VIB-307: Row height limits — keep images as scannable thumbnails, not full-size previews.
+    static let maxRowHeight: CGFloat = 350
+    static let minRowHeight: CGFloat = 150
 
     /// Compute single-row layout frames for the given image sizes.
     ///

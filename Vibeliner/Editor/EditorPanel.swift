@@ -466,7 +466,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let pillH = FilmCellView.pillAreaHeight
         let maxAvailableH = screenFrame.height * 0.55
         let computedRowH = maxAvailableH - toolbarGap - bottomGap - pillH - padding * 2
-        let rowH = min(max(computedRowH, 200), LayoutCalculator.maxRowHeight)
+        let rowH = min(max(computedRowH, LayoutCalculator.minRowHeight), LayoutCalculator.maxRowHeight)
 
         grid.rowHeight = rowH
         grid.setFrameSize(NSSize(width: targetWidth, height: grid.frame.height))
