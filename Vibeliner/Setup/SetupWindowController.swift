@@ -1,32 +1,34 @@
 import AppKit
 import ApplicationServices
 
-/// 3-panel setup: Screen Recording → Accessibility → Captures Folder
+/// VIB-303: 3-panel setup: Captures Folder → Accessibility → Screen Recording
+/// Screen recording is last because it requires an app restart via macOS "Quit & Reopen".
 final class SetupWindowController: NSWindowController {
 
     // MARK: - State
 
-    private var step1Done = false
-    private var step2Done = false
-    private var step3Done = false
+    private var step1Done = false   // Captures folder
+    private var step2Done = false   // Accessibility
+    private var step3Done = false   // Screen recording
     private var folderPath = ""
     private var isRerun: Bool
 
     // MARK: - UI refs
 
-    private var panel1Container: NSView!
-    private var panel2Container: NSView!
-    private var panel3Container: NSView!
+    private var panel1Container: NSView!    // Captures folder
+    private var panel2Container: NSView!    // Accessibility
+    private var panel3Container: NSView!    // Screen recording
     private var footerContent: NSView!
     private var badge1View: NSView!
     private var badge2View: NSView!
     private var badge3View: NSView!
-    private var step1ActionRow: NSView!
-    private var step2ActionRow: NSView!
-    private var step2Helper: NSTextField!
-    private var step3ActionRow: NSView!
-    private var step3DoneArea: NSView!
+    private var step1ActionRow: NSView!     // "Choose folder…"
+    private var step1DoneArea: NSView!      // "Folder ready" + "Change folder"
     private var pathDisplay: NSTextField!
+    private var step2ActionRow: NSView!     // "Open Accessibility Settings"
+    private var step2Helper: NSTextField!
+    private var step3ActionRow: NSView!     // "Open Screen Recording Settings"
+    private var step3Helper: NSTextField!
     private var status1: NSTextField!
     private var status2: NSTextField!
     private var status3: NSTextField!
@@ -76,7 +78,7 @@ final class SetupWindowController: NSWindowController {
 
         let panelsY = footerH
 
-        // Panel 1: Screen recording
+        // Panel 1: Captures folder (always unlocked)
         panel1Container = NSView(frame: NSRect(x: 0, y: panelsY, width: panelW, height: panelH))
         buildPanel1(in: panel1Container)
         cv.addSubview(panel1Container)
@@ -85,7 +87,7 @@ final class SetupWindowController: NSWindowController {
         let d1 = makeDivider(x: panelW, y: panelsY, height: panelH)
         cv.addSubview(d1)
 
-        // Panel 2: Accessibility
+        // Panel 2: Accessibility (locked until step 1 done)
         panel2Container = NSView(frame: NSRect(x: panelW + 1, y: panelsY, width: panelW, height: panelH))
         buildPanel2(in: panel2Container)
         cv.addSubview(panel2Container)
@@ -95,7 +97,7 @@ final class SetupWindowController: NSWindowController {
         let d2 = makeDivider(x: panelW * 2 + 1, y: panelsY, height: panelH)
         cv.addSubview(d2)
 
-        // Panel 3: Captures folder
+        // Panel 3: Screen recording (locked until step 2 done)
         panel3Container = NSView(frame: NSRect(x: panelW * 2 + 2, y: panelsY, width: panelW, height: panelH))
         buildPanel3(in: panel3Container)
         cv.addSubview(panel3Container)
@@ -114,7 +116,7 @@ final class SetupWindowController: NSWindowController {
         updateFooter()
     }
 
-    // MARK: - Panel 1: Screen recording
+    // MARK: - Panel 1: Captures folder
 
     private func buildPanel1(in c: NSView) {
         let pad = DesignTokens.setupPanelPad
@@ -125,28 +127,71 @@ final class SetupWindowController: NSWindowController {
         badge1View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge1View)
 
-        let title = makeLabel("Screen recording", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Captures folder", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
-        let note = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
-        note.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
-        c.addSubview(note)
+        // Path box
+        let pathBoxY = desc.frame.origin.y - 14 - 36
+        let pathText = isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected"
+        pathDisplay = NSTextField()
+        let centeredCell = VerticallyCenteredTextFieldCell()
+        centeredCell.isEditable = false
+        centeredCell.isSelectable = true
+        centeredCell.isBezeled = false
+        centeredCell.drawsBackground = false
+        centeredCell.font = DesignTokens.setupPathFont
+        centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
+        centeredCell.stringValue = pathText
+        centeredCell.usesSingleLineMode = true
+        centeredCell.lineBreakMode = .byTruncatingHead
+        centeredCell.truncatesLastVisibleLine = false
+        pathDisplay.cell = centeredCell
+        pathDisplay.wantsLayer = true
+        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
+        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        pathDisplay.layer?.borderWidth = 1
+        pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
+        pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
+        c.addSubview(pathDisplay)
 
-        // Action row (label + arrow button)
-        step1ActionRow = makeActionRow(label: "Open Screen Recording Settings", action: #selector(openSystemSettings), width: contentW)
+        // Action row (choose folder)
+        step1ActionRow = makeActionRow(label: "Choose folder…", action: #selector(chooseFolder), width: contentW)
         step1ActionRow.frame.origin = NSPoint(x: pad, y: 10)
         c.addSubview(step1ActionRow)
 
-        // Status label (hidden initially — action row is shown)
-        status1 = makeStatusLabel("Not yet granted", style: .amber)
+        // Step 1 done area: "Folder ready" + "Change folder" button
+        step1DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 50))
+        step1DoneArea.isHidden = true
+
+        let readyLabel = makeLabel("Folder ready", font: DesignTokens.setupStatusFont, color: DesignTokens.setupGreenText)
+        readyLabel.alignment = .center
+        readyLabel.frame = NSRect(x: 0, y: 30, width: contentW, height: 18)
+        step1DoneArea.addSubview(readyLabel)
+
+        let changeBtn = makeSmallPillButton("Change folder", green: true)
+        changeBtn.target = self
+        changeBtn.action = #selector(chooseFolder)
+        let cbW = changeBtn.frame.width
+        changeBtn.frame.origin = NSPoint(x: (contentW - cbW) / 2, y: 0)
+        step1DoneArea.addSubview(changeBtn)
+
+        c.addSubview(step1DoneArea)
+
+        // Status label (hidden — panel starts active)
+        status1 = makeStatusLabel("", style: .gray)
         status1.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
         status1.isHidden = true
         c.addSubview(status1)
+
+        // Pre-fill path for re-run
+        if isRerun {
+            folderPath = ConfigManager.shared.capturesFolder
+        }
     }
 
     // MARK: - Panel 2: Accessibility
@@ -169,8 +214,8 @@ final class SetupWindowController: NSWindowController {
         c.addSubview(desc)
 
         // Helper text — always positioned for stable layout, visibility toggled
-        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
-        step2Helper.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
+        step2Helper = makeWrappingLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim, width: contentW)
+        step2Helper.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step2Helper.frame.height)
         step2Helper.isHidden = true  // visible only when step 2 is active
         c.addSubview(step2Helper)
 
@@ -186,7 +231,7 @@ final class SetupWindowController: NSWindowController {
         c.addSubview(status2)
     }
 
-    // MARK: - Panel 3: Captures folder
+    // MARK: - Panel 3: Screen recording
 
     private func buildPanel3(in c: NSView) {
         let pad = DesignTokens.setupPanelPad
@@ -197,71 +242,30 @@ final class SetupWindowController: NSWindowController {
         badge3View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge3View)
 
-        let title = makeLabel("Captures folder", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Screen recording", font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
-        // Path box
-        let pathBoxY = desc.frame.origin.y - 14 - 36
-        let pathText = isRerun ? abbreviatePath(ConfigManager.shared.capturesFolder) : "No folder selected"
-        pathDisplay = NSTextField()
-        let centeredCell = VerticallyCenteredTextFieldCell()
-        centeredCell.isEditable = false
-        centeredCell.isSelectable = true  // Allow click + arrow key navigation
-        centeredCell.isBezeled = false
-        centeredCell.drawsBackground = false
-        centeredCell.font = DesignTokens.setupPathFont
-        centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
-        centeredCell.stringValue = pathText
-        centeredCell.usesSingleLineMode = true
-        centeredCell.lineBreakMode = .byTruncatingHead  // Show rightmost part of path
-        centeredCell.truncatesLastVisibleLine = false
-        pathDisplay.cell = centeredCell
-        pathDisplay.wantsLayer = true
-        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
-        pathDisplay.layer?.borderWidth = 1
-        pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
-        pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
-        c.addSubview(pathDisplay)
+        // Helper text — hidden until panel is unlocked
+        step3Helper = makeWrappingLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim, width: contentW)
+        step3Helper.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step3Helper.frame.height)
+        step3Helper.isHidden = true  // visible only when step 3 is active
+        c.addSubview(step3Helper)
 
-        // Action row (choose folder)
-        step3ActionRow = makeActionRow(label: "Choose folder…", action: #selector(chooseFolder), width: contentW)
+        // Action row (label + arrow button)
+        step3ActionRow = makeActionRow(label: "Open Screen Recording Settings", action: #selector(openSystemSettings), width: contentW)
         step3ActionRow.frame.origin = NSPoint(x: pad, y: 10)
         step3ActionRow.isHidden = true
         c.addSubview(step3ActionRow)
-
-        // Step 3 done area: "Folder ready" + "Change folder" button
-        step3DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 50))
-        step3DoneArea.isHidden = true
-
-        let readyLabel = makeLabel("Folder ready", font: DesignTokens.setupStatusFont, color: DesignTokens.setupGreenText)
-        readyLabel.alignment = .center
-        readyLabel.frame = NSRect(x: 0, y: 30, width: contentW, height: 18)
-        step3DoneArea.addSubview(readyLabel)
-
-        let changeBtn = makeSmallPillButton("Change folder", green: true)
-        changeBtn.target = self
-        changeBtn.action = #selector(chooseFolder)
-        let cbW = changeBtn.frame.width
-        changeBtn.frame.origin = NSPoint(x: (contentW - cbW) / 2, y: 0)
-        step3DoneArea.addSubview(changeBtn)
-
-        c.addSubview(step3DoneArea)
 
         // Status label
         status3 = makeStatusLabel("Complete step 2 first", style: .gray)
         status3.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
         c.addSubview(status3)
-
-        // Pre-fill path for re-run
-        if isRerun {
-            folderPath = ConfigManager.shared.capturesFolder
-        }
     }
 
     // MARK: - Step badge
@@ -493,6 +497,7 @@ final class SetupWindowController: NSWindowController {
 
     // MARK: - Step completion
 
+    /// Step 1: Captures folder selected
     func completeStep1() {
         guard !step1Done else { return }
         step1Done = true
@@ -504,11 +509,13 @@ final class SetupWindowController: NSWindowController {
 
         replaceBadge(&badge1View, num: 1, state: .done)
         step1ActionRow.isHidden = true
-        status1.isHidden = false
-        status1.stringValue = "Permission granted"
-        applyStatusStyle(status1, style: .green)
+        status1.isHidden = true
+        step1DoneArea.isHidden = false
 
-        // Unlock panel 2
+        pathDisplay.stringValue = abbreviatePath(folderPath)
+        pathDisplay.textColor = DesignTokens.setupTextPrimary
+
+        // Unlock panel 2 (Accessibility)
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.3
             panel2Container.animator().alphaValue = 1.0
@@ -522,6 +529,7 @@ final class SetupWindowController: NSWindowController {
         checkCompletion()
     }
 
+    /// Step 2: Accessibility permission granted
     func completeStep2() {
         guard !step2Done else { return }
         step2Done = true
@@ -538,7 +546,7 @@ final class SetupWindowController: NSWindowController {
         status2.stringValue = "Permission granted"
         applyStatusStyle(status2, style: .green)
 
-        // Unlock panel 3
+        // Unlock panel 3 (Screen recording)
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.3
             panel3Container.animator().alphaValue = 1.0
@@ -546,22 +554,13 @@ final class SetupWindowController: NSWindowController {
 
         replaceBadge(&badge3View, num: 3, state: .active)
         step3ActionRow.isHidden = false
+        step3Helper.isHidden = false
         status3.isHidden = true
-
-        // If re-running with existing valid folder, auto-complete step 3
-        if isRerun && !folderPath.isEmpty && ConfigManager.shared.capturesFolderExists {
-            completeStep3()
-        } else if !folderPath.isEmpty {
-            pathDisplay.stringValue = abbreviatePath(folderPath)
-            pathDisplay.textColor = DesignTokens.setupTextPrimary
-        } else {
-            pathDisplay.stringValue = "No folder selected"
-            pathDisplay.textColor = DesignTokens.setupTextSecondary
-        }
 
         checkCompletion()
     }
 
+    /// Step 3: Screen recording permission granted
     func completeStep3() {
         guard !step3Done else { return }
         step3Done = true
@@ -573,26 +572,25 @@ final class SetupWindowController: NSWindowController {
 
         replaceBadge(&badge3View, num: 3, state: .done)
         step3ActionRow.isHidden = true
-        status3.isHidden = true
-        step3DoneArea.isHidden = false
-
-        pathDisplay.stringValue = abbreviatePath(folderPath)
-        pathDisplay.textColor = DesignTokens.setupTextPrimary
+        step3Helper.isHidden = true
+        status3.isHidden = false
+        status3.stringValue = "Permission granted"
+        applyStatusStyle(status3, style: .green)
 
         checkCompletion()
     }
 
-    /// Called when "Change folder" is clicked after step 3 is done — allow re-selecting
+    /// Called when "Change folder" is clicked after step 1 is done — allow re-selecting
     private func reopenFolderSelection() {
-        step3Done = false
-        step3DoneArea.isHidden = true
-        step3ActionRow.isHidden = false
+        step1Done = false
+        step1DoneArea.isHidden = true
+        step1ActionRow.isHidden = false
 
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.3
-            panel3Container.animator().alphaValue = 1.0
+            panel1Container.animator().alphaValue = 1.0
         }
-        replaceBadge(&badge3View, num: 3, state: .active)
+        replaceBadge(&badge1View, num: 1, state: .active)
         updateFooter()
     }
 
@@ -604,20 +602,30 @@ final class SetupWindowController: NSWindowController {
 
     private func startPermissionPolling() {
         // Immediate checks
-        if CGPreflightScreenCaptureAccess() {
+
+        // Step 1: Captures folder — auto-complete if folder already exists
+        if isRerun && !folderPath.isEmpty && ConfigManager.shared.capturesFolderExists {
             completeStep1()
         }
+
+        // Step 2: Accessibility — auto-complete if already granted (and step 1 done)
         if step1Done && AXIsProcessTrusted() {
             completeStep2()
         }
 
+        // Step 3: Screen recording — auto-complete if already granted (and step 2 done)
+        if step2Done && CGPreflightScreenCaptureAccess() {
+            completeStep3()
+        }
+
+        // Timer polls for permission changes (steps 2 and 3)
         permissionTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
             guard let self else { return }
-            if !self.step1Done && CGPreflightScreenCaptureAccess() {
-                self.completeStep1()
-            }
             if self.step1Done && !self.step2Done && AXIsProcessTrusted() {
                 self.completeStep2()
+            }
+            if self.step2Done && !self.step3Done && CGPreflightScreenCaptureAccess() {
+                self.completeStep3()
             }
         }
     }
@@ -653,7 +661,7 @@ final class SetupWindowController: NSWindowController {
             self.folderPath = url.path
             ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
-            self.completeStep3()
+            self.completeStep1()
         }
     }
 
