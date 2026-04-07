@@ -214,78 +214,26 @@ enum DesignTokens {
     static let addImageHoverBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.34)
 
     // MARK: - Role Colors (Filmstrip)
+    // VIB-286: Dark chrome bg for all roles, role differentiation via border color only.
 
-    /// Observed role pill background — purple tint
-    static let roleObservedBg = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.18)
-        }
-        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
-    }
+    /// All role pill backgrounds — dark chrome, nearly opaque
+    static let roleObservedBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    static let roleExpectedBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    static let roleReferenceBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
 
-    /// Observed role pill border — purple tint
-    static let roleObservedBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36)
-        }
-        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.24)
-    }
+    /// Observed role border — purple tint
+    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.4)
 
-    /// Observed role dropdown background — purple tint
-    static let roleObservedSelect = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
-        }
-        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.10)
-    }
+    /// Expected role border — green tint
+    static let roleExpectedBorder = NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.4)
 
-    /// Expected role pill background — green tint
-    static let roleExpectedBg = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.16)
-        }
-        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
-    }
+    /// Reference role border — blue tint
+    static let roleReferenceBorder = NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.4)
 
-    /// Expected role pill border — green tint
-    static let roleExpectedBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.36)
-        }
-        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.24)
-    }
-
-    /// Expected role dropdown background — green tint
-    static let roleExpectedSelect = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.14)
-        }
-        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.10)
-    }
-
-    /// Reference role pill background — blue tint
-    static let roleReferenceBg = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 0.16)
-        }
-        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.12)
-    }
-
-    /// Reference role pill border — blue tint
-    static let roleReferenceBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.36)
-        }
-        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.24)
-    }
-
-    /// Reference role dropdown background — blue tint
-    static let roleReferenceSelect = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.14)
-        }
-        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.10)
-    }
+    /// Role dropdown backgrounds (kept for API compat, same dark chrome)
+    static let roleObservedSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    static let roleExpectedSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    static let roleReferenceSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
 
     // MARK: - Title Pill (Filmstrip)
 

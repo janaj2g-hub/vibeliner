@@ -82,7 +82,7 @@ final class FilmCellView: NSView {
 
         if showTitlePill {
             // Pill at top, image below (flipped coordinates: Y=0 is top)
-            let pillW = max(100, bounds.width - 4)
+            let pillW = min(max(100, bounds.width - 4), 220)
             let pillX = (bounds.width - pillW) / 2
             let pillY: CGFloat = 0
             titlePill.frame = NSRect(x: pillX, y: pillY, width: pillW, height: DesignTokens.titlePillHeight)
