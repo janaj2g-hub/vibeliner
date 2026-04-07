@@ -213,7 +213,7 @@ final class SetupWindowController: NSWindowController {
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
-        // Helper text — always positioned for stable layout, visibility toggled
+        // VIB-305: Helper text uses makeWrappingLabel for proper multi-line wrapping
         step2Helper = makeWrappingLabel("You may need to relaunch after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim, width: contentW)
         step2Helper.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step2Helper.frame.height)
         step2Helper.isHidden = true  // visible only when step 2 is active
@@ -250,7 +250,7 @@ final class SetupWindowController: NSWindowController {
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
-        // Helper text — hidden until panel is unlocked
+        // VIB-305: Helper text uses makeWrappingLabel for proper multi-line wrapping
         step3Helper = makeWrappingLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim, width: contentW)
         step3Helper.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step3Helper.frame.height)
         step3Helper.isHidden = true  // visible only when step 3 is active
