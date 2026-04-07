@@ -20,16 +20,6 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
 
     // MARK: - Subviews
 
-    /// VIB-295: Backdrop blur behind the pill for readability against varying screenshot backgrounds.
-    private let blurView: NSVisualEffectView = {
-        let view = NSVisualEffectView()
-        view.material = .hudWindow
-        view.blendingMode = .behindWindow
-        view.state = .active
-        view.wantsLayer = true
-        return view
-    }()
-
     private let titleField: NSTextField = {
         let field = NSTextField()
         field.isBordered = false
@@ -89,9 +79,6 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         layer?.shadowOffset = CGSize(width: 0, height: -3)
         layer?.shadowRadius = 10
 
-        // VIB-295: Backdrop blur for readability
-        addSubview(blurView)
-
         titleField.stringValue = title
         titleField.delegate = self
         addSubview(titleField)
@@ -120,11 +107,7 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         let cornerRadius = h / 2
         layer?.cornerRadius = cornerRadius
         layer?.borderWidth = 1
-
-        // Backdrop blur fills the pill shape
-        blurView.frame = bounds
-        blurView.layer?.cornerRadius = cornerRadius
-        blurView.layer?.masksToBounds = true
+        layer?.masksToBounds = true
 
         // VIB-312: Chevron on the far right, vertically centered
         chevronLabel.sizeToFit()
