@@ -138,6 +138,8 @@ final class CompositeStitcher {
 
     // MARK: - Title pill rendering
 
+    /// VIB-308: Draw title pill matching editor TitlePillView exactly —
+    /// same DesignTokens colors, fonts, padding, max width, and chevron.
     private static func drawExportPill(
         ctx: CGContext,
         title: String,
@@ -147,12 +149,14 @@ final class CompositeStitcher {
         pillY: CGFloat,
         pillHeight: CGFloat
     ) {
-        let pillW = min(cellWidth - 8, max(100, cellWidth * 0.85))
+        // Max pill width 220px (matching editor), centered on image
+        let maxPillW: CGFloat = 220
+        let pillW = min(min(cellWidth - 8, maxPillW), max(100, cellWidth * 0.85))
         let pillX = cellX + (cellWidth - pillW) / 2
         let pillRect = NSRect(x: pillX, y: pillY, width: pillW, height: pillHeight)
         let cornerRadius = pillHeight / 2
 
-        // Shadow
+        // Shadow (export-specific for contrast against varying backgrounds)
         ctx.saveGState()
         let shadow = DesignTokens.titlePillExportShadow
         ctx.setShadow(
@@ -161,7 +165,7 @@ final class CompositeStitcher {
             color: (shadow.shadowColor as? NSColor)?.cgColor ?? NSColor(red: 0, green: 0, blue: 0, alpha: 0.3).cgColor
         )
 
-        // Background
+        // Background — role-tinted, matching DesignTokens
         let bgColor: NSColor
         let borderColor: NSColor
         switch role {
@@ -181,32 +185,46 @@ final class CompositeStitcher {
         pillPath.fill()
         ctx.restoreGState()
 
-        // Border (no shadow)
+        // Border (drawn without shadow)
         borderColor.setStroke()
         pillPath.lineWidth = 1
         pillPath.stroke()
 
-        // Title text
+        // Title text — left-padded 10px, matching editor TitlePillView
         let titleFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
+        let titleColor = NSColor(white: 1.0, alpha: 0.92)
         let titleAttrs: [NSAttributedString.Key: Any] = [
             .font: titleFont,
-            .foregroundColor: NSColor.white,
+            .foregroundColor: titleColor,
         ]
         let titleStr = title as NSString
         let titleSize = titleStr.size(withAttributes: titleAttrs)
-        let titleX = pillRect.minX + 12
+        let titleX = pillRect.minX + 10
         let titleY = pillRect.midY - titleSize.height / 2
         titleStr.draw(at: NSPoint(x: titleX, y: titleY), withAttributes: titleAttrs)
 
-        // Role label
+        // Chevron "▾" — right-padded 8px, matching editor TitlePillView
+        let chevronFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
+        let chevronColor = NSColor(white: 1.0, alpha: 0.6)
+        let chevronAttrs: [NSAttributedString.Key: Any] = [
+            .font: chevronFont,
+            .foregroundColor: chevronColor,
+        ]
+        let chevronStr = "▾" as NSString
+        let chevronSize = chevronStr.size(withAttributes: chevronAttrs)
+        let chevronX = pillRect.maxX - chevronSize.width - 8
+        let chevronY = pillRect.midY - chevronSize.height / 2
+        chevronStr.draw(at: NSPoint(x: chevronX, y: chevronY), withAttributes: chevronAttrs)
+
+        // Role label — tight to left of chevron, matching editor alignment
         let roleFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
         let roleAttrs: [NSAttributedString.Key: Any] = [
             .font: roleFont,
-            .foregroundColor: NSColor.white.withAlphaComponent(0.6),
+            .foregroundColor: chevronColor,
         ]
         let roleStr = role.displayName as NSString
         let roleSize = roleStr.size(withAttributes: roleAttrs)
-        let roleX = pillRect.maxX - roleSize.width - 10
+        let roleX = chevronX - roleSize.width + 2  // slight overlap for tight spacing
         let roleY = pillRect.midY - roleSize.height / 2
         roleStr.draw(at: NSPoint(x: roleX, y: roleY), withAttributes: roleAttrs)
     }
