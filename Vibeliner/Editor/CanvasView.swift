@@ -275,6 +275,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     var activeNoteField: NSTextField?
     private var editingAnnotationId: UUID?
+    private var preEditNoteText: String?  // VIB-327: text before editing started
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
     // VIB-215: Separate shape hover (drives marksLayer halo) from pill hover (drives pill highlight)
     private var shapeHoveredId: UUID?
@@ -347,6 +348,7 @@ final class CanvasView: NSView, NotePillDelegate {
         // VIB-204 (attempt 3): Set editingAnnotationId BEFORE adding pill to view
         // so refreshNotePills() removes the resting pill (no ghost behind editing pill)
         editingAnnotationId = annotation.id
+        preEditNoteText = annotation.noteText  // VIB-327: save for cancel logic
         refreshNotePills()
 
         notesLayer.addSubview(pillContainer)
@@ -423,6 +425,7 @@ final class CanvasView: NSView, NotePillDelegate {
         activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
+        preEditNoteText = nil
         noteFieldDelegate = nil
         refreshNotePills()
         if activeTool?.toolType.isDrawingTool == true {
@@ -432,11 +435,23 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     func cancelNoteEditing() {
-        guard editingAnnotationId != nil else { return }
+        guard let id = editingAnnotationId else { return }
+
+        // VIB-327: If this was a first-time edit (pre-edit text empty) and field is
+        // still empty, the user is cancelling a brand-new annotation → delete it.
+        let fieldText = activeNoteField?.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if (preEditNoteText ?? "").isEmpty && fieldText.isEmpty {
+            if let annotation = store.annotation(for: id) {
+                store.remove(id: id)
+                undoManager_?.record(.remove(annotation: annotation))
+            }
+        }
+
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
+        preEditNoteText = nil
         noteFieldDelegate = nil
         refreshNotePills()
         if activeTool?.toolType.isDrawingTool == true {
