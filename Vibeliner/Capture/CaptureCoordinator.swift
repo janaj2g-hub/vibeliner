@@ -26,6 +26,7 @@ final class CaptureCoordinator {
 
             window.contentView = crosshairView
             window.makeKeyAndOrderFront(nil)
+            window.makeFirstResponder(crosshairView)
 
             overlayWindows.append(window)
             crosshairViews.append(crosshairView)
