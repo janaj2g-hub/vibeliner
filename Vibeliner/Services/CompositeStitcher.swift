@@ -97,6 +97,22 @@ final class CompositeStitcher {
             )
         }
 
+        // VIB-309: Render annotation marks and badges into the composite.
+        // Scale from editor canvas coordinates to composite image coordinates.
+        if !annotations.isEmpty && canvasSize.width > 0 && canvasSize.height > 0 {
+            ctx.saveGState()
+            let scaleX = compositeWidth / canvasSize.width
+            let scaleY = compositeHeight / canvasSize.height
+            ctx.scaleBy(x: scaleX, y: scaleY)
+            let scaledCanvasSize = NSSize(width: canvasSize.width, height: canvasSize.height)
+            pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            ctx.restoreGState()
+        }
+
         image.unlockFocus()
         return image
     }

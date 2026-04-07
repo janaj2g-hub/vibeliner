@@ -5,7 +5,8 @@ final class AutoSaveManager {
     private let store: AnnotationStore
     private let captureFolder: URL
     private let originalImage: NSImage
-    private let canvasSize: CGSize
+    /// VIB-309: Mutable so EditorPanel can update it when entering composite mode.
+    private(set) var canvasSize: CGSize
     private let captureStore: CaptureStore?
     private var storeObserver: Any?
     private var debounceTimer: Timer?

@@ -338,7 +338,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestCopyImage() {
-        let canvasSize = CGSize(width: displayWidth, height: displayHeight)
+        // VIB-309: Use the filmstrip grid size as canvas size in composite mode,
+        // since annotations are positioned in the grid's coordinate space.
+        let canvasSize: CGSize
+        if let grid = filmstripGridView {
+            canvasSize = grid.frame.size
+        } else {
+            canvasSize = CGSize(width: displayWidth, height: displayHeight)
+        }
         ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureStore: captureStore)
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
@@ -479,6 +486,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         // Resize grid to final size
         grid.setFrameSize(NSSize(width: targetWidth, height: filmH))
+
+        // VIB-309: Update auto-save canvas size to match the grid frame,
+        // so annotations export in the correct coordinate space.
+        autoSaveManager?.canvasSize = NSSize(width: targetWidth, height: filmH)
 
         // Resize editor window to fit
         resizeWindowForFilmstrip(filmstripHeight: filmH)
