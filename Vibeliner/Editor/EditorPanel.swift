@@ -47,7 +47,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.displayHeight = dh
 
         // VIB-191: Add overflow padding so note pills can extend beyond canvas
-        let toolbarGap: CGFloat = 48
+        let toolbarGap: CGFloat = 24
         let bottomGap: CGFloat = 44
         let shadowPad: CGFloat = 24
         let overflowPad: CGFloat = 200  // room for pills to extend beyond canvas
@@ -349,11 +349,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         CaptureCoordinator.shared.startAddImageCapture { [weak self] newImage in
             guard let self else { return }
 
-            // Smart role defaults (VIB-263)
+            // VIB-282: All images default to .observed — user changes manually
             let count = store.images.count
-            let role: ImageRole = (count == 1) ? .expected : .observed
-
-            store.addImage(newImage, title: "Image \(count + 1)", role: role)
+            store.addImage(newImage, title: "Image \(count + 1)", role: .observed)
 
             // Restore editor opacity
             NSAnimationContext.runAnimationGroup { ctx in
