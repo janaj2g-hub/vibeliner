@@ -192,9 +192,13 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     private func handleEditHit(id: UUID, at point: CGPoint) {
-        if pillHoveredId == id, let annotation = store.annotation(for: id) {
-            openNoteEditor(for: annotation)
-            return
+        if let annotation = store.annotation(for: id) {
+            // Open editor if pill is hovered or badge clicked with no note
+            let badgeClicked = hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12
+            if pillHoveredId == id || (badgeClicked && annotation.noteText.isEmpty) {
+                openNoteEditor(for: annotation)
+                return
+            }
         }
         guard let undoMgr = undoManager_ else { return }
         store.select(id: id)
@@ -412,13 +416,10 @@ final class CanvasView: NSView, NotePillDelegate {
     func confirmNoteEditing() {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
         let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        if text.isEmpty {
-            store.remove(id: id)
-        } else {
-            store.update(id: id, noteText: text)
-            if let _ = store.annotation(for: id) {
-                undoManager_?.record(.editText(id: id, oldText: "", newText: text))
-            }
+        let oldText = store.annotation(for: id)?.noteText ?? ""
+        store.update(id: id, noteText: text)
+        if oldText != text {
+            undoManager_?.record(.editText(id: id, oldText: oldText, newText: text))
         }
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
@@ -433,10 +434,7 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     func cancelNoteEditing() {
-        guard let id = editingAnnotationId else { return }
-        if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
-            store.remove(id: id)
-        }
+        guard editingAnnotationId != nil else { return }
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil

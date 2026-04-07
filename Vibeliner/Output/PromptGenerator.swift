@@ -39,8 +39,11 @@ final class PromptGenerator {
         let sorted = annotations.sorted { $0.number < $1.number }
         var annotationLines: [String] = []
         for a in sorted {
-            let text = a.noteText.isEmpty ? "(no description)" : a.noteText
-            annotationLines.append("\(a.number)  [\(a.type.label)] \(text)")
+            if a.noteText.isEmpty {
+                annotationLines.append("\(a.number)  [\(a.type.label)]")
+            } else {
+                annotationLines.append("\(a.number)  [\(a.type.label)] \(a.noteText)")
+            }
         }
         let annotationList = annotationLines.joined(separator: "\n")
 
