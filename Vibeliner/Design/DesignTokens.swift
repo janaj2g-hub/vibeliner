@@ -267,20 +267,21 @@ enum DesignTokens {
     }
 
     /// Toolbar toggle bg — dark: rgba(255,255,255,0.06), light: rgba(0,0,0,0.04)
+    /// Toolbar toggle bg — dark: rgba(255,255,255,0.06), light: rgba(0,0,0,0.08)
     static let toolbarToggleBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.06) : NSColor(white: 0.0, alpha: 0.04)
+        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.06) : NSColor(white: 0.0, alpha: 0.08)
     }
 
-    /// Toolbar toggle active bg — dark: rgba(175,169,236,0.25), light: rgba(83,74,183,0.15)
+    /// Toolbar toggle active bg — dark: rgba(175,169,236,0.25), light: rgba(83,74,183,0.22)
     static let toolbarToggleActiveBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
             ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.25)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.15)
+            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.22)
     }
 
-    /// Toolbar toggle inactive text — dark: rgba(255,255,255,0.3), light: rgba(0,0,0,0.35)
+    /// Toolbar toggle inactive text — dark: rgba(255,255,255,0.3), light: rgba(0,0,0,0.40)
     static let toolbarToggleInactiveText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.3) : NSColor(white: 0.0, alpha: 0.35)
+        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.3) : NSColor(white: 0.0, alpha: 0.40)
     }
 
     /// rgba(175, 169, 236, 0.25) — toggle active bg
@@ -369,12 +370,12 @@ enum DesignTokens {
     /// Role reference border: #3B82F6 (blue)
     static let roleReferenceBorder = NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 1.0)
 
-    /// Settings field border color
+    /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
     static let settingsFieldBorder = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {
             return NSColor(white: 1.0, alpha: 0.12)
         }
-        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
     }
 
     // MARK: - Dimensions
