@@ -202,6 +202,113 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
     }
 
+    // MARK: - Role Colors (Filmstrip)
+
+    /// Observed role pill background — purple tint
+    static let roleObservedBg = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.18)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
+    }
+
+    /// Observed role pill border — purple tint
+    static let roleObservedBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.24)
+    }
+
+    /// Observed role dropdown background — purple tint
+    static let roleObservedSelect = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.10)
+    }
+
+    /// Expected role pill background — green tint
+    static let roleExpectedBg = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.16)
+        }
+        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
+    }
+
+    /// Expected role pill border — green tint
+    static let roleExpectedBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.36)
+        }
+        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.24)
+    }
+
+    /// Expected role dropdown background — green tint
+    static let roleExpectedSelect = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.14)
+        }
+        return NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.10)
+    }
+
+    /// Reference role pill background — blue tint
+    static let roleReferenceBg = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 0.16)
+        }
+        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.12)
+    }
+
+    /// Reference role pill border — blue tint
+    static let roleReferenceBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.36)
+        }
+        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.24)
+    }
+
+    /// Reference role dropdown background — blue tint
+    static let roleReferenceSelect = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.14)
+        }
+        return NSColor(red: 37/255, green: 99/255, blue: 235/255, alpha: 0.10)
+    }
+
+    // MARK: - Title Pill (Filmstrip)
+
+    /// 30px title pill height
+    static let titlePillHeight: CGFloat = 30
+
+    /// 6px gap between title pill bottom and image top
+    static let titlePillGap: CGFloat = 6
+
+    /// Title pill export shadow — contrast against any screenshot background
+    static let titlePillExportShadow: NSShadow = {
+        let shadow = NSShadow()
+        shadow.shadowOffset = NSSize(width: 0, height: -2)
+        shadow.shadowBlurRadius = 8
+        shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+        return shadow
+    }()
+
+    // MARK: - Filmstrip Container
+
+    /// 14px gap between filmstrip cells
+    static let filmstripGap: CGFloat = 14
+
+    /// 16px padding inside filmstrip container
+    static let filmstripPadding: CGFloat = 16
+
+    /// Filmstrip container inset border
+    static let filmstripBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.10)
+    }
+
     // MARK: - Dimensions
 
     /// 18px badge diameter (radius 9)

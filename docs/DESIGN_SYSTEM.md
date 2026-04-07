@@ -220,7 +220,41 @@ Canonical reference for every design token in the Vibeliner design system.
 
 ---
 
-## 4. Proposed New Tokens
+## 4. Filmstrip & Roles
+
+### Role Color Tokens (appearance-aware)
+
+| Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
+|---|---|---|---|---|---|
+| `roleObservedBg` | rgba(83, 74, 183, 0.12) | rgba(175, 169, 236, 0.18) | No | Observed role pill background | TBD |
+| `roleObservedBorder` | rgba(83, 74, 183, 0.24) | rgba(175, 169, 236, 0.36) | No | Observed role pill border | TBD |
+| `roleObservedSelect` | rgba(83, 74, 183, 0.10) | rgba(175, 169, 236, 0.14) | No | Observed role dropdown background | TBD |
+| `roleExpectedBg` | rgba(22, 163, 74, 0.12) | rgba(34, 197, 94, 0.16) | No | Expected role pill background | TBD |
+| `roleExpectedBorder` | rgba(22, 163, 74, 0.24) | rgba(134, 239, 172, 0.36) | No | Expected role pill border | TBD |
+| `roleExpectedSelect` | rgba(22, 163, 74, 0.10) | rgba(134, 239, 172, 0.14) | No | Expected role dropdown background | TBD |
+| `roleReferenceBg` | rgba(37, 99, 235, 0.12) | rgba(59, 130, 246, 0.16) | No | Reference role pill background | TBD |
+| `roleReferenceBorder` | rgba(37, 99, 235, 0.24) | rgba(147, 197, 253, 0.36) | No | Reference role pill border | TBD |
+| `roleReferenceSelect` | rgba(37, 99, 235, 0.10) | rgba(147, 197, 253, 0.14) | No | Reference role dropdown background | TBD |
+
+### Title Pill Tokens (static)
+
+| Token Name | Value | Usage | Consuming Files |
+|---|---|---|---|
+| `titlePillHeight` | 30 | Title pill height | TBD |
+| `titlePillGap` | 6 | Gap between pill bottom and image top | TBD |
+| `titlePillExportShadow` | NSShadow(offset: 0,-2, blur: 8, color: rgba(0,0,0,0.3)) | Shadow on baked-in export pill for contrast | TBD |
+
+### Filmstrip Container Tokens
+
+| Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
+|---|---|---|---|---|---|
+| `filmstripGap` | 14 | 14 | Yes | Equal gap between all filmstrip cells | TBD |
+| `filmstripPadding` | 16 | 16 | Yes | Padding inside filmstrip container | TBD |
+| `filmstripBorder` | rgba(83, 74, 183, 0.10) | rgba(175, 169, 236, 0.12) | No | Container inset border (multi-image only) | TBD |
+
+---
+
+## 5. Proposed New Tokens (pre-existing)
 
 | Token Name | Proposed Value | Rationale | Would Be Used By |
 |---|---|---|---|
@@ -231,7 +265,7 @@ Canonical reference for every design token in the Vibeliner design system.
 
 ---
 
-## 5. Unused Tokens
+## 6. Unused Tokens
 
 | Token Name | Defined Value | Recommendation | Notes |
 |---|---|---|---|
@@ -256,7 +290,7 @@ Canonical reference for every design token in the Vibeliner design system.
 
 ---
 
-## 6. Component Token Map
+## 7. Component Token Map
 
 ### Pin Annotation
 - Badge: `red`, `badgeDiameter`, `badgeFont`

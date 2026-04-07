@@ -99,6 +99,26 @@
   --setupKbdBg: rgba(255, 255, 255, 0.08);
   --setupKbdText: rgba(255, 255, 255, 0.55);
 
+  /* Role colors — Filmstrip (dark defaults) */
+  --roleObservedBg: rgba(175, 169, 236, 0.18);
+  --roleObservedBorder: rgba(175, 169, 236, 0.36);
+  --roleObservedSelect: rgba(175, 169, 236, 0.14);
+  --roleExpectedBg: rgba(34, 197, 94, 0.16);
+  --roleExpectedBorder: rgba(134, 239, 172, 0.36);
+  --roleExpectedSelect: rgba(134, 239, 172, 0.14);
+  --roleReferenceBg: rgba(59, 130, 246, 0.16);
+  --roleReferenceBorder: rgba(147, 197, 253, 0.36);
+  --roleReferenceSelect: rgba(147, 197, 253, 0.14);
+
+  /* Filmstrip container */
+  --filmstripGap: 14px;
+  --filmstripPadding: 16px;
+  --filmstripBorder: rgba(175, 169, 236, 0.12);
+
+  /* Title pill */
+  --titlePillHeight: 30px;
+  --titlePillGap: 6px;
+
   /* Dimensions */
   --badgeDiameter: 18px;
   --noteHeight: 26px;
@@ -141,6 +161,18 @@
   --settingsPillFill: rgba(175, 169, 236, 0.16);
   --settingsPillText: rgba(114, 103, 221, 1.0);
   --settingsFieldBorder: rgba(15, 23, 42, 0.08);
+
+  /* Role colors — light overrides */
+  --roleObservedBg: rgba(83, 74, 183, 0.12);
+  --roleObservedBorder: rgba(83, 74, 183, 0.24);
+  --roleObservedSelect: rgba(83, 74, 183, 0.10);
+  --roleExpectedBg: rgba(22, 163, 74, 0.12);
+  --roleExpectedBorder: rgba(22, 163, 74, 0.24);
+  --roleExpectedSelect: rgba(22, 163, 74, 0.10);
+  --roleReferenceBg: rgba(37, 99, 235, 0.12);
+  --roleReferenceBorder: rgba(37, 99, 235, 0.24);
+  --roleReferenceSelect: rgba(37, 99, 235, 0.10);
+  --filmstripBorder: rgba(83, 74, 183, 0.10);
 
   --page-bg: #f5f5f7;
   --page-text: #1a1a1e;
@@ -1067,10 +1099,124 @@ body {
   </div>
 </div>
 
-<!-- ========================= SECTION 5: PROPOSED NEW TOKENS ========================= -->
+<!-- ========================= SECTION 5: FILMSTRIP & ROLES ========================= -->
+<div class="section" id="sec-filmstrip">
+  <div class="section-header" onclick="toggleSection('sec-filmstrip')">
+    <h2>5. Filmstrip &amp; Roles</h2>
+    <span class="chevron">&#9660;</span>
+  </div>
+  <div class="section-content">
+
+    <!-- Role color swatches -->
+    <div class="swatch-family">
+      <h3>Observed Role (Purple)</h3>
+      <div class="swatch-grid">
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.18)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.12)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleObservedBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.18) · light: rgba(83,74,183,0.12)</div><div class="swatch-usage">Observed pill background</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.24)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleObservedBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.36) · light: rgba(83,74,183,0.24)</div><div class="swatch-usage">Observed pill border</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.10)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleObservedSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.14) · light: rgba(83,74,183,0.10)</div><div class="swatch-usage">Observed dropdown background</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="swatch-family">
+      <h3>Expected Role (Green)</h3>
+      <div class="swatch-grid">
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(34,197,94,0.16)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.12)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleExpectedBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(34,197,94,0.16) · light: rgba(22,163,74,0.12)</div><div class="swatch-usage">Expected pill background</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(134,239,172,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.24)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleExpectedBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(134,239,172,0.36) · light: rgba(22,163,74,0.24)</div><div class="swatch-usage">Expected pill border</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(134,239,172,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.10)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleExpectedSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(134,239,172,0.14) · light: rgba(22,163,74,0.10)</div><div class="swatch-usage">Expected dropdown background</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="swatch-family">
+      <h3>Reference Role (Blue)</h3>
+      <div class="swatch-grid">
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(59,130,246,0.16)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.12)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleReferenceBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(59,130,246,0.16) · light: rgba(37,99,235,0.12)</div><div class="swatch-usage">Reference pill background</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(147,197,253,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.24)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleReferenceBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(147,197,253,0.36) · light: rgba(37,99,235,0.24)</div><div class="swatch-usage">Reference pill border</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(147,197,253,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.10)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleReferenceSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(147,197,253,0.14) · light: rgba(37,99,235,0.10)</div><div class="swatch-usage">Reference dropdown background</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filmstrip container border -->
+    <div class="swatch-family">
+      <h3>Filmstrip Container</h3>
+      <div class="swatch-grid">
+        <div class="swatch-card">
+          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.12)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.10)"></div><span class="label-small right">light</span></div></div>
+          <div class="swatch-info"><div class="swatch-token">filmstripBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.12) · light: rgba(83,74,183,0.10)</div><div class="swatch-usage">Container inset border (multi-image only)</div></div>
+        </div>
+      </div>
+      <div class="dim-grid" style="margin-top:12px">
+        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">14px</div></div><div class="dim-token">filmstripGap <span class="new-badge">New</span></div><div class="dim-value">14px</div></div>
+        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">16px</div></div><div class="dim-token">filmstripPadding <span class="new-badge">New</span></div><div class="dim-value">16px</div></div>
+      </div>
+    </div>
+
+    <!-- Title pill preview -->
+    <div class="swatch-family">
+      <h3>Title Pill Preview</h3>
+      <div class="sample-row">
+        <div>
+          <div class="state-label">Observed</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--roleObservedBg);border:1px solid var(--roleObservedBorder);font-size:10px;font-weight:600;color:var(--page-text)">
+            <span>Homepage screenshot</span>
+            <span style="font-size:9px;font-weight:600;opacity:0.6">Observed</span>
+          </div>
+        </div>
+        <div>
+          <div class="state-label">Expected</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--roleExpectedBg);border:1px solid var(--roleExpectedBorder);font-size:10px;font-weight:600;color:var(--page-text)">
+            <span>Design mockup</span>
+            <span style="font-size:9px;font-weight:600;opacity:0.6">Expected</span>
+          </div>
+        </div>
+        <div>
+          <div class="state-label">Reference</div>
+          <div style="display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:999px;background:var(--roleReferenceBg);border:1px solid var(--roleReferenceBorder);font-size:10px;font-weight:600;color:var(--page-text)">
+            <span>Competitor example</span>
+            <span style="font-size:9px;font-weight:600;opacity:0.6">Reference</span>
+          </div>
+        </div>
+      </div>
+      <div class="dim-grid" style="margin-top:12px">
+        <div class="dim-card"><div class="dim-visual"><div style="height:30px;width:80px;border:2px dashed #16a34a;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--page-muted)">30px</div></div><div class="dim-token">titlePillHeight <span class="new-badge">New</span></div><div class="dim-value">30px</div></div>
+        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">6px</div></div><div class="dim-token">titlePillGap <span class="new-badge">New</span></div><div class="dim-value">6px</div></div>
+        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">shadow 0 2px 8px</div></div><div class="dim-token">titlePillExportShadow <span class="new-badge">New</span></div><div class="dim-value">0 2px 8px rgba(0,0,0,0.3)</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ========================= SECTION 6: PROPOSED NEW TOKENS ========================= -->
 <div class="section" id="sec-proposed">
   <div class="section-header" onclick="toggleSection('sec-proposed')">
-    <h2>5. Proposed New Tokens</h2>
+    <h2>6. Proposed New Tokens</h2>
     <span class="chevron">&#9660;</span>
   </div>
   <div class="section-content">
@@ -1083,10 +1229,10 @@ body {
   </div>
 </div>
 
-<!-- ========================= SECTION 6: UNUSED TOKENS ========================= -->
+<!-- ========================= SECTION 7: UNUSED TOKENS ========================= -->
 <div class="section" id="sec-unused">
   <div class="section-header" onclick="toggleSection('sec-unused')">
-    <h2>6. Unused Tokens (18)</h2>
+    <h2>7. Unused Tokens (18)</h2>
     <span class="chevron">&#9660;</span>
   </div>
   <div class="section-content">
