@@ -347,7 +347,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     // MARK: - VIB-262: Add image
 
     func toolbarDidRequestAddImage() {
-        guard let store = captureStore, store.images.count < 12 else { return }
+        // VIB-297: Max 6 images for horizontal scroll filmstrip
+        guard let store = captureStore, store.images.count < 6 else { return }
 
         // Auto-save before capture
         autoSaveManager?.saveNow()
@@ -414,7 +415,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     // MARK: - VIB-261: Filmstrip view wiring
 
-    /// Create or update the FilmstripGridView when in composite mode (2+ images).
+    /// VIB-297: Create or update the horizontal scroll filmstrip when in composite mode (2+ images).
     /// Hides the single-image canvasView and shows the filmstrip grid instead.
     /// The annotation overlay is reparented onto the filmstrip so tools remain functional.
     private func refreshFilmstrip() {
@@ -441,7 +442,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             canvasView.isHidden = true
 
             // VIB-289: Reparent annotation overlay as a sibling ABOVE the grid in the container.
-            // It must NOT be a child of the grid (covers cells) or hidden (breaks annotations).
             if let canvas = canvasOverlay {
                 canvas.removeFromSuperview()
                 container.addSubview(canvas, positioned: .above, relativeTo: grid)
@@ -454,28 +454,38 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         guard let grid = filmstripGridView, let screen = self.screen ?? NSScreen.main else { return }
 
-        // VIB-285: Set grid to target composite width BEFORE computing layout,
-        // so intrinsicContentSize calculates row heights with the correct width.
         let screenFrame = screen.visibleFrame
         let targetWidth = min(screenFrame.width * 0.85, 1600)
+
+        // VIB-297: Compute row height from available vertical space.
+        // Available = editor body minus toolbar, status pill, padding, pill area.
+        let toolbarGap: CGFloat = 48
+        let bottomGap: CGFloat = 44
+        let overflowPad: CGFloat = 200
+        let padding = DesignTokens.filmstripPadding
+        let pillH = FilmCellView.pillAreaHeight
+        let maxAvailableH = screenFrame.height * 0.55
+        let computedRowH = maxAvailableH - toolbarGap - bottomGap - pillH - padding * 2
+        let rowH = min(max(computedRowH, 200), LayoutCalculator.maxRowHeight)
+
+        grid.rowHeight = rowH
         grid.setFrameSize(NSSize(width: targetWidth, height: grid.frame.height))
 
-        // Configure with current images (layout uses the new width)
+        // Configure with current images
         grid.configure(with: store.images)
 
-        // Now compute content height with the correct width
-        let contentSize = grid.intrinsicContentSize
-        let filmH = contentSize.height > 0 ? contentSize.height : displayHeight
+        // Compute final filmstrip height (row + pill + padding)
+        let filmH = rowH + pillH + padding * 2
 
-        // Resize grid to final content height
+        // Resize grid to final size
         grid.setFrameSize(NSSize(width: targetWidth, height: filmH))
 
         // Resize editor window to fit
         resizeWindowForFilmstrip(filmstripHeight: filmH)
     }
 
-    /// Resize the editor window so the filmstrip is fully visible.
-    /// Expands window width for composites so images aren't tiny.
+    /// VIB-297: Resize the editor window for the horizontal scroll filmstrip.
+    /// Fixed height (single row), wide enough for comfortable viewing.
     private func resizeWindowForFilmstrip(filmstripHeight: CGFloat) {
         guard let screen = self.screen ?? NSScreen.main else { return }
 
@@ -485,35 +495,29 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let overflowPad: CGFloat = 200
         let screenFrame = screen.visibleFrame
 
-        // Expand window width for composite — images need more room
+        // Expand window width for composite — images need room
         let targetWidth = min(screenFrame.width * 0.85, 1600)
         let newTotalWidth = max(targetWidth, toolbarView.frame.width) + overflowPad * 2
 
+        // VIB-297: Fixed height — single row, no multi-row growth
         let newTotalHeight = filmstripHeight + toolbarGap + bottomGap + shadowPad + overflowPad
-        let maxHeight = screenFrame.height * 0.85
-        let clampedHeight = min(newTotalHeight, maxHeight)
 
         let newFrame = NSRect(
             x: screenFrame.midX - newTotalWidth / 2,
-            y: screenFrame.midY - clampedHeight / 2,
+            y: screenFrame.midY - newTotalHeight / 2,
             width: newTotalWidth,
-            height: clampedHeight
+            height: newTotalHeight
         )
 
-        // VIB-291: Instant resize (no animation) — avoids stutter from competing animations
         setFrame(newFrame, display: true, animate: false)
-
-        // Resize container to match
         contentView?.setFrameSize(newFrame.size)
 
-        // Resize and reposition grid — use the new wider width
+        // Resize and reposition grid
         let gridWidth = targetWidth
         let gridX = (newTotalWidth - gridWidth) / 2
         let canvasY = bottomGap + overflowPad / 2
         filmstripGridView?.setFrameOrigin(NSPoint(x: gridX, y: canvasY))
         filmstripGridView?.setFrameSize(NSSize(width: gridWidth, height: filmstripHeight))
-
-        // Trigger layout recalc with the new wider grid
         filmstripGridView?.needsLayout = true
 
         // Reposition toolbar above filmstrip

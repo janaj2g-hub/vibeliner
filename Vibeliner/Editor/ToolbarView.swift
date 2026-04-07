@@ -411,11 +411,11 @@ final class ToolbarView: NSView {
         delegate?.toolbarDidRequestAddImage()
     }
 
-    /// VIB-262: Disable the button at 12 images.
+    /// VIB-297: Disable the button at 6 images (horizontal scroll max).
     func updateAddImageState(imageCount: Int) {
-        addImageButton?.alphaValue = imageCount >= 12 ? 0.3 : 1.0
+        addImageButton?.alphaValue = imageCount >= 6 ? 0.3 : 1.0
         // Remove gesture if disabled
-        if imageCount >= 12 {
+        if imageCount >= 6 {
             addImageButton?.gestureRecognizers.removeAll()
         } else if addImageButton?.gestureRecognizers.isEmpty == true {
             let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))

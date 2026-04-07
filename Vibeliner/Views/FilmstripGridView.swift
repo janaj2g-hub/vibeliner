@@ -1,7 +1,7 @@
 import AppKit
 
-/// Grid container that arranges FilmCellViews using proportional-width layout.
-/// Each row has uniform height with cell widths proportional to aspect ratios.
+/// VIB-297: Horizontal scroll filmstrip — single row of images with proportional widths.
+/// Wraps content in an NSScrollView for horizontal scrolling when images exceed visible width.
 final class FilmstripGridView: NSView {
 
     // MARK: - State
@@ -10,10 +10,34 @@ final class FilmstripGridView: NSView {
     private(set) var cellViews: [FilmCellView] = []
     var isComposite: Bool { captureImages.count >= 2 }
 
+    /// The fixed row height for image content (excluding title pill area).
+    var rowHeight: CGFloat = 300
+
     // MARK: - Callbacks
 
     var onTitleChanged: ((Int, String) -> Void)?
     var onRoleChanged: ((Int, ImageRole) -> Void)?
+
+    // MARK: - Scroll infrastructure
+
+    private let scrollView: NSScrollView = {
+        let sv = NSScrollView()
+        sv.hasHorizontalScroller = true
+        sv.hasVerticalScroller = false
+        sv.scrollerStyle = .overlay
+        sv.horizontalScrollElasticity = .allowed
+        sv.verticalScrollElasticity = .none
+        sv.drawsBackground = false
+        sv.autohidesScrollers = true
+        return sv
+    }()
+
+    /// The document view inside the scroll view — holds all FilmCellViews.
+    private let contentView: NSView = {
+        let v = NSView()
+        v.wantsLayer = true
+        return v
+    }()
 
     // MARK: - Init
 
@@ -27,12 +51,15 @@ final class FilmstripGridView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
-    /// Flipped so Y=0 is at top — content flows top-to-bottom, matching LayoutCalculator's
-    /// row ordering and placing title pills close to the toolbar above.
+    /// Flipped so Y=0 is at top — title pills at top, images below.
     override var isFlipped: Bool { true }
 
     private func commonInit() {
         wantsLayer = true
+
+        // Wire scroll view hierarchy
+        scrollView.documentView = contentView
+        addSubview(scrollView)
     }
 
     // MARK: - Public API
@@ -41,7 +68,7 @@ final class FilmstripGridView: NSView {
     func configure(with images: [CaptureImage]) {
         captureImages = images
 
-        // Remove old cells
+        // Remove old cells from content view
         for cell in cellViews {
             cell.removeFromSuperview()
         }
@@ -49,7 +76,7 @@ final class FilmstripGridView: NSView {
 
         let showPills = images.count >= 2
 
-        // Create FilmCellViews
+        // Create FilmCellViews inside the scrollable content view
         for image in images {
             let cell = FilmCellView()
             cell.configure(image: image, showPill: showPills)
@@ -59,7 +86,7 @@ final class FilmstripGridView: NSView {
             cell.onRoleChanged = { [weak self] idx, role in
                 self?.onRoleChanged?(idx, role)
             }
-            addSubview(cell)
+            contentView.addSubview(cell)
             cellViews.append(cell)
         }
 
@@ -109,19 +136,27 @@ final class FilmstripGridView: NSView {
 
         let padding = DesignTokens.filmstripPadding
         let gap = DesignTokens.filmstripGap
-        let contentWidth = bounds.width - padding * 2
         let pillH: CGFloat = isComposite ? FilmCellView.pillAreaHeight : 0
 
-        guard contentWidth > 0, !captureImages.isEmpty else { return }
+        guard !captureImages.isEmpty else { return }
+
+        // Scroll view fills the entire grid view
+        scrollView.frame = bounds
 
         let sizes = captureImages.map { $0.originalSize }
-        let frames = LayoutCalculator.computeFrames(
+        let (frames, totalWidth) = LayoutCalculator.computeFrames(
             imageSizes: sizes,
-            availableWidth: contentWidth,
+            rowHeight: rowHeight,
             gap: gap,
             titlePillTotalHeight: pillH
         )
 
+        // Content view size = total filmstrip content + padding on all sides
+        let contentW = totalWidth + padding * 2
+        let contentH = bounds.height
+        contentView.frame = NSRect(x: 0, y: 0, width: max(contentW, bounds.width), height: contentH)
+
+        // Position cells inside the content view
         for (i, layoutFrame) in frames.enumerated() where i < cellViews.count {
             cellViews[i].frame = NSRect(
                 x: padding + layoutFrame.origin.x,
@@ -135,21 +170,20 @@ final class FilmstripGridView: NSView {
     override var intrinsicContentSize: NSSize {
         let padding = DesignTokens.filmstripPadding
         let gap = DesignTokens.filmstripGap
-        let contentWidth = bounds.width > 0 ? bounds.width - padding * 2 : 600
         let pillH: CGFloat = isComposite ? FilmCellView.pillAreaHeight : 0
 
         let sizes = captureImages.map { $0.originalSize }
-        let frames = LayoutCalculator.computeFrames(
+        let (_, _) = LayoutCalculator.computeFrames(
             imageSizes: sizes,
-            availableWidth: contentWidth,
+            rowHeight: rowHeight,
             gap: gap,
             titlePillTotalHeight: pillH
         )
 
-        let totalH = LayoutCalculator.totalHeight(frames: frames)
+        let totalH = rowHeight + pillH + padding * 2
         return NSSize(
             width: NSView.noIntrinsicMetric,
-            height: totalH + padding * 2
+            height: totalH
         )
     }
 

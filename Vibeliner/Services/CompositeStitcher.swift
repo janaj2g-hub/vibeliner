@@ -1,11 +1,12 @@
 import AppKit
 
-/// Renders a filmstrip of images into a single stitched composite PNG.
+/// VIB-297: Renders a filmstrip of images into a single stitched horizontal strip PNG.
 /// Reuses LayoutCalculator for layout computation. Title pills baked in for 2+ images.
 final class CompositeStitcher {
 
-    private static let maxExportWidth: CGFloat = 2400
-    private static let exportScale: CGFloat = 2  // Retina
+    private static let maxExportWidth: CGFloat = 4800  // Wider limit for horizontal strips
+    private static let exportRowHeight: CGFloat = 400   // Fixed row height for export
+    private static let exportScale: CGFloat = 2         // Retina
 
     private static let pinRenderer = PinRenderer()
     private static let arrowRenderer = ArrowRenderer()
@@ -13,12 +14,12 @@ final class CompositeStitcher {
     private static let circleRenderer = CircleRenderer()
     private static let freehandRenderer = FreehandRenderer()
 
-    /// Stitch multiple images into a single composite.
+    /// Stitch multiple images into a single horizontal strip composite.
     /// - Parameters:
     ///   - images: Ordered list of capture images with titles and roles.
     ///   - annotations: All annotations to bake into the export.
     ///   - canvasSize: The editor canvas size (for scaling annotations).
-    ///   - exportWidth: Width of the export. Capped at `maxExportWidth`.
+    ///   - exportWidth: Ignored for horizontal strip — width is computed from content.
     /// - Returns: The stitched NSImage, or nil if images is empty.
     static func stitch(
         images: [CaptureImage],
@@ -37,23 +38,23 @@ final class CompositeStitcher {
             )
         }
 
-        // Multi-image composite
+        // Multi-image horizontal strip
         let gap = DesignTokens.filmstripGap
         let padding = DesignTokens.filmstripPadding
         let pillH = FilmCellView.pillAreaHeight
-        let width = min(exportWidth ?? maxExportWidth, maxExportWidth)
-        let contentWidth = width - padding * 2
+        let rowHeight = exportRowHeight
 
         let sizes = images.map { $0.originalSize }
-        let frames = LayoutCalculator.computeFrames(
+        let (frames, totalContentWidth) = LayoutCalculator.computeFrames(
             imageSizes: sizes,
-            availableWidth: contentWidth,
+            rowHeight: rowHeight,
             gap: gap,
             titlePillTotalHeight: pillH
         )
 
-        let totalHeight = LayoutCalculator.totalHeight(frames: frames) + padding * 2
-        let compositeSize = NSSize(width: width, height: totalHeight)
+        let compositeWidth = totalContentWidth + padding * 2
+        let compositeHeight = rowHeight + pillH + padding * 2
+        let compositeSize = NSSize(width: compositeWidth, height: compositeHeight)
 
         let image = NSImage(size: compositeSize)
         image.lockFocus()
@@ -66,31 +67,32 @@ final class CompositeStitcher {
         // Clear background (transparent)
         ctx.clear(CGRect(origin: .zero, size: compositeSize))
 
-        // Draw each cell
+        // Draw each cell — horizontal strip layout
         for (i, layoutFrame) in frames.enumerated() where i < images.count {
             let captureImage = images[i]
             let cellX = padding + layoutFrame.origin.x
-            let cellY = padding + layoutFrame.origin.y
+            // NSImage coordinate system: Y=0 at bottom
+            let cellY = padding
 
             // Image area is below the title pill area
             let imageRect = NSRect(
                 x: cellX,
                 y: cellY,
                 width: layoutFrame.size.width,
-                height: layoutFrame.size.height - pillH
+                height: rowHeight
             )
 
             // Draw screenshot
             captureImage.sourceImage.draw(in: imageRect)
 
-            // Draw title pill (baked in)
+            // Draw title pill (baked in above the image)
             drawExportPill(
                 ctx: ctx,
                 title: captureImage.title,
                 role: captureImage.role,
-                cellFrame: layoutFrame,
                 cellX: cellX,
-                cellY: cellY,
+                cellWidth: layoutFrame.size.width,
+                pillY: cellY + rowHeight,
                 pillHeight: DesignTokens.titlePillHeight
             )
         }
@@ -124,14 +126,13 @@ final class CompositeStitcher {
         ctx: CGContext,
         title: String,
         role: ImageRole,
-        cellFrame: LayoutFrame,
         cellX: CGFloat,
-        cellY: CGFloat,
+        cellWidth: CGFloat,
+        pillY: CGFloat,
         pillHeight: CGFloat
     ) {
-        let pillW = min(cellFrame.size.width - 8, max(100, cellFrame.size.width * 0.85))
-        let pillX = cellX + (cellFrame.size.width - pillW) / 2
-        let pillY = cellY + cellFrame.size.height - pillHeight
+        let pillW = min(cellWidth - 8, max(100, cellWidth * 0.85))
+        let pillX = cellX + (cellWidth - pillW) / 2
         let pillRect = NSRect(x: pillX, y: pillY, width: pillW, height: pillHeight)
         let cornerRadius = pillHeight / 2
 
