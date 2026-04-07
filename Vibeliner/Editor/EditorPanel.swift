@@ -445,6 +445,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             if let canvas = canvasOverlay {
                 canvas.removeFromSuperview()
                 container.addSubview(canvas, positioned: .above, relativeTo: grid)
+                // VIB-294: Give canvas a reference to the grid for title pill hit-testing
+                canvas.filmstripGrid = grid
             }
 
             self.filmstripGridView = grid

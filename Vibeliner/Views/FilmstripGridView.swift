@@ -7,7 +7,7 @@ final class FilmstripGridView: NSView {
     // MARK: - State
 
     private var captureImages: [CaptureImage] = []
-    private var cellViews: [FilmCellView] = []
+    private(set) var cellViews: [FilmCellView] = []
     var isComposite: Bool { captureImages.count >= 2 }
 
     // MARK: - Callbacks
@@ -157,8 +157,8 @@ final class FilmstripGridView: NSView {
 
     private func updateBorder() {
         if isComposite {
-            // VIB-290: Darkened background + border for visual grouping
-            layer?.backgroundColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.12).cgColor
+            // VIB-293: Darker background (~65% opacity) + stronger border for visual grouping
+            layer?.backgroundColor = DesignTokens.filmstripBg.cgColor
             layer?.borderWidth = 1
             layer?.borderColor = DesignTokens.filmstripBorder.cgColor
             layer?.cornerRadius = 6
