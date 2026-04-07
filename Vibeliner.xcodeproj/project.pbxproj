@@ -60,6 +60,9 @@
 		E20000010000000000000001 /* ImageRole.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ImageRole.swift */; };
 		E20000010000000000000002 /* CaptureImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000002 /* CaptureImage.swift */; };
 		E20000010000000000000003 /* CaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000003 /* CaptureStore.swift */; };
+		F20000010000000000000001 /* TitlePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000001 /* TitlePillView.swift */; };
+		F20000010000000000000002 /* LayoutCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LayoutCalculator.swift */; };
+		F20000010000000000000003 /* FilmstripGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000003 /* FilmstripGridView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -118,6 +121,9 @@
 		E10000010000000000000001 /* ImageRole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRole.swift; sourceTree = "<group>"; };
 		E10000010000000000000002 /* CaptureImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureImage.swift; sourceTree = "<group>"; };
 		E10000010000000000000003 /* CaptureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureStore.swift; sourceTree = "<group>"; };
+		F10000010000000000000001 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
+		F10000010000000000000002 /* LayoutCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCalculator.swift; sourceTree = "<group>"; };
+		F10000010000000000000003 /* FilmstripGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripGridView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -145,6 +151,8 @@
 				A40000010000000000000003 /* App */,
 				A40000010000000000000009 /* Annotations */,
 				E30000010000000000000001 /* Models */,
+				F30000010000000000000001 /* Views */,
+				F30000010000000000000002 /* Services */,
 				A40000010000000000000007 /* Capture */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
@@ -320,6 +328,23 @@
 			path = Models;
 			sourceTree = "<group>";
 		};
+		F30000010000000000000001 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				F10000010000000000000001 /* TitlePillView.swift */,
+				F10000010000000000000003 /* FilmstripGridView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		F30000010000000000000002 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				F10000010000000000000002 /* LayoutCalculator.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -390,6 +415,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F20000010000000000000003 /* FilmstripGridView.swift in Sources */,
+				F20000010000000000000002 /* LayoutCalculator.swift in Sources */,
+				F20000010000000000000001 /* TitlePillView.swift in Sources */,
 				E20000010000000000000003 /* CaptureStore.swift in Sources */,
 				E20000010000000000000002 /* CaptureImage.swift in Sources */,
 				E20000010000000000000001 /* ImageRole.swift in Sources */,

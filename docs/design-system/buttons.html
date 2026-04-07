@@ -1,0 +1,1332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibeliner Button &amp; Control Playground</title>
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── CSS Custom Properties — Light Mode ── */
+  :root {
+    --page-bg: #f5f5f7;
+    --page-text: #1d1d1f;
+    --section-bg: #ffffff;
+    --section-border: rgba(0,0,0,0.08);
+    --muted-text: #6e6e73;
+    --table-header-bg: #f9f9fb;
+    --table-border: #e5e5ea;
+    --code-bg: #f0f0f5;
+    --header-bg: rgba(255,255,255,0.88);
+
+    /* ── Role Color Tokens — Light ── */
+    --roleObservedBg: rgba(83, 74, 183, 0.12);
+    --roleObservedBorder: rgba(83, 74, 183, 0.24);
+    --roleExpectedBg: rgba(22, 163, 74, 0.12);
+    --roleExpectedBorder: rgba(22, 163, 74, 0.24);
+    --roleReferenceBg: rgba(37, 99, 235, 0.12);
+    --roleReferenceBorder: rgba(37, 99, 235, 0.24);
+
+    /* ── Appearance-Aware Tokens — Light ── */
+    --settingsPillBorder: rgba(114, 103, 221, 0.26);
+    --settingsPillFill: rgba(175, 169, 236, 0.16);
+    --settingsPillText: rgba(114, 103, 221, 1.0);
+    --settingsFieldSurface: #eef0f6;
+    --settingsFieldBorder: rgba(15, 23, 42, 0.08);
+    --settingsFrameSurface: rgba(15, 23, 42, 0.02);
+    --settingsPreviewSurface: #f8fafc;
+    --settingsSegmentedTrack: rgba(15, 23, 42, 0.04);
+    --settingsSegmentedActive: rgba(175, 169, 236, 0.18);
+
+    /* ── Kbd pill tokens — Light ── */
+    --kbdBorder: rgba(15, 23, 42, 0.08);
+    --kbdBg: #eef0f6;
+    --kbdText: rgba(0, 0, 0, 0.55);
+  }
+
+  /* ── CSS Custom Properties — Dark Mode ── */
+  :root.dark {
+    --page-bg: #1a1a1e;
+    --page-text: #e5e5ea;
+    --section-bg: #2c2c30;
+    --section-border: rgba(255,255,255,0.08);
+    --muted-text: #98989d;
+    --table-header-bg: #333338;
+    --table-border: rgba(255,255,255,0.1);
+    --code-bg: rgba(255,255,255,0.06);
+    --header-bg: rgba(26,26,30,0.92);
+
+    /* ── Role Color Tokens — Dark ── */
+    --roleObservedBg: rgba(175, 169, 236, 0.18);
+    --roleObservedBorder: rgba(175, 169, 236, 0.36);
+    --roleExpectedBg: rgba(34, 197, 94, 0.16);
+    --roleExpectedBorder: rgba(134, 239, 172, 0.36);
+    --roleReferenceBg: rgba(59, 130, 246, 0.16);
+    --roleReferenceBorder: rgba(147, 197, 253, 0.36);
+
+    /* ── Appearance-Aware Tokens — Dark ── */
+    --settingsPillBorder: rgba(175, 169, 236, 0.36);
+    --settingsPillFill: rgba(175, 169, 236, 0.10);
+    --settingsPillText: #AFA9EC;
+    --settingsFieldSurface: rgba(255, 255, 255, 0.06);
+    --settingsFieldBorder: rgba(255, 255, 255, 0.12);
+    --settingsFrameSurface: rgba(255, 255, 255, 0.02);
+    --settingsPreviewSurface: #15161a;
+    --settingsSegmentedTrack: rgba(255, 255, 255, 0.03);
+    --settingsSegmentedActive: rgba(175, 169, 236, 0.22);
+
+    /* ── Kbd pill tokens — Dark ── */
+    --kbdBorder: rgba(255, 255, 255, 0.12);
+    --kbdBg: rgba(255, 255, 255, 0.06);
+    --kbdText: rgba(255, 255, 255, 0.55);
+  }
+
+  /* ── Static Tokens (no appearance change) ── */
+  :root {
+    --purpleLight: #AFA9EC;
+    --purpleDark: #534AB7;
+    --purpleButton: #a796eb;
+    --purpleButtonHover: #c4b8f5;
+    --purpleButtonBg: rgba(116, 97, 194, 0.25);
+    --purpleButtonBgHover: rgba(116, 97, 194, 0.35);
+    --red: #EF4444;
+    --redFill: rgba(239, 68, 68, 0.06);
+    --redNoteBg: rgba(255, 244, 244, 0.72);
+    --redNoteBorder: rgba(180, 180, 180, 0.22);
+    --noteHoverBg: rgba(255, 244, 244, 0.80);
+    --noteHoverBorder: rgba(239, 68, 68, 0.45);
+    --noteSelectedBg: rgba(255, 244, 244, 0.88);
+    --noteSelectedBorder: rgba(239, 68, 68, 0.55);
+    --noteEditingBg: rgba(255, 250, 250, 0.96);
+    --notePrefixColor: rgba(153, 27, 27, 0.45);
+    --noteTextColor: #7f1d1d;
+    --copiedGreenBorder: rgba(22, 163, 74, 0.5);
+    --copiedGreenText: rgba(22, 163, 74, 0.8);
+    --copiedGreenBg: rgba(22, 163, 74, 0.12);
+    --darkChrome: rgba(30, 30, 30, 0.92);
+    --darkChromePopover: rgba(30, 30, 30, 0.95);
+    --dividerColor: rgba(255, 255, 255, 0.08);
+    --closeHoverBg: rgba(255, 87, 87, 0.2);
+    --trashHoverBg: rgba(255, 87, 87, 0.15);
+    --chromeBorder: rgba(175, 169, 236, 0.12);
+    --iconDefault: rgba(255, 255, 255, 0.4);
+    --iconHover: rgba(255, 255, 255, 0.8);
+    --buttonHoverBg: rgba(255, 255, 255, 0.08);
+    --toolActiveBg: rgba(175, 169, 236, 0.2);
+    --toggleActiveBg: rgba(175, 169, 236, 0.25);
+    --toggleBg: rgba(255, 255, 255, 0.06);
+    --toggleInactiveText: rgba(255, 255, 255, 0.3);
+    --closeIconHover: #FF5F57;
+  }
+
+  /* ── Body & Layout ── */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+    background: var(--page-bg);
+    color: var(--page-text);
+    line-height: 1.5;
+    padding-top: 72px;
+    transition: background 0.25s, color 0.25s;
+  }
+
+  /* ── Sticky Header ── */
+  .sticky-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    background: var(--header-bg);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--section-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 32px;
+  }
+  .sticky-header h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Theme Toggle (segmented) ── */
+  .theme-toggle-segmented {
+    display: inline-flex;
+    background: var(--section-border);
+    border-radius: 8px;
+    padding: 2px;
+    user-select: none;
+  }
+  .theme-seg {
+    padding: 4px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--muted-text);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .theme-seg.active {
+    background: var(--section-bg);
+    color: var(--page-text);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+  }
+
+  /* ── Intro paragraph ── */
+  .intro-text {
+    font-size: 14px;
+    color: var(--muted-text);
+    line-height: 1.6;
+    margin-bottom: 32px;
+    max-width: 780px;
+  }
+
+  /* ── Sections ── */
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 24px 60px; }
+  section {
+    background: var(--section-bg);
+    border: 1px solid var(--section-border);
+    border-radius: 16px;
+    padding: 28px 32px;
+    margin-bottom: 32px;
+    transition: background 0.25s, border-color 0.25s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  }
+  section h2 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .section-desc {
+    font-size: 13px;
+    color: var(--muted-text);
+    margin-bottom: 20px;
+  }
+  .subsection { margin-bottom: 28px; }
+  .subsection:last-child { margin-bottom: 0; }
+  .subsection h3 {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .where-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted-text);
+    background: var(--code-bg);
+    padding: 3px 10px;
+    border-radius: 5px;
+    margin-bottom: 14px;
+    border: 1px solid var(--section-border);
+  }
+  .consolidation-note {
+    font-size: 12px;
+    color: var(--muted-text);
+    border-left: 3px solid var(--purpleLight);
+    padding: 8px 12px;
+    margin-top: 12px;
+    background: var(--code-bg);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* ── Pill Subsection Cards (vertical stack) ── */
+  .pill-stack > .subsection {
+    background: var(--code-bg);
+    border: 1px solid var(--section-border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .pill-stack > .subsection:last-child { margin-bottom: 0; }
+
+  /* ── Demo Strips ── */
+  .demo-strip {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .demo-strip.dark-bg {
+    background: var(--darkChrome);
+    border: 1px solid var(--chromeBorder);
+  }
+  .demo-strip.popover-bg {
+    background: var(--darkChromePopover);
+    border: 1px solid var(--chromeBorder);
+  }
+  .demo-strip.screenshot-bg {
+    background: #b8b8b8;
+    border: 1px solid rgba(0,0,0,0.1);
+  }
+  .demo-strip.settings-bg {
+    background: var(--settingsPreviewSurface);
+    border: 1px solid var(--settingsFieldBorder);
+  }
+  .demo-label {
+    font-size: 11px;
+    color: var(--muted-text);
+    width: 100%;
+    margin-bottom: -4px;
+  }
+
+  /* ── Token Tables ── */
+  .token-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-top: 12px;
+  }
+  .token-table th {
+    text-align: left;
+    padding: 8px 12px;
+    background: var(--table-header-bg);
+    border: 1px solid var(--table-border);
+    font-weight: 600;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted-text);
+  }
+  .token-table td {
+    padding: 6px 12px;
+    border: 1px solid var(--table-border);
+    vertical-align: top;
+  }
+  .token-table code {
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .swatch {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    vertical-align: middle;
+    margin-right: 6px;
+    border: 1px solid rgba(128,128,128,0.3);
+  }
+
+  /* ── 1a: Copy Buttons (Editor Toolbar) ── */
+  .copy-btn {
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--purpleButton);
+    background: var(--purpleButtonBg);
+    color: var(--purpleButton);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    user-select: none;
+  }
+  .copy-btn:hover:not(.copied) {
+    border-color: var(--purpleButtonHover);
+    background: var(--purpleButtonBgHover);
+    color: var(--purpleButtonHover);
+  }
+  .copy-btn.copied {
+    border-color: var(--copiedGreenBorder);
+    background: var(--copiedGreenBg);
+    color: var(--copiedGreenText);
+  }
+
+  /* ── 1d: Popover Submenu Copy Buttons (small) ── */
+  .copy-btn-sm {
+    height: 20px;
+    padding: 0 8px;
+    border-radius: 6px;
+    border: none;
+    background: var(--chromeBorder);
+    color: var(--purpleLight);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    user-select: none;
+  }
+  .copy-btn-sm:hover {
+    filter: brightness(1.3);
+  }
+
+  /* ── 1e: Setup Complete Button (green, large) ── */
+  .setup-complete-btn {
+    height: 36px;
+    padding: 0 24px;
+    border-radius: 20px;
+    border: 1.5px solid var(--copiedGreenBorder);
+    background: var(--copiedGreenBg);
+    color: var(--copiedGreenText);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    user-select: none;
+  }
+  .setup-complete-btn:hover:not(.success) {
+    filter: brightness(1.15);
+  }
+  .setup-complete-btn.success {
+    border-color: var(--copiedGreenBorder);
+    background: var(--copiedGreenBg);
+    color: var(--copiedGreenText);
+    filter: brightness(1.2);
+  }
+
+  /* ── 1f: Setup Small Pill Buttons ── */
+  .setup-sm-pill {
+    height: 22px;
+    padding: 0 10px;
+    border-radius: 11px;
+    border: 1.5px solid transparent;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    cursor: default;
+    display: inline-flex;
+    align-items: center;
+    user-select: none;
+    transition: all 0.15s ease;
+  }
+  .setup-sm-pill.purple {
+    border-color: transparent;
+    background: var(--purpleButtonBg);
+    color: var(--purpleButton);
+  }
+  .setup-sm-pill.green {
+    border-color: transparent;
+    background: var(--copiedGreenBg);
+    color: var(--copiedGreenText);
+  }
+
+  /* ── 1b: Settings Pill Buttons ── */
+  .settings-pill {
+    height: 28px;
+    padding: 0 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--settingsPillBorder);
+    background: var(--settingsPillFill);
+    color: var(--settingsPillText);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .settings-pill:hover:not(.success) {
+    filter: brightness(1.15);
+  }
+  .settings-pill.success {
+    border-color: var(--copiedGreenBorder);
+    background: var(--copiedGreenBg);
+    color: var(--copiedGreenText);
+  }
+
+  /* ── 2: Circular Icon Buttons ── */
+  .icon-btn {
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    background: transparent;
+    flex-shrink: 0;
+  }
+  .icon-btn svg { transition: all 0.15s ease; }
+  .icon-btn.tool-btn { width: 30px; height: 30px; }
+  .icon-btn.action-btn { width: 28px; height: 28px; }
+  .icon-btn.close-btn { width: 24px; height: 24px; }
+  .icon-btn.tool-btn:hover { background: var(--buttonHoverBg); }
+  .icon-btn.tool-btn:hover svg { stroke: var(--iconHover); }
+  .icon-btn.tool-btn.active {
+    background: var(--toolActiveBg);
+  }
+  .icon-btn.tool-btn.active svg { stroke: var(--purpleLight); }
+  .icon-btn.action-btn:hover { background: var(--buttonHoverBg); }
+  .icon-btn.action-btn:hover svg { stroke: var(--iconHover); }
+  .icon-btn.action-btn.trash:hover { background: var(--trashHoverBg); }
+  .icon-btn.action-btn.trash:hover svg { stroke: var(--closeIconHover); }
+  .icon-btn.close-btn:hover { background: var(--closeHoverBg); }
+  .icon-btn.close-btn:hover svg { stroke: var(--closeIconHover); }
+
+  /* ── 3: Segmented Control ── */
+  .segmented-control {
+    display: inline-flex;
+    background: var(--toggleBg);
+    border-radius: 14px;
+    padding: 2px;
+    position: relative;
+    user-select: none;
+  }
+  .segment {
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 9px;
+    font-weight: 600;
+    color: var(--toggleInactiveText);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .segment.active {
+    background: var(--toggleActiveBg);
+    color: #ffffff;
+  }
+
+  /* ── 4: Menu Rows ── */
+  .menu-container {
+    width: 260px;
+    border-radius: 10px;
+    overflow: hidden;
+    padding: 4px 0;
+  }
+  .menu-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: background 0.1s;
+    border-radius: 6px;
+    margin: 0 4px;
+  }
+  .menu-row:hover { background: rgba(255, 255, 255, 0.08); }
+  .menu-row-label {
+    font-size: 13px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .menu-row-right {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.35);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+  }
+  .menu-separator {
+    height: 1px;
+    background: var(--dividerColor);
+    margin: 4px 14px;
+  }
+
+  /* ── 5: Keyboard Shortcut Pills ── */
+  .kbd-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 8px;
+    border-radius: 5px;
+    border: 1px solid var(--kbdBorder);
+    background: var(--kbdBg);
+    color: var(--kbdText);
+    font-size: 12px;
+    font-weight: 600;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+    user-select: none;
+  }
+
+  /* ── 6: Note Pills ── */
+  .note-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 26px;
+    padding: 0 10px;
+    border-radius: 13px;
+    border: 1.5px solid var(--redNoteBorder);
+    background: var(--redNoteBg);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .note-pill .note-num {
+    font-size: 8px;
+    font-weight: 600;
+    color: var(--notePrefixColor);
+  }
+  .note-pill .note-text {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--noteTextColor);
+  }
+  .note-pill:hover {
+    background: var(--noteHoverBg);
+    border-color: var(--noteHoverBorder);
+  }
+  .note-pill.selected {
+    background: var(--noteSelectedBg);
+    border-color: var(--noteSelectedBorder);
+  }
+  .note-pill.editing {
+    background: var(--noteEditingBg);
+    border-color: var(--red);
+    min-width: 160px;
+  }
+  .note-pill.editing .note-text { color: var(--noteTextColor); }
+  .cursor-blink {
+    display: inline-block;
+    width: 1px;
+    height: 14px;
+    background: var(--noteTextColor);
+    animation: blink 1s step-end infinite;
+    margin-left: 1px;
+    vertical-align: middle;
+  }
+  @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+
+  /* ── Divider in demo strips ── */
+  .strip-divider {
+    width: 1px;
+    height: 20px;
+    background: var(--dividerColor);
+    flex-shrink: 0;
+  }
+
+  /* ── Flex helpers ── */
+  .flex-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .flex-col { display: flex; flex-direction: column; gap: 8px; }
+  .gap-6 { gap: 6px; }
+  .gap-20 { gap: 20px; }
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mb-8 { margin-bottom: 8px; }
+
+  /* ── State label badges ── */
+  .state-badge {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    color: var(--muted-text);
+    border: 1px solid var(--table-border);
+    flex-shrink: 0;
+  }
+
+  /* ── Decision Guide Table ── */
+  .decision-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .decision-table th {
+    text-align: left;
+    padding: 10px 14px;
+    background: var(--table-header-bg);
+    border: 1px solid var(--table-border);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted-text);
+  }
+  .decision-table td {
+    padding: 10px 14px;
+    border: 1px solid var(--table-border);
+    vertical-align: middle;
+  }
+  .decision-table code {
+    font-family: "SF Mono", "Menlo", monospace;
+    font-size: 11px;
+    background: var(--code-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+  .decision-table tbody tr:hover {
+    background: var(--code-bg);
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════════ STICKY HEADER ══════════════ -->
+<header class="sticky-header">
+  <h1>Vibeliner Button &amp; Control Playground</h1>
+  <div class="theme-toggle-segmented" id="themeToggle">
+    <div class="theme-seg active" onclick="setTheme('light')">Light</div>
+    <div class="theme-seg" onclick="setTheme('dark')">Dark</div>
+  </div>
+</header>
+
+<div class="container">
+
+<!-- ══════════════ INTRO ══════════════ -->
+<p class="intro-text">
+  This is a reference of every interactive control in Vibeliner. Use the light/dark toggle to switch appearances. Hover and click controls to see their interactive states. When adding a new button, find the closest match here and reuse its token pattern.
+</p>
+
+<!-- ══════════════ SECTION 1: PILL BUTTONS ══════════════ -->
+<section>
+  <h2>1. Pill Buttons</h2>
+  <p class="section-desc">Six button families that share the pill shape but differ in context, color, and state behavior.</p>
+
+  <div class="pill-stack">
+    <!-- 1a: Copy Buttons -->
+    <div class="subsection">
+      <h3>a) Copy Buttons</h3>
+      <span class="where-tag">Editor toolbar, right section</span>
+
+      <div class="demo-strip settings-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label">Interactive &mdash; click to trigger copied state</div>
+        <div class="flex-row gap-6 mt-4">
+          <button class="copy-btn" onclick="triggerCopied(this, 'Copy Prompt')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="3.5" y="3.5" width="6" height="6" rx="1.2"/><path d="M8.5 3.5V2.8A1.2 1.2 0 007.3 1.6H2.8A1.2 1.2 0 001.6 2.8v4.5a1.2 1.2 0 001.2 1.2h.7"/></svg>
+            <span>Copy Prompt</span>
+          </button>
+          <button class="copy-btn" onclick="triggerCopied(this, 'Copy Image')">
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><rect x="1.5" y="1.5" width="9" height="9" rx="1.5"/><circle cx="4" cy="4.5" r="1"/><path d="M1.5 8.5l2.5-2.5 1.5 1.5 2-2 3 3"/></svg>
+            <span>Copy Image</span>
+          </button>
+        </div>
+      </div>
+
+      <table class="token-table">
+        <thead><tr><th>State</th><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Default</td><td>Border</td><td><code>purpleButton</code></td><td><span class="swatch" style="background:#a796eb"></span>#a796eb</td></tr>
+          <tr><td>Default</td><td>Fill</td><td><code>purpleButtonBg</code></td><td><span class="swatch" style="background:rgba(116,97,194,0.25)"></span>rgba(116,97,194,0.25)</td></tr>
+          <tr><td>Default</td><td>Text</td><td><code>purpleButton</code></td><td><span class="swatch" style="background:#a796eb"></span>#a796eb</td></tr>
+          <tr><td>Hover</td><td>Border</td><td><code>purpleButtonHover</code></td><td><span class="swatch" style="background:#c4b8f5"></span>#c4b8f5</td></tr>
+          <tr><td>Hover</td><td>Fill</td><td><code>purpleButtonBgHover</code></td><td><span class="swatch" style="background:rgba(116,97,194,0.35)"></span>rgba(116,97,194,0.35)</td></tr>
+          <tr><td>Copied</td><td>Border</td><td><code>copiedGreenBorder</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.5)"></span>rgba(22,163,74,0.5)</td></tr>
+          <tr><td>Copied</td><td>Fill</td><td><code>copiedGreenBg</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.12)"></span>rgba(22,163,74,0.12)</td></tr>
+          <tr><td>Copied</td><td>Text</td><td><code>copiedGreenText</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.8)"></span>rgba(22,163,74,0.8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1b: Settings Pill Buttons -->
+    <div class="subsection">
+      <h3>b) Settings Pill Buttons</h3>
+      <span class="where-tag">Settings window, General/Prompt tabs</span>
+
+      <div class="demo-strip settings-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label">Interactive &mdash; hover to see brightness shift</div>
+        <div class="flex-row gap-6 mt-4">
+          <button class="settings-pill">Change Folder</button>
+          <button class="settings-pill">Reset to Default</button>
+        </div>
+      </div>
+
+      <table class="token-table">
+        <thead><tr><th>State</th><th>Property</th><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
+        <tbody>
+          <tr><td>Default</td><td>Border</td><td><code>settingsPillBorder</code></td><td><span class="swatch" style="background:rgba(114,103,221,0.26)"></span>rgba(114,103,221,0.26)</td><td><span class="swatch" style="background:rgba(175,169,236,0.36)"></span>rgba(175,169,236,0.36)</td></tr>
+          <tr><td>Default</td><td>Fill</td><td><code>settingsPillFill</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.16)"></span>rgba(175,169,236,0.16)</td><td><span class="swatch" style="background:rgba(175,169,236,0.10)"></span>rgba(175,169,236,0.10)</td></tr>
+          <tr><td>Default</td><td>Text</td><td><code>settingsPillText</code></td><td><span class="swatch" style="background:rgba(114,103,221,1)"></span>#7267dd</td><td><span class="swatch" style="background:#AFA9EC"></span>#AFA9EC</td></tr>
+          <tr><td>Hover</td><td>All</td><td colspan="3"><code>filter: brightness(1.15)</code></td></tr>
+          <tr><td>All</td><td>Height</td><td><code>settingsPillHeight</code></td><td colspan="2">28px</td></tr>
+          <tr><td>All</td><td>Font</td><td><code>settingsPillFont</code></td><td colspan="2">system 11px semibold</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1c: Setup Action Buttons -->
+    <div class="subsection">
+      <h3>c) Setup Action Buttons</h3>
+      <span class="where-tag">Setup window panels</span>
+
+      <div class="demo-strip settings-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label">Interactive &mdash; click for success state</div>
+        <div class="flex-row gap-6 mt-4">
+          <button class="settings-pill" onclick="triggerSetupSuccess(this, 'Open System Settings')">Open System Settings</button>
+          <button class="settings-pill" onclick="triggerSetupSuccess(this, 'Create Folder')">Create Folder</button>
+        </div>
+      </div>
+
+      <div class="consolidation-note">
+        After VIB-250, setup buttons use the same <code>settingsPill*</code> tokens as settings pills, with <code>copiedGreen*</code> tokens for the success state. The old <code>setupButton*</code> tokens have been removed.
+      </div>
+
+      <table class="token-table mt-8">
+        <thead><tr><th>State</th><th>Property</th><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
+        <tbody>
+          <tr><td>Default</td><td>Border</td><td><code>settingsPillBorder</code></td><td><span class="swatch" style="background:rgba(114,103,221,0.26)"></span>rgba(114,103,221,0.26)</td><td><span class="swatch" style="background:rgba(175,169,236,0.36)"></span>rgba(175,169,236,0.36)</td></tr>
+          <tr><td>Default</td><td>Fill</td><td><code>settingsPillFill</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.16)"></span>rgba(175,169,236,0.16)</td><td><span class="swatch" style="background:rgba(175,169,236,0.10)"></span>rgba(175,169,236,0.10)</td></tr>
+          <tr><td>Default</td><td>Text</td><td><code>settingsPillText</code></td><td><span class="swatch" style="background:rgba(114,103,221,1)"></span>#7267dd</td><td><span class="swatch" style="background:#AFA9EC"></span>#AFA9EC</td></tr>
+          <tr><td>Hover</td><td>All</td><td colspan="3"><code>filter: brightness(1.15)</code></td></tr>
+          <tr><td>Success</td><td>Border</td><td><code>copiedGreenBorder</code></td><td colspan="2"><span class="swatch" style="background:rgba(22,163,74,0.5)"></span>rgba(22,163,74,0.5)</td></tr>
+          <tr><td>Success</td><td>Fill</td><td><code>copiedGreenBg</code></td><td colspan="2"><span class="swatch" style="background:rgba(22,163,74,0.12)"></span>rgba(22,163,74,0.12)</td></tr>
+          <tr><td>Success</td><td>Text</td><td><code>copiedGreenText</code></td><td colspan="2"><span class="swatch" style="background:rgba(22,163,74,0.8)"></span>rgba(22,163,74,0.8)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1d: Popover Submenu Copy Buttons (small) -->
+    <div class="subsection">
+      <h3>d) Popover Submenu Copy Buttons (small)</h3>
+      <span class="where-tag">Recent Captures submenu rows</span>
+
+      <div class="demo-strip dark-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label" style="color:rgba(255,255,255,0.35)">Smaller copy buttons for submenu rows &mdash; 20px vs 28px</div>
+        <div class="flex-row gap-6 mt-4">
+          <button class="copy-btn-sm">Prompt</button>
+          <button class="copy-btn-sm">Image</button>
+        </div>
+      </div>
+
+      <div class="consolidation-note">
+        Smaller than editor copy buttons (20px vs 28px). These appear in the popover submenu where space is constrained.
+      </div>
+
+      <table class="token-table mt-8">
+        <thead><tr><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Background</td><td><code>chromeBorder</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.12)"></span>rgba(175,169,236,0.12)</td></tr>
+          <tr><td>Text</td><td><code>purpleLight</code></td><td><span class="swatch" style="background:#AFA9EC"></span>#AFA9EC</td></tr>
+          <tr><td>Font</td><td>&mdash;</td><td>system 10px medium</td></tr>
+          <tr><td>Height</td><td>&mdash;</td><td>20px</td></tr>
+          <tr><td>Corner radius</td><td>&mdash;</td><td>6px</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1e: Setup Complete Button (green, large) -->
+    <div class="subsection">
+      <h3>e) Setup Complete Button (green, large)</h3>
+      <span class="where-tag">Setup window footer, "Start using Vibeliner"</span>
+
+      <div class="demo-strip settings-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label">Interactive &mdash; click for success confirmation</div>
+        <div class="flex-row gap-6 mt-4">
+          <button class="setup-complete-btn" onclick="triggerCompleteSuccess(this)">Start using Vibeliner &rarr;</button>
+        </div>
+      </div>
+
+      <table class="token-table mt-8">
+        <thead><tr><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Border</td><td><code>copiedGreenBorder</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.5)"></span>rgba(22,163,74,0.5)</td></tr>
+          <tr><td>Fill</td><td><code>copiedGreenBg</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.12)"></span>rgba(22,163,74,0.12)</td></tr>
+          <tr><td>Text</td><td><code>copiedGreenText</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.8)"></span>rgba(22,163,74,0.8)</td></tr>
+          <tr><td>Font</td><td><code>settingsPillFont</code></td><td>system 13px semibold</td></tr>
+          <tr><td>Height</td><td>&mdash;</td><td>36px</td></tr>
+          <tr><td>Corner radius</td><td>&mdash;</td><td>20px</td></tr>
+          <tr><td>Padding</td><td>&mdash;</td><td>0 24px</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 1f: Setup Small Pill Buttons -->
+    <div class="subsection">
+      <h3>f) Setup Small Pill Buttons</h3>
+      <span class="where-tag">Setup window panels, status indicators</span>
+
+      <div class="demo-strip settings-bg flex-col" style="align-items:flex-start">
+        <div class="demo-label">Two variants &mdash; purple (status) and green (complete)</div>
+        <div class="flex-row gap-6 mt-4">
+          <span class="setup-sm-pill purple">Required</span>
+          <span class="setup-sm-pill purple">Pending</span>
+          <span class="setup-sm-pill green">Granted</span>
+          <span class="setup-sm-pill green">Complete</span>
+        </div>
+      </div>
+
+      <div class="consolidation-note">
+        Smallest pill button in the app &mdash; 22px vs 28px standard. Used for inline status indicators in the setup flow.
+      </div>
+
+      <table class="token-table mt-8">
+        <thead><tr><th>Variant</th><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Purple</td><td>Fill</td><td><code>purpleButtonBg</code></td><td><span class="swatch" style="background:rgba(116,97,194,0.25)"></span>rgba(116,97,194,0.25)</td></tr>
+          <tr><td>Purple</td><td>Text</td><td><code>purpleButton</code></td><td><span class="swatch" style="background:#a796eb"></span>#a796eb</td></tr>
+          <tr><td>Green</td><td>Fill</td><td><code>copiedGreenBg</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.12)"></span>rgba(22,163,74,0.12)</td></tr>
+          <tr><td>Green</td><td>Text</td><td><code>copiedGreenText</code></td><td><span class="swatch" style="background:rgba(22,163,74,0.8)"></span>rgba(22,163,74,0.8)</td></tr>
+          <tr><td>All</td><td>Font</td><td><code>settingsPillFont</code></td><td>system 11px medium</td></tr>
+          <tr><td>All</td><td>Height</td><td><code>setupSmallPillHeight</code></td><td>22px</td></tr>
+          <tr><td>All</td><td>Corner radius</td><td>&mdash;</td><td>11px (half height)</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 2: CIRCULAR ICON BUTTONS ══════════════ -->
+<section>
+  <h2>2. Circular Icon Buttons</h2>
+  <p class="section-desc">Rendered at actual sizes on a dark toolbar background. Hover and click to see state changes.</p>
+
+  <!-- Tool Buttons 30px -->
+  <div class="subsection">
+    <h3>Tool Buttons (30px)</h3>
+    <span class="where-tag">Editor toolbar, left tool section</span>
+
+    <div class="demo-strip dark-bg">
+      <div class="demo-label" style="color:rgba(255,255,255,0.35)">Click to toggle active &mdash; hover for highlight</div>
+    </div>
+    <div class="demo-strip dark-bg" style="margin-top:-16px;border-top:none;border-top-left-radius:0;border-top-right-radius:0;">
+      <!-- Pin -->
+      <button class="icon-btn tool-btn active" onclick="toggleToolActive(this)" title="Pin">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--purpleLight)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="6" r="3.5"/>
+          <line x1="8" y1="9.5" x2="8" y2="14"/>
+        </svg>
+      </button>
+      <!-- Arrow -->
+      <button class="icon-btn tool-btn" onclick="toggleToolActive(this)" title="Arrow">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--iconDefault)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="3" y1="13" x2="13" y2="3"/>
+          <polyline points="7,3 13,3 13,9"/>
+        </svg>
+      </button>
+      <!-- Rectangle -->
+      <button class="icon-btn tool-btn" onclick="toggleToolActive(this)" title="Rectangle">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--iconDefault)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2.5" y="3.5" width="11" height="9" rx="1"/>
+        </svg>
+      </button>
+      <!-- Circle -->
+      <button class="icon-btn tool-btn" onclick="toggleToolActive(this)" title="Circle">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--iconDefault)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="8" cy="8" r="5.5"/>
+        </svg>
+      </button>
+      <!-- Freehand -->
+      <button class="icon-btn tool-btn" onclick="toggleToolActive(this)" title="Freehand">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--iconDefault)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12c1-3 3-8 5-8s2 5 4 5 2-3 2-3"/>
+        </svg>
+      </button>
+      <div class="strip-divider"></div>
+      <!-- Trash -->
+      <button class="icon-btn action-btn trash" title="Trash">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--iconDefault)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M4 4l.7 7.5a1 1 0 001 .9h2.6a1 1 0 001-.9L10 4"/>
+        </svg>
+      </button>
+      <!-- Undo -->
+      <button class="icon-btn action-btn" title="Undo">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--iconDefault)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 5l-1.5 2L3 9"/>
+          <path d="M1.5 7h7a3.5 3.5 0 010 7H6"/>
+        </svg>
+      </button>
+      <!-- Redo -->
+      <button class="icon-btn action-btn" title="Redo">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="var(--iconDefault)" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M11 5l1.5 2L11 9"/>
+          <path d="M12.5 7h-7a3.5 3.5 0 000 7H8"/>
+        </svg>
+      </button>
+      <div class="strip-divider"></div>
+      <!-- Close -->
+      <button class="icon-btn close-btn" title="Close">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--iconDefault)" stroke-width="1.4" stroke-linecap="round">
+          <line x1="3" y1="3" x2="9" y2="9"/>
+          <line x1="9" y1="3" x2="3" y2="9"/>
+        </svg>
+      </button>
+    </div>
+
+    <table class="token-table">
+      <thead><tr><th>Variant</th><th>Size</th><th>State</th><th>Bg Token</th><th>Stroke Token</th></tr></thead>
+      <tbody>
+        <tr><td>Tool</td><td>30px (<code>toolButtonSize</code>)</td><td>Inactive</td><td>transparent</td><td><code>iconDefault</code> rgba(255,255,255,0.4)</td></tr>
+        <tr><td>Tool</td><td>30px</td><td>Hover</td><td><code>buttonHoverBg</code> rgba(255,255,255,0.08)</td><td><code>iconHover</code> rgba(255,255,255,0.8)</td></tr>
+        <tr><td>Tool</td><td>30px</td><td>Active</td><td><code>toolActiveBg</code> rgba(175,169,236,0.2)</td><td><code>purpleLight</code> #AFA9EC</td></tr>
+        <tr><td>Action</td><td>28px (<code>iconButtonSize</code>)</td><td>Default</td><td>transparent</td><td><code>iconDefault</code> rgba(255,255,255,0.4)</td></tr>
+        <tr><td>Action</td><td>28px</td><td>Hover</td><td><code>buttonHoverBg</code> rgba(255,255,255,0.08)</td><td><code>iconHover</code> rgba(255,255,255,0.8)</td></tr>
+        <tr><td>Trash</td><td>28px</td><td>Hover</td><td><code>trashHoverBg</code> rgba(255,87,87,0.15)</td><td><code>closeIconHover</code> #FF5F57</td></tr>
+        <tr><td>Close</td><td>24px (<code>closeButtonSize</code>)</td><td>Default</td><td>transparent</td><td><code>iconDefault</code> rgba(255,255,255,0.4)</td></tr>
+        <tr><td>Close</td><td>24px</td><td>Hover</td><td><code>closeHoverBg</code> rgba(255,87,87,0.2)</td><td><code>closeIconHover</code> #FF5F57</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ══════════════ SECTION 3: SEGMENTED CONTROLS ══════════════ -->
+<section>
+  <h2>3. Segmented Controls</h2>
+  <p class="section-desc">IDE/App toggle in the editor toolbar. Click segments to switch active state.</p>
+
+  <span class="where-tag">Editor toolbar, after tool divider</span>
+
+  <div class="demo-strip dark-bg" style="justify-content:center;">
+    <div class="segmented-control" id="segControl">
+      <div class="segment active" onclick="switchSegment(this)">IDE</div>
+      <div class="segment" onclick="switchSegment(this)">App</div>
+    </div>
+  </div>
+
+  <table class="token-table">
+    <thead><tr><th>State</th><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Track</td><td>Background</td><td><code>toggleBg</code></td><td><span class="swatch" style="background:rgba(255,255,255,0.06)"></span>rgba(255,255,255,0.06)</td></tr>
+      <tr><td>Track</td><td>Corner radius</td><td>&mdash;</td><td>14px</td></tr>
+      <tr><td>Active segment</td><td>Background</td><td><code>toggleActiveBg</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.25)"></span>rgba(175,169,236,0.25)</td></tr>
+      <tr><td>Active segment</td><td>Corner radius</td><td>&mdash;</td><td>12px</td></tr>
+      <tr><td>Active segment</td><td>Text</td><td>&mdash;</td><td>#ffffff</td></tr>
+      <tr><td>Inactive segment</td><td>Text</td><td><code>toggleInactiveText</code></td><td><span class="swatch" style="background:rgba(255,255,255,0.3)"></span>rgba(255,255,255,0.3)</td></tr>
+      <tr><td>All</td><td>Font</td><td>&mdash;</td><td>system 9px semibold</td></tr>
+      <tr><td>All</td><td>Padding</td><td>&mdash;</td><td>2px 8px</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════ SECTION 4: MENU ROWS ══════════════ -->
+<section>
+  <h2>4. Menu Rows</h2>
+  <p class="section-desc">Popover menu items with keyboard shortcut hints and hover highlights.</p>
+
+  <span class="where-tag">Menu bar popover</span>
+
+  <div class="demo-strip popover-bg" style="justify-content:center;">
+    <div class="menu-container">
+      <div class="menu-row">
+        <span class="menu-row-label">Capture Now</span>
+        <span class="menu-row-right" style="font-size:11px;letter-spacing:0.5px;">&#8984;&#8679;6</span>
+      </div>
+      <div class="menu-row">
+        <span class="menu-row-label">Recent Captures</span>
+        <span class="menu-row-right">&#8250;</span>
+      </div>
+      <div class="menu-separator"></div>
+      <div class="menu-row">
+        <span class="menu-row-label">Settings</span>
+        <span class="menu-row-right" style="font-size:11px;letter-spacing:0.5px;">&#8984;,</span>
+      </div>
+      <div class="menu-row">
+        <span class="menu-row-label" style="color:rgba(255,255,255,0.5);">Quit Vibeliner</span>
+        <span class="menu-row-right" style="font-size:11px;letter-spacing:0.5px;">&#8984;Q</span>
+      </div>
+    </div>
+  </div>
+
+  <table class="token-table">
+    <thead><tr><th>Element</th><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Container</td><td>Background</td><td><code>darkChromePopover</code></td><td><span class="swatch" style="background:rgba(30,30,30,0.95)"></span>rgba(30,30,30,0.95)</td></tr>
+      <tr><td>Row</td><td>Hover bg</td><td>&mdash;</td><td>rgba(255,255,255,0.08)</td></tr>
+      <tr><td>Label</td><td>Color</td><td>&mdash;</td><td>rgba(255,255,255,0.85)</td></tr>
+      <tr><td>Shortcut</td><td>Color</td><td>&mdash;</td><td>rgba(255,255,255,0.35)</td></tr>
+      <tr><td>Separator</td><td>Background</td><td><code>dividerColor</code></td><td><span class="swatch" style="background:rgba(255,255,255,0.08)"></span>rgba(255,255,255,0.08)</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════ SECTION 5: KEYBOARD SHORTCUT PILLS ══════════════ -->
+<section>
+  <h2>5. Keyboard Shortcut Pills</h2>
+  <p class="section-desc">Passive badge-style indicators for keyboard shortcuts. Not clickable.</p>
+
+  <span class="where-tag">Popover menu rows, Setup window footer</span>
+
+  <div class="demo-strip settings-bg" style="justify-content:center;">
+    <span class="kbd-pill">&#8984;&#8679;6</span>
+    <span class="kbd-pill">&#8984;Q</span>
+    <span class="kbd-pill">&#8984;,</span>
+  </div>
+
+  <table class="token-table">
+    <thead><tr><th>Property</th><th>Token</th><th>Light</th><th>Dark</th></tr></thead>
+    <tbody>
+      <tr><td>Border</td><td><code>settingsFieldBorder</code></td><td><span class="swatch" style="background:rgba(15,23,42,0.08)"></span>rgba(15,23,42,0.08)</td><td><span class="swatch" style="background:rgba(255,255,255,0.12)"></span>rgba(255,255,255,0.12)</td></tr>
+      <tr><td>Background</td><td><code>settingsFieldSurface</code></td><td><span class="swatch" style="background:#eef0f6"></span>#eef0f6</td><td><span class="swatch" style="background:rgba(255,255,255,0.06)"></span>rgba(255,255,255,0.06)</td></tr>
+      <tr><td>Text</td><td>.secondaryLabelColor</td><td><span class="swatch" style="background:rgba(0,0,0,0.55)"></span>rgba(0,0,0,0.55)</td><td><span class="swatch" style="background:rgba(255,255,255,0.55)"></span>rgba(255,255,255,0.55)</td></tr>
+      <tr><td>Font</td><td>&mdash;</td><td colspan="2">system 12px semibold</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════ SECTION 6: NOTE PILLS ══════════════ -->
+<section>
+  <h2>6. Note Pills</h2>
+  <p class="section-desc">Annotation note labels on the screenshot canvas. Four visual states shown side by side.</p>
+
+  <span class="where-tag">Editor canvas, on every annotation</span>
+
+  <div class="demo-strip screenshot-bg" style="justify-content: center; gap: 16px; padding: 24px 20px;">
+    <div class="flex-col" style="align-items:center;gap:4px;">
+      <div class="note-pill" id="noteDefault">
+        <span class="note-num">1.</span>
+        <span class="note-text">Fix header spacing</span>
+      </div>
+      <span class="state-badge">Default</span>
+    </div>
+    <div class="flex-col" style="align-items:center;gap:4px;">
+      <div class="note-pill" style="background:var(--noteHoverBg);border-color:var(--noteHoverBorder);">
+        <span class="note-num">2.</span>
+        <span class="note-text">Swap icon color</span>
+      </div>
+      <span class="state-badge">Hover</span>
+    </div>
+    <div class="flex-col" style="align-items:center;gap:4px;">
+      <div class="note-pill selected">
+        <span class="note-num">3.</span>
+        <span class="note-text">Reduce padding</span>
+      </div>
+      <span class="state-badge">Selected</span>
+    </div>
+    <div class="flex-col" style="align-items:center;gap:4px;">
+      <div class="note-pill editing">
+        <span class="note-num">4.</span>
+        <span class="note-text">Typing here<span class="cursor-blink"></span></span>
+      </div>
+      <span class="state-badge">Editing</span>
+    </div>
+  </div>
+
+  <div class="demo-strip screenshot-bg mt-8" style="justify-content:center; padding: 20px;">
+    <div class="demo-label" style="color:rgba(0,0,0,0.45);text-align:center;">Interactive &mdash; hover any pill below</div>
+  </div>
+  <div class="demo-strip screenshot-bg" style="margin-top:-16px;border-top:none;border-top-left-radius:0;border-top-right-radius:0;justify-content:center;gap:12px;padding:16px 20px 24px;">
+    <div class="note-pill">
+      <span class="note-num">1.</span>
+      <span class="note-text">Align to grid</span>
+    </div>
+    <div class="note-pill">
+      <span class="note-num">2.</span>
+      <span class="note-text">Use 8px gap</span>
+    </div>
+    <div class="note-pill">
+      <span class="note-num">3.</span>
+      <span class="note-text">Check contrast</span>
+    </div>
+  </div>
+
+  <table class="token-table">
+    <thead><tr><th>State</th><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Default</td><td>Background</td><td><code>redNoteBg</code></td><td><span class="swatch" style="background:rgba(255,244,244,0.72)"></span>rgba(255,244,244,0.72)</td></tr>
+      <tr><td>Default</td><td>Border</td><td><code>redNoteBorder</code></td><td><span class="swatch" style="background:rgba(180,180,180,0.22)"></span>rgba(180,180,180,0.22)</td></tr>
+      <tr><td>Hover</td><td>Background</td><td><code>noteHoverBg</code></td><td><span class="swatch" style="background:rgba(255,244,244,0.80)"></span>rgba(255,244,244,0.80)</td></tr>
+      <tr><td>Hover</td><td>Border</td><td><code>noteHoverBorder</code></td><td><span class="swatch" style="background:rgba(239,68,68,0.45)"></span>rgba(239,68,68,0.45)</td></tr>
+      <tr><td>Selected</td><td>Background</td><td><code>noteSelectedBg</code></td><td><span class="swatch" style="background:rgba(255,244,244,0.88)"></span>rgba(255,244,244,0.88)</td></tr>
+      <tr><td>Selected</td><td>Border</td><td><code>noteSelectedBorder</code></td><td><span class="swatch" style="background:rgba(239,68,68,0.55)"></span>rgba(239,68,68,0.55)</td></tr>
+      <tr><td>Editing</td><td>Background</td><td><code>noteEditingBg</code></td><td><span class="swatch" style="background:rgba(255,250,250,0.96)"></span>rgba(255,250,250,0.96)</td></tr>
+      <tr><td>Editing</td><td>Border</td><td><code>red</code></td><td><span class="swatch" style="background:#EF4444"></span>#EF4444</td></tr>
+      <tr><td>All</td><td>Prefix color</td><td><code>notePrefixColor</code></td><td><span class="swatch" style="background:rgba(153,27,27,0.45)"></span>rgba(153,27,27,0.45)</td></tr>
+      <tr><td>All</td><td>Text color</td><td><code>noteTextColor</code></td><td><span class="swatch" style="background:#7f1d1d"></span>#7f1d1d</td></tr>
+      <tr><td>All</td><td>Height</td><td><code>noteHeight</code></td><td>26px</td></tr>
+      <tr><td>All</td><td>Corner radius</td><td><code>noteCornerRadius</code></td><td>13px</td></tr>
+      <tr><td>All</td><td>Prefix font</td><td><code>noteNumberFont</code></td><td>system 8px semibold</td></tr>
+      <tr><td>All</td><td>Text font</td><td><code>noteTextFont</code></td><td>system 12px regular</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════ 7. TITLE PILLS ══════════════ -->
+<section>
+  <h2>7. Title Pills</h2>
+  <p class="section-desc">Filmstrip image header — editable title + role dropdown. Color-coded by role. Height: <code>titlePillHeight</code> (30px), full pill radius.</p>
+
+  <div class="demo-strip" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding:20px;background:rgba(30,30,30,0.92);border-radius:12px">
+    <!-- Observed -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#98989d">Observed</span>
+      <div style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px 0 12px;border-radius:999px;background:var(--roleObservedBg);border:1px solid var(--roleObservedBorder);box-shadow:0 3px 10px rgba(0,0,0,0.12)">
+        <span style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">Homepage screenshot</span>
+        <select style="appearance:none;-webkit-appearance:none;background:transparent;border:none;font-size:9px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;outline:none;padding:0 2px" onchange="switchTitlePillRole(this)">
+          <option selected>Observed</option><option>Expected</option><option>Reference</option>
+        </select>
+      </div>
+    </div>
+    <!-- Expected -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#98989d">Expected</span>
+      <div style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px 0 12px;border-radius:999px;background:var(--roleExpectedBg);border:1px solid var(--roleExpectedBorder);box-shadow:0 3px 10px rgba(0,0,0,0.12)">
+        <span style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">Design mockup</span>
+        <select style="appearance:none;-webkit-appearance:none;background:transparent;border:none;font-size:9px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;outline:none;padding:0 2px">
+          <option>Observed</option><option selected>Expected</option><option>Reference</option>
+        </select>
+      </div>
+    </div>
+    <!-- Reference -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#98989d">Reference</span>
+      <div style="display:inline-flex;align-items:center;gap:4px;height:30px;padding:0 10px 0 12px;border-radius:999px;background:var(--roleReferenceBg);border:1px solid var(--roleReferenceBorder);box-shadow:0 3px 10px rgba(0,0,0,0.12)">
+        <span style="font-size:10px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">Competitor example</span>
+        <select style="appearance:none;-webkit-appearance:none;background:transparent;border:none;font-size:9px;font-weight:600;color:rgba(255,255,255,0.6);cursor:pointer;outline:none;padding:0 2px">
+          <option>Observed</option><option>Expected</option><option>Reference</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <table class="token-table" style="margin-top:16px">
+    <thead><tr><th>Token</th><th>Value</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td><code>titlePillHeight</code></td><td>30px</td><td>Pill height</td></tr>
+      <tr><td><code>titlePillGap</code></td><td>6px</td><td>Gap between pill bottom and image top</td></tr>
+      <tr><td><code>titlePillExportShadow</code></td><td>0 2px 8px rgba(0,0,0,0.3)</td><td>Shadow on baked-in export pill</td></tr>
+      <tr><td><code>roleObservedBg / Border</code></td><td>Purple tint</td><td>Observed pill colors</td></tr>
+      <tr><td><code>roleExpectedBg / Border</code></td><td>Green tint</td><td>Expected pill colors</td></tr>
+      <tr><td><code>roleReferenceBg / Border</code></td><td>Blue tint</td><td>Reference pill colors</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ══════════════ BOTTOM: WHICH BUTTON SHOULD I USE? ══════════════ -->
+<section>
+  <h2>Which button should I use?</h2>
+  <p class="section-desc">Quick decision guide. Find the closest match and reuse its token pattern.</p>
+
+  <table class="decision-table">
+    <thead>
+      <tr><th>I need...</th><th>Use this pattern</th><th>Key tokens</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Primary action (copy/save)</td>
+        <td>Copy Button (purple)</td>
+        <td><code>purpleButton</code>, <code>purpleButtonBg</code></td>
+      </tr>
+      <tr>
+        <td>Secondary action (settings)</td>
+        <td>Settings Pill</td>
+        <td><code>settingsPillBorder</code>, <code>settingsPillFill</code></td>
+      </tr>
+      <tr>
+        <td>Tool selection</td>
+        <td>Circular Icon Button</td>
+        <td><code>toolActiveBg</code>, <code>iconDefault</code></td>
+      </tr>
+      <tr>
+        <td>Mode switch (2 options)</td>
+        <td>Segmented Control</td>
+        <td><code>toggleActiveBg</code>, <code>toggleBg</code></td>
+      </tr>
+      <tr>
+        <td>Menu item with shortcut</td>
+        <td>Popover Menu Row</td>
+        <td>system label colors</td>
+      </tr>
+      <tr>
+        <td>Success/copied confirmation</td>
+        <td>Green state overlay</td>
+        <td><code>copiedGreenBorder</code>, <code>copiedGreenBg</code></td>
+      </tr>
+      <tr>
+        <td>Annotation note label</td>
+        <td>Note Pill</td>
+        <td><code>redNoteBg</code>, <code>noteHoverBg</code></td>
+      </tr>
+      <tr>
+        <td>Close/destructive action</td>
+        <td>Red Icon Button</td>
+        <td><code>closeHoverBg</code>, <code>closeIconHover</code></td>
+      </tr>
+      <tr>
+        <td>Small status indicator pill</td>
+        <td>Setup Small Pill</td>
+        <td><code>purpleButtonBg</code>, <code>copiedGreenBg</code></td>
+      </tr>
+      <tr>
+        <td>Large success action</td>
+        <td>Setup Complete Button</td>
+        <td><code>copiedGreenText</code>, <code>copiedGreenBg</code></td>
+      </tr>
+      <tr>
+        <td>Image header with role</td>
+        <td>Title Pill</td>
+        <td><code>roleObservedBg</code>, <code>titlePillHeight</code></td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+</div><!-- /.container -->
+
+<script>
+  // ── Theme Toggle (segmented) ──
+  function setTheme(mode) {
+    var root = document.documentElement;
+    if (mode === 'dark') {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    document.querySelectorAll('.theme-seg').forEach(function(s) { s.classList.remove('active'); });
+    event.target.classList.add('active');
+  }
+
+  // ── Copy Button: 2-second green "Copied" state ──
+  function triggerCopied(btn, originalLabel) {
+    if (btn.classList.contains('copied')) return;
+    btn.classList.add('copied');
+    var span = btn.querySelector('span');
+    var svg = btn.querySelector('svg');
+    var oldHTML = svg.outerHTML;
+    svg.outerHTML = '<svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="2.5 6.5 5 9 9.5 3.5"/></svg>';
+    span.textContent = 'Copied!';
+    setTimeout(function() {
+      btn.classList.remove('copied');
+      btn.querySelector('svg').outerHTML = oldHTML;
+      span.textContent = originalLabel;
+    }, 2000);
+  }
+
+  // ── Setup Button: success state (now uses settings-pill class) ──
+  function triggerSetupSuccess(btn, originalLabel) {
+    if (btn.classList.contains('success')) return;
+    btn.classList.add('success');
+    btn.textContent = 'Done!';
+    setTimeout(function() {
+      btn.classList.remove('success');
+      btn.textContent = originalLabel;
+    }, 2000);
+  }
+
+  // ── Setup Complete Button: success flash ──
+  function triggerCompleteSuccess(btn) {
+    if (btn.classList.contains('success')) return;
+    var originalText = btn.innerHTML;
+    btn.classList.add('success');
+    btn.textContent = 'Launching!';
+    setTimeout(function() {
+      btn.classList.remove('success');
+      btn.innerHTML = originalText;
+    }, 2000);
+  }
+
+  // ── Tool buttons: toggle active ──
+  function toggleToolActive(btn) {
+    var strip = btn.closest('.demo-strip');
+    var allTools = strip.querySelectorAll('.icon-btn.tool-btn');
+    allTools.forEach(function(t) {
+      t.classList.remove('active');
+      var s = t.querySelector('svg');
+      if (s) s.setAttribute('stroke', 'var(--iconDefault)');
+    });
+    btn.classList.add('active');
+    var svg = btn.querySelector('svg');
+    if (svg) svg.setAttribute('stroke', 'var(--purpleLight)');
+  }
+
+  // ── Segmented control ──
+  function switchSegment(seg) {
+    var parent = seg.parentElement;
+    parent.querySelectorAll('.segment').forEach(function(s) { s.classList.remove('active'); });
+    seg.classList.add('active');
+  }
+</script>
+</body>
+</html>
