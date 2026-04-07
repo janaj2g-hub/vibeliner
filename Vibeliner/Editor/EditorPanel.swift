@@ -437,9 +437,15 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // Insert filmstrip where the canvasView is
             container.addSubview(grid, positioned: .above, relativeTo: canvasView)
 
-            // Hide the single-image canvas AND annotation overlay.
+            // Hide the single-image canvas view (but NOT the annotation overlay)
             canvasView.isHidden = true
-            canvasOverlay?.isHidden = true
+
+            // VIB-289: Reparent annotation overlay as a sibling ABOVE the grid in the container.
+            // It must NOT be a child of the grid (covers cells) or hidden (breaks annotations).
+            if let canvas = canvasOverlay {
+                canvas.removeFromSuperview()
+                container.addSubview(canvas, positioned: .above, relativeTo: grid)
+            }
 
             self.filmstripGridView = grid
         }
@@ -492,7 +498,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             height: clampedHeight
         )
 
-        setFrame(newFrame, display: true, animate: true)
+        // VIB-291: Instant resize (no animation) — avoids stutter from competing animations
+        setFrame(newFrame, display: true, animate: false)
 
         // Resize container to match
         contentView?.setFrameSize(newFrame.size)
@@ -518,6 +525,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let pillX = (newTotalWidth - statusPill.frame.width) / 2
         let pillY = canvasY - 32 - statusPill.frame.height
         statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
+
+        // VIB-289: Resize annotation overlay to match the filmstrip grid frame
+        if let canvas = canvasOverlay, let grid = filmstripGridView {
+            canvas.frame = grid.frame
+        }
     }
 
     /// VIB-266: Update the status pill for current image count.
