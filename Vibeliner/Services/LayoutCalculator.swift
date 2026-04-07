@@ -14,6 +14,9 @@ final class LayoutCalculator {
     /// Minimum cell width before reducing images per row.
     static let minimumCellWidth: CGFloat = 120
 
+    /// Maximum image row height — prevents rows from being taller than the screen.
+    static let maxRowHeight: CGFloat = 350
+
     /// Compute layout frames for the given image sizes.
     ///
     /// - Parameters:
@@ -135,11 +138,21 @@ final class LayoutCalculator {
 
         // Each cell width = (AR / sumAR) * usableWidth
         // Row height = any cell width / its AR (all equal)
-        let imageRowHeight = usableWidth / sumAR
+        var imageRowHeight = usableWidth / sumAR
+
+        // Cap row height to prevent oversized rows on wide windows
+        if imageRowHeight > maxRowHeight {
+            imageRowHeight = maxRowHeight
+        }
+
         let cellHeight = imageRowHeight + titlePillTotalHeight
 
+        // If capped, the row is narrower than available width — center it
+        let actualRowWidth = imageRowHeight * sumAR + gapSpace
+        let xInset = max(0, (availableWidth - actualRowWidth) / 2)
+
         var frames: [LayoutFrame] = []
-        var x: CGFloat = 0
+        var x: CGFloat = xInset
 
         for (_, ar) in aspectRatios.enumerated() {
             let cellWidth = ar * imageRowHeight

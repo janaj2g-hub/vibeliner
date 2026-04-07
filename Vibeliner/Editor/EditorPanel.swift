@@ -396,25 +396,78 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             container.addSubview(grid, positioned: .above, relativeTo: canvasView)
 
             // Hide the single-image canvas AND annotation overlay.
-            // The CanvasView is full-size and intercepts mouse events —
-            // reparenting it onto the filmstrip covered all cells (attempt 2 bug).
-            // Phase 1 does not support per-image annotations on the filmstrip.
             canvasView.isHidden = true
             canvasOverlay?.isHidden = true
 
             self.filmstripGridView = grid
         }
 
-        // Configure with current images (works for both initial and subsequent adds)
-        filmstripGridView?.configure(with: store.images)
+        guard let grid = filmstripGridView else { return }
 
-        // Resize grid frame height to fit content (width stays the same as canvasView)
-        if let grid = filmstripGridView {
-            let contentSize = grid.intrinsicContentSize
-            if contentSize.height > 0 {
-                grid.setFrameSize(NSSize(width: grid.frame.width, height: contentSize.height))
-            }
-        }
+        // Configure with current images
+        grid.configure(with: store.images)
+
+        // Compute the filmstrip's actual content size and resize grid + window
+        let contentSize = grid.intrinsicContentSize
+        let filmH = contentSize.height > 0 ? contentSize.height : displayHeight
+
+        // Resize grid to fit content
+        grid.setFrameSize(NSSize(width: grid.frame.width, height: filmH))
+
+        // Reposition grid vertically so it stays in the correct spot
+        grid.setFrameOrigin(NSPoint(x: canvasView.frame.origin.x, y: canvasView.frame.origin.y))
+
+        // Resize editor window to fit the filmstrip content
+        resizeWindowForFilmstrip(filmstripHeight: filmH)
+    }
+
+    /// Resize the editor window so the filmstrip is fully visible.
+    private func resizeWindowForFilmstrip(filmstripHeight: CGFloat) {
+        guard let screen = self.screen ?? NSScreen.main else { return }
+
+        let toolbarGap: CGFloat = 48
+        let bottomGap: CGFloat = 44
+        let shadowPad: CGFloat = 24
+        let overflowPad: CGFloat = 200
+
+        let newContentHeight = filmstripHeight
+        let newTotalHeight = newContentHeight + toolbarGap + bottomGap + shadowPad + overflowPad
+        let maxHeight = screen.visibleFrame.height * 0.85
+
+        let clampedHeight = min(newTotalHeight, maxHeight)
+
+        // Keep the window horizontally centered on screen, vertically centered
+        let screenFrame = screen.visibleFrame
+        let newFrame = NSRect(
+            x: frame.origin.x,
+            y: screenFrame.midY - clampedHeight / 2,
+            width: frame.width,
+            height: clampedHeight
+        )
+
+        setFrame(newFrame, display: true, animate: true)
+
+        // Resize container to match
+        contentView?.setFrameSize(newFrame.size)
+
+        // Reposition grid inside the resized container
+        let canvasY = bottomGap + overflowPad / 2
+        filmstripGridView?.setFrameOrigin(NSPoint(
+            x: filmstripGridView?.frame.origin.x ?? canvasView.frame.origin.x,
+            y: canvasY
+        ))
+
+        // Reposition toolbar above filmstrip
+        let toolbarY = canvasY + filmstripHeight + (toolbarGap - DesignTokens.toolbarHeight) / 2
+        toolbarView.setFrameOrigin(NSPoint(
+            x: (frame.width - toolbarView.frame.width) / 2,
+            y: toolbarY
+        ))
+
+        // Reposition status pill below filmstrip
+        let pillX = (frame.width - statusPill.frame.width) / 2
+        let pillY = canvasY - 32 - statusPill.frame.height
+        statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
     }
 
     /// VIB-266: Update the status pill for current image count.
