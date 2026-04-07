@@ -23,6 +23,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var filmstripGridView: FilmstripGridView?
     private var storeObserver: Any?
     private var keyMonitor: Any?
+    /// VIB-271: Currently selected image index in the filmstrip (for deletion).
+    /// Mutually exclusive with annotation selection.
+    private var selectedImageIndex: Int?
 
     init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
         self.screenshotImage = image
@@ -95,6 +98,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         // Undo/redo manager
         self.undoRedoManager = UndoRedoManager(store: annotationStore)
+        // VIB-271: Wire image undo delegate
+        undoRedoManager.imageUndoDelegate = self
+
+        // VIB-271: Wire image click callback for image selection
+        canvas.onImageClicked = { [weak self] index in
+            self?.selectImage(at: index)
+        }
 
         // Wire tools
         selectTool.editorPanel = self
@@ -152,8 +162,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.statusPill.updateNoteCount(self.annotationStore.count)
             // Reset copy buttons to purple on any annotation change
             self.toolbarView.resetCopyState()
-            // VIB-202: Enable trash only when an annotation is selected
-            self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
+            // VIB-202/VIB-271: Enable trash when annotation OR image is selected
+            let hasAnnotationSel = self.annotationStore.selectedAnnotation != nil
+            // VIB-271: If an annotation is selected, clear image selection (mutual exclusion)
+            if hasAnnotationSel && self.selectedImageIndex != nil {
+                self.deselectImage()
+            }
+            self.toolbarView.updateTrashState(hasSelection: hasAnnotationSel || self.selectedImageIndex != nil)
         }
 
         // VIB-193: Key monitor — when editing, only intercept Escape BEFORE handleKeyEvent
@@ -269,6 +284,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let keyCode = event.keyCode
 
         if keyCode == 53 { // Escape
+            // VIB-271: If an image is selected, deselect it — do NOT close
+            if selectedImageIndex != nil {
+                deselectImage()
+                toolbarView.updateTrashState(hasSelection: false)
+                return true
+            }
             // VIB-213: If a shape is selected, deselect it and hide handles — do NOT close
             if let canvas = canvasOverlay, canvas.marksLayer.selectedId != nil {
                 annotationStore.deselectAll()
@@ -323,6 +344,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestDelete() {
+        // VIB-271: If an image is selected (not an annotation), delete the image
+        if let imgIdx = selectedImageIndex {
+            deleteImage(at: imgIdx)
+            return
+        }
         // Delete the selected annotation (not the entire capture)
         if let selected = annotationStore.selectedAnnotation {
             undoRedoManager.record(.remove(annotation: selected))
@@ -453,6 +479,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             }
             grid.onRoleChanged = { [weak self] idx, role in
                 self?.captureStore?.updateRole(at: idx, role: role)
+            }
+
+            // VIB-271: Wire image selection callback
+            grid.onImageSelected = { [weak self] idx in
+                self?.selectImage(at: idx)
             }
 
             // Insert filmstrip where the canvasView is
@@ -589,5 +620,236 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let noteText = noteCount == 1 ? "1 note" : "\(noteCount) notes"
             statusPill.updateCompositeText("composite \u{00B7} \(imgText) \u{00B7} \(noteText)")
         }
+    }
+
+    // MARK: - VIB-271: Image selection and deletion
+
+    /// Select an image in the filmstrip. Mutually exclusive with annotation selection.
+    private func selectImage(at index: Int) {
+        // Deselect any selected annotation
+        if annotationStore.selectedAnnotation != nil {
+            annotationStore.deselectAll()
+            canvasOverlay?.marksLayer.selectedId = nil
+            canvasOverlay?.marksLayer.needsDisplay = true
+        }
+
+        selectedImageIndex = index
+        filmstripGridView?.selectedImageIndex = index
+        // Enable trash button for image deletion
+        toolbarView.updateTrashState(hasSelection: true)
+    }
+
+    /// Clear image selection without selecting anything else.
+    private func deselectImage() {
+        selectedImageIndex = nil
+        filmstripGridView?.selectedImageIndex = nil
+    }
+
+    /// Delete the image at the given index from the composite.
+    private func deleteImage(at index: Int) {
+        guard let store = captureStore, index < store.images.count else { return }
+
+        // Snapshot for undo
+        let deletedImage = store.images[index]
+        let removedAnnotations = annotationStore.removeAnnotations(forImageIndex: index)
+
+        // Clear image selection
+        deselectImage()
+
+        // Remove image from data model
+        store.removeImage(at: index)
+
+        // Shift annotation indices down for images above the deleted one
+        annotationStore.shiftImageIndices(above: index)
+
+        // Record undo action (before any UI transitions)
+        undoRedoManager.record(.removeImage(
+            image: deletedImage,
+            annotations: removedAnnotations,
+            imageIndex: index
+        ))
+
+        // Handle transitions
+        if store.images.isEmpty {
+            // 1→0: Close the editor
+            autoSaveManager?.saveNow()
+            close()
+            return
+        }
+
+        if store.isSingleImage {
+            // 2→1: Transition back to single-image mode
+            transitionToSingleImage()
+        } else {
+            // N→N-1 (still composite): refresh filmstrip
+            refreshFilmstrip()
+        }
+
+        // Update UI
+        updateStatusForMultiImage()
+        toolbarView.updateAddImageState(imageCount: store.images.count)
+        toolbarView.updateTrashState(hasSelection: false)
+
+        // Clean up stale image files and trigger auto-save
+        if let folder = captureFolder {
+            store.cleanupStaleImageFiles(in: folder)
+        }
+        autoSaveManager?.saveNow()
+    }
+
+    /// VIB-271: Transition from 2-image composite back to single-image mode.
+    private func transitionToSingleImage() {
+        guard let store = captureStore, store.isSingleImage else { return }
+        guard let container = contentView else { return }
+
+        // Animate title pills out
+        filmstripGridView?.updatePillVisibility(show: false, animated: true)
+
+        // Tear down filmstrip after animation
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) { [weak self] in
+            guard let self else { return }
+
+            // Remove filmstrip grid
+            self.filmstripGridView?.removeFromSuperview()
+            self.filmstripGridView = nil
+
+            // Show single-image canvas view
+            self.canvasView.isHidden = false
+
+            // Reparent annotation overlay back onto canvasView
+            if let canvas = self.canvasOverlay {
+                canvas.removeFromSuperview()
+                self.canvasView.addSubview(canvas)
+                canvas.filmstripGrid = nil
+                canvas.frame = NSRect(origin: .zero, size: self.canvasView.frame.size)
+            }
+
+            // Resize window back to single-image size
+            self.resizeWindowForSingleImage()
+
+            // Recalculate annotation positions for single-image layout
+            self.annotationStore.recalculateAbsolutePositions()
+
+            // Update auto-save canvas size
+            self.autoSaveManager?.canvasSize = NSSize(
+                width: self.displayWidth, height: self.displayHeight
+            )
+
+            // Update status pill
+            if let img = store.images.first {
+                self.statusPill.updateDimensions(
+                    width: Int(img.originalSize.width),
+                    height: Int(img.originalSize.height)
+                )
+            }
+        }
+    }
+
+    /// VIB-271: Resize the editor window back to single-image dimensions.
+    private func resizeWindowForSingleImage() {
+        guard let screen = self.screen ?? NSScreen.main else { return }
+
+        let toolbarGap: CGFloat = 48
+        let bottomGap: CGFloat = 44
+        let shadowPad: CGFloat = 24
+        let overflowPad: CGFloat = 200
+        let screenFrame = screen.visibleFrame
+        let dw = displayWidth
+        let dh = displayHeight
+
+        let totalHeight = dh + toolbarGap + bottomGap + shadowPad + overflowPad
+        let totalWidth = max(dw, toolbarView.frame.width) + overflowPad * 2
+
+        let newFrame = NSRect(
+            x: screenFrame.midX - totalWidth / 2,
+            y: screenFrame.midY - totalHeight / 2,
+            width: totalWidth,
+            height: totalHeight
+        )
+
+        setFrame(newFrame, display: true, animate: true)
+        contentView?.setFrameSize(newFrame.size)
+
+        // Reposition canvas
+        let canvasX = overflowPad + (totalWidth - overflowPad * 2 - dw) / 2
+        let canvasY = bottomGap + overflowPad / 2
+        canvasView.frame = NSRect(x: canvasX, y: canvasY, width: dw, height: dh)
+
+        // Reposition toolbar
+        let toolbarY = canvasY + dh + (toolbarGap - DesignTokens.toolbarHeight) / 2
+        toolbarView.setFrameOrigin(NSPoint(
+            x: (totalWidth - toolbarView.frame.width) / 2,
+            y: toolbarY
+        ))
+
+        // Reposition status pill
+        let pillX = (totalWidth - statusPill.frame.width) / 2
+        let pillY = canvasY - 32 - statusPill.frame.height
+        statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
+
+        // Resize annotation overlay to match canvas
+        canvasOverlay?.frame = NSRect(origin: .zero, size: NSSize(width: dw, height: dh))
+    }
+}
+
+// MARK: - VIB-271: ImageUndoDelegate
+
+extension EditorPanel: ImageUndoDelegate {
+
+    func undoImageDeletion(image: CaptureImage, annotations: [Annotation], at index: Int) {
+        guard let store = captureStore else { return }
+
+        // Shift existing annotation indices up to make room
+        annotationStore.shiftImageIndicesUp(at: index)
+
+        // Re-insert the image at its original index
+        store.insertImage(image, at: index)
+
+        // Restore the removed annotations
+        annotationStore.restoreAnnotations(annotations)
+
+        // Rebuild the filmstrip (or transition from single→composite)
+        if store.isComposite {
+            refreshFilmstrip()
+        }
+
+        // Update UI
+        updateStatusForMultiImage()
+        toolbarView.updateAddImageState(imageCount: store.images.count)
+        autoSaveManager?.saveNow()
+    }
+
+    func redoImageDeletion(at index: Int, removedAnnotations: [Annotation]) {
+        guard let store = captureStore, index < store.images.count else { return }
+
+        // Remove annotations for this image
+        _ = annotationStore.removeAnnotations(forImageIndex: index)
+
+        // Remove the image
+        store.removeImage(at: index)
+
+        // Shift annotation indices down
+        annotationStore.shiftImageIndices(above: index)
+
+        // Handle transitions
+        if store.images.isEmpty {
+            autoSaveManager?.saveNow()
+            close()
+            return
+        }
+
+        if store.isSingleImage {
+            transitionToSingleImage()
+        } else {
+            refreshFilmstrip()
+        }
+
+        updateStatusForMultiImage()
+        toolbarView.updateAddImageState(imageCount: store.images.count)
+
+        if let folder = captureFolder {
+            store.cleanupStaleImageFiles(in: folder)
+        }
+        autoSaveManager?.saveNow()
     }
 }

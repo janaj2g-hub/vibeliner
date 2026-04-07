@@ -202,6 +202,14 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
     }
 
+    // MARK: - Image Selection (VIB-271)
+
+    /// VIB-271: Selected image cell border — purple highlight
+    static let imageSelectionBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.70)
+
+    /// VIB-271: Selected image cell background tint
+    static let imageSelectionBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.08)
+
     // MARK: - Add Image Button
 
     /// rgba(175, 169, 236, 0.14) — add image button bg

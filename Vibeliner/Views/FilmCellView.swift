@@ -14,6 +14,11 @@ final class FilmCellView: NSView {
     private(set) var imageIndex: Int = 0
     var showTitlePill: Bool = false
 
+    /// VIB-271: Whether this cell's image is selected for deletion.
+    var isImageSelected: Bool = false {
+        didSet { updateSelectionAppearance() }
+    }
+
     // MARK: - Subviews
 
     private let imageView: NSImageView = {
@@ -93,6 +98,18 @@ final class FilmCellView: NSView {
         } else {
             // No pill — image fills entire cell
             imageView.frame = bounds
+        }
+    }
+
+    // MARK: - VIB-271: Selection indicator
+
+    private func updateSelectionAppearance() {
+        if isImageSelected {
+            imageView.layer?.borderWidth = 2
+            imageView.layer?.borderColor = DesignTokens.imageSelectionBorder.cgColor
+        } else {
+            imageView.layer?.borderWidth = 0
+            imageView.layer?.borderColor = nil
         }
     }
 }

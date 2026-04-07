@@ -134,6 +134,64 @@ final class AnnotationStore {
         notifyChange()
     }
 
+    // MARK: - VIB-271: Batch operations for image deletion
+
+    /// Remove all annotations whose parentImageIndex matches the given index.
+    /// Also removes cross-image arrows that reference the deleted image as endImageIndex.
+    /// Returns the removed annotations (for undo).
+    func removeAnnotations(forImageIndex deletedIndex: Int) -> [Annotation] {
+        let removed = annotations.filter { a in
+            if a.parentImageIndex == deletedIndex { return true }
+            // Cross-image arrows: remove if end point is on the deleted image
+            if let endIdx = a.endImageIndex, endIdx == deletedIndex { return true }
+            return false
+        }
+        annotations.removeAll { a in
+            if a.parentImageIndex == deletedIndex { return true }
+            if let endIdx = a.endImageIndex, endIdx == deletedIndex { return true }
+            return false
+        }
+        return removed
+    }
+
+    /// Shift parentImageIndex (and endImageIndex) for annotations on images after the deleted index.
+    /// Call after removing an image so annotation indices stay aligned with the data model.
+    func shiftImageIndices(above deletedIndex: Int) {
+        for i in annotations.indices {
+            if annotations[i].parentImageIndex > deletedIndex {
+                annotations[i].parentImageIndex -= 1
+            }
+            if let endIdx = annotations[i].endImageIndex, endIdx > deletedIndex {
+                annotations[i].endImageIndex = endIdx - 1
+            }
+        }
+        renumber()
+        notifyChange()
+    }
+
+    /// Restore annotations from a previous image deletion (undo).
+    /// Re-inserts all annotations and renumbers.
+    func restoreAnnotations(_ restoredAnnotations: [Annotation]) {
+        annotations.append(contentsOf: restoredAnnotations)
+        // Sort by original number to restore order
+        annotations.sort { $0.number < $1.number }
+        renumber()
+        notifyChange()
+    }
+
+    /// Shift image indices UP for annotations on images at or above the given index.
+    /// Used when undoing an image deletion — makes room for the restored image.
+    func shiftImageIndicesUp(at restoredIndex: Int) {
+        for i in annotations.indices {
+            if annotations[i].parentImageIndex >= restoredIndex {
+                annotations[i].parentImageIndex += 1
+            }
+            if let endIdx = annotations[i].endImageIndex, endIdx >= restoredIndex {
+                annotations[i].endImageIndex = endIdx + 1
+            }
+        }
+    }
+
     // MARK: - VIB-268: Image-relative coordinate system
 
     /// Compute image-relative coordinates for an annotation from its absolute position.

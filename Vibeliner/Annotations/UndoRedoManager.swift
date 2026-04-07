@@ -6,6 +6,16 @@ enum UndoAction {
     case move(id: UUID, oldPosition: AnnotationPosition, newPosition: AnnotationPosition)
     case resize(id: UUID, oldPosition: AnnotationPosition, newPosition: AnnotationPosition)
     case editText(id: UUID, oldText: String, newText: String)
+    /// VIB-271: Image deletion — stores the removed image and its annotations for undo.
+    case removeImage(image: CaptureImage, annotations: [Annotation], imageIndex: Int)
+}
+
+/// VIB-271: Delegate for image-level undo/redo operations.
+/// EditorPanel conforms to this — it knows how to restore/remove images,
+/// refresh the filmstrip, and update the capture store.
+protocol ImageUndoDelegate: AnyObject {
+    func undoImageDeletion(image: CaptureImage, annotations: [Annotation], at index: Int)
+    func redoImageDeletion(at index: Int, removedAnnotations: [Annotation])
 }
 
 final class UndoRedoManager {
@@ -14,6 +24,9 @@ final class UndoRedoManager {
     private var undoStack: [UndoAction] = []
     private var redoStack: [UndoAction] = []
     private var isApplying = false
+
+    /// VIB-271: Delegate for image-level undo/redo.
+    weak var imageUndoDelegate: ImageUndoDelegate?
 
     var canUndo: Bool { !undoStack.isEmpty }
     var canRedo: Bool { !redoStack.isEmpty }
@@ -63,6 +76,8 @@ final class UndoRedoManager {
             store.updatePosition(id: id, position: oldPosition)
         case .editText(let id, let oldText, _):
             store.update(id: id, noteText: oldText)
+        case .removeImage(let image, let annotations, let idx):
+            imageUndoDelegate?.undoImageDeletion(image: image, annotations: annotations, at: idx)
         }
     }
 
@@ -78,6 +93,8 @@ final class UndoRedoManager {
             store.updatePosition(id: id, position: newPosition)
         case .editText(let id, _, let newText):
             store.update(id: id, noteText: newText)
+        case .removeImage(_, let annotations, let idx):
+            imageUndoDelegate?.redoImageDeletion(at: idx, removedAnnotations: annotations)
         }
     }
 }

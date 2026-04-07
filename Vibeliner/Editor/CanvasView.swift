@@ -12,6 +12,8 @@ final class CanvasView: NSView, NotePillDelegate {
     weak var filmstripGrid: FilmstripGridView?
     /// VIB-269: Reference to capture store for image prefix computation.
     weak var captureStore: CaptureStore?
+    /// VIB-271: Called when user clicks on an image area (not annotation) in composite mode.
+    var onImageClicked: ((Int) -> Void)?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
 
@@ -260,6 +262,19 @@ final class CanvasView: NSView, NotePillDelegate {
                 marksLayer.needsDisplay = true
             }
             // Fall through to activeTool?.mouseDown (creates new shape)
+        }
+
+        // VIB-271: When select tool is active and no annotation is hit in composite mode,
+        // check if user clicked on an image area → report as image selection.
+        if let tool = activeTool, tool.toolType == .select {
+            let hitAnnotation = hitTestAnnotation(at: point)
+            if hitAnnotation == nil, let grid = filmstripGrid, grid.isComposite {
+                let pointInGrid = convert(point, to: grid)
+                if let imgIdx = grid.imageIndex(at: pointInGrid) {
+                    onImageClicked?(imgIdx)
+                    return
+                }
+            }
         }
 
         activeTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)

@@ -43,6 +43,16 @@ final class FilmstripGridView: NSView {
     /// The fixed row height for image content (excluding title pill area).
     var rowHeight: CGFloat = 300
 
+    // MARK: - VIB-271: Image selection
+
+    /// Index of the currently selected image cell (for deletion), or nil.
+    var selectedImageIndex: Int? {
+        didSet { updateSelectionVisual() }
+    }
+
+    /// Called when user clicks on an image area (not annotation/pill).
+    var onImageSelected: ((Int) -> Void)?
+
     // MARK: - Callbacks
 
     var onTitleChanged: ((Int, String) -> Void)?
@@ -121,6 +131,7 @@ final class FilmstripGridView: NSView {
         }
 
         updateBorder()
+        updateSelectionVisual()
         needsLayout = true
         invalidateIntrinsicContentSize()
     }
@@ -245,6 +256,25 @@ final class FilmstripGridView: NSView {
             width: NSView.noIntrinsicMetric,
             height: totalH
         )
+    }
+
+    // MARK: - VIB-271: Selection visual
+
+    private func updateSelectionVisual() {
+        for (i, cell) in cellViews.enumerated() {
+            cell.isImageSelected = (i == selectedImageIndex)
+        }
+    }
+
+    /// VIB-271: Returns the image index at a given point in the grid's coordinate space,
+    /// or nil if the point is outside any image area (e.g., in padding/gap/title pill).
+    func imageIndex(at pointInGrid: CGPoint) -> Int? {
+        for (i, frame) in imageFrames.enumerated() {
+            if frame.contains(pointInGrid) {
+                return i
+            }
+        }
+        return nil
     }
 
     // MARK: - Border

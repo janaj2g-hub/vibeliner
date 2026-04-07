@@ -64,6 +64,13 @@ final class CaptureStore {
         return .observed
     }
 
+    /// VIB-271: Insert an image at a specific index (used for undo).
+    func insertImage(_ image: CaptureImage, at index: Int) {
+        var entry = image
+        images.insert(entry, at: min(index, images.count))
+        reindexImages()
+    }
+
     /// Update indices to match array positions (call after add/remove).
     func reindexImages() {
         for i in images.indices {
@@ -107,6 +114,19 @@ final class CaptureStore {
             // Clean up old screenshot.png if it exists (migrated to multi-image)
             let oldScreenshot = folder.appendingPathComponent("screenshot.png")
             try? FileManager.default.removeItem(at: oldScreenshot)
+        }
+    }
+
+    /// VIB-271: Clean up stale image files after deletion.
+    /// Removes image_N.png files with index higher than the current image count.
+    func cleanupStaleImageFiles(in folder: URL) {
+        let fm = FileManager.default
+        var idx = images.count + 1
+        while true {
+            let fileURL = folder.appendingPathComponent("image_\(idx).png")
+            guard fm.fileExists(atPath: fileURL.path) else { break }
+            try? fm.removeItem(at: fileURL)
+            idx += 1
         }
     }
 
