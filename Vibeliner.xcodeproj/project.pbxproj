@@ -66,6 +66,7 @@
 		F20000010000000000000004 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000004 /* FilmCellView.swift */; };
 		F20000010000000000000005 /* CompositeStitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000005 /* CompositeStitcher.swift */; };
 		F20000010000000000000006 /* KeyEventGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000006 /* KeyEventGuard.swift */; };
+		F20000010000000000000007 /* CoordinateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000007 /* CoordinateConverter.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -130,6 +131,7 @@
 		F10000010000000000000004 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
 		F10000010000000000000005 /* CompositeStitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeStitcher.swift; sourceTree = "<group>"; };
 		F10000010000000000000006 /* KeyEventGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventGuard.swift; sourceTree = "<group>"; };
+		F10000010000000000000007 /* CoordinateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateConverter.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -350,6 +352,7 @@
 			children = (
 				F10000010000000000000002 /* LayoutCalculator.swift */,
 				F10000010000000000000005 /* CompositeStitcher.swift */,
+				F10000010000000000000007 /* CoordinateConverter.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -496,6 +499,7 @@
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
 				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
 				F20000010000000000000006 /* KeyEventGuard.swift in Sources */,
+				F20000010000000000000007 /* CoordinateConverter.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

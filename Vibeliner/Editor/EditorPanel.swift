@@ -107,6 +107,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvas.undoManager_ = undoRedoManager
         canvas.selectTool = selectTool  // VIB-217: click-through edit
 
+        // VIB-268: Wire image frame provider for relative coordinate system.
+        // The store computes image-relative positions automatically on add/update.
+        annotationStore.imageFrameProvider = { [weak canvas] in
+            canvas?.imageFramesInCanvasCoords() ?? []
+        }
+
         // Auto-save
         self.captureFolder = captureFolder
         if let folder = captureFolder {
@@ -375,6 +381,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.alphaValue = 1.0
             self.makeKeyAndOrderFront(nil)
 
+            // VIB-268: Clear undo stack — layout changed, old absolute positions are stale
+            self.undoRedoManager.clearStacks()
+
             // VIB-261: Switch to filmstrip view
             self.refreshFilmstrip()
 
@@ -506,6 +515,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         // Resize editor window to fit
         resizeWindowForFilmstrip(filmstripHeight: filmH, filmstripWidth: gridWidth)
+
+        // VIB-268: Recalculate annotation positions for the new layout.
+        // Must happen after resize so image frames are in their final positions.
+        annotationStore.recalculateAbsolutePositions()
     }
 
     /// VIB-297: Resize the editor window for the horizontal scroll filmstrip.

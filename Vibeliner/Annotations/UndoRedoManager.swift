@@ -28,6 +28,13 @@ final class UndoRedoManager {
         redoStack.removeAll()
     }
 
+    /// VIB-268: Clear both stacks. Called when the filmstrip layout changes
+    /// (image added/removed) because stored absolute positions become stale.
+    func clearStacks() {
+        undoStack.removeAll()
+        redoStack.removeAll()
+    }
+
     func undo() {
         guard let action = undoStack.popLast() else { return }
         isApplying = true

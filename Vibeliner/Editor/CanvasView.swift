@@ -73,6 +73,33 @@ final class CanvasView: NSView, NotePillDelegate {
         return super.hitTest(point)
     }
 
+    // MARK: - VIB-268: Image frame provider
+
+    /// Returns image frames in canvas (non-flipped) coordinate space.
+    /// In single-image mode: returns the canvas bounds as a single frame.
+    /// In composite mode: converts FilmstripGridView's image frames to canvas coords.
+    func imageFramesInCanvasCoords() -> [CGRect] {
+        guard let grid = filmstripGrid, grid.isComposite else {
+            // Single image: the entire canvas is the image
+            return [bounds]
+        }
+
+        return grid.imageFrames.map { gridRect in
+            // Convert rect corners from grid's flipped coordinate space
+            // to canvas's non-flipped coordinate space via NSView.convert
+            let topLeft = grid.convert(gridRect.origin, to: self)
+            let bottomRight = grid.convert(
+                CGPoint(x: gridRect.maxX, y: gridRect.maxY), to: self
+            )
+            return CGRect(
+                x: min(topLeft.x, bottomRight.x),
+                y: min(topLeft.y, bottomRight.y),
+                width: abs(bottomRight.x - topLeft.x),
+                height: abs(bottomRight.y - topLeft.y)
+            )
+        }
+    }
+
     deinit {
         if let observer = storeObserver {
             NotificationCenter.default.removeObserver(observer)
