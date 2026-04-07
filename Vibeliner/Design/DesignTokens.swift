@@ -214,6 +214,29 @@ enum DesignTokens {
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
     }
 
+    // MARK: - Add Image Button
+
+    /// Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
+    static let addImageBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
+            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08)
+    }
+
+    /// Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)
+    static let addImageBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
+            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.15)
+    }
+
+    /// Add image button hover border — dark: rgba(175,169,236,0.34), light: rgba(83,74,183,0.25)
+    static let addImageHoverBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.34)
+            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.25)
+    }
+
     /// Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)
     static let toolbarButtonHoverBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.06)

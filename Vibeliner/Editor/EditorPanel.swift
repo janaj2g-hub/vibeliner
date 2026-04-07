@@ -357,4 +357,28 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
     }
+
+    // MARK: - VIB-262: Add image
+
+    func toolbarDidRequestAddImage() {
+        // Auto-save before dimming
+        autoSaveManager?.saveNow()
+
+        // Dim editor
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            self.animator().alphaValue = 0.15
+        }
+
+        // Start add-image capture
+        CaptureCoordinator.shared.startAddImageCapture { [weak self] _ in
+            guard let self else { return }
+
+            // Restore editor opacity (image handling is future work)
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.2
+                self.animator().alphaValue = 1.0
+            }
+        }
+    }
 }
