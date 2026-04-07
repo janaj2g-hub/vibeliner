@@ -395,26 +395,18 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // Insert filmstrip where the canvasView is
             container.addSubview(grid, positioned: .above, relativeTo: canvasView)
 
-            // Move annotation overlay from canvasView to filmstrip so it stays visible
-            if let canvas = canvasOverlay {
-                canvas.removeFromSuperview()
-                canvas.frame = NSRect(x: 0, y: 0, width: grid.frame.width, height: grid.frame.height)
-                grid.addSubview(canvas)
-            }
-
-            // Hide the single-image view
+            // Hide the single-image canvas AND annotation overlay.
+            // The CanvasView is full-size and intercepts mouse events —
+            // reparenting it onto the filmstrip covered all cells (attempt 2 bug).
+            // Phase 1 does not support per-image annotations on the filmstrip.
             canvasView.isHidden = true
+            canvasOverlay?.isHidden = true
 
             self.filmstripGridView = grid
         }
 
         // Configure with current images (works for both initial and subsequent adds)
         filmstripGridView?.configure(with: store.images)
-
-        // Resize annotation overlay to match filmstrip
-        if let canvas = canvasOverlay, let grid = filmstripGridView {
-            canvas.frame = NSRect(x: 0, y: 0, width: grid.frame.width, height: grid.frame.height)
-        }
     }
 
     /// VIB-266: Update the status pill for current image count.
