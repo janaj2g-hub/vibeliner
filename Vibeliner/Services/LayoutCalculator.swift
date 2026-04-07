@@ -52,7 +52,8 @@ final class LayoutCalculator {
                 originY: currentY,
                 rowIndex: rowIndex,
                 startIndex: globalIndex,
-                titlePillTotalHeight: pillH
+                titlePillTotalHeight: pillH,
+                maxPerRow: maxPerRow
             )
 
             // Check minimum cell width — reduce per-row count if needed
@@ -69,7 +70,8 @@ final class LayoutCalculator {
                         originY: subY,
                         rowIndex: rowIndex,
                         startIndex: globalIndex,
-                        titlePillTotalHeight: pillH
+                        titlePillTotalHeight: pillH,
+                        maxPerRow: maxPerRow
                     )
                     frames.append(contentsOf: subFrames)
                     globalIndex += subRow.count
@@ -119,7 +121,8 @@ final class LayoutCalculator {
         originY: CGFloat,
         rowIndex: Int,
         startIndex: Int,
-        titlePillTotalHeight: CGFloat = 0
+        titlePillTotalHeight: CGFloat = 0,
+        maxPerRow: Int = 3
     ) -> [LayoutFrame] {
         let count = sizes.count
         guard count > 0 else { return [] }
@@ -143,6 +146,19 @@ final class LayoutCalculator {
         // Cap row height to prevent oversized rows on wide windows
         if imageRowHeight > maxRowHeight {
             imageRowHeight = maxRowHeight
+        }
+
+        // VIB-292: For sparse rows (fewer images than maxPerRow), cap the row height
+        // to what a full row of maxPerRow images with the same average AR would produce.
+        // This prevents a single image in row 2 from spanning full width.
+        if count < maxPerRow && maxPerRow > 0 {
+            let avgAR = sumAR / CGFloat(count)
+            let fullRowSumAR = avgAR * CGFloat(maxPerRow)
+            let fullRowGaps = gap * CGFloat(maxPerRow - 1)
+            let fullRowHeight = (availableWidth - fullRowGaps) / fullRowSumAR
+            if imageRowHeight > fullRowHeight {
+                imageRowHeight = fullRowHeight
+            }
         }
 
         let cellHeight = imageRowHeight + titlePillTotalHeight
