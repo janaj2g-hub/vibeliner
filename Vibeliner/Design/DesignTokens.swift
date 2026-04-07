@@ -214,26 +214,25 @@ enum DesignTokens {
     static let addImageHoverBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.34)
 
     // MARK: - Role Colors (Filmstrip)
-    // VIB-286: Dark chrome bg for all roles, role differentiation via border color only.
+    // VIB-295: Role-tinted backgrounds with higher opacity for readability.
 
-    /// All role pill backgrounds — dark chrome, nearly opaque
-    static let roleObservedBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
-    static let roleExpectedBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
-    static let roleReferenceBg = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    /// Observed role background — purple tint
+    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.35)
 
-    /// Observed role border — purple tint
-    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.4)
+    /// Expected role background — green tint
+    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.35)
 
-    /// Expected role border — green tint
-    static let roleExpectedBorder = NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.4)
+    /// Reference role background — blue tint
+    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.35)
 
-    /// Reference role border — blue tint
-    static let roleReferenceBorder = NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.4)
+    /// Observed role border — purple tint, stronger
+    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.5)
 
-    /// Role dropdown backgrounds (kept for API compat, same dark chrome)
-    static let roleObservedSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
-    static let roleExpectedSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
-    static let roleReferenceSelect = NSColor(red: 30/255, green: 30/255, blue: 34/255, alpha: 0.92)
+    /// Expected role border — green tint, stronger
+    static let roleExpectedBorder = NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.5)
+
+    /// Reference role border — blue tint, stronger
+    static let roleReferenceBorder = NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.5)
 
     // MARK: - Title Pill (Filmstrip)
 
@@ -257,16 +256,14 @@ enum DesignTokens {
     /// 14px gap between filmstrip cells
     static let filmstripGap: CGFloat = 14
 
-    /// 16px padding inside filmstrip container
-    static let filmstripPadding: CGFloat = 16
+    /// VIB-293: Filmstrip padding equals filmstripGap for uniform spacing on all sides
+    static let filmstripPadding: CGFloat = 14
 
-    /// Filmstrip container inset border
-    static let filmstripBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
-        }
-        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.10)
-    }
+    /// VIB-293: Filmstrip container background — dark, ~65% opacity for visual separation
+    static let filmstripBg = NSColor(red: 15/255, green: 15/255, blue: 20/255, alpha: 0.65)
+
+    /// VIB-293: Filmstrip container border — purple-tinted, more visible
+    static let filmstripBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
 
     // MARK: - Dimensions
 
