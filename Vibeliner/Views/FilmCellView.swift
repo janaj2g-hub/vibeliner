@@ -28,6 +28,9 @@ final class FilmCellView: NSView {
 
     let titlePill: TitlePillView
 
+    /// Flipped so pill at top (Y=0), image below.
+    override var isFlipped: Bool { true }
+
     // MARK: - Init
 
     init() {
@@ -75,17 +78,19 @@ final class FilmCellView: NSView {
     override func layout() {
         super.layout()
 
-        let pillAreaH: CGFloat = showTitlePill ? Self.pillAreaHeight : 0
-        let imageH = bounds.height - pillAreaH
-        let imageY: CGFloat = 0
-
-        imageView.frame = NSRect(x: 0, y: imageY, width: bounds.width, height: max(imageH, 0))
-
         if showTitlePill {
+            // Pill at top, image below (flipped coordinates: Y=0 is top)
             let pillW = min(bounds.width - 8, max(100, bounds.width * 0.85))
             let pillX = (bounds.width - pillW) / 2
-            let pillY = imageH + DesignTokens.titlePillGap
+            let pillY: CGFloat = 0
             titlePill.frame = NSRect(x: pillX, y: pillY, width: pillW, height: DesignTokens.titlePillHeight)
+
+            let imageY = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
+            let imageH = bounds.height - imageY
+            imageView.frame = NSRect(x: 0, y: imageY, width: bounds.width, height: max(imageH, 0))
+        } else {
+            // No pill — image fills entire cell
+            imageView.frame = bounds
         }
     }
 }

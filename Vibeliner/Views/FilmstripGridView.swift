@@ -27,6 +27,10 @@ final class FilmstripGridView: NSView {
         fatalError("init(coder:) has not been implemented")
     }
 
+    /// Flipped so Y=0 is at top — content flows top-to-bottom, matching LayoutCalculator's
+    /// row ordering and placing title pills close to the toolbar above.
+    override var isFlipped: Bool { true }
+
     private func commonInit() {
         wantsLayer = true
     }

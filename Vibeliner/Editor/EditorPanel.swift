@@ -47,7 +47,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.displayHeight = dh
 
         // VIB-191: Add overflow padding so note pills can extend beyond canvas
-        let toolbarGap: CGFloat = 24
+        let toolbarGap: CGFloat = 48
         let bottomGap: CGFloat = 44
         let shadowPad: CGFloat = 24
         let overflowPad: CGFloat = 200  // room for pills to extend beyond canvas
