@@ -99,20 +99,22 @@
   --setupKbdBg: rgba(255, 255, 255, 0.08);
   --setupKbdText: rgba(255, 255, 255, 0.55);
 
-  /* Role colors — Filmstrip (dark defaults) */
-  --roleObservedBg: rgba(175, 169, 236, 0.18);
-  --roleObservedBorder: rgba(175, 169, 236, 0.36);
-  --roleObservedSelect: rgba(175, 169, 236, 0.14);
-  --roleExpectedBg: rgba(34, 197, 94, 0.16);
-  --roleExpectedBorder: rgba(134, 239, 172, 0.36);
-  --roleExpectedSelect: rgba(134, 239, 172, 0.14);
-  --roleReferenceBg: rgba(59, 130, 246, 0.16);
-  --roleReferenceBorder: rgba(147, 197, 253, 0.36);
-  --roleReferenceSelect: rgba(147, 197, 253, 0.14);
+  /* Role colors — Filmstrip (static) */
+  --roleObservedBg: rgba(83, 74, 183, 0.50);
+  --roleObservedBorder: rgba(175, 169, 236, 0.55);
+  --roleExpectedBg: rgba(22, 100, 52, 0.45);
+  --roleExpectedBorder: rgba(134, 239, 172, 0.55);
+  --roleReferenceBg: rgba(30, 70, 140, 0.45);
+  --roleReferenceBorder: rgba(147, 197, 253, 0.55);
+
+  /* Add image button */
+  --addImageBg: rgba(175, 169, 236, 0.14);
+  --addImageBorder: rgba(175, 169, 236, 0.22);
+  --addImageHoverBorder: rgba(175, 169, 236, 0.34);
 
   /* Filmstrip container */
   --filmstripGap: 14px;
-  --filmstripPadding: 16px;
+  --filmstripPadding: 14px;
   --filmstripBorder: rgba(175, 169, 236, 0.12);
 
   /* Title pill */
@@ -162,16 +164,6 @@
   --settingsPillText: rgba(114, 103, 221, 1.0);
   --settingsFieldBorder: rgba(15, 23, 42, 0.08);
 
-  /* Role colors — light overrides */
-  --roleObservedBg: rgba(83, 74, 183, 0.12);
-  --roleObservedBorder: rgba(83, 74, 183, 0.24);
-  --roleObservedSelect: rgba(83, 74, 183, 0.10);
-  --roleExpectedBg: rgba(22, 163, 74, 0.12);
-  --roleExpectedBorder: rgba(22, 163, 74, 0.24);
-  --roleExpectedSelect: rgba(22, 163, 74, 0.10);
-  --roleReferenceBg: rgba(37, 99, 235, 0.12);
-  --roleReferenceBorder: rgba(37, 99, 235, 0.24);
-  --roleReferenceSelect: rgba(37, 99, 235, 0.10);
   --filmstripBorder: rgba(83, 74, 183, 0.10);
 
   --page-bg: #f5f5f7;
@@ -1112,16 +1104,12 @@ body {
       <h3>Observed Role (Purple)</h3>
       <div class="swatch-grid">
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.18)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.12)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleObservedBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.18) · light: rgba(83,74,183,0.12)</div><div class="swatch-usage">Observed pill background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(83,74,183,0.50)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleObservedBg <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(83, 74, 183, 0.50)</div><div class="swatch-usage">Observed pill background (static)</div></div>
         </div>
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.24)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleObservedBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.36) · light: rgba(83,74,183,0.24)</div><div class="swatch-usage">Observed pill border</div></div>
-        </div>
-        <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(175,169,236,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(83,74,183,0.10)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleObservedSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(175,169,236,0.14) · light: rgba(83,74,183,0.10)</div><div class="swatch-usage">Observed dropdown background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(175,169,236,0.55)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleObservedBorder <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(175, 169, 236, 0.55)</div><div class="swatch-usage">Observed pill border (static)</div></div>
         </div>
       </div>
     </div>
@@ -1130,16 +1118,12 @@ body {
       <h3>Expected Role (Green)</h3>
       <div class="swatch-grid">
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(34,197,94,0.16)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.12)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleExpectedBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(34,197,94,0.16) · light: rgba(22,163,74,0.12)</div><div class="swatch-usage">Expected pill background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(22,100,52,0.45)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleExpectedBg <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(22, 100, 52, 0.45)</div><div class="swatch-usage">Expected pill background (static)</div></div>
         </div>
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(134,239,172,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.24)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleExpectedBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(134,239,172,0.36) · light: rgba(22,163,74,0.24)</div><div class="swatch-usage">Expected pill border</div></div>
-        </div>
-        <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(134,239,172,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(22,163,74,0.10)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleExpectedSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(134,239,172,0.14) · light: rgba(22,163,74,0.10)</div><div class="swatch-usage">Expected dropdown background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(134,239,172,0.55)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleExpectedBorder <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(134, 239, 172, 0.55)</div><div class="swatch-usage">Expected pill border (static)</div></div>
         </div>
       </div>
     </div>
@@ -1148,16 +1132,31 @@ body {
       <h3>Reference Role (Blue)</h3>
       <div class="swatch-grid">
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(59,130,246,0.16)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.12)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleReferenceBg <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(59,130,246,0.16) · light: rgba(37,99,235,0.12)</div><div class="swatch-usage">Reference pill background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(30,70,140,0.45)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleReferenceBg <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(30, 70, 140, 0.45)</div><div class="swatch-usage">Reference pill background (static)</div></div>
         </div>
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(147,197,253,0.36)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.24)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleReferenceBorder <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(147,197,253,0.36) · light: rgba(37,99,235,0.24)</div><div class="swatch-usage">Reference pill border</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(147,197,253,0.55)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">roleReferenceBorder <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(147, 197, 253, 0.55)</div><div class="swatch-usage">Reference pill border (static)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Image Button -->
+    <div class="swatch-family">
+      <h3>Add Image Button</h3>
+      <div class="swatch-grid">
+        <div class="swatch-card">
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(175,169,236,0.14)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">addImageBg <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(175, 169, 236, 0.14)</div><div class="swatch-usage">Add image button background (static)</div></div>
         </div>
         <div class="swatch-card">
-          <div class="swatch-dual"><div class="dark-half"><div class="fill" style="background:rgba(147,197,253,0.14)"></div><span class="label-small left">dark</span></div><div class="light-half"><div class="fill" style="background:rgba(37,99,235,0.10)"></div><span class="label-small right">light</span></div></div>
-          <div class="swatch-info"><div class="swatch-token">roleReferenceSelect <span class="new-badge">New</span></div><div class="swatch-value">dark: rgba(147,197,253,0.14) · light: rgba(37,99,235,0.10)</div><div class="swatch-usage">Reference dropdown background</div></div>
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(175,169,236,0.22)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">addImageBorder <span class="static-badge">Static</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(175, 169, 236, 0.22)</div><div class="swatch-usage">Add image button border (static)</div></div>
+        </div>
+        <div class="swatch-card">
+          <div class="swatch-color"><div class="checker"></div><div class="fill" style="background:rgba(175,169,236,0.34)"></div></div>
+          <div class="swatch-info"><div class="swatch-token">addImageHoverBorder <span class="static-badge">Static</span> <span class="unused-badge">Unused</span> <span class="new-badge">New</span></div><div class="swatch-value">rgba(175, 169, 236, 0.34)</div><div class="swatch-usage">Add image button hover border (static)</div></div>
         </div>
       </div>
     </div>
@@ -1173,7 +1172,7 @@ body {
       </div>
       <div class="dim-grid" style="margin-top:12px">
         <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">14px</div></div><div class="dim-token">filmstripGap <span class="new-badge">New</span></div><div class="dim-value">14px</div></div>
-        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">16px</div></div><div class="dim-token">filmstripPadding <span class="new-badge">New</span></div><div class="dim-value">16px</div></div>
+        <div class="dim-card"><div class="dim-visual"><div style="font-size:9px;color:var(--page-muted)">14px</div></div><div class="dim-token">filmstripPadding <span class="new-badge">New</span></div><div class="dim-value">14px</div></div>
       </div>
     </div>
 

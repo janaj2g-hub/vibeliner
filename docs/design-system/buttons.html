@@ -1184,6 +1184,44 @@
   </table>
 </section>
 
+<!-- ══════════════ 8. ADD IMAGE BUTTON ══════════════ -->
+<section>
+  <h2>8. Add Image Button</h2>
+  <p class="section-desc">Toolbar inline button for adding images to the filmstrip composite. Purple-tinted pill with text label. Disabled at 6 images (alpha 0.3).</p>
+  <span class="where-tag">Editor Toolbar → right of tools</span>
+
+  <div class="demo-strip" style="display:flex;gap:16px;align-items:center;padding:20px;background:rgba(30,30,30,0.92);border-radius:12px">
+    <!-- Default -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#98989d">Default</span>
+      <div style="display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:13px;background:rgba(175,169,236,0.14);border:1.5px solid rgba(175,169,236,0.22);cursor:pointer">
+        <span style="font-size:11px;font-weight:600;color:#AFA9EC">+ Add image</span>
+      </div>
+    </div>
+    <!-- Disabled -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+      <span style="font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:#98989d">Disabled (6 images)</span>
+      <div style="display:inline-flex;align-items:center;height:26px;padding:0 12px;border-radius:13px;background:rgba(175,169,236,0.14);border:1.5px solid rgba(175,169,236,0.22);opacity:0.3;cursor:not-allowed">
+        <span style="font-size:11px;font-weight:600;color:#AFA9EC">+ Add image</span>
+      </div>
+    </div>
+  </div>
+
+  <table class="token-table" style="margin-top:16px">
+    <thead><tr><th>Property</th><th>Token</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>Background</td><td><code>addImageBg</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.14)"></span>rgba(175,169,236,0.14)</td></tr>
+      <tr><td>Border</td><td><code>addImageBorder</code></td><td><span class="swatch" style="background:rgba(175,169,236,0.22)"></span>rgba(175,169,236,0.22)</td></tr>
+      <tr><td>Border width</td><td>—</td><td>1.5px</td></tr>
+      <tr><td>Corner radius</td><td>—</td><td>13px (half height)</td></tr>
+      <tr><td>Text</td><td><code>purpleLight</code></td><td>#AFA9EC</td></tr>
+      <tr><td>Font</td><td>—</td><td>system 11px semibold</td></tr>
+      <tr><td>Disabled</td><td>—</td><td>alpha 0.3, gesture removed</td></tr>
+      <tr><td>Max images</td><td>—</td><td>6 (horizontal scroll limit)</td></tr>
+    </tbody>
+  </table>
+</section>
+
 <!-- ══════════════ BOTTOM: WHICH BUTTON SHOULD I USE? ══════════════ -->
 <section>
   <h2>Which button should I use?</h2>
@@ -1248,6 +1286,11 @@
         <td>Image header with role</td>
         <td>Title Pill</td>
         <td><code>roleObservedBg</code>, <code>titlePillHeight</code></td>
+      </tr>
+      <tr>
+        <td>Add image to filmstrip</td>
+        <td>Add Image Button</td>
+        <td><code>addImageBg</code>, <code>addImageBorder</code></td>
       </tr>
     </tbody>
   </table>

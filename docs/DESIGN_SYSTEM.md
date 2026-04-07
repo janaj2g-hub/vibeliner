@@ -226,29 +226,37 @@ Canonical reference for every design token in the Vibeliner design system.
 
 | Token Name | Value | Static? | Usage | Consuming Files |
 |---|---|---|---|---|
-| `roleObservedBg` | rgba(83, 74, 183, 0.35) | Yes | Observed role pill background (purple tint) | TitlePillView, CompositeStitcher |
-| `roleObservedBorder` | rgba(175, 169, 236, 0.5) | Yes | Observed role pill border | TitlePillView, CompositeStitcher |
-| `roleExpectedBg` | rgba(22, 100, 52, 0.35) | Yes | Expected role pill background (green tint) | TitlePillView, CompositeStitcher |
-| `roleExpectedBorder` | rgba(134, 239, 172, 0.5) | Yes | Expected role pill border | TitlePillView, CompositeStitcher |
-| `roleReferenceBg` | rgba(30, 70, 140, 0.35) | Yes | Reference role pill background (blue tint) | TitlePillView, CompositeStitcher |
-| `roleReferenceBorder` | rgba(147, 197, 253, 0.5) | Yes | Reference role pill border | TitlePillView, CompositeStitcher |
+| `roleObservedBg` | rgba(83, 74, 183, 0.50) | Yes | Observed role pill background (purple tint) | TitlePillView, CompositeStitcher |
+| `roleObservedBorder` | rgba(175, 169, 236, 0.55) | Yes | Observed role pill border | TitlePillView, CompositeStitcher |
+| `roleExpectedBg` | rgba(22, 100, 52, 0.45) | Yes | Expected role pill background (green tint) | TitlePillView, CompositeStitcher |
+| `roleExpectedBorder` | rgba(134, 239, 172, 0.55) | Yes | Expected role pill border | TitlePillView, CompositeStitcher |
+| `roleReferenceBg` | rgba(30, 70, 140, 0.45) | Yes | Reference role pill background (blue tint) | TitlePillView, CompositeStitcher |
+| `roleReferenceBorder` | rgba(147, 197, 253, 0.55) | Yes | Reference role pill border | TitlePillView, CompositeStitcher |
 
 ### Title Pill Tokens (static)
 
 | Token Name | Value | Usage | Consuming Files |
 |---|---|---|---|
-| `titlePillHeight` | 30 | Title pill height | TBD |
-| `titlePillGap` | 6 | Gap between pill bottom and image top | TBD |
-| `titlePillExportShadow` | NSShadow(offset: 0,-2, blur: 8, color: rgba(0,0,0,0.3)) | Shadow on baked-in export pill for contrast | TBD |
+| `titlePillHeight` | 30 | Title pill height | TitlePillView, CompositeStitcher |
+| `titlePillGap` | 6 | Gap between pill bottom and image top | FilmstripGridView, FilmCellView |
+| `titlePillExportShadow` | NSShadow(offset: 0,-2, blur: 8, color: rgba(0,0,0,0.3)) | Shadow on baked-in export pill for contrast | CompositeStitcher |
 
 ### Filmstrip Container Tokens
 
 | Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
 |---|---|---|---|---|---|
-| `filmstripGap` | 14 | 14 | Yes | Equal gap between all filmstrip cells | FilmstripGridView, LayoutCalculator |
-| `filmstripPadding` | 14 | 14 | Yes | Padding inside filmstrip container (= filmstripGap) | FilmstripGridView |
-| `filmstripBg` | rgba(15, 15, 20, 0.65) | rgba(15, 15, 20, 0.65) | Yes | Container background (multi-image only) | FilmstripGridView |
+| `filmstripGap` | 14 | 14 | Yes | Equal gap between all filmstrip cells | FilmstripGridView, FilmCellView |
+| `filmstripPadding` | 14 | 14 | Yes | Padding inside filmstrip container (= filmstripGap) | FilmstripGridView, EditorPanel |
+| `filmstripBg` | rgba(15, 15, 20, 0.65) | rgba(15, 15, 20, 0.65) | Yes | Container background (multi-image only) | FilmstripGridView, EditorPanel |
 | `filmstripBorder` | rgba(175, 169, 236, 0.20) | rgba(175, 169, 236, 0.20) | Yes | Container border (multi-image only) | FilmstripGridView |
+
+### Add Image Button Tokens (static)
+
+| Token Name | Value | Usage | Consuming Files |
+|---|---|---|---|
+| `addImageBg` | rgba(175, 169, 236, 0.14) | Add image button background | ToolbarView |
+| `addImageBorder` | rgba(175, 169, 236, 0.22) | Add image button border | ToolbarView |
+| `addImageHoverBorder` | rgba(175, 169, 236, 0.34) | Add image button hover border | (unused) |
 
 ---
 
@@ -285,6 +293,7 @@ Canonical reference for every design token in the Vibeliner design system.
 | `tooltipLabelFont` | System 13px Semibold | Wire up | FirstUseTooltipView uses hardcoded fonts |
 | `setupWindowRadius` | 18 | Wire up | Should be applied in SetupWindowController for window corner radius |
 | `setupWindowTitleFont` | System 18px Semibold | Wire up | Should be applied in SetupWindowController for window title |
+| `addImageHoverBorder` | rgba(175, 169, 236, 0.34) | Wire up | Add image button hover border — ToolbarView uses addImageBorder but no hover tracking |
 
 ---
 
@@ -378,3 +387,19 @@ Canonical reference for every design token in the Vibeliner design system.
 - Fonts: `tooltipBodyFont`*, `tooltipLabelFont`*
 
 (*) Token exists but is currently unused.
+
+---
+
+## 8. Architecture Conventions
+
+### KeyEventGuard
+
+`KeyEventGuard.shouldHandleShortcut(in:)` is a centralized guard used in EditorPanel's key event handler to prevent keyboard shortcuts (Delete, Escape, Undo/Redo) from firing while text fields are active. Any view that adds keyboard shortcut handling must use this guard.
+
+- **Source:** `Vibeliner/Editor/KeyEventGuard.swift`
+- **Consumer:** `EditorPanel.swift` (key event monitor and `handleKeyEvent`)
+- **Rule:** Always call `KeyEventGuard.shouldHandleShortcut(in: window)` before processing keyboard shortcuts. Returns `false` when an NSTextField or NSTextView is the first responder.
+
+### Filmstrip Architecture
+
+The multi-image filmstrip uses a single horizontal row with horizontal scroll (max 6 images). See `docs/FILMSTRIP_ARCHITECTURE.md` for the Architecture Decision Record documenting the pivot from multi-row grid to single-row scroll.
