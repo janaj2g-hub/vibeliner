@@ -8,6 +8,7 @@ protocol ToolbarDelegate: AnyObject {
     func toolbarDidRequestRedo()
     func toolbarDidRequestCopyPrompt()
     func toolbarDidRequestCopyImage()
+    func toolbarDidRequestAddImage()
 }
 
 final class ToolbarView: NSView {
@@ -17,6 +18,7 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var trashButton: ToolButton?  // VIB-202: enabled/disabled based on selection
+    private var addImageButton: NSView?   // VIB-262: + Add image
     private var copyImageButton: NSView?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
@@ -235,7 +237,14 @@ final class ToolbarView: NSView {
         redoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestRedo() }
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(redoBtn)
-        x += DesignTokens.iconButtonSize + 20
+        x += DesignTokens.iconButtonSize + 10
+
+        // VIB-262: + Add image button
+        let addImgBtn = makeAddImageButton()
+        addImgBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - addImgBtn.frame.height) / 2))
+        addSubview(addImgBtn)
+        self.addImageButton = addImgBtn
+        x += addImgBtn.frame.width + 10
 
         x = addDivider(at: x)
         x += 10
@@ -368,6 +377,50 @@ final class ToolbarView: NSView {
 
     private func makeCopyButton(title: String) -> CopyPillButton {
         return CopyPillButton(title: title)
+    }
+
+    // VIB-262: + Add image pill button
+    private func makeAddImageButton() -> NSView {
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 90, height: 26))
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 13
+        container.layer?.backgroundColor = DesignTokens.addImageBg.cgColor
+        container.layer?.borderWidth = 1.5
+        container.layer?.borderColor = DesignTokens.addImageBorder.cgColor
+
+        let label = NSTextField(labelWithString: "+ Add image")
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = DesignTokens.purpleLight
+        label.sizeToFit()
+        label.frame.origin = NSPoint(
+            x: (90 - label.frame.width) / 2,
+            y: (26 - label.frame.height) / 2
+        )
+        container.addSubview(label)
+
+        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways, .cursorUpdate], owner: container)
+        container.addTrackingArea(area)
+
+        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
+        container.addGestureRecognizer(clickGR)
+
+        return container
+    }
+
+    @objc private func addImageClicked() {
+        delegate?.toolbarDidRequestAddImage()
+    }
+
+    /// VIB-262: Disable the button at 12 images.
+    func updateAddImageState(imageCount: Int) {
+        addImageButton?.alphaValue = imageCount >= 12 ? 0.3 : 1.0
+        // Remove gesture if disabled
+        if imageCount >= 12 {
+            addImageButton?.gestureRecognizers.removeAll()
+        } else if addImageButton?.gestureRecognizers.isEmpty == true {
+            let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
+            addImageButton?.addGestureRecognizer(clickGR)
+        }
     }
 
     // MARK: - Icon drawing functions

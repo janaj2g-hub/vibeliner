@@ -329,4 +329,54 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
     }
+
+    // MARK: - VIB-262: Add image
+
+    func toolbarDidRequestAddImage() {
+        guard let store = captureStore, store.images.count < 12 else { return }
+
+        // Auto-save before dimming
+        autoSaveManager?.saveNow()
+
+        // Dim editor
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            self.animator().alphaValue = 0.15
+        }
+
+        // Start add-image capture
+        CaptureCoordinator.shared.startAddImageCapture { [weak self] newImage in
+            guard let self else { return }
+
+            // Smart role defaults (VIB-263)
+            let count = store.images.count
+            let role: ImageRole = (count == 1) ? .expected : .observed
+
+            store.addImage(newImage, title: "Image \(count + 1)", role: role)
+
+            // Restore editor opacity
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.2
+                self.animator().alphaValue = 1.0
+            }
+
+            // Update status pill
+            self.updateStatusForMultiImage()
+
+            // Update toolbar add button state
+            self.toolbarView.updateAddImageState(imageCount: store.images.count)
+        }
+    }
+
+    /// VIB-266: Update the status pill for current image count.
+    func updateStatusForMultiImage() {
+        guard let store = captureStore else { return }
+        if store.isComposite {
+            let imgCount = store.images.count
+            let noteCount = annotationStore.count
+            let imgText = imgCount == 1 ? "1 image" : "\(imgCount) images"
+            let noteText = noteCount == 1 ? "1 note" : "\(noteCount) notes"
+            statusPill.updateCompositeText("composite \u{00B7} \(imgText) \u{00B7} \(noteText)")
+        }
+    }
 }

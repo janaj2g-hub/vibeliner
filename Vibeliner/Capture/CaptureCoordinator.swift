@@ -10,8 +10,16 @@ final class CaptureCoordinator {
     private var activeView: CrosshairView?
     private var editorPanel: EditorPanel?
     private var isCapturing = false
+    /// VIB-262: When set, captured image is returned to this handler instead of opening a new editor.
+    private var addImageCompletion: ((NSImage) -> Void)?
 
     private init() {}
+
+    /// VIB-262: Start capture in add-image mode — image returned via completion instead of new editor.
+    func startAddImageCapture(completion: @escaping (NSImage) -> Void) {
+        addImageCompletion = completion
+        startCapture()
+    }
 
     func startCapture() {
         guard !isCapturing else { return }
@@ -33,6 +41,7 @@ final class CaptureCoordinator {
     }
 
     func cancelCapture() {
+        addImageCompletion = nil
         dismissOverlays()
     }
 
@@ -50,6 +59,14 @@ final class CaptureCoordinator {
             guard let image = ScreenCapture.captureRegion(rect: rect, on: screen) else {
                 print("Vibeliner: Capture failed")
                 dismissOverlays()
+                return
+            }
+
+            // VIB-262: Add-image mode — return image to editor instead of opening new one
+            if let completion = self.addImageCompletion {
+                self.addImageCompletion = nil
+                self.cleanupAfterCapture()
+                completion(image)
                 return
             }
 

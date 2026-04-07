@@ -202,6 +202,17 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
     }
 
+    // MARK: - Add Image Button
+
+    /// rgba(175, 169, 236, 0.14) — add image button bg
+    static let addImageBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
+
+    /// rgba(175, 169, 236, 0.22) — add image button border / hover bg
+    static let addImageBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
+
+    /// rgba(175, 169, 236, 0.34) — add image button hover border
+    static let addImageHoverBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.34)
+
     // MARK: - Role Colors (Filmstrip)
 
     /// Observed role pill background — purple tint
