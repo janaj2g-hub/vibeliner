@@ -23,29 +23,43 @@ final class StatusPillView: NSView {
         layer?.shadowRadius = 8
         layer?.shadowOpacity = 1.0
 
-        blurView.material = .hudWindow
+        blurView.material = .popover
         blurView.blendingMode = .behindWindow
         blurView.state = .active
-        blurView.appearance = NSAppearance(named: .darkAqua)
         blurView.wantsLayer = true
         blurView.layer?.cornerRadius = DesignTokens.statusPillCornerRadius
         blurView.layer?.masksToBounds = true
         addSubview(blurView)
 
         tintView.wantsLayer = true
-        tintView.layer?.backgroundColor = DesignTokens.darkChromeStatus.cgColor
         tintView.layer?.cornerRadius = DesignTokens.statusPillCornerRadius
         tintView.layer?.masksToBounds = true
+        tintView.layer?.borderWidth = 1
         addSubview(tintView)
 
         label.font = DesignTokens.statusPillFont
-        label.textColor = .white
+        label.textColor = DesignTokens.statusPillTextColor
         label.alignment = .center
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
         label.isSelectable = false
         addSubview(label)
+
+        refreshAppearanceColors()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshAppearanceColors()
+    }
+
+    private func refreshAppearanceColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            self.tintView.layer?.backgroundColor = DesignTokens.statusPillBg.cgColor
+            self.tintView.layer?.borderColor = DesignTokens.statusPillBorder.cgColor
+        }
+        label.textColor = DesignTokens.statusPillTextColor
     }
 
     func updateDimensions(width: Int, height: Int) {
@@ -75,7 +89,7 @@ final class StatusPillView: NSView {
             guard let self else { return }
             NSAnimationContext.runAnimationGroup({ ctx in
                 ctx.duration = 0.3
-                self.tintView.animator().layer?.backgroundColor = DesignTokens.darkChromeStatus.cgColor
+                self.tintView.animator().layer?.backgroundColor = DesignTokens.statusPillBg.cgColor
             })
             self.label.stringValue = savedText
             self.sizeToFitContent()

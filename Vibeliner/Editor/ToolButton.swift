@@ -47,30 +47,30 @@ final class ToolButton: NSView {
 
         switch style {
         case .close:
-            bgColor = isHovered ? DesignTokens.closeHoverBg : .clear
-            iconColor = isHovered ? DesignTokens.closeIconHover : DesignTokens.iconDefault
+            bgColor = isHovered ? DesignTokens.toolbarCloseHoverBg : .clear
+            iconColor = isHovered ? DesignTokens.toolbarCloseIconHover : DesignTokens.toolbarIconDefault
         case .trash:
             if !isEnabled {
                 bgColor = .clear
-                iconColor = DesignTokens.iconDefault.withAlphaComponent(0.35)
+                iconColor = DesignTokens.toolbarIconDefault.withAlphaComponent(0.35)
             } else if isHovered {
-                bgColor = DesignTokens.trashHoverBg
+                bgColor = DesignTokens.toolbarTrashHoverBg
                 iconColor = DesignTokens.red
             } else {
                 bgColor = .clear
-                iconColor = DesignTokens.iconDefault
+                iconColor = DesignTokens.toolbarIconDefault
             }
         case .tool:
             if isActive {
-                bgColor = DesignTokens.toolActiveBg
-                iconColor = DesignTokens.purpleLight
+                bgColor = DesignTokens.toolbarToolActiveBg
+                iconColor = DesignTokens.toolbarPurpleActive
             } else {
-                bgColor = isHovered ? DesignTokens.buttonHoverBg : .clear
-                iconColor = isHovered ? DesignTokens.iconHover : DesignTokens.iconDefault
+                bgColor = isHovered ? DesignTokens.toolbarButtonHoverBg : .clear
+                iconColor = isHovered ? DesignTokens.toolbarIconHover : DesignTokens.toolbarIconDefault
             }
         case .icon:
-            bgColor = isHovered ? DesignTokens.buttonHoverBg : .clear
-            iconColor = isHovered ? DesignTokens.iconHover : DesignTokens.iconDefault
+            bgColor = isHovered ? DesignTokens.toolbarButtonHoverBg : .clear
+            iconColor = isHovered ? DesignTokens.toolbarIconHover : DesignTokens.toolbarIconDefault
         }
 
         // Draw circular background
