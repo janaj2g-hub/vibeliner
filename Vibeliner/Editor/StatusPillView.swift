@@ -54,10 +54,22 @@ final class StatusPillView: NSView {
 
     func updateNoteCount(_ count: Int) {
         // Parse existing dimensions from label
-        let parts = label.stringValue.components(separatedBy: " · ")
+        let parts = label.stringValue.components(separatedBy: " \u{00B7} ")
         let dims = parts.first ?? ""
         let noteText = count == 1 ? "1 note" : "\(count) notes"
-        updateText("\(dims) · \(noteText)")
+        // Check if this is a composite label
+        if dims.hasPrefix("composite") && parts.count >= 2 {
+            // Preserve "composite · N images" and update notes
+            let imgPart = parts.count >= 2 ? parts[1] : ""
+            updateText("composite \u{00B7} \(imgPart) \u{00B7} \(noteText)")
+        } else {
+            updateText("\(dims) \u{00B7} \(noteText)")
+        }
+    }
+
+    /// VIB-266: Set composite-mode text directly.
+    func updateCompositeText(_ text: String) {
+        updateText(text)
     }
 
     func showCopied(message: String = "Copied") {
