@@ -224,17 +224,14 @@ Canonical reference for every design token in the Vibeliner design system.
 
 ### Role Color Tokens (appearance-aware)
 
-| Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
-|---|---|---|---|---|---|
-| `roleObservedBg` | rgba(83, 74, 183, 0.12) | rgba(175, 169, 236, 0.18) | No | Observed role pill background | TBD |
-| `roleObservedBorder` | rgba(83, 74, 183, 0.24) | rgba(175, 169, 236, 0.36) | No | Observed role pill border | TBD |
-| `roleObservedSelect` | rgba(83, 74, 183, 0.10) | rgba(175, 169, 236, 0.14) | No | Observed role dropdown background | TBD |
-| `roleExpectedBg` | rgba(22, 163, 74, 0.12) | rgba(34, 197, 94, 0.16) | No | Expected role pill background | TBD |
-| `roleExpectedBorder` | rgba(22, 163, 74, 0.24) | rgba(134, 239, 172, 0.36) | No | Expected role pill border | TBD |
-| `roleExpectedSelect` | rgba(22, 163, 74, 0.10) | rgba(134, 239, 172, 0.14) | No | Expected role dropdown background | TBD |
-| `roleReferenceBg` | rgba(37, 99, 235, 0.12) | rgba(59, 130, 246, 0.16) | No | Reference role pill background | TBD |
-| `roleReferenceBorder` | rgba(37, 99, 235, 0.24) | rgba(147, 197, 253, 0.36) | No | Reference role pill border | TBD |
-| `roleReferenceSelect` | rgba(37, 99, 235, 0.10) | rgba(147, 197, 253, 0.14) | No | Reference role dropdown background | TBD |
+| Token Name | Value | Static? | Usage | Consuming Files |
+|---|---|---|---|---|
+| `roleObservedBg` | rgba(83, 74, 183, 0.35) | Yes | Observed role pill background (purple tint) | TitlePillView, CompositeStitcher |
+| `roleObservedBorder` | rgba(175, 169, 236, 0.5) | Yes | Observed role pill border | TitlePillView, CompositeStitcher |
+| `roleExpectedBg` | rgba(22, 100, 52, 0.35) | Yes | Expected role pill background (green tint) | TitlePillView, CompositeStitcher |
+| `roleExpectedBorder` | rgba(134, 239, 172, 0.5) | Yes | Expected role pill border | TitlePillView, CompositeStitcher |
+| `roleReferenceBg` | rgba(30, 70, 140, 0.35) | Yes | Reference role pill background (blue tint) | TitlePillView, CompositeStitcher |
+| `roleReferenceBorder` | rgba(147, 197, 253, 0.5) | Yes | Reference role pill border | TitlePillView, CompositeStitcher |
 
 ### Title Pill Tokens (static)
 
@@ -248,9 +245,10 @@ Canonical reference for every design token in the Vibeliner design system.
 
 | Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
 |---|---|---|---|---|---|
-| `filmstripGap` | 14 | 14 | Yes | Equal gap between all filmstrip cells | TBD |
-| `filmstripPadding` | 16 | 16 | Yes | Padding inside filmstrip container | TBD |
-| `filmstripBorder` | rgba(83, 74, 183, 0.10) | rgba(175, 169, 236, 0.12) | No | Container inset border (multi-image only) | TBD |
+| `filmstripGap` | 14 | 14 | Yes | Equal gap between all filmstrip cells | FilmstripGridView, LayoutCalculator |
+| `filmstripPadding` | 14 | 14 | Yes | Padding inside filmstrip container (= filmstripGap) | FilmstripGridView |
+| `filmstripBg` | rgba(15, 15, 20, 0.65) | rgba(15, 15, 20, 0.65) | Yes | Container background (multi-image only) | FilmstripGridView |
+| `filmstripBorder` | rgba(175, 169, 236, 0.20) | rgba(175, 169, 236, 0.20) | Yes | Container border (multi-image only) | FilmstripGridView |
 
 ---
 
