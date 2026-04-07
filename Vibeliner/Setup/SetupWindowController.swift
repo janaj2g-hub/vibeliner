@@ -633,6 +633,10 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Actions
 
     @objc private func openSystemSettings() {
+        // VIB-304: Set pending restart flag so setup re-shows after macOS "Quit & Reopen"
+        ConfigManager.shared.setupPendingRestart = true
+        ConfigManager.shared.save()
+
         // Open System Settings directly — no macOS dialog
         NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
     }
@@ -666,6 +670,8 @@ final class SetupWindowController: NSWindowController {
     }
 
     @objc private func startClicked() {
+        // VIB-304: Clear the pending restart flag and mark setup complete
+        ConfigManager.shared.setupPendingRestart = false
         ConfigManager.shared.setupComplete = true
         ConfigManager.shared.save()
         permissionTimer?.invalidate()

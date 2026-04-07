@@ -11,6 +11,9 @@ final class ConfigManager {
     var setupComplete: Bool = false
     var tooltipDismissed: Bool = false
     var launchAtLogin: Bool = false
+    /// VIB-304: Set true when user opens Screen Recording settings during setup;
+    /// causes setup window to re-show on next launch so user sees confirmation.
+    var setupPendingRestart: Bool = false
     /// Appearance mode: "system", "dark", or "light"
     var appearance: String = "system"
     var preamble: String = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
@@ -80,6 +83,7 @@ final class ConfigManager {
             setupComplete = false
             tooltipDismissed = false
             launchAtLogin = false
+            setupPendingRestart = false
             appearance = "system"
             preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
             footer = "Make the changes and verify they match the design."
@@ -186,6 +190,8 @@ final class ConfigManager {
                 tooltipDismissed = rawValue == "true"
             case "launch_at_login":
                 launchAtLogin = rawValue == "true"
+            case "setup_pending_restart":
+                setupPendingRestart = rawValue == "true"
             case "appearance":
                 appearance = unquoteString(rawValue)
             case "preamble":
@@ -206,6 +212,7 @@ final class ConfigManager {
         lines.append("setup_complete = \(setupComplete)")
         lines.append("tooltip_dismissed = \(tooltipDismissed)")
         lines.append("launch_at_login = \(launchAtLogin)")
+        lines.append("setup_pending_restart = \(setupPendingRestart)")
         lines.append("appearance = \"\(appearance)\"")
         lines.append("preamble = \"\(escapeString(preamble))\"")
         lines.append("footer = \"\(escapeString(footer))\"")

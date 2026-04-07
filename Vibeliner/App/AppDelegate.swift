@@ -26,6 +26,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         applyAppearanceSetting()
         setupMenuBarIcon()
 
+        // VIB-304: Log bundle path and ID for diagnosing stale-relaunch issues
+        NSLog("Vibeliner bundle path: \(Bundle.main.bundlePath)")
+        NSLog("Vibeliner bundle ID: \(Bundle.main.bundleIdentifier ?? "nil")")
+
         HotkeyManager.shared.onHotkeyPressed = {
             CaptureCoordinator.shared.startCapture()
         }
@@ -34,6 +38,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         // VIB-169: Listen for capture trigger from popover
         NotificationCenter.default.addObserver(forName: NSNotification.Name("VibelinerTriggerCapture"), object: nil, queue: .main) { _ in
             CaptureCoordinator.shared.startCapture()
+        }
+
+        // VIB-304: Re-show setup after Screen Recording restart
+        // This flag is set when user clicks "Open Screen Recording Settings" during setup.
+        // On relaunch, we show setup again so all steps appear green and the user
+        // gets confirmation that Screen Recording was granted.
+        if ConfigManager.shared.setupPendingRestart {
+            showSetupWindow()
+            return
         }
 
         // Show setup window when needed:
