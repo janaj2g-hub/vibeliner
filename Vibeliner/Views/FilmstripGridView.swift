@@ -1,22 +1,32 @@
 import AppKit
 
-/// VIB-306: NSScrollView subclass that translates vertical mouse wheel to horizontal scroll.
-/// Trackpad horizontal scroll still works natively. Clamps scroll to content bounds.
+/// VIB-306/VIB-307: NSScrollView subclass that translates vertical mouse wheel to horizontal scroll
+/// and prevents ALL vertical scrolling. Trackpad horizontal scroll still works natively.
 private final class HorizontalScrollView: NSScrollView {
     override func scrollWheel(with event: NSEvent) {
-        if hasHorizontalScroller && !hasVerticalScroller {
-            // Translate vertical scroll to horizontal when only horizontal scrolling is enabled
-            if event.scrollingDeltaX == 0 && event.scrollingDeltaY != 0 {
-                guard let docView = documentView else { return }
-                let newX = contentView.bounds.origin.x - event.scrollingDeltaY
-                let maxX = max(0, docView.frame.width - contentView.bounds.width)
-                let clampedX = min(max(0, newX), maxX)
-                contentView.scroll(to: NSPoint(x: clampedX, y: 0))
-                reflectScrolledClipView(contentView)
-                return
-            }
+        // VIB-307: Always prevent vertical scrolling. For any event with vertical delta,
+        // extract only the horizontal component (or translate vertical to horizontal).
+        guard let docView = documentView else {
+            super.scrollWheel(with: event)
+            return
         }
-        super.scrollWheel(with: event)
+
+        let deltaX: CGFloat
+        if event.scrollingDeltaX != 0 {
+            // Has horizontal component — use it directly
+            deltaX = event.scrollingDeltaX
+        } else if event.scrollingDeltaY != 0 {
+            // VIB-306: Pure vertical scroll — translate to horizontal
+            deltaX = event.scrollingDeltaY
+        } else {
+            return  // No scroll delta
+        }
+
+        let newX = contentView.bounds.origin.x - deltaX
+        let maxX = max(0, docView.frame.width - contentView.bounds.width)
+        let clampedX = min(max(0, newX), maxX)
+        contentView.scroll(to: NSPoint(x: clampedX, y: 0))
+        reflectScrolledClipView(contentView)
     }
 }
 
@@ -180,20 +190,26 @@ final class FilmstripGridView: NSView {
 
         guard !captureImages.isEmpty else { return }
 
-        // Scroll view fills the entire grid view
+        // VIB-307: Scroll view fills the grid view — zero vertical scroll
         scrollView.frame = bounds
+
+        // VIB-307: Compute effective row height from the actual visible scroll area.
+        // This guarantees images + pills + padding fit exactly with zero vertical overflow.
+        let visibleH = scrollView.frame.height
+        let fittedRowH = visibleH - pillH - (padding * 2)
+        let effectiveRowH = max(min(rowHeight, fittedRowH), LayoutCalculator.minRowHeight)
 
         let sizes = captureImages.map { $0.originalSize }
         let (frames, totalWidth) = LayoutCalculator.computeFrames(
             imageSizes: sizes,
-            rowHeight: rowHeight,
+            rowHeight: effectiveRowH,
             gap: gap,
             titlePillTotalHeight: pillH
         )
 
-        // Content view size = total filmstrip content + padding on all sides
+        // VIB-307: Content view height MUST equal scroll view height — no vertical overflow
         let contentW = totalWidth + padding * 2
-        let contentH = bounds.height
+        let contentH = visibleH
         contentView.frame = NSRect(x: 0, y: 0, width: max(contentW, bounds.width), height: contentH)
 
         // Position cells inside the content view
@@ -205,6 +221,10 @@ final class FilmstripGridView: NSView {
                 height: layoutFrame.size.height
             )
         }
+
+        // VIB-307: Ensure clip view stays at y=0 — no vertical offset
+        scrollView.contentView.scroll(to: NSPoint(x: scrollView.contentView.bounds.origin.x, y: 0))
+        scrollView.reflectScrolledClipView(scrollView.contentView)
     }
 
     override var intrinsicContentSize: NSSize {
