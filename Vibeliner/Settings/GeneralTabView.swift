@@ -161,12 +161,16 @@ final class GeneralTabView: NSView {
     }
 
     @objc private func changeFolderClicked() {
+        // VIB-300: Present as sheet on the Settings window to avoid z-order issues
+        // (Settings window is .floating, so panel.begin() opens behind it).
+        guard let parentWindow = window else { return }
+
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.directoryURL = URL(fileURLWithPath: ConfigManager.shared.expandedCapturesFolder)
-        panel.begin { [weak self] response in
+        panel.beginSheetModal(for: parentWindow) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
