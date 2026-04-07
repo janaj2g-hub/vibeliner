@@ -462,7 +462,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         guard let grid = filmstripGridView, let screen = self.screen ?? NSScreen.main else { return }
 
         let screenFrame = screen.visibleFrame
-        let targetWidth = min(screenFrame.width * 0.85, 1600)
+        let maxWidth = min(screenFrame.width * 0.85, 1600)
 
         // VIB-297: Compute row height from available vertical space.
         // Available = editor body minus toolbar, status pill, padding, pill area.
@@ -470,13 +470,26 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let bottomGap: CGFloat = 44
         let overflowPad: CGFloat = 200
         let padding = DesignTokens.filmstripPadding
+        let gap = DesignTokens.filmstripGap
         let pillH = FilmCellView.pillAreaHeight
         let maxAvailableH = screenFrame.height * 0.55
         let computedRowH = maxAvailableH - toolbarGap - bottomGap - pillH - padding * 2
         let rowH = min(max(computedRowH, LayoutCalculator.minRowHeight), LayoutCalculator.maxRowHeight)
 
+        // VIB-313: Compute actual content width so filmstrip background hugs images tightly.
+        // No extra dark space beyond the padding on each side.
+        let sizes = store.images.map { $0.originalSize }
+        let (_, totalContentWidth) = LayoutCalculator.computeFrames(
+            imageSizes: sizes,
+            rowHeight: rowH,
+            gap: gap,
+            titlePillTotalHeight: pillH
+        )
+        let contentWidth = totalContentWidth + padding * 2
+        let gridWidth = min(contentWidth, maxWidth)
+
         grid.rowHeight = rowH
-        grid.setFrameSize(NSSize(width: targetWidth, height: grid.frame.height))
+        grid.setFrameSize(NSSize(width: gridWidth, height: grid.frame.height))
 
         // Configure with current images
         grid.configure(with: store.images)
@@ -485,19 +498,20 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let filmH = rowH + pillH + padding * 2
 
         // Resize grid to final size
-        grid.setFrameSize(NSSize(width: targetWidth, height: filmH))
+        grid.setFrameSize(NSSize(width: gridWidth, height: filmH))
 
         // VIB-309: Update auto-save canvas size to match the grid frame,
         // so annotations export in the correct coordinate space.
-        autoSaveManager?.canvasSize = NSSize(width: targetWidth, height: filmH)
+        autoSaveManager?.canvasSize = NSSize(width: gridWidth, height: filmH)
 
         // Resize editor window to fit
-        resizeWindowForFilmstrip(filmstripHeight: filmH)
+        resizeWindowForFilmstrip(filmstripHeight: filmH, filmstripWidth: gridWidth)
     }
 
     /// VIB-297: Resize the editor window for the horizontal scroll filmstrip.
     /// Fixed height (single row), wide enough for comfortable viewing.
-    private func resizeWindowForFilmstrip(filmstripHeight: CGFloat) {
+    /// VIB-313: filmstripWidth parameter controls the grid width (content-hugging).
+    private func resizeWindowForFilmstrip(filmstripHeight: CGFloat, filmstripWidth: CGFloat? = nil) {
         guard let screen = self.screen ?? NSScreen.main else { return }
 
         let toolbarGap: CGFloat = 48
@@ -506,9 +520,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let overflowPad: CGFloat = 200
         let screenFrame = screen.visibleFrame
 
-        // Expand window width for composite — images need room
-        let targetWidth = min(screenFrame.width * 0.85, 1600)
-        let newTotalWidth = max(targetWidth, toolbarView.frame.width) + overflowPad * 2
+        // VIB-313: Use actual filmstrip width if provided, otherwise compute from screen
+        let gridWidth = filmstripWidth ?? min(screenFrame.width * 0.85, 1600)
+        let newTotalWidth = max(gridWidth, toolbarView.frame.width) + overflowPad * 2
 
         // VIB-297: Fixed height — single row, no multi-row growth
         let newTotalHeight = filmstripHeight + toolbarGap + bottomGap + shadowPad + overflowPad
@@ -524,7 +538,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         contentView?.setFrameSize(newFrame.size)
 
         // Resize and reposition grid
-        let gridWidth = targetWidth
         let gridX = (newTotalWidth - gridWidth) / 2
         let canvasY = bottomGap + overflowPad / 2
         filmstripGridView?.setFrameOrigin(NSPoint(x: gridX, y: canvasY))
