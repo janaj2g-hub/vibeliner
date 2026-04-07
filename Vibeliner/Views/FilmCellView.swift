@@ -41,6 +41,8 @@ final class FilmCellView: NSView {
         addSubview(imageView)
         addSubview(titlePill)
         titlePill.isHidden = true
+        // Ensure pill renders in front of the image
+        titlePill.layer?.zPosition = 10
 
         titlePill.onTitleChanged = { [weak self] newTitle in
             guard let self else { return }
@@ -80,7 +82,7 @@ final class FilmCellView: NSView {
 
         if showTitlePill {
             // Pill at top, image below (flipped coordinates: Y=0 is top)
-            let pillW = min(bounds.width - 8, max(100, bounds.width * 0.85))
+            let pillW = max(100, bounds.width - 4)
             let pillX = (bounds.width - pillW) / 2
             let pillY: CGFloat = 0
             titlePill.frame = NSRect(x: pillX, y: pillY, width: pillW, height: DesignTokens.titlePillHeight)

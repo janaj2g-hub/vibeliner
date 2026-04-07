@@ -422,6 +422,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     /// Resize the editor window so the filmstrip is fully visible.
+    /// Expands window width for composites so images aren't tiny.
     private func resizeWindowForFilmstrip(filmstripHeight: CGFloat) {
         guard let screen = self.screen ?? NSScreen.main else { return }
 
@@ -429,19 +430,20 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let bottomGap: CGFloat = 44
         let shadowPad: CGFloat = 24
         let overflowPad: CGFloat = 200
+        let screenFrame = screen.visibleFrame
 
-        let newContentHeight = filmstripHeight
-        let newTotalHeight = newContentHeight + toolbarGap + bottomGap + shadowPad + overflowPad
-        let maxHeight = screen.visibleFrame.height * 0.85
+        // Expand window width for composite — images need more room
+        let targetWidth = min(screenFrame.width * 0.85, 1600)
+        let newTotalWidth = max(targetWidth, toolbarView.frame.width) + overflowPad * 2
 
+        let newTotalHeight = filmstripHeight + toolbarGap + bottomGap + shadowPad + overflowPad
+        let maxHeight = screenFrame.height * 0.85
         let clampedHeight = min(newTotalHeight, maxHeight)
 
-        // Keep the window horizontally centered on screen, vertically centered
-        let screenFrame = screen.visibleFrame
         let newFrame = NSRect(
-            x: frame.origin.x,
+            x: screenFrame.midX - newTotalWidth / 2,
             y: screenFrame.midY - clampedHeight / 2,
-            width: frame.width,
+            width: newTotalWidth,
             height: clampedHeight
         )
 
@@ -450,22 +452,25 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Resize container to match
         contentView?.setFrameSize(newFrame.size)
 
-        // Reposition grid inside the resized container
+        // Resize and reposition grid — use the new wider width
+        let gridWidth = targetWidth
+        let gridX = (newTotalWidth - gridWidth) / 2
         let canvasY = bottomGap + overflowPad / 2
-        filmstripGridView?.setFrameOrigin(NSPoint(
-            x: filmstripGridView?.frame.origin.x ?? canvasView.frame.origin.x,
-            y: canvasY
-        ))
+        filmstripGridView?.setFrameOrigin(NSPoint(x: gridX, y: canvasY))
+        filmstripGridView?.setFrameSize(NSSize(width: gridWidth, height: filmstripHeight))
+
+        // Trigger layout recalc with the new wider grid
+        filmstripGridView?.needsLayout = true
 
         // Reposition toolbar above filmstrip
         let toolbarY = canvasY + filmstripHeight + (toolbarGap - DesignTokens.toolbarHeight) / 2
         toolbarView.setFrameOrigin(NSPoint(
-            x: (frame.width - toolbarView.frame.width) / 2,
+            x: (newTotalWidth - toolbarView.frame.width) / 2,
             y: toolbarY
         ))
 
         // Reposition status pill below filmstrip
-        let pillX = (frame.width - statusPill.frame.width) / 2
+        let pillX = (newTotalWidth - statusPill.frame.width) / 2
         let pillY = canvasY - 32 - statusPill.frame.height
         statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
     }
