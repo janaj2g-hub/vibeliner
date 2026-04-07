@@ -1,5 +1,25 @@
 import AppKit
 
+/// VIB-306: NSScrollView subclass that translates vertical mouse wheel to horizontal scroll.
+/// Trackpad horizontal scroll still works natively. Clamps scroll to content bounds.
+private final class HorizontalScrollView: NSScrollView {
+    override func scrollWheel(with event: NSEvent) {
+        if hasHorizontalScroller && !hasVerticalScroller {
+            // Translate vertical scroll to horizontal when only horizontal scrolling is enabled
+            if event.scrollingDeltaX == 0 && event.scrollingDeltaY != 0 {
+                guard let docView = documentView else { return }
+                let newX = contentView.bounds.origin.x - event.scrollingDeltaY
+                let maxX = max(0, docView.frame.width - contentView.bounds.width)
+                let clampedX = min(max(0, newX), maxX)
+                contentView.scroll(to: NSPoint(x: clampedX, y: 0))
+                reflectScrolledClipView(contentView)
+                return
+            }
+        }
+        super.scrollWheel(with: event)
+    }
+}
+
 /// VIB-297: Horizontal scroll filmstrip — single row of images with proportional widths.
 /// Wraps content in an NSScrollView for horizontal scrolling when images exceed visible width.
 final class FilmstripGridView: NSView {
@@ -21,7 +41,7 @@ final class FilmstripGridView: NSView {
     // MARK: - Scroll infrastructure
 
     private let scrollView: NSScrollView = {
-        let sv = NSScrollView()
+        let sv = HorizontalScrollView()
         sv.hasHorizontalScroller = true
         sv.hasVerticalScroller = false
         sv.scrollerStyle = .overlay
