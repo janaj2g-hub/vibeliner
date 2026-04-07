@@ -162,6 +162,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 return event  // pass through to text field (Cmd+C/V/A, arrows, etc.)
             }
 
+            // VIB-287: If any text field is first responder (title pill editing),
+            // pass all keys through — don't intercept Delete/Backspace/numbers.
+            if let fr = self.firstResponder, fr is NSTextView || fr is NSTextField {
+                return event
+            }
+
             return self.handleKeyEvent(event) ? nil : event
         }
     }
@@ -241,6 +247,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 return true
             }
             // Let the text field handle everything else (backspace, typing, etc.)
+            return false
+        }
+
+        // VIB-287: If any text field is first responder (e.g. title pill editing),
+        // let it handle all key events — don't intercept Delete/Backspace/number keys.
+        if let firstResponder = firstResponder,
+           firstResponder is NSTextView || firstResponder is NSTextField {
             return false
         }
 
@@ -336,14 +349,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     func toolbarDidRequestAddImage() {
         guard let store = captureStore, store.images.count < 12 else { return }
 
-        // Auto-save before dimming
+        // Auto-save before capture
         autoSaveManager?.saveNow()
 
-        // Dim editor
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.2
-            self.animator().alphaValue = 0.15
-        }
+        // VIB-288: Hide editor completely during capture (not just dim)
+        orderOut(nil)
 
         // Start add-image capture
         CaptureCoordinator.shared.startAddImageCapture { [weak self] newImage in
@@ -353,11 +363,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let count = store.images.count
             store.addImage(newImage, title: "Image \(count + 1)", role: .observed)
 
-            // Restore editor opacity
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.2
-                self.animator().alphaValue = 1.0
-            }
+            // VIB-288: Restore editor after capture
+            self.alphaValue = 1.0
+            self.makeKeyAndOrderFront(nil)
 
             // VIB-261: Switch to filmstrip view
             self.refreshFilmstrip()
@@ -367,6 +375,40 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
             // Update toolbar add button state
             self.toolbarView.updateAddImageState(imageCount: store.images.count)
+        }
+
+        // VIB-288: Handle Escape cancel — CaptureCoordinator.cancelCapture clears
+        // the completion handler, so we need to restore the editor when capture is dismissed.
+        // The CaptureCoordinator calls dismissOverlays on cancel, but doesn't call our completion.
+        // Register a one-shot observer: if the capture overlay windows disappear without
+        // calling our completion, restore the editor.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self else { return }
+            // If editor is still hidden (orderOut) and capture coordinator is no longer capturing,
+            // it means the user cancelled. Restore the editor.
+            if !self.isVisible {
+                // Check periodically until either our completion fires or capture ends
+                self.pollForCaptureCancel()
+            }
+        }
+    }
+
+    /// VIB-288: Poll to detect if capture was cancelled (Escape) so we can restore the editor.
+    private func pollForCaptureCancel() {
+        // If editor became visible (completion handler already restored it), stop polling
+        guard !isVisible else { return }
+
+        // Check if capture overlay windows still exist
+        let captureActive = NSApp.windows.contains { $0 is CaptureOverlayWindow && $0.isVisible }
+        if !captureActive {
+            // Capture ended without calling our completion = cancelled
+            makeKeyAndOrderFront(nil)
+            return
+        }
+
+        // Still capturing — check again soon
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+            self?.pollForCaptureCancel()
         }
     }
 
@@ -402,22 +444,25 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.filmstripGridView = grid
         }
 
-        guard let grid = filmstripGridView else { return }
+        guard let grid = filmstripGridView, let screen = self.screen ?? NSScreen.main else { return }
 
-        // Configure with current images
+        // VIB-285: Set grid to target composite width BEFORE computing layout,
+        // so intrinsicContentSize calculates row heights with the correct width.
+        let screenFrame = screen.visibleFrame
+        let targetWidth = min(screenFrame.width * 0.85, 1600)
+        grid.setFrameSize(NSSize(width: targetWidth, height: grid.frame.height))
+
+        // Configure with current images (layout uses the new width)
         grid.configure(with: store.images)
 
-        // Compute the filmstrip's actual content size and resize grid + window
+        // Now compute content height with the correct width
         let contentSize = grid.intrinsicContentSize
         let filmH = contentSize.height > 0 ? contentSize.height : displayHeight
 
-        // Resize grid to fit content
-        grid.setFrameSize(NSSize(width: grid.frame.width, height: filmH))
+        // Resize grid to final content height
+        grid.setFrameSize(NSSize(width: targetWidth, height: filmH))
 
-        // Reposition grid vertically so it stays in the correct spot
-        grid.setFrameOrigin(NSPoint(x: canvasView.frame.origin.x, y: canvasView.frame.origin.y))
-
-        // Resize editor window to fit the filmstrip content
+        // Resize editor window to fit
         resizeWindowForFilmstrip(filmstripHeight: filmH)
     }
 
