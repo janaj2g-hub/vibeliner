@@ -58,14 +58,10 @@ final class CaptureStore {
         images[index].role = role
     }
 
-    /// VIB-263: Smart role default for the Nth image (0-based).
-    /// Image 0 → .observed, Image 1 → .expected, Image 2+ → .observed
+    /// Default role for any new image — always .observed.
+    /// User changes roles manually via the dropdown.
     static func defaultRole(forIndex index: Int) -> ImageRole {
-        switch index {
-        case 0: return .observed
-        case 1: return .expected
-        default: return .observed
-        }
+        return .observed
     }
 
     /// Update indices to match array positions (call after add/remove).
