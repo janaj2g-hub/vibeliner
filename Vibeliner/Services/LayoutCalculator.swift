@@ -21,12 +21,14 @@ final class LayoutCalculator {
     ///   - availableWidth: Total width the grid can occupy (excluding external padding).
     ///   - gap: Space between cells horizontally and between rows vertically.
     ///   - maxPerRow: Maximum images per row (default 3).
+    ///   - titlePillTotalHeight: Extra height per cell for title pill + gap (0 for single image).
     /// - Returns: Array of `LayoutFrame` for each image, in input order.
     static func computeFrames(
         imageSizes: [CGSize],
         availableWidth: CGFloat,
         gap: CGFloat,
-        maxPerRow: Int = 3
+        maxPerRow: Int = 3,
+        titlePillTotalHeight: CGFloat = 0
     ) -> [LayoutFrame] {
         guard !imageSizes.isEmpty else { return [] }
 
@@ -37,6 +39,8 @@ final class LayoutCalculator {
         var currentY: CGFloat = 0
         var globalIndex = 0
 
+        let pillH = titlePillTotalHeight
+
         for (rowIndex, rowSizes) in rows.enumerated() {
             let rowFrames = layoutRow(
                 sizes: rowSizes,
@@ -44,7 +48,8 @@ final class LayoutCalculator {
                 gap: gap,
                 originY: currentY,
                 rowIndex: rowIndex,
-                startIndex: globalIndex
+                startIndex: globalIndex,
+                titlePillTotalHeight: pillH
             )
 
             // Check minimum cell width — reduce per-row count if needed
@@ -60,7 +65,8 @@ final class LayoutCalculator {
                         gap: gap,
                         originY: subY,
                         rowIndex: rowIndex,
-                        startIndex: globalIndex
+                        startIndex: globalIndex,
+                        titlePillTotalHeight: pillH
                     )
                     frames.append(contentsOf: subFrames)
                     globalIndex += subRow.count
@@ -109,7 +115,8 @@ final class LayoutCalculator {
         gap: CGFloat,
         originY: CGFloat,
         rowIndex: Int,
-        startIndex: Int
+        startIndex: Int,
+        titlePillTotalHeight: CGFloat = 0
     ) -> [LayoutFrame] {
         let count = sizes.count
         guard count > 0 else { return [] }
@@ -128,16 +135,17 @@ final class LayoutCalculator {
 
         // Each cell width = (AR / sumAR) * usableWidth
         // Row height = any cell width / its AR (all equal)
-        let rowHeight = usableWidth / sumAR
+        let imageRowHeight = usableWidth / sumAR
+        let cellHeight = imageRowHeight + titlePillTotalHeight
 
         var frames: [LayoutFrame] = []
         var x: CGFloat = 0
 
         for (_, ar) in aspectRatios.enumerated() {
-            let cellWidth = ar * rowHeight
+            let cellWidth = ar * imageRowHeight
             let frame = LayoutFrame(
                 origin: CGPoint(x: x, y: originY),
-                size: CGSize(width: cellWidth, height: rowHeight),
+                size: CGSize(width: cellWidth, height: cellHeight),
                 rowIndex: rowIndex
             )
             frames.append(frame)

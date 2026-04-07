@@ -63,6 +63,7 @@
 		F20000010000000000000001 /* TitlePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000001 /* TitlePillView.swift */; };
 		F20000010000000000000002 /* LayoutCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LayoutCalculator.swift */; };
 		F20000010000000000000003 /* FilmstripGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000003 /* FilmstripGridView.swift */; };
+		F20000010000000000000004 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000004 /* FilmCellView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -124,6 +125,7 @@
 		F10000010000000000000001 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
 		F10000010000000000000002 /* LayoutCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCalculator.swift; sourceTree = "<group>"; };
 		F10000010000000000000003 /* FilmstripGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripGridView.swift; sourceTree = "<group>"; };
+		F10000010000000000000004 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -332,6 +334,7 @@
 			isa = PBXGroup;
 			children = (
 				F10000010000000000000001 /* TitlePillView.swift */,
+				F10000010000000000000004 /* FilmCellView.swift */,
 				F10000010000000000000003 /* FilmstripGridView.swift */,
 			);
 			path = Views;
@@ -415,6 +418,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F20000010000000000000004 /* FilmCellView.swift in Sources */,
 				F20000010000000000000003 /* FilmstripGridView.swift in Sources */,
 				F20000010000000000000002 /* LayoutCalculator.swift in Sources */,
 				F20000010000000000000001 /* TitlePillView.swift in Sources */,

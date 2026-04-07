@@ -1,0 +1,91 @@
+import AppKit
+
+/// A single filmstrip cell: title pill (optional) + screenshot image.
+/// Title pill is horizontally centered above the image with `titlePillGap` spacing.
+final class FilmCellView: NSView {
+
+    // MARK: - Callbacks
+
+    var onTitleChanged: ((Int, String) -> Void)?
+    var onRoleChanged: ((Int, ImageRole) -> Void)?
+
+    // MARK: - State
+
+    private(set) var imageIndex: Int = 0
+    var showTitlePill: Bool = false
+
+    // MARK: - Subviews
+
+    private let imageView: NSImageView = {
+        let iv = NSImageView()
+        iv.imageScaling = .scaleProportionallyUpOrDown
+        iv.imageAlignment = .alignCenter
+        iv.wantsLayer = true
+        iv.layer?.cornerRadius = 4
+        iv.layer?.masksToBounds = true
+        return iv
+    }()
+
+    let titlePill: TitlePillView
+
+    // MARK: - Init
+
+    init() {
+        self.titlePill = TitlePillView()
+        super.init(frame: .zero)
+        wantsLayer = true
+
+        addSubview(imageView)
+        addSubview(titlePill)
+        titlePill.isHidden = true
+
+        titlePill.onTitleChanged = { [weak self] newTitle in
+            guard let self else { return }
+            self.onTitleChanged?(self.imageIndex, newTitle)
+        }
+        titlePill.onRoleChanged = { [weak self] newRole in
+            guard let self else { return }
+            self.onRoleChanged?(self.imageIndex, newRole)
+        }
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    // MARK: - Configuration
+
+    func configure(image: CaptureImage, showPill: Bool) {
+        imageIndex = image.index
+        imageView.image = image.sourceImage
+        showTitlePill = showPill
+        titlePill.configure(title: image.title, role: image.role)
+        titlePill.isHidden = !showPill
+        needsLayout = true
+    }
+
+    // MARK: - Layout
+
+    /// Total height of the title pill area (pill + gap) when visible.
+    static var pillAreaHeight: CGFloat {
+        return DesignTokens.titlePillHeight + DesignTokens.titlePillGap
+    }
+
+    override func layout() {
+        super.layout()
+
+        let pillAreaH: CGFloat = showTitlePill ? Self.pillAreaHeight : 0
+        let imageH = bounds.height - pillAreaH
+        let imageY: CGFloat = 0
+
+        imageView.frame = NSRect(x: 0, y: imageY, width: bounds.width, height: max(imageH, 0))
+
+        if showTitlePill {
+            let pillW = min(bounds.width - 8, max(100, bounds.width * 0.85))
+            let pillX = (bounds.width - pillW) / 2
+            let pillY = imageH + DesignTokens.titlePillGap
+            titlePill.frame = NSRect(x: pillX, y: pillY, width: pillW, height: DesignTokens.titlePillHeight)
+        }
+    }
+}

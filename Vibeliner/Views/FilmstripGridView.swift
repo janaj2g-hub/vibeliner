@@ -1,25 +1,19 @@
 import AppKit
 
-/// Grid container that arranges image cells using proportional-width layout.
+/// Grid container that arranges FilmCellViews using proportional-width layout.
 /// Each row has uniform height with cell widths proportional to aspect ratios.
-/// For now, renders placeholder colored rectangles — real images come in VIB-261.
 final class FilmstripGridView: NSView {
 
     // MARK: - State
 
-    private var imageSizes: [CGSize] = []
-    private var cellViews: [NSView] = []
-    private var isComposite: Bool { imageSizes.count >= 2 }
+    private var captureImages: [CaptureImage] = []
+    private var cellViews: [FilmCellView] = []
+    var isComposite: Bool { captureImages.count >= 2 }
 
-    // Placeholder colors for testing
-    private static let placeholderColors: [NSColor] = [
-        NSColor(red: 100/255, green: 100/255, blue: 160/255, alpha: 0.3),
-        NSColor(red: 100/255, green: 160/255, blue: 100/255, alpha: 0.3),
-        NSColor(red: 160/255, green: 100/255, blue: 100/255, alpha: 0.3),
-        NSColor(red: 160/255, green: 160/255, blue: 100/255, alpha: 0.3),
-        NSColor(red: 100/255, green: 160/255, blue: 160/255, alpha: 0.3),
-        NSColor(red: 160/255, green: 100/255, blue: 160/255, alpha: 0.3),
-    ]
+    // MARK: - Callbacks
+
+    var onTitleChanged: ((Int, String) -> Void)?
+    var onRoleChanged: ((Int, ImageRole) -> Void)?
 
     // MARK: - Init
 
@@ -39,9 +33,9 @@ final class FilmstripGridView: NSView {
 
     // MARK: - Public API
 
-    /// Configure with image sizes and rebuild cells.
-    func configure(with sizes: [CGSize]) {
-        imageSizes = sizes
+    /// Configure with capture images and rebuild cells.
+    func configure(with images: [CaptureImage]) {
+        captureImages = images
 
         // Remove old cells
         for cell in cellViews {
@@ -49,17 +43,56 @@ final class FilmstripGridView: NSView {
         }
         cellViews.removeAll()
 
-        // Create placeholder cells
-        for (i, _) in sizes.enumerated() {
-            let cell = NSView()
-            cell.wantsLayer = true
-            let color = Self.placeholderColors[i % Self.placeholderColors.count]
-            cell.layer?.backgroundColor = color.cgColor
-            cell.layer?.cornerRadius = 4
+        let showPills = images.count >= 2
+
+        // Create FilmCellViews
+        for image in images {
+            let cell = FilmCellView()
+            cell.configure(image: image, showPill: showPills)
+            cell.onTitleChanged = { [weak self] idx, title in
+                self?.onTitleChanged?(idx, title)
+            }
+            cell.onRoleChanged = { [weak self] idx, role in
+                self?.onRoleChanged?(idx, role)
+            }
             addSubview(cell)
             cellViews.append(cell)
         }
 
+        updateBorder()
+        needsLayout = true
+        invalidateIntrinsicContentSize()
+    }
+
+    /// Update title pill visibility on all cells (used during 1↔2 transitions).
+    func updatePillVisibility(show: Bool, animated: Bool = false) {
+        for cell in cellViews {
+            if animated {
+                if show && cell.titlePill.isHidden {
+                    cell.titlePill.isHidden = false
+                    cell.titlePill.alphaValue = 0
+                    cell.showTitlePill = true
+                    NSAnimationContext.runAnimationGroup { ctx in
+                        ctx.duration = 0.3
+                        ctx.timingFunction = CAMediaTimingFunction(name: .easeOut)
+                        cell.titlePill.animator().alphaValue = 1
+                    }
+                } else if !show && !cell.titlePill.isHidden {
+                    cell.showTitlePill = false
+                    NSAnimationContext.runAnimationGroup({ ctx in
+                        ctx.duration = 0.2
+                        ctx.timingFunction = CAMediaTimingFunction(name: .easeIn)
+                        cell.titlePill.animator().alphaValue = 0
+                    }, completionHandler: {
+                        cell.titlePill.isHidden = true
+                    })
+                }
+            } else {
+                cell.showTitlePill = show
+                cell.titlePill.isHidden = !show
+                cell.titlePill.alphaValue = show ? 1 : 0
+            }
+        }
         updateBorder()
         needsLayout = true
         invalidateIntrinsicContentSize()
@@ -73,13 +106,16 @@ final class FilmstripGridView: NSView {
         let padding = DesignTokens.filmstripPadding
         let gap = DesignTokens.filmstripGap
         let contentWidth = bounds.width - padding * 2
+        let pillH: CGFloat = isComposite ? FilmCellView.pillAreaHeight : 0
 
-        guard contentWidth > 0, !imageSizes.isEmpty else { return }
+        guard contentWidth > 0, !captureImages.isEmpty else { return }
 
+        let sizes = captureImages.map { $0.originalSize }
         let frames = LayoutCalculator.computeFrames(
-            imageSizes: imageSizes,
+            imageSizes: sizes,
             availableWidth: contentWidth,
-            gap: gap
+            gap: gap,
+            titlePillTotalHeight: pillH
         )
 
         for (i, layoutFrame) in frames.enumerated() where i < cellViews.count {
@@ -96,11 +132,14 @@ final class FilmstripGridView: NSView {
         let padding = DesignTokens.filmstripPadding
         let gap = DesignTokens.filmstripGap
         let contentWidth = bounds.width > 0 ? bounds.width - padding * 2 : 600
+        let pillH: CGFloat = isComposite ? FilmCellView.pillAreaHeight : 0
 
+        let sizes = captureImages.map { $0.originalSize }
         let frames = LayoutCalculator.computeFrames(
-            imageSizes: imageSizes,
+            imageSizes: sizes,
             availableWidth: contentWidth,
-            gap: gap
+            gap: gap,
+            titlePillTotalHeight: pillH
         )
 
         let totalH = LayoutCalculator.totalHeight(frames: frames)
