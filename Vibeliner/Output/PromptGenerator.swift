@@ -15,7 +15,8 @@ final class PromptGenerator {
         captureStore: CaptureStore? = nil,
         preambleOverride: String? = nil,
         footerOverride: String? = nil,
-        toolDescriptionsOverride: [String: String]? = nil
+        toolDescriptionsOverride: [String: String]? = nil,
+        roleDescriptionsOverride: [String: String]? = nil
     ) -> String {
         var preamble = preambleOverride ?? ConfigManager.shared.preamble
 
@@ -38,11 +39,26 @@ final class PromptGenerator {
         preamble = preamble.replacingOccurrences(of: "[Tool Description]", with: toolDescription)
 
         // VIB-265: Multi-image block
+        // VIB-270: Include user's custom role descriptions
         var multiImageBlock = ""
         if let store = captureStore, store.isComposite {
+            let roleDescs = roleDescriptionsOverride ?? ConfigManager.shared.roleDescriptions
             let count = store.images.count
             var lines: [String] = []
             lines.append("This screenshot contains \(count) framed images in one stitched composite.")
+            lines.append("")
+            lines.append("Roles:")
+            // List only the roles that are actually used in this composite
+            let usedRoles = Set(store.images.map { $0.role })
+            let orderedRoles: [ImageRole] = [.observed, .expected, .reference]
+            for role in orderedRoles where usedRoles.contains(role) {
+                let desc = roleDescs[role.rawValue] ?? ""
+                if !desc.isEmpty {
+                    lines.append("- \(role.displayName): \(desc)")
+                } else {
+                    lines.append("- \(role.displayName)")
+                }
+            }
             lines.append("")
             lines.append("Images:")
             for img in store.images {

@@ -1184,6 +1184,53 @@
   </table>
 </section>
 
+<!-- ══════════════ 8. ROLE DESCRIPTION ROW (Settings) ══════════════ -->
+<section>
+  <h2>8. Role Description Row</h2>
+  <p class="section-desc">Settings → Prompt → Tools sub-tab. Color swatch + role name + editable description. Same row height as tool description rows (40px).</p>
+  <span class="where-tag">Settings → Prompt → Tools</span>
+
+  <div class="demo-strip" style="flex-direction:column;gap:10px;padding:20px;">
+    <!-- Observed -->
+    <div style="display:flex;align-items:center;gap:12px;height:40px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(175,169,236,1.0);flex-shrink:0;margin-left:10px"></div>
+      <span style="font-size:13px;font-weight:600;width:80px;flex-shrink:0">Observed</span>
+      <div style="flex:1;height:40px;border-radius:10px;background:var(--settingsFieldSurface);border:1px solid var(--settingsFieldBorder);display:flex;align-items:center;padding:0 12px">
+        <span style="font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;color:var(--page-text)">shows the current state of the app</span>
+      </div>
+    </div>
+    <!-- Expected -->
+    <div style="display:flex;align-items:center;gap:12px;height:40px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(134,239,172,1.0);flex-shrink:0;margin-left:10px"></div>
+      <span style="font-size:13px;font-weight:600;width:80px;flex-shrink:0">Expected</span>
+      <div style="flex:1;height:40px;border-radius:10px;background:var(--settingsFieldSurface);border:1px solid var(--settingsFieldBorder);display:flex;align-items:center;padding:0 12px">
+        <span style="font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;color:var(--page-text)">shows the desired or correct state</span>
+      </div>
+    </div>
+    <!-- Reference -->
+    <div style="display:flex;align-items:center;gap:12px;height:40px;">
+      <div style="width:12px;height:12px;border-radius:50%;background:rgba(147,197,253,1.0);flex-shrink:0;margin-left:10px"></div>
+      <span style="font-size:13px;font-weight:600;width:80px;flex-shrink:0">Reference</span>
+      <div style="flex:1;height:40px;border-radius:10px;background:var(--settingsFieldSurface);border:1px solid var(--settingsFieldBorder);display:flex;align-items:center;padding:0 12px">
+        <span style="font-size:12px;font-family:ui-monospace,SFMono-Regular,monospace;color:var(--page-text)">provides supplementary context or a design spec</span>
+      </div>
+    </div>
+  </div>
+
+  <table class="token-table" style="margin-top:16px">
+    <thead><tr><th>Element</th><th>Token / Value</th><th>Usage</th></tr></thead>
+    <tbody>
+      <tr><td>Row height</td><td><code>toolRowHeight</code> (40px)</td><td>Same as annotation tool rows</td></tr>
+      <tr><td>Color swatch</td><td>12×12px filled circle</td><td>Uses role border color at alpha 1.0</td></tr>
+      <tr><td>Observed swatch</td><td><code>roleObservedBorder</code> @ 1.0</td><td>Purple — rgba(175,169,236,1.0)</td></tr>
+      <tr><td>Expected swatch</td><td><code>roleExpectedBorder</code> @ 1.0</td><td>Green — rgba(134,239,172,1.0)</td></tr>
+      <tr><td>Reference swatch</td><td><code>roleReferenceBorder</code> @ 1.0</td><td>Blue — rgba(147,197,253,1.0)</td></tr>
+      <tr><td>Name label</td><td>system 13px semibold, 80px wide</td><td>Role name</td></tr>
+      <tr><td>Text field</td><td><code>settingsFieldSurface</code>, <code>settingsFieldBorder</code></td><td>Editable description (monospace 12px)</td></tr>
+    </tbody>
+  </table>
+</section>
+
 <!-- ══════════════ BOTTOM: WHICH BUTTON SHOULD I USE? ══════════════ -->
 <section>
   <h2>Which button should I use?</h2>
@@ -1248,6 +1295,11 @@
         <td>Image header with role</td>
         <td>Title Pill</td>
         <td><code>roleObservedBg</code>, <code>titlePillHeight</code></td>
+      </tr>
+      <tr>
+        <td>Role description setting</td>
+        <td>Role Description Row</td>
+        <td><code>roleObservedBorder</code>, <code>settingsFieldSurface</code></td>
       </tr>
     </tbody>
   </table>

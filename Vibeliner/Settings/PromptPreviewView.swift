@@ -77,23 +77,37 @@ final class PromptPreviewView: NSView {
     func refresh(
         preamble: String? = nil,
         footer: String? = nil,
-        toolDescriptions: [String: String]? = nil
+        toolDescriptions: [String: String]? = nil,
+        roleDescriptions: [String: String]? = nil
     ) {
-        let sampleAnnotations: [Annotation] = [
-            Annotation(type: .pin, number: 1, noteText: "padding too tight", position: .pin(tip: .zero), badgePosition: .zero),
-            Annotation(type: .arrow, number: 2, noteText: "wrong border radius", position: .arrow(start: .zero, end: .zero), badgePosition: .zero),
-            Annotation(type: .arrow, number: 3, noteText: "move this element left", position: .arrow(start: .zero, end: .zero), badgePosition: .zero),
-        ]
+        // VIB-270: Sample annotations with parentImageIndex set for multi-image preview
+        var ann1 = Annotation(type: .pin, number: 1, noteText: "padding too tight", position: .pin(tip: .zero), badgePosition: .zero)
+        ann1.parentImageIndex = 0
+        var ann2 = Annotation(type: .arrow, number: 2, noteText: "wrong border radius", position: .arrow(start: .zero, end: .zero), badgePosition: .zero)
+        ann2.parentImageIndex = 0
+        var ann3 = Annotation(type: .arrow, number: 3, noteText: "move this element left", position: .arrow(start: .zero, end: .zero), badgePosition: .zero)
+        ann3.parentImageIndex = 1
+
+        let sampleAnnotations: [Annotation] = [ann1, ann2, ann3]
+
+        // VIB-270: Create a sample CaptureStore so the multi-image block appears in the preview
+        let sampleImage = NSImage(size: NSSize(width: 100, height: 100))
+        let sampleStore = CaptureStore(images: [
+            CaptureImage(sourceImage: sampleImage, title: "Image 1", role: .observed, originalSize: sampleImage.size, index: 0),
+            CaptureImage(sourceImage: sampleImage, title: "Image 2", role: .expected, originalSize: sampleImage.size, index: 1),
+        ])
 
         let capturesFolder = ConfigManager.shared.expandedCapturesFolder
-        let samplePath = "\(capturesFolder)/2026-03-30_143022/screenshot.png"
+        let samplePath = "\(capturesFolder)/2026-03-30_143022/composite.png"
         let prompt = PromptGenerator.generatePrompt(
             annotations: sampleAnnotations,
             screenshotPath: samplePath,
             mode: .clipboardIDE(absolutePath: samplePath),
+            captureStore: sampleStore,
             preambleOverride: preamble,
             footerOverride: footer,
-            toolDescriptionsOverride: toolDescriptions
+            toolDescriptionsOverride: toolDescriptions,
+            roleDescriptionsOverride: roleDescriptions
         )
 
         previewText.string = prompt

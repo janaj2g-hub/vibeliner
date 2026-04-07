@@ -26,6 +26,13 @@ final class ConfigManager {
         "freehand": "marks an irregular area"
     ]
 
+    /// VIB-270: Custom descriptions for image roles in multi-image prompts.
+    var roleDescriptions: [String: String] = [
+        "observed": "shows the current state of the app",
+        "expected": "shows the desired or correct state",
+        "reference": "provides supplementary context or a design spec"
+    ]
+
     var expandedCapturesFolder: String {
         return (capturesFolder as NSString).expandingTildeInPath
     }
@@ -93,6 +100,11 @@ final class ConfigManager {
                 "rectangle": "highlights a region or container",
                 "circle": "calls out a specific element",
                 "freehand": "marks an irregular area"
+            ]
+            roleDescriptions = [
+                "observed": "shows the current state of the app",
+                "expected": "shows the desired or correct state",
+                "reference": "provides supplementary context or a design spec"
             ]
             saveInternal()
         }
@@ -177,6 +189,11 @@ final class ConfigManager {
                 continue
             }
 
+            if currentSection == "role_descriptions" {
+                roleDescriptions[key] = unquoteString(rawValue)
+                continue
+            }
+
             switch key {
             case "captures_folder":
                 capturesFolder = unquoteString(rawValue)
@@ -222,6 +239,16 @@ final class ConfigManager {
         let sortedKeys = toolDescriptions.keys.sorted()
         for key in sortedKeys {
             if let value = toolDescriptions[key] {
+                lines.append("\(key) = \"\(escapeString(value))\"")
+            }
+        }
+
+        lines.append("")
+        lines.append("[role_descriptions]")
+
+        let sortedRoleKeys = roleDescriptions.keys.sorted()
+        for key in sortedRoleKeys {
+            if let value = roleDescriptions[key] {
                 lines.append("\(key) = \"\(escapeString(value))\"")
             }
         }

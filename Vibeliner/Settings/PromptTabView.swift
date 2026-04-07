@@ -20,12 +20,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         var preamble: String
         var footer: String
         var toolDescriptions: [String: String]
+        var roleDescriptions: [String: String]
 
         static func current() -> PromptDrafts {
             PromptDrafts(
                 preamble: ConfigManager.shared.preamble,
                 footer: ConfigManager.shared.footer,
-                toolDescriptions: ConfigManager.shared.toolDescriptions
+                toolDescriptions: ConfigManager.shared.toolDescriptions,
+                roleDescriptions: ConfigManager.shared.roleDescriptions
             )
         }
     }
@@ -49,6 +51,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private weak var preambleEditor: NSTextView?
     private weak var footerEditor: NSTextView?
     private var toolFields: [String: SettingsTextField] = [:]
+    private var roleFields: [String: SettingsTextField] = [:]
     private var contentLoaded = false
     private var savedResetTimer: Timer?
 
@@ -219,6 +222,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             view.removeFromSuperview()
         }
         toolFields.removeAll()
+        roleFields.removeAll()
         preambleEditor = nil
         footerEditor = nil
 
@@ -265,6 +269,34 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         for (title, key) in toolRows() {
             let row = makeToolRow(title: title, key: key)
             rowsStack.addArrangedSubview(row)
+            row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
+        }
+
+        // VIB-270: Image roles section
+        let roleDivider = SettingsUI.divider()
+        roleDivider.translatesAutoresizingMaskIntoConstraints = false
+        activeContentStack.addArrangedSubview(roleDivider)
+        roleDivider.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
+
+        let roleHeader = SettingsUI.sectionTitle("Image roles")
+        activeContentStack.addArrangedSubview(roleHeader)
+
+        let roleDescription = SettingsUI.bodyCopy(
+            "Each role's description appears in the multi-image prompt, "
+            + "explaining what that image represents."
+        )
+        activeContentStack.addArrangedSubview(roleDescription)
+
+        let roleStack = NSStackView()
+        roleStack.orientation = .vertical
+        roleStack.alignment = .leading
+        roleStack.spacing = 10
+        roleStack.translatesAutoresizingMaskIntoConstraints = false
+        activeContentStack.addArrangedSubview(roleStack)
+
+        for (title, key, color) in roleRows() {
+            let row = makeRoleRow(title: title, key: key, swatchColor: color)
+            roleStack.addArrangedSubview(row)
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
     }
@@ -394,6 +426,59 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
          ("Circle", "circle"), ("Freehand", "freehand")]
     }
 
+    // MARK: - VIB-270: Role description rows
+
+    private func roleRows() -> [(String, String, NSColor)] {
+        [
+            ("Observed", "observed", DesignTokens.roleObservedBorder.withAlphaComponent(1.0)),
+            ("Expected", "expected", DesignTokens.roleExpectedBorder.withAlphaComponent(1.0)),
+            ("Reference", "reference", DesignTokens.roleReferenceBorder.withAlphaComponent(1.0)),
+        ]
+    }
+
+    private func makeRoleRow(title: String, key: String, swatchColor: NSColor) -> NSView {
+        let row = NSView()
+        row.translatesAutoresizingMaskIntoConstraints = false
+
+        let swatch = RoleSwatchView(color: swatchColor)
+        swatch.translatesAutoresizingMaskIntoConstraints = false
+
+        let nameLabel = SettingsUI.regularLabel(title)
+        nameLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
+        nameLabel.translatesAutoresizingMaskIntoConstraints = false
+
+        let field = SettingsTextField()
+        field.stringValue = drafts.roleDescriptions[key] ?? ""
+        field.delegate = self
+        field.identifier = NSUserInterfaceItemIdentifier("role_\(key)")
+        field.translatesAutoresizingMaskIntoConstraints = false
+        roleFields[key] = field
+
+        row.addSubview(swatch)
+        row.addSubview(nameLabel)
+        row.addSubview(field)
+
+        NSLayoutConstraint.activate([
+            row.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
+
+            swatch.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 10),
+            swatch.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            swatch.widthAnchor.constraint(equalToConstant: 12),
+            swatch.heightAnchor.constraint(equalToConstant: 12),
+
+            nameLabel.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 12),
+            nameLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            nameLabel.widthAnchor.constraint(equalToConstant: 80),
+
+            field.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 14),
+            field.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+            field.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            field.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
+        ])
+
+        return row
+    }
+
     // MARK: - Data
 
     private func captureActiveDrafts() {
@@ -404,6 +489,9 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             for (key, field) in toolFields {
                 drafts.toolDescriptions[key] = field.stringValue
             }
+            for (key, field) in roleFields {
+                drafts.roleDescriptions[key] = field.stringValue
+            }
         case .footer:
             drafts.footer = footerEditor?.string ?? drafts.footer
         }
@@ -413,7 +501,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         previewView.refresh(
             preamble: drafts.preamble,
             footer: drafts.footer,
-            toolDescriptions: drafts.toolDescriptions
+            toolDescriptions: drafts.toolDescriptions,
+            roleDescriptions: drafts.roleDescriptions
         )
     }
 
@@ -422,6 +511,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ConfigManager.shared.preamble = drafts.preamble
         ConfigManager.shared.footer = drafts.footer
         ConfigManager.shared.toolDescriptions = drafts.toolDescriptions
+        ConfigManager.shared.roleDescriptions = drafts.roleDescriptions
         ConfigManager.shared.save()
         refreshPreview()
 
@@ -450,6 +540,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             for (key, value) in Self.defaultToolDescriptions {
                 toolFields[key]?.stringValue = value
             }
+            drafts.roleDescriptions = Self.defaultRoleDescriptions
+            for (key, value) in Self.defaultRoleDescriptions {
+                roleFields[key]?.stringValue = value
+            }
         case .footer:
             drafts.footer = Self.defaultFooter
             footerEditor?.string = Self.defaultFooter
@@ -473,7 +567,13 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     func controlTextDidChange(_ notification: Notification) {
         guard let field = notification.object as? NSTextField,
               let key = field.identifier?.rawValue else { return }
-        drafts.toolDescriptions[key] = field.stringValue
+        // VIB-270: Role fields use "role_" prefix to distinguish from tool fields
+        if key.hasPrefix("role_") {
+            let roleKey = String(key.dropFirst(5))
+            drafts.roleDescriptions[roleKey] = field.stringValue
+        } else {
+            drafts.toolDescriptions[key] = field.stringValue
+        }
         refreshPreview()
     }
 
@@ -490,6 +590,41 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         "circle": "calls out a specific element",
         "freehand": "marks an irregular area",
     ]
+
+    private static let defaultRoleDescriptions: [String: String] = [
+        "observed": "shows the current state of the app",
+        "expected": "shows the desired or correct state",
+        "reference": "provides supplementary context or a design spec",
+    ]
+}
+
+// MARK: - Role swatch view (VIB-270)
+
+private final class RoleSwatchView: NSView {
+
+    private let swatchColor: NSColor
+
+    init(color: NSColor) {
+        self.swatchColor = color
+        super.init(frame: .zero)
+        translatesAutoresizingMaskIntoConstraints = false
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        let size: CGFloat = min(bounds.width, bounds.height)
+        let circleRect = NSRect(
+            x: bounds.midX - (size / 2),
+            y: bounds.midY - (size / 2),
+            width: size,
+            height: size
+        )
+        let path = NSBezierPath(ovalIn: circleRect)
+        swatchColor.setFill()
+        path.fill()
+    }
 }
 
 // MARK: - Tool icon view
