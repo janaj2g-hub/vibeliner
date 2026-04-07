@@ -25,6 +25,11 @@ final class CaptureCoordinator {
         guard !isCapturing else { return }
         isCapturing = true
 
+        // VIB-317: Ensure app is activated so overlay windows can become key.
+        // Critical for the popover trigger path where the app may lose activation
+        // after the popover closes (menu bar app has no dock icon).
+        NSApp.activate(ignoringOtherApps: true)
+
         CursorManager.shared.hideCursor()
 
         for screen in NSScreen.screens {
