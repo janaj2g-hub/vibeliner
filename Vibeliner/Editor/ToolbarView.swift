@@ -83,39 +83,6 @@ final class ToolbarView: NSView {
         addSubview(closeBtn)
         x += DesignTokens.closeButtonSize + 6
 
-        // VIB-236: New capture button — crosshair/viewfinder icon
-        let captureBtn = ToolButton(style: .icon, tooltip: "New capture (closes this editor)") { rect, color in
-            let cx = rect.midX, cy = rect.midY
-            let arm: CGFloat = rect.width * 0.42
-            let gap: CGFloat = rect.width * 0.12
-            let path = NSBezierPath()
-            // Vertical line (top)
-            path.move(to: NSPoint(x: cx, y: cy + gap))
-            path.line(to: NSPoint(x: cx, y: cy + arm))
-            // Vertical line (bottom)
-            path.move(to: NSPoint(x: cx, y: cy - gap))
-            path.line(to: NSPoint(x: cx, y: cy - arm))
-            // Horizontal line (right)
-            path.move(to: NSPoint(x: cx + gap, y: cy))
-            path.line(to: NSPoint(x: cx + arm, y: cy))
-            // Horizontal line (left)
-            path.move(to: NSPoint(x: cx - gap, y: cy))
-            path.line(to: NSPoint(x: cx - arm, y: cy))
-            path.lineWidth = 1.4
-            path.lineCapStyle = .round
-            color.setStroke()
-            path.stroke()
-        }
-        captureBtn.onClick = { [weak self] in
-            guard let self, self.captureButtonEnabled else { return }
-            self.captureButtonEnabled = false
-            self.delegate?.toolbarDidRequestNewCapture()
-        }
-        let captureY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2
-        captureBtn.setFrameOrigin(NSPoint(x: x, y: captureY))
-        addSubview(captureBtn)
-        x += DesignTokens.iconButtonSize + 6
-
         // Divider
         x = addDivider(at: x)
         x += 10
@@ -278,7 +245,13 @@ final class ToolbarView: NSView {
         addImgBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - addImgBtn.frame.height) / 2))
         addSubview(addImgBtn)
         self.addImageButton = addImgBtn
-        x += addImgBtn.frame.width + 10
+        x += addImgBtn.frame.width + 4
+
+        // VIB-321: New capture button — purple pill next to + Add image
+        let captureBtn = makeNewCaptureButton()
+        captureBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - captureBtn.frame.height) / 2))
+        addSubview(captureBtn)
+        x += captureBtn.frame.width + 10
 
         x = addDivider(at: x)
         x += 10
@@ -464,6 +437,40 @@ final class ToolbarView: NSView {
 
     @objc private func addImageClicked() {
         delegate?.toolbarDidRequestAddImage()
+    }
+
+    // VIB-321: New capture purple pill button
+    private func makeNewCaptureButton() -> NSView {
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 100, height: 26))
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 13
+        container.layer?.backgroundColor = DesignTokens.toolbarPurpleButtonBg.cgColor
+        container.layer?.borderWidth = 1.5
+        container.layer?.borderColor = DesignTokens.toolbarPurpleButtonBorder.cgColor
+
+        let label = NSTextField(labelWithString: "New capture")
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = DesignTokens.toolbarPurpleButtonText
+        label.sizeToFit()
+        label.frame.origin = NSPoint(
+            x: (100 - label.frame.width) / 2,
+            y: (26 - label.frame.height) / 2
+        )
+        container.addSubview(label)
+
+        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self)
+        container.addTrackingArea(area)
+
+        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(newCaptureClicked))
+        container.addGestureRecognizer(clickGR)
+
+        return container
+    }
+
+    @objc private func newCaptureClicked() {
+        guard captureButtonEnabled else { return }
+        captureButtonEnabled = false
+        delegate?.toolbarDidRequestNewCapture()
     }
 
     /// VIB-262: Disable the button at 12 images.
