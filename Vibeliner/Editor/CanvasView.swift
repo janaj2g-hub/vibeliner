@@ -104,13 +104,25 @@ final class CanvasView: NSView, NotePillDelegate {
             refreshNotePills()
         }
 
+        // VIB-314: In composite mode, check if mouse is over an actual image area
+        // (not a filmstrip gap, title pill, or padding). Ghost only shows over images.
+        let isOverGap: Bool
+        if let grid = filmstripGrid, grid.isComposite {
+            let pointInGrid = convert(point, to: grid)
+            isOverGap = !grid.imageFrames.contains { $0.contains(pointInGrid) }
+        } else {
+            isOverGap = false  // Single image mode: ghost works everywhere
+        }
+
         // VIB-221: Suppress ghost when hovering annotation with drawing tool (unless mid-stroke)
+        // VIB-314: Also suppress when over filmstrip gap/pill area
         let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
         let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
-        let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
+        let isActivelyDrawing = activeTool?.isActivelyDrawing == true
+        let shouldSuppressGhost = isDrawingToolActive && !isActivelyDrawing && (isHoveringAnnotation || isOverGap)
         marksLayer.suppressGhost = shouldSuppressGhost
 
-        // VIB-201/VIB-221/VIB-223: Cursor management
+        // VIB-201/VIB-221/VIB-223/VIB-314: Cursor management
         // Use setHiddenUntilMouseMoves(true) instead of hide() — it auto-unhides when
         // the cursor enters a different NSView (e.g. toolbar), avoiding reference-count imbalance.
         if isDrawingToolActive && !isEditingNote {

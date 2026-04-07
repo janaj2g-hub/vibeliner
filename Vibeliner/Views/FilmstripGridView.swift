@@ -149,6 +149,26 @@ final class FilmstripGridView: NSView {
         invalidateIntrinsicContentSize()
     }
 
+    // MARK: - VIB-314: Image area hit-testing
+
+    /// Returns the image-only rects (excluding title pill area) for each cell,
+    /// in the grid's own coordinate space. Used by CanvasView to determine
+    /// whether the mouse is over an actual screenshot image.
+    var imageFrames: [NSRect] {
+        return cellViews.compactMap { cell -> NSRect? in
+            guard !cell.isHidden else { return nil }
+            let cellFrame = cell.frame  // in grid's flipped coordinate space
+            if cell.showTitlePill {
+                let pillTotal = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
+                let imageY = cellFrame.origin.y + pillTotal
+                let imageH = cellFrame.height - pillTotal
+                return NSRect(x: cellFrame.origin.x, y: imageY, width: cellFrame.width, height: max(imageH, 0))
+            } else {
+                return cellFrame
+            }
+        }
+    }
+
     // MARK: - Layout
 
     override func layout() {
