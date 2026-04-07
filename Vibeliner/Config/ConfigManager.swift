@@ -38,7 +38,22 @@ final class ConfigManager {
         return FileManager.default.fileExists(atPath: configFileURL.path)
     }
 
+    // MARK: - VIB-301: Stable config location
+
+    /// Config directory in ~/Library/Application Support/Vibeliner/ — survives Xcode rebuilds.
+    /// Previously config lived inside the captures folder, which meant changing the folder
+    /// caused config to "disappear" on next launch (app looked in the default path).
+    private static let configDirectory: URL = {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("Vibeliner", isDirectory: true)
+    }()
+
     private var configFileURL: URL {
+        return Self.configDirectory.appendingPathComponent("config.toml")
+    }
+
+    /// Legacy config location inside the captures folder (for migration).
+    private var legacyConfigFileURL: URL {
         let path = (capturesFolder as NSString).expandingTildeInPath
         return URL(fileURLWithPath: path).appendingPathComponent("config.toml")
     }
@@ -85,22 +100,44 @@ final class ConfigManager {
         let fileManager = FileManager.default
         let configPath = configFileURL.path
 
-        guard fileManager.fileExists(atPath: configPath) else {
+        // VIB-301: Ensure the Application Support directory exists
+        if !fileManager.fileExists(atPath: Self.configDirectory.path) {
+            try? fileManager.createDirectory(at: Self.configDirectory, withIntermediateDirectories: true)
+        }
+
+        // VIB-301: If config exists at the new stable location, read it
+        if fileManager.fileExists(atPath: configPath) {
+            if let contents = try? String(contentsOfFile: configPath, encoding: .utf8) {
+                parseToml(contents)
+            }
+            return
+        }
+
+        // VIB-301: Migration — check the legacy location (inside captures folder)
+        let legacyPath = legacyConfigFileURL.path
+        if fileManager.fileExists(atPath: legacyPath),
+           let contents = try? String(contentsOfFile: legacyPath, encoding: .utf8) {
+            parseToml(contents)
+            // Save to the new stable location and remove the legacy file
             saveInternal()
+            try? fileManager.removeItem(atPath: legacyPath)
             return
         }
 
-        guard let contents = try? String(contentsOfFile: configPath, encoding: .utf8) else {
-            return
-        }
-
-        parseToml(contents)
+        // No config file at all — first launch, write defaults
+        saveInternal()
     }
 
     private func saveInternal() {
         let fileManager = FileManager.default
-        let folderPath = (capturesFolder as NSString).expandingTildeInPath
 
+        // Ensure the Application Support directory exists
+        if !fileManager.fileExists(atPath: Self.configDirectory.path) {
+            try? fileManager.createDirectory(at: Self.configDirectory, withIntermediateDirectories: true)
+        }
+
+        // Ensure the captures folder exists
+        let folderPath = (capturesFolder as NSString).expandingTildeInPath
         if !fileManager.fileExists(atPath: folderPath) {
             try? fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true)
         }
