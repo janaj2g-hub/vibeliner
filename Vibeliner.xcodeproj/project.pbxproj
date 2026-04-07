@@ -57,6 +57,9 @@
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
+		E20000010000000000000001 /* ImageRole.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000001 /* ImageRole.swift */; };
+		E20000010000000000000002 /* CaptureImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000002 /* CaptureImage.swift */; };
+		E20000010000000000000003 /* CaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10000010000000000000003 /* CaptureStore.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -112,6 +115,9 @@
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
 		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
 		D20000010000000000000001 /* BadgeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRenderer.swift; sourceTree = "<group>"; };
+		E10000010000000000000001 /* ImageRole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRole.swift; sourceTree = "<group>"; };
+		E10000010000000000000002 /* CaptureImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureImage.swift; sourceTree = "<group>"; };
+		E10000010000000000000003 /* CaptureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureStore.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -138,6 +144,7 @@
 			children = (
 				A40000010000000000000003 /* App */,
 				A40000010000000000000009 /* Annotations */,
+				E30000010000000000000001 /* Models */,
 				A40000010000000000000007 /* Capture */,
 				A40000010000000000000005 /* Config */,
 				A40000010000000000000004 /* Design */,
@@ -303,6 +310,16 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		E30000010000000000000001 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				E10000010000000000000001 /* ImageRole.swift */,
+				E10000010000000000000002 /* CaptureImage.swift */,
+				E10000010000000000000003 /* CaptureStore.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -373,6 +390,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E20000010000000000000003 /* CaptureStore.swift in Sources */,
+				E20000010000000000000002 /* CaptureImage.swift in Sources */,
+				E20000010000000000000001 /* ImageRole.swift in Sources */,
 				A10000010000000000000001 /* AppDelegate.swift in Sources */,
 				A10000010000000000000002 /* DesignTokens.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,

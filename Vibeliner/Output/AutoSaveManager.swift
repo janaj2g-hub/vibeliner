@@ -6,15 +6,17 @@ final class AutoSaveManager {
     private let captureFolder: URL
     private let originalImage: NSImage
     private let canvasSize: CGSize
+    private let captureStore: CaptureStore?
     private var storeObserver: Any?
     private var debounceTimer: Timer?
     private var isDirty = false
 
-    init(store: AnnotationStore, captureFolder: URL, originalImage: NSImage, canvasSize: CGSize) {
+    init(store: AnnotationStore, captureFolder: URL, originalImage: NSImage, canvasSize: CGSize, captureStore: CaptureStore? = nil) {
         self.store = store
         self.captureFolder = captureFolder
         self.originalImage = originalImage
         self.canvasSize = canvasSize
+        self.captureStore = captureStore
 
         storeObserver = NotificationCenter.default.addObserver(
             forName: .annotationsDidChange, object: store, queue: .main
@@ -37,7 +39,7 @@ final class AutoSaveManager {
         performSave()
     }
 
-private func scheduleSave() {
+    private func scheduleSave() {
         debounceTimer?.invalidate()
         debounceTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { [weak self] _ in
             self?.performSave()
@@ -50,8 +52,13 @@ private func scheduleSave() {
         let folder = captureFolder
         let image = originalImage
         let size = canvasSize
+        let capture = captureStore
         isDirty = false
         DispatchQueue.global(qos: .userInitiated).async {
+            // VIB-257: Save source images via CaptureStore if available
+            capture?.saveImages(to: folder)
+
+            // Save the annotated screenshot (always uses first/original image)
             ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
             PromptGenerator.savePromptFile(to: folder, annotations: annotations)
             // VIB-183: Invalidate captures cache so next submenu open shows the new capture

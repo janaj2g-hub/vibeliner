@@ -18,6 +18,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
     private var captureFolder: URL?
+    private var captureStore: CaptureStore?
     private var autoSaveManager: AutoSaveManager?
     private var storeObserver: Any?
     private var keyMonitor: Any?
@@ -108,11 +109,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Auto-save
         self.captureFolder = captureFolder
         if let folder = captureFolder {
+            let capture = CaptureStore(image: image)
+            self.captureStore = capture
             autoSaveManager = AutoSaveManager(
                 store: annotationStore,
                 captureFolder: folder,
                 originalImage: image,
-                canvasSize: NSSize(width: dw, height: dh)
+                canvasSize: NSSize(width: dw, height: dh),
+                captureStore: capture
             )
         }
 
