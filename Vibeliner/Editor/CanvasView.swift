@@ -8,6 +8,8 @@ final class CanvasView: NSView, NotePillDelegate {
     var selectTool: SelectTool?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
+    /// VIB-294: Reference to the filmstrip grid for title pill hit-testing.
+    weak var filmstripGrid: FilmstripGridView?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
 
@@ -38,6 +40,38 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    // MARK: - Layout
+
+    /// VIB-296: Resize marksLayer and notesLayer to match the canvas bounds.
+    /// Without this, switching to filmstrip mode leaves the sublayers at the
+    /// original single-image size, causing annotations to clip or misplace.
+    override func layout() {
+        super.layout()
+        marksLayer.frame = bounds
+        notesLayer.frame = bounds
+    }
+
+    /// VIB-294: Pass through mouse events that land on title pill areas.
+    /// The canvas overlay sits above the filmstrip grid in z-order, intercepting
+    /// all events. Title pills need to receive clicks for name editing and role changes.
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        if let grid = filmstripGrid, grid.isComposite {
+            for cell in grid.cellViews {
+                let pill = cell.titlePill
+                guard !pill.isHidden else { continue }
+                // Convert pill frame from pill's superview (the cell) to our superview's coordinate space
+                let pillInCell = pill.frame
+                let pillInGrid = cell.convert(pillInCell, to: grid)
+                // Grid and canvas are siblings in the same container — convert through superview
+                let pillInContainer = grid.convert(pillInGrid, to: superview)
+                if pillInContainer.contains(point) {
+                    return nil  // pass through to the pill below
+                }
+            }
+        }
+        return super.hitTest(point)
+    }
 
     deinit {
         if let observer = storeObserver {
