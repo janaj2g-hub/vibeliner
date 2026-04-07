@@ -46,6 +46,16 @@ final class CaptureStore {
         reindexImages()
     }
 
+    /// VIB-263: Smart role default for the Nth image (0-based).
+    /// Image 0 → .observed, Image 1 → .expected, Image 2+ → .observed
+    static func defaultRole(forIndex index: Int) -> ImageRole {
+        switch index {
+        case 0: return .observed
+        case 1: return .expected
+        default: return .observed
+        }
+    }
+
     /// Update indices to match array positions (call after add/remove).
     func reindexImages() {
         for i in images.indices {
