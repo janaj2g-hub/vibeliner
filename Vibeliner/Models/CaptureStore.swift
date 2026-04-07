@@ -10,7 +10,7 @@ final class CaptureStore {
     var isComposite: Bool { images.count >= 2 }
 
     /// Initialize with a single screenshot (backward-compatible path).
-    init(image: NSImage, title: String = "Screenshot", role: ImageRole = .observed) {
+    init(image: NSImage, title: String = "Image 1", role: ImageRole = .observed) {
         let entry = CaptureImage(
             sourceImage: image,
             title: title,

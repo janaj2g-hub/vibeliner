@@ -407,6 +407,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         // Configure with current images (works for both initial and subsequent adds)
         filmstripGridView?.configure(with: store.images)
+
+        // Resize grid frame height to fit content (width stays the same as canvasView)
+        if let grid = filmstripGridView {
+            let contentSize = grid.intrinsicContentSize
+            if contentSize.height > 0 {
+                grid.setFrameSize(NSSize(width: grid.frame.width, height: contentSize.height))
+            }
+        }
     }
 
     /// VIB-266: Update the status pill for current image count.
