@@ -216,23 +216,23 @@ enum DesignTokens {
     // MARK: - Role Colors (Filmstrip)
     // VIB-295: Role-tinted backgrounds with higher opacity for readability.
 
-    /// Observed role background — purple tint
-    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.35)
+    /// VIB-312: Observed role background — purple tint, brighter against dark filmstrip bg
+    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.50)
 
-    /// Expected role background — green tint
-    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.35)
+    /// VIB-312: Expected role background — green tint, brighter against dark filmstrip bg
+    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.45)
 
-    /// Reference role background — blue tint
-    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.35)
+    /// VIB-312: Reference role background — blue tint, brighter against dark filmstrip bg
+    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.45)
 
-    /// Observed role border — purple tint, stronger
-    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.5)
+    /// VIB-312: Observed role border — purple tint, more visible
+    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.55)
 
-    /// Expected role border — green tint, stronger
-    static let roleExpectedBorder = NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.5)
+    /// VIB-312: Expected role border — green tint, more visible
+    static let roleExpectedBorder = NSColor(red: 134/255, green: 239/255, blue: 172/255, alpha: 0.55)
 
-    /// Reference role border — blue tint, stronger
-    static let roleReferenceBorder = NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.5)
+    /// VIB-312: Reference role border — blue tint, more visible
+    static let roleReferenceBorder = NSColor(red: 147/255, green: 197/255, blue: 253/255, alpha: 0.55)
 
     // MARK: - Title Pill (Filmstrip)
 

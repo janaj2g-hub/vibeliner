@@ -45,11 +45,13 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
     }()
 
     /// VIB-295: Standard popup with hidden arrows — single ▾ chevron added separately.
+    /// VIB-312: Minimized internal padding for tighter text-to-chevron alignment.
     private let rolePopUp: NSPopUpButton = {
         let popup = NSPopUpButton(frame: .zero, pullsDown: false)
         popup.isBordered = false
         popup.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
         (popup.cell as? NSPopUpButtonCell)?.arrowPosition = .noArrow
+        popup.alignment = .right
         popup.addItems(withTitles: [
             ImageRole.observed.displayName,
             ImageRole.expected.displayName,
@@ -124,7 +126,7 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         blurView.layer?.cornerRadius = cornerRadius
         blurView.layer?.masksToBounds = true
 
-        // VIB-295: Chevron on the far right
+        // VIB-312: Chevron on the far right, vertically centered
         chevronLabel.sizeToFit()
         let chevronW = chevronLabel.frame.width
         let chevronX = bounds.width - chevronW - 8
@@ -132,18 +134,20 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         let chevronY = (h - chevronH) / 2
         chevronLabel.frame = NSRect(x: chevronX, y: chevronY, width: chevronW, height: chevronH)
 
-        // VIB-295: Role popup right-aligned, tight to the chevron
+        // VIB-312: Role popup tight to chevron, vertically centered.
+        // Minimal gap between role text and chevron for a compact dropdown feel.
         rolePopUp.sizeToFit()
         let popupW = rolePopUp.frame.width
         let popupH = rolePopUp.frame.height
-        let popupX = chevronX - popupW + 2  // overlap slightly for tight spacing
+        let popupX = chevronX - popupW + 4  // VIB-312: tighter overlap for flush alignment
         let popupY = (h - popupH) / 2
         rolePopUp.frame = NSRect(x: popupX, y: popupY, width: popupW, height: popupH)
 
-        // VIB-295: Title text left-padded 10px, fills remaining space up to the role popup
+        // VIB-312: Title text left-padded 10px, vertically centered, fills up to role popup
         let titleX: CGFloat = 10
         let titleW = popupX - titleX - 2
-        let titleH: CGFloat = 16
+        titleField.sizeToFit()
+        let titleH = titleField.frame.height
         let titleY = (h - titleH) / 2
         titleField.frame = NSRect(x: titleX, y: titleY, width: max(titleW, 30), height: titleH)
     }
