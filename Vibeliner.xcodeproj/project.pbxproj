@@ -65,6 +65,7 @@
 		F20000010000000000000003 /* FilmstripGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000003 /* FilmstripGridView.swift */; };
 		F20000010000000000000004 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000004 /* FilmCellView.swift */; };
 		F20000010000000000000005 /* CompositeStitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000005 /* CompositeStitcher.swift */; };
+		F20000010000000000000006 /* KeyEventGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000006 /* KeyEventGuard.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -128,6 +129,7 @@
 		F10000010000000000000003 /* FilmstripGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripGridView.swift; sourceTree = "<group>"; };
 		F10000010000000000000004 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
 		F10000010000000000000005 /* CompositeStitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeStitcher.swift; sourceTree = "<group>"; };
+		F10000010000000000000006 /* KeyEventGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventGuard.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -166,6 +168,7 @@
 				A4000001000000000000000D /* Setup */,
 				A4000001000000000000000E /* Settings */,
 				A4000001000000000000000F /* Popover */,
+				F30000010000000000000003 /* Utilities */,
 				A20000010000000000000003 /* Info.plist */,
 			);
 			path = Vibeliner;
@@ -351,6 +354,14 @@
 			path = Services;
 			sourceTree = "<group>";
 		};
+		F30000010000000000000003 /* Utilities */ = {
+			isa = PBXGroup;
+			children = (
+				F10000010000000000000006 /* KeyEventGuard.swift */,
+			);
+			path = Utilities;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -484,6 +495,7 @@
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
 				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
+				F20000010000000000000006 /* KeyEventGuard.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

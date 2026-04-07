@@ -65,6 +65,9 @@ final class HotkeyCapturePanel {
         monitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.panel != nil else { return event }
 
+            // VIB-311: Centralized text field guard
+            guard KeyEventGuard.shouldHandleShortcut(in: self.panel) else { return event }
+
             // Escape → cancel
             if event.keyCode == 53 {
                 self.cancel()

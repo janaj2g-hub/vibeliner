@@ -102,6 +102,11 @@ final class CrosshairView: NSView {
     }
 
     override func keyDown(with event: NSEvent) {
+        // VIB-311: Centralized text field guard
+        guard KeyEventGuard.shouldHandleShortcut(in: window) else {
+            super.keyDown(with: event)
+            return
+        }
         if event.keyCode == 53 { // Escape
             CaptureCoordinator.shared.cancelCapture()
         }

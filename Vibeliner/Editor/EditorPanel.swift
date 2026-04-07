@@ -162,11 +162,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 return event  // pass through to text field (Cmd+C/V/A, arrows, etc.)
             }
 
-            // VIB-287: If any text field is first responder (title pill editing),
-            // pass all keys through — don't intercept Delete/Backspace/numbers.
-            if let fr = self.firstResponder, fr is NSTextView || fr is NSTextField {
-                return event
-            }
+            // VIB-311: Centralized text field guard — prevents backspace/delete/number
+            // keys from being intercepted when any text field is editing.
+            guard KeyEventGuard.shouldHandleShortcut(in: self) else { return event }
 
             return self.handleKeyEvent(event) ? nil : event
         }
@@ -211,6 +209,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // arrow keys and other combos must pass through to the responder chain
             return false
         }
+
+        // VIB-311: Centralized text field guard — if a title pill or other text
+        // field is editing, don't intercept Cmd+C/Z (let the field handle them).
+        guard KeyEventGuard.shouldHandleShortcut(in: self) else { return false }
+
         // VIB-205 (attempt 4): Handle non-editing Cmd+key here too —
         // performKeyEquivalent fires before the key monitor on borderless panels,
         // so handleKeyEvent never sees these events.
@@ -250,12 +253,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             return false
         }
 
-        // VIB-287: If any text field is first responder (e.g. title pill editing),
-        // let it handle all key events — don't intercept Delete/Backspace/number keys.
-        if let firstResponder = firstResponder,
-           firstResponder is NSTextView || firstResponder is NSTextField {
-            return false
-        }
+        // VIB-311: Centralized text field guard — if any text field or field editor
+        // is the first responder, pass all key events through to it.
+        guard KeyEventGuard.shouldHandleShortcut(in: self) else { return false }
 
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let keyCode = event.keyCode
