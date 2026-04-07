@@ -46,6 +46,18 @@ final class CaptureStore {
         reindexImages()
     }
 
+    /// Update the title of an image at the given index.
+    func updateTitle(at index: Int, title: String) {
+        guard index >= 0, index < images.count else { return }
+        images[index].title = title
+    }
+
+    /// Update the role of an image at the given index.
+    func updateRole(at index: Int, role: ImageRole) {
+        guard index >= 0, index < images.count else { return }
+        images[index].role = role
+    }
+
     /// VIB-263: Smart role default for the Nth image (0-based).
     /// Image 0 → .observed, Image 1 → .expected, Image 2+ → .observed
     static func defaultRole(forIndex index: Int) -> ImageRole {

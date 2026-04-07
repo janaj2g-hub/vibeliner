@@ -20,6 +20,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var captureFolder: URL?
     private var captureStore: CaptureStore?
     private var autoSaveManager: AutoSaveManager?
+    private var filmstripGridView: FilmstripGridView?
     private var storeObserver: Any?
     private var keyMonitor: Any?
 
@@ -360,11 +361,61 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 self.animator().alphaValue = 1.0
             }
 
+            // VIB-261: Switch to filmstrip view
+            self.refreshFilmstrip()
+
             // Update status pill
             self.updateStatusForMultiImage()
 
             // Update toolbar add button state
             self.toolbarView.updateAddImageState(imageCount: store.images.count)
+        }
+    }
+
+    // MARK: - VIB-261: Filmstrip view wiring
+
+    /// Create or update the FilmstripGridView when in composite mode (2+ images).
+    /// Hides the single-image canvasView and shows the filmstrip grid instead.
+    /// The annotation overlay is reparented onto the filmstrip so tools remain functional.
+    private func refreshFilmstrip() {
+        guard let store = captureStore, store.isComposite else { return }
+        guard let container = contentView else { return }
+
+        if filmstripGridView == nil {
+            // First time entering composite mode — create the filmstrip
+            let grid = FilmstripGridView(frame: canvasView.frame)
+            grid.wantsLayer = true
+
+            // Wire callbacks to update the data model
+            grid.onTitleChanged = { [weak self] idx, title in
+                self?.captureStore?.updateTitle(at: idx, title: title)
+            }
+            grid.onRoleChanged = { [weak self] idx, role in
+                self?.captureStore?.updateRole(at: idx, role: role)
+            }
+
+            // Insert filmstrip where the canvasView is
+            container.addSubview(grid, positioned: .above, relativeTo: canvasView)
+
+            // Move annotation overlay from canvasView to filmstrip so it stays visible
+            if let canvas = canvasOverlay {
+                canvas.removeFromSuperview()
+                canvas.frame = NSRect(x: 0, y: 0, width: grid.frame.width, height: grid.frame.height)
+                grid.addSubview(canvas)
+            }
+
+            // Hide the single-image view
+            canvasView.isHidden = true
+
+            self.filmstripGridView = grid
+        }
+
+        // Configure with current images (works for both initial and subsequent adds)
+        filmstripGridView?.configure(with: store.images)
+
+        // Resize annotation overlay to match filmstrip
+        if let canvas = canvasOverlay, let grid = filmstripGridView {
+            canvas.frame = NSRect(x: 0, y: 0, width: grid.frame.width, height: grid.frame.height)
         }
     }
 
