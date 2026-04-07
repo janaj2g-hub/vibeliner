@@ -318,14 +318,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidRequestCopyPrompt() {
         guard let folder = captureFolder else { return }
-        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder)
+        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder, captureStore: captureStore)
         statusPill.showCopied(message: "Prompt copied")
         toolbarView.markCopyState(.prompt)
     }
 
     func toolbarDidRequestCopyImage() {
         let canvasSize = CGSize(width: displayWidth, height: displayHeight)
-        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)
+        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureStore: captureStore)
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
     }

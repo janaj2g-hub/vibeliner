@@ -58,9 +58,21 @@ final class AutoSaveManager {
             // VIB-257: Save source images via CaptureStore if available
             capture?.saveImages(to: folder)
 
-            // Save the annotated screenshot (always uses first/original image)
-            ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
-            PromptGenerator.savePromptFile(to: folder, annotations: annotations)
+            if let capture = capture, capture.isComposite {
+                // VIB-264: Multi-image — render composite via stitcher
+                CompositeStitcher.saveComposite(
+                    to: folder,
+                    images: capture.images,
+                    annotations: annotations,
+                    canvasSize: size
+                )
+            } else {
+                // Single image — save annotated screenshot as before
+                ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
+            }
+
+            // VIB-265: Save prompt with capture store for multi-image format
+            PromptGenerator.savePromptFile(to: folder, annotations: annotations, captureStore: capture)
             // VIB-183: Invalidate captures cache so next submenu open shows the new capture
             CapturesManager.shared.invalidateCache()
         }

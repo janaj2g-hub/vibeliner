@@ -64,6 +64,7 @@
 		F20000010000000000000002 /* LayoutCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000002 /* LayoutCalculator.swift */; };
 		F20000010000000000000003 /* FilmstripGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000003 /* FilmstripGridView.swift */; };
 		F20000010000000000000004 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000004 /* FilmCellView.swift */; };
+		F20000010000000000000005 /* CompositeStitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F10000010000000000000005 /* CompositeStitcher.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -126,6 +127,7 @@
 		F10000010000000000000002 /* LayoutCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCalculator.swift; sourceTree = "<group>"; };
 		F10000010000000000000003 /* FilmstripGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripGridView.swift; sourceTree = "<group>"; };
 		F10000010000000000000004 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
+		F10000010000000000000005 /* CompositeStitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeStitcher.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -344,6 +346,7 @@
 			isa = PBXGroup;
 			children = (
 				F10000010000000000000002 /* LayoutCalculator.swift */,
+				F10000010000000000000005 /* CompositeStitcher.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -418,6 +421,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F20000010000000000000005 /* CompositeStitcher.swift in Sources */,
 				F20000010000000000000004 /* FilmCellView.swift in Sources */,
 				F20000010000000000000003 /* FilmstripGridView.swift in Sources */,
 				F20000010000000000000002 /* LayoutCalculator.swift in Sources */,
