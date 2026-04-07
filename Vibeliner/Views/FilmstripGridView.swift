@@ -157,10 +157,13 @@ final class FilmstripGridView: NSView {
 
     private func updateBorder() {
         if isComposite {
+            // VIB-290: Darkened background + border for visual grouping
+            layer?.backgroundColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.12).cgColor
             layer?.borderWidth = 1
             layer?.borderColor = DesignTokens.filmstripBorder.cgColor
-            layer?.cornerRadius = 8
+            layer?.cornerRadius = 6
         } else {
+            layer?.backgroundColor = nil
             layer?.borderWidth = 0
             layer?.borderColor = nil
             layer?.cornerRadius = 0
