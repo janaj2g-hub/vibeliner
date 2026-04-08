@@ -12,17 +12,18 @@ final class PromptGenerator {
         annotations: [Annotation],
         screenshotPath: String,
         mode: PromptMode,
+        captureStore: CaptureStore? = nil,
         preambleOverride: String? = nil,
         footerOverride: String? = nil,
-        toolDescriptionsOverride: [String: String]? = nil,
-        roleDescriptionsOverride: [String: String]? = nil
+        toolDescriptionsOverride: [String: String]? = nil
     ) -> String {
         var preamble = preambleOverride ?? ConfigManager.shared.preamble
 
         // Replace [Screenshot Path]
         switch mode {
         case .savedFile:
-            preamble = preamble.replacingOccurrences(of: "[Screenshot Path]", with: "./screenshot.png")
+            let filename = (captureStore?.isComposite == true) ? "./composite.png" : "./screenshot.png"
+            preamble = preamble.replacingOccurrences(of: "[Screenshot Path]", with: filename)
         case .clipboardIDE(let absolutePath):
             preamble = preamble.replacingOccurrences(of: "[Screenshot Path]", with: absolutePath)
         case .clipboardApp:
@@ -36,15 +37,44 @@ final class PromptGenerator {
         let toolDescription = generateToolDescription(from: annotations, toolDescriptions: toolDescriptionsOverride)
         preamble = preamble.replacingOccurrences(of: "[Tool Description]", with: toolDescription)
 
+        // VIB-265: Multi-image block
+        var multiImageBlock = ""
+        if let store = captureStore, store.isComposite {
+            let count = store.images.count
+            var lines: [String] = []
+            lines.append("This screenshot contains \(count) framed images in one stitched composite.")
+            lines.append("")
+            lines.append("Images:")
+            for img in store.images {
+                lines.append("- \(img.title) (\(img.role.displayName))")
+            }
+            lines.append("")
+            lines.append("Use the visible frame title bars to determine which image each note belongs to.")
+            lines.append("Use the visible role pills to determine whether an image is Observed, Reference, or Expected.")
+            multiImageBlock = lines.joined(separator: "\n")
+        }
+
         // Annotation list
         let sorted = annotations.sorted { $0.number < $1.number }
         var annotationLines: [String] = []
         for a in sorted {
-            if a.noteText.isEmpty {
-                annotationLines.append("\(a.number)  [\(a.type.label)]")
+            let text = a.noteText.isEmpty ? "(no description)" : a.noteText
+            // VIB-269: Prepend image title prefix in composite mode
+            let imagePrefix: String
+            if let store = captureStore, store.isComposite {
+                let images = store.images
+                let parentIdx = a.parentImageIndex
+                let parentTitle = parentIdx < images.count ? images[parentIdx].title : "Image \(parentIdx + 1)"
+                if case .arrow = a.position, let endIdx = a.endImageIndex, endIdx != parentIdx {
+                    let endTitle = endIdx < images.count ? images[endIdx].title : "Image \(endIdx + 1)"
+                    imagePrefix = "\(parentTitle) → \(endTitle) — "
+                } else {
+                    imagePrefix = "\(parentTitle) — "
+                }
             } else {
-                annotationLines.append("\(a.number)  [\(a.type.label)] \(a.noteText)")
+                imagePrefix = ""
             }
+            annotationLines.append("\(a.number)  [\(a.type.label)] \(imagePrefix)\(text)")
         }
         let annotationList = annotationLines.joined(separator: "\n")
 
@@ -53,6 +83,9 @@ final class PromptGenerator {
 
         // Assemble
         var parts: [String] = [preamble]
+        if !multiImageBlock.isEmpty {
+            parts.append(multiImageBlock)
+        }
         if !annotationList.isEmpty {
             parts.append(annotationList)
         }
@@ -63,21 +96,8 @@ final class PromptGenerator {
         return parts.joined(separator: "\n\n")
     }
 
-    /// Generate a role descriptions block for multi-image prompts.
-    /// Returns a "Roles:" section listing each role with its description.
-    static func generateRoleDescription(roles: [String], roleDescriptions: [String: String]? = nil) -> String {
-        guard !roles.isEmpty else { return "" }
-        let descriptions = roleDescriptions ?? ConfigManager.shared.roleDescriptions
-        var lines = ["Roles:"]
-        for role in roles {
-            let desc = descriptions[role] ?? ""
-            lines.append("- \(role.capitalized): \(desc)")
-        }
-        return lines.joined(separator: "\n")
-    }
-
-    static func savePromptFile(to folderURL: URL, annotations: [Annotation]) {
-        let prompt = generatePrompt(annotations: annotations, screenshotPath: "./screenshot.png", mode: .savedFile)
+    static func savePromptFile(to folderURL: URL, annotations: [Annotation], captureStore: CaptureStore? = nil) {
+        let prompt = generatePrompt(annotations: annotations, screenshotPath: "./screenshot.png", mode: .savedFile, captureStore: captureStore)
         let fileURL = folderURL.appendingPathComponent("prompt.txt")
         let tempURL = folderURL.appendingPathComponent(".prompt.txt.tmp")
         try? prompt.write(to: tempURL, atomically: true, encoding: .utf8)
@@ -85,13 +105,14 @@ final class PromptGenerator {
         try? FileManager.default.moveItem(at: tempURL, to: fileURL)
     }
 
-    static func clipboardPrompt(annotations: [Annotation], captureFolder: URL) -> String {
+    static func clipboardPrompt(annotations: [Annotation], captureFolder: URL, captureStore: CaptureStore? = nil) -> String {
         let mode = ConfigManager.shared.copyMode
         if mode == "ide" {
-            let absolutePath = captureFolder.appendingPathComponent("screenshot.png").path
-            return generatePrompt(annotations: annotations, screenshotPath: absolutePath, mode: .clipboardIDE(absolutePath: absolutePath))
+            let filename = (captureStore?.isComposite == true) ? "composite.png" : "screenshot.png"
+            let absolutePath = captureFolder.appendingPathComponent(filename).path
+            return generatePrompt(annotations: annotations, screenshotPath: absolutePath, mode: .clipboardIDE(absolutePath: absolutePath), captureStore: captureStore)
         } else {
-            return generatePrompt(annotations: annotations, screenshotPath: "", mode: .clipboardApp)
+            return generatePrompt(annotations: annotations, screenshotPath: "", mode: .clipboardApp, captureStore: captureStore)
         }
     }
 

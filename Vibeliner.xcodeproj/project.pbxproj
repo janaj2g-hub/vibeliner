@@ -59,6 +59,15 @@
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
+		R20000010000000000000001 /* CaptureImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000001 /* CaptureImage.swift */; };
+		R20000010000000000000002 /* CaptureStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000002 /* CaptureStore.swift */; };
+		R20000010000000000000003 /* ImageRole.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000003 /* ImageRole.swift */; };
+		R20000010000000000000004 /* CompositeStitcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000004 /* CompositeStitcher.swift */; };
+		R20000010000000000000005 /* CoordinateConverter.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000005 /* CoordinateConverter.swift */; };
+		R20000010000000000000006 /* LayoutCalculator.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000006 /* LayoutCalculator.swift */; };
+		R20000010000000000000007 /* KeyEventGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000007 /* KeyEventGuard.swift */; };
+		R20000010000000000000008 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000008 /* FilmCellView.swift */; };
+		R20000010000000000000009 /* TitlePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000009 /* TitlePillView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -116,6 +125,15 @@
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
 		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
 		D20000010000000000000001 /* BadgeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRenderer.swift; sourceTree = "<group>"; };
+		R10000010000000000000001 /* CaptureImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureImage.swift; sourceTree = "<group>"; };
+		R10000010000000000000002 /* CaptureStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureStore.swift; sourceTree = "<group>"; };
+		R10000010000000000000003 /* ImageRole.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageRole.swift; sourceTree = "<group>"; };
+		R10000010000000000000004 /* CompositeStitcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositeStitcher.swift; sourceTree = "<group>"; };
+		R10000010000000000000005 /* CoordinateConverter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoordinateConverter.swift; sourceTree = "<group>"; };
+		R10000010000000000000006 /* LayoutCalculator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LayoutCalculator.swift; sourceTree = "<group>"; };
+		R10000010000000000000007 /* KeyEventGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventGuard.swift; sourceTree = "<group>"; };
+		R10000010000000000000008 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
+		R10000010000000000000009 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -133,8 +151,38 @@
 			isa = PBXGroup;
 			children = (
 				D2A4FBC164B13DB84291343D /* CursorManager.swift */,
+				R10000010000000000000007 /* KeyEventGuard.swift */,
 			);
 			path = Utilities;
+			sourceTree = "<group>";
+		};
+		R30000010000000000000001 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				R10000010000000000000001 /* CaptureImage.swift */,
+				R10000010000000000000002 /* CaptureStore.swift */,
+				R10000010000000000000003 /* ImageRole.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		R30000010000000000000002 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				R10000010000000000000004 /* CompositeStitcher.swift */,
+				R10000010000000000000005 /* CoordinateConverter.swift */,
+				R10000010000000000000006 /* LayoutCalculator.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		R30000010000000000000003 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				R10000010000000000000008 /* FilmCellView.swift */,
+				R10000010000000000000009 /* TitlePillView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 		A40000010000000000000001 = {
@@ -155,9 +203,12 @@
 				A40000010000000000000004 /* Design */,
 				A40000010000000000000008 /* Editor */,
 				A40000010000000000000006 /* Hotkey */,
+				R30000010000000000000001 /* Models */,
 				A4000001000000000000000C /* Output */,
+				R30000010000000000000002 /* Services */,
 				A4000001000000000000000D /* Setup */,
 				74CC6D134E7FEDDA6B308270 /* Utilities */,
+				R30000010000000000000003 /* Views */,
 				A4000001000000000000000E /* Settings */,
 				A4000001000000000000000F /* Popover */,
 				A20000010000000000000003 /* Info.plist */,
@@ -444,6 +495,15 @@
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
 				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
+				R20000010000000000000001 /* CaptureImage.swift in Sources */,
+				R20000010000000000000002 /* CaptureStore.swift in Sources */,
+				R20000010000000000000003 /* ImageRole.swift in Sources */,
+				R20000010000000000000004 /* CompositeStitcher.swift in Sources */,
+				R20000010000000000000005 /* CoordinateConverter.swift in Sources */,
+				R20000010000000000000006 /* LayoutCalculator.swift in Sources */,
+				R20000010000000000000007 /* KeyEventGuard.swift in Sources */,
+				R20000010000000000000008 /* FilmCellView.swift in Sources */,
+				R20000010000000000000009 /* TitlePillView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

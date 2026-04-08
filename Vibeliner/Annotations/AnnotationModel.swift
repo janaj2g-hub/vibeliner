@@ -37,6 +37,17 @@ struct Annotation: Identifiable {
     var noteOffset: CGPoint = .zero
     var isSelected: Bool = false
 
+    // VIB-268: Image-relative coordinate system.
+    // Positions stored as 0.0–1.0 fractions within the parent image's frame.
+    // Prevents annotation drift when the filmstrip layout changes.
+    var parentImageIndex: Int = 0
+    /// Relative position (0.0–1.0) within parent image.
+    var relativePosition: AnnotationPosition?
+    /// Badge position as 0.0–1.0 fractions within the parent image's frame.
+    var relativeBadgePosition: CGPoint?
+    /// For cross-image arrows only: the image index of the arrow's end point.
+    var endImageIndex: Int?
+
     init(id: UUID = UUID(), type: AnnotationToolType, number: Int, noteText: String = "", position: AnnotationPosition, badgePosition: CGPoint) {
         self.id = id
         self.type = type

@@ -364,11 +364,20 @@ enum DesignTokens {
     /// Role observed border: #AFA9EC (purple)
     static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
 
+    /// Role observed background — purple tint
+    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.50)
+
     /// Role expected border: #22C55E (green)
     static let roleExpectedBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
 
+    /// Role expected background — green tint
+    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.45)
+
     /// Role reference border: #3B82F6 (blue)
     static let roleReferenceBorder = NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 1.0)
+
+    /// Role reference background — blue tint
+    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.45)
 
     /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
     static let settingsFieldBorder = NSColor(name: nil) { appearance in
@@ -519,6 +528,30 @@ enum DesignTokens {
 
     /// Filmstrip max visible cells: 6
     static let filmstripMaxVisible: Int = 6
+
+    /// Filmstrip gap between cells: 14px
+    static let filmstripGap: CGFloat = 14
+
+    /// Filmstrip container padding: 14px
+    static let filmstripPadding: CGFloat = 14
+
+    /// Filmstrip container background — dark, ~65% opacity
+    static let filmstripBg = NSColor(red: 15/255, green: 15/255, blue: 20/255, alpha: 0.65)
+
+    /// Title pill height: 30px
+    static let titlePillHeight: CGFloat = 30
+
+    /// Gap between title pill bottom and image top: 6px
+    static let titlePillGap: CGFloat = 6
+
+    /// Title pill export shadow — contrast against any screenshot background
+    static let titlePillExportShadow: NSShadow = {
+        let shadow = NSShadow()
+        shadow.shadowOffset = NSSize(width: 0, height: -2)
+        shadow.shadowBlurRadius = 8
+        shadow.shadowColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.3)
+        return shadow
+    }()
 
     // MARK: - Ghost preview
 
