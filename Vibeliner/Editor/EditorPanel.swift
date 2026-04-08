@@ -442,6 +442,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         filmstrip.onCellSelected = { [weak self] index in
             self?.filmstripCellSelected(index)
         }
+        filmstrip.onRoleChanged = { [weak self] index, newRole in
+            guard let self, index < self.imageRoles.count else { return }
+            self.imageRoles[index] = newRole.rawValue
+        }
+        filmstrip.onTitleChanged = { [weak self] _, _ in
+            // Title changes tracked by TitlePillView; future: persist to CaptureStore
+            _ = self  // silence warning
+        }
         container.addSubview(filmstrip)
         self.filmstripView = filmstrip
 

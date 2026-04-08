@@ -421,6 +421,9 @@ final class CanvasView: NSView, NotePillDelegate {
         if oldText != text {
             undoManager_?.record(.editText(id: id, oldText: oldText, newText: text))
         }
+        // VIB-326: Resign field editor before removing pill — prevents the stale
+        // NSTextView from lingering as first responder and blocking KeyEventGuard.
+        window?.makeFirstResponder(nil)
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
@@ -447,6 +450,9 @@ final class CanvasView: NSView, NotePillDelegate {
             }
         }
 
+        // VIB-326: Resign field editor before removing pill — prevents the stale
+        // NSTextView from lingering as first responder and blocking KeyEventGuard.
+        window?.makeFirstResponder(nil)
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
