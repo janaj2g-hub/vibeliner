@@ -494,6 +494,32 @@ enum DesignTokens {
     /// 10px minimum selection size
     static let minimumSelectionSize: CGFloat = 10
 
+    // MARK: - Filmstrip
+
+    /// Filmstrip cell spacing: 8px between cells
+    static let filmstripCellSpacing: CGFloat = 8
+
+    /// Filmstrip title pill height: 22px
+    static let filmstripTitlePillHeight: CGFloat = 22
+
+    /// Filmstrip title pill corner radius: 11px
+    static let filmstripTitlePillRadius: CGFloat = 11
+
+    /// Filmstrip title pill font: system 10px semibold
+    static let filmstripTitlePillFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
+
+    /// Filmstrip title pill text color: white
+    static let filmstripTitlePillText = NSColor.white
+
+    /// Filmstrip title pill background: dark semi-transparent
+    static let filmstripTitlePillBg = NSColor(white: 0, alpha: 0.55)
+
+    /// Filmstrip title pill gap below pill: 4px
+    static let filmstripTitlePillGap: CGFloat = 4
+
+    /// Filmstrip max visible cells: 6
+    static let filmstripMaxVisible: Int = 6
+
     // MARK: - Ghost preview
 
     /// Ghost anchor dot radius: 3px

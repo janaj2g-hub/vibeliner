@@ -22,6 +22,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var storeObserver: Any?
     private var keyMonitor: Any?
 
+    // MARK: - Multi-image state
+    private var images: [NSImage] = []
+    private var imageRoles: [String] = []
+    private var filmstripView: FilmstripGridView?
+    private var isFilmstripMode = false
+
     init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
         self.screenshotImage = image
         self.canvasView = ScreenshotCanvasView(image: image)
@@ -65,6 +71,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             backing: .buffered,
             defer: false
         )
+
+        // Track images for multi-image support
+        self.images = [image]
+        self.imageRoles = ["observed"]
 
         isFloatingPanel = true
         level = .floating
@@ -364,27 +374,83 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         toolbarView.markCopyState(.image)
     }
 
-    // MARK: - VIB-262: Add image
+    // MARK: - VIB-262/329: Add image
 
     func toolbarDidRequestAddImage() {
-        // Auto-save before dimming
+        guard images.count < 12 else { return }
+
+        // Auto-save before hiding
         autoSaveManager?.saveNow()
 
-        // Dim editor
-        NSAnimationContext.runAnimationGroup { ctx in
-            ctx.duration = 0.2
-            self.animator().alphaValue = 0.15
-        }
+        // VIB-329: Hide editor completely so it doesn't appear in the screenshot
+        orderOut(nil)
 
-        // Start add-image capture
-        CaptureCoordinator.shared.startAddImageCapture { [weak self] _ in
-            guard let self else { return }
+        // Start add-image capture with cancel handler to restore editor
+        CaptureCoordinator.shared.startAddImageCapture(
+            completion: { [weak self] newImage in
+                guard let self else { return }
 
-            // Restore editor opacity (image handling is future work)
-            NSAnimationContext.runAnimationGroup { ctx in
-                ctx.duration = 0.2
-                self.animator().alphaValue = 1.0
+                // Add the new image
+                self.images.append(newImage)
+                self.imageRoles.append("observed")
+
+                // Restore editor
+                self.alphaValue = 1.0
+                self.makeKeyAndOrderFront(nil)
+
+                // Transition to filmstrip if going from 1→2, or refresh if already in filmstrip
+                if self.images.count >= 2 {
+                    if !self.isFilmstripMode {
+                        self.transitionToFilmstrip()
+                    } else {
+                        self.refreshFilmstrip()
+                    }
+                }
+
+                // Update add image button state
+                self.toolbarView.updateAddImageState(imageCount: self.images.count)
+            },
+            onCancel: { [weak self] in
+                // VIB-329: Restore editor after canceled add-image capture
+                self?.alphaValue = 1.0
+                self?.makeKeyAndOrderFront(nil)
             }
+        )
+    }
+
+    // MARK: - Filmstrip transition
+
+    private func transitionToFilmstrip() {
+        isFilmstripMode = true
+        guard let container = contentView else { return }
+
+        // Hide the single-image canvas view
+        canvasView.isHidden = true
+
+        // Create filmstrip view in the same area as the canvas
+        let filmstrip = FilmstripGridView(frame: canvasView.frame)
+        filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
+        filmstrip.onCellSelected = { [weak self] index in
+            self?.filmstripCellSelected(index)
         }
+        container.addSubview(filmstrip)
+        self.filmstripView = filmstrip
+
+        // Move canvas overlay to filmstrip
+        canvasOverlay?.removeFromSuperview()
+        filmstrip.addSubview(canvasOverlay ?? NSView())
+
+        // Update status pill for multi-image
+        statusPill.updateNoteCount(annotationStore.count)
+    }
+
+    private func refreshFilmstrip() {
+        guard let filmstrip = filmstripView else { return }
+        filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
+    }
+
+    private func filmstripCellSelected(_ index: Int) {
+        // Future: switch annotation context per-image
+        // For now, just update the filmstrip selection visual
     }
 }
