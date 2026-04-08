@@ -13,4 +13,12 @@ enum ImageRole: String, Codable {
         case .reference: return "Reference"
         }
     }
+
+    static func from(string: String) -> ImageRole {
+        switch string.lowercased() {
+        case "expected": return .expected
+        case "reference": return .reference
+        default: return .observed
+        }
+    }
 }

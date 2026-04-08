@@ -1,49 +1,29 @@
 import AppKit
 
-/// Horizontal scrolling filmstrip that displays multiple captured images as cells
-/// with title pills and role-colored borders. Used when the editor has 2+ images.
+/// Horizontal filmstrip that displays multiple captured images as cells with
+/// editable title pills and role-colored borders. Used when the editor has 2+ images.
+/// Images scale to fit the available width — no scrolling.
 final class FilmstripGridView: NSView {
 
     /// Called when user clicks a cell. Parameter is the image index.
     var onCellSelected: ((Int) -> Void)?
+    /// Called when user changes a cell's role via the dropdown.
+    var onRoleChanged: ((Int, ImageRole) -> Void)?
+    /// Called when user edits a cell's title.
+    var onTitleChanged: ((Int, String) -> Void)?
 
-    private let scrollView = NSScrollView()
-    private let documentContainer = NSView()
     private var cellViews: [FilmstripCellView] = []
     private(set) var selectedIndex: Int = 0
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
-        setupView()
+        wantsLayer = true
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    private func setupView() {
-        wantsLayer = true
-
-        scrollView.hasHorizontalScroller = true
-        scrollView.hasVerticalScroller = false
-        scrollView.autohidesScrollers = true
-        scrollView.borderType = .noBorder
-        scrollView.drawsBackground = false
-        scrollView.horizontalScrollElasticity = .allowed
-        scrollView.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(scrollView)
-
-        documentContainer.translatesAutoresizingMaskIntoConstraints = false
-        scrollView.documentView = documentContainer
-
-        NSLayoutConstraint.activate([
-            scrollView.topAnchor.constraint(equalTo: topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
-            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
-            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
-        ])
-    }
-
-    /// Rebuild the filmstrip with the given images. Each image gets a title pill
-    /// showing its 1-based index and a role-colored border.
+    /// Rebuild the filmstrip with the given images. Each image gets a TitlePillView
+    /// with editable title and role dropdown.
     func setImages(_ images: [NSImage], roles: [String], selectedIndex: Int) {
         self.selectedIndex = selectedIndex
 
@@ -51,45 +31,61 @@ final class FilmstripGridView: NSView {
         for cell in cellViews { cell.removeFromSuperview() }
         cellViews.removeAll()
 
-        let cellHeight = bounds.height
-        guard cellHeight > 0 else { return }
+        guard !images.isEmpty else { return }
 
-        let titleH = DesignTokens.filmstripTitlePillHeight + DesignTokens.filmstripTitlePillGap
-        let imageAreaHeight = cellHeight - titleH
-        let spacing = DesignTokens.filmstripCellSpacing
-        var x: CGFloat = 0
+        let availableWidth = bounds.width
+        let availableHeight = bounds.height
+        guard availableWidth > 0, availableHeight > 0 else { return }
+
+        let gap = DesignTokens.filmstripGap
+        let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
+
+        // Compute row height that fits all images in the available width
+        let imageSizes = images.map { $0.size }
+        let rowHeight = Self.computeFittingRowHeight(
+            imageSizes: imageSizes,
+            availableWidth: availableWidth,
+            availableHeight: availableHeight - pillTotalH,
+            gap: gap
+        )
+
+        let (frames, _) = LayoutCalculator.computeFrames(
+            imageSizes: imageSizes,
+            rowHeight: rowHeight,
+            gap: gap,
+            titlePillTotalHeight: pillTotalH
+        )
 
         for (i, image) in images.enumerated() {
-            // Scale image to fit height while preserving aspect ratio
-            let aspect = image.size.width / max(image.size.height, 1)
-            let cellW = imageAreaHeight * aspect
+            guard i < frames.count else { break }
+            let frame = frames[i]
 
-            let role = i < roles.count ? roles[i] : "observed"
+            let roleStr = i < roles.count ? roles[i] : "observed"
+            let imageRole = ImageRole.from(string: roleStr)
+
             let cell = FilmstripCellView(
                 image: image,
                 index: i,
-                role: role,
+                role: imageRole,
                 isSelected: i == selectedIndex
             )
-            cell.frame = NSRect(x: x, y: 0, width: cellW, height: cellHeight)
+            cell.frame = NSRect(
+                x: frame.origin.x,
+                y: 0,
+                width: frame.size.width,
+                height: frame.size.height
+            )
             cell.onClick = { [weak self] idx in
                 self?.selectCell(idx)
             }
-            documentContainer.addSubview(cell)
+            cell.onRoleChanged = { [weak self] idx, newRole in
+                self?.onRoleChanged?(idx, newRole)
+            }
+            cell.onTitleChanged = { [weak self] idx, newTitle in
+                self?.onTitleChanged?(idx, newTitle)
+            }
+            addSubview(cell)
             cellViews.append(cell)
-
-            x += cellW + spacing
-        }
-
-        // Remove trailing spacing
-        if !images.isEmpty { x -= spacing }
-
-        // Size the document view
-        documentContainer.frame = NSRect(x: 0, y: 0, width: max(x, bounds.width), height: cellHeight)
-
-        // Scroll selected cell into view
-        if selectedIndex < cellViews.count {
-            scrollView.contentView.scrollToVisible(cellViews[selectedIndex].frame)
         }
     }
 
@@ -101,6 +97,31 @@ final class FilmstripGridView: NSView {
         }
         onCellSelected?(index)
     }
+
+    // MARK: - Fitting
+
+    /// Compute a row height so all images fit within availableWidth.
+    private static func computeFittingRowHeight(
+        imageSizes: [CGSize],
+        availableWidth: CGFloat,
+        availableHeight: CGFloat,
+        gap: CGFloat
+    ) -> CGFloat {
+        guard !imageSizes.isEmpty else { return 200 }
+
+        // Sum of aspect ratios — each image width = rowHeight * ar
+        let totalAR = imageSizes.reduce(CGFloat(0)) { sum, size in
+            sum + (size.height > 0 ? size.width / size.height : 1)
+        }
+        let totalGap = CGFloat(max(0, imageSizes.count - 1)) * gap
+        let rowHeight = (availableWidth - totalGap) / totalAR
+
+        // Clamp to LayoutCalculator limits and available height
+        return min(
+            min(rowHeight, LayoutCalculator.maxRowHeight),
+            availableHeight
+        )
+    }
 }
 
 // MARK: - Cell View
@@ -108,21 +129,22 @@ final class FilmstripGridView: NSView {
 private final class FilmstripCellView: NSView {
 
     var onClick: ((Int) -> Void)?
+    var onRoleChanged: ((Int, ImageRole) -> Void)?
+    var onTitleChanged: ((Int, String) -> Void)?
     var isSelected: Bool = false {
         didSet { updateSelectionAppearance() }
     }
 
     private let index: Int
-    private let role: String
+    private var role: ImageRole
     private let imageView = NSImageView()
-    private let titlePill = NSView()
-    private let titleLabel: NSTextField
     private let clipView = NSView()
+    private let titlePill: TitlePillView
 
-    init(image: NSImage, index: Int, role: String, isSelected: Bool) {
+    init(image: NSImage, index: Int, role: ImageRole, isSelected: Bool) {
         self.index = index
         self.role = role
-        self.titleLabel = NSTextField(labelWithString: "Image \(index + 1)")
+        self.titlePill = TitlePillView(title: "Image \(index + 1)", role: role)
         self.isSelected = isSelected
         super.init(frame: .zero)
         setupView(image: image)
@@ -133,20 +155,18 @@ private final class FilmstripCellView: NSView {
     private func setupView(image: NSImage) {
         wantsLayer = true
 
-        // Title pill at top
-        titlePill.wantsLayer = true
-        titlePill.layer?.cornerRadius = DesignTokens.filmstripTitlePillRadius
-        titlePill.layer?.backgroundColor = DesignTokens.filmstripTitlePillBg.cgColor
+        // TitlePillView at top — editable with role dropdown
+        titlePill.onRoleChanged = { [weak self] newRole in
+            guard let self else { return }
+            self.role = newRole
+            self.updateSelectionAppearance()
+            self.onRoleChanged?(self.index, newRole)
+        }
+        titlePill.onTitleChanged = { [weak self] newTitle in
+            guard let self else { return }
+            self.onTitleChanged?(self.index, newTitle)
+        }
         addSubview(titlePill)
-
-        titleLabel.font = DesignTokens.filmstripTitlePillFont
-        titleLabel.textColor = DesignTokens.filmstripTitlePillText
-        titleLabel.alignment = .center
-        titleLabel.isBezeled = false
-        titleLabel.drawsBackground = false
-        titleLabel.isEditable = false
-        titleLabel.sizeToFit()
-        titlePill.addSubview(titleLabel)
 
         // Image in clip view with rounded corners and border
         clipView.wantsLayer = true
@@ -165,34 +185,28 @@ private final class FilmstripCellView: NSView {
     override func layout() {
         super.layout()
 
-        let pillH = DesignTokens.filmstripTitlePillHeight
-        let pillGap = DesignTokens.filmstripTitlePillGap
-        let pillW = titleLabel.frame.width + 16
+        let pillH = DesignTokens.titlePillHeight
+        let pillGap = DesignTokens.titlePillGap
+        let pillW = min(bounds.width, max(120, bounds.width * 0.8))
         titlePill.frame = NSRect(
             x: (bounds.width - pillW) / 2,
             y: bounds.height - pillH,
             width: pillW,
             height: pillH
         )
-        titleLabel.frame = NSRect(
-            x: 8,
-            y: (pillH - titleLabel.frame.height) / 2,
-            width: titleLabel.frame.width,
-            height: titleLabel.frame.height
-        )
 
         let imageY: CGFloat = 0
         let imageH = bounds.height - pillH - pillGap
-        clipView.frame = NSRect(x: 0, y: imageY, width: bounds.width, height: imageH)
+        clipView.frame = NSRect(x: 0, y: imageY, width: bounds.width, height: max(0, imageH))
         imageView.frame = clipView.bounds
     }
 
     private func updateSelectionAppearance() {
         let borderColor: NSColor
         switch role {
-        case "expected":  borderColor = DesignTokens.roleExpectedBorder
-        case "reference": borderColor = DesignTokens.roleReferenceBorder
-        default:          borderColor = DesignTokens.roleObservedBorder
+        case .observed:  borderColor = DesignTokens.roleObservedBorder
+        case .expected:  borderColor = DesignTokens.roleExpectedBorder
+        case .reference: borderColor = DesignTokens.roleReferenceBorder
         }
 
         if isSelected {

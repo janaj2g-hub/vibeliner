@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vibeliner Design Tester — Interactive Control Playground</title>
+<style>
+  :root {
+    --bg: #1e1e1e; --fg: #e0e0e0; --fg2: #888; --surface: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
+    /* dark mode tokens */
+    --toolbar-bg: rgba(30,30,30,0.92); --toolbar-border: rgba(255,255,255,0.12);
+    --icon-default: rgba(255,255,255,0.40); --icon-hover: rgba(255,255,255,0.70);
+    --purple-active: #AFA9EC; --purple-btn-border: #A796EB; --purple-btn-text: #A796EB; --purple-btn-bg: rgba(116,97,194,0.25);
+    --purple-btn-hover-border: #C4B8F5; --purple-btn-hover-text: #C4B8F5; --purple-btn-hover-bg: rgba(116,97,194,0.35);
+    --tool-active-bg: rgba(175,169,236,0.2);
+    --btn-hover-bg: rgba(255,255,255,0.08); --close-hover-bg: rgba(255,87,87,0.2); --trash-hover-bg: rgba(255,87,87,0.15);
+    --toggle-bg: rgba(255,255,255,0.06); --toggle-active-bg: rgba(175,169,236,0.25); --toggle-inactive: rgba(255,255,255,0.3);
+    --addimg-bg: rgba(175,169,236,0.14); --addimg-border: rgba(175,169,236,0.22); --addimg-hover-border: rgba(175,169,236,0.34);
+    --divider: rgba(255,255,255,0.08);
+    --settings-pill-border: rgba(175,169,236,0.36); --settings-pill-fill: rgba(175,169,236,0.10); --settings-pill-text: #AFA9EC;
+    --settings-seg-track: rgba(255,255,255,0.03); --settings-seg-active: rgba(175,169,236,0.22);
+  }
+  .light {
+    --bg: #f5f5f7; --fg: #1d1d1f; --fg2: #666; --surface: rgba(0,0,0,0.03); --border: rgba(0,0,0,0.08);
+    --toolbar-bg: rgba(255,255,255,0.88); --toolbar-border: rgba(0,0,0,0.06);
+    --icon-default: rgba(0,0,0,0.45); --icon-hover: rgba(0,0,0,0.70);
+    --purple-active: #534AB7; --purple-btn-border: #534AB7; --purple-btn-text: #534AB7; --purple-btn-bg: rgba(83,74,183,0.08);
+    --purple-btn-hover-border: #7461C2; --purple-btn-hover-text: #7461C2; --purple-btn-hover-bg: rgba(83,74,183,0.12);
+    --tool-active-bg: rgba(83,74,183,0.12);
+    --btn-hover-bg: rgba(0,0,0,0.06); --close-hover-bg: rgba(255,87,87,0.15); --trash-hover-bg: rgba(255,87,87,0.12);
+    --toggle-bg: rgba(0,0,0,0.08); --toggle-active-bg: rgba(83,74,183,0.22); --toggle-inactive: rgba(0,0,0,0.4);
+    --addimg-bg: rgba(83,74,183,0.08); --addimg-border: rgba(83,74,183,0.15); --addimg-hover-border: rgba(83,74,183,0.25);
+    --divider: rgba(0,0,0,0.08);
+    --settings-pill-border: rgba(114,103,221,0.26); --settings-pill-fill: rgba(175,169,236,0.16); --settings-pill-text: #7267DD;
+    --settings-seg-track: rgba(15,23,42,0.04); --settings-seg-active: rgba(175,169,236,0.18);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif; background: var(--bg); color: var(--fg); padding: 24px; transition: background 0.2s, color 0.2s; }
+  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: var(--fg2); margin-bottom: 24px; }
+  h2 { font-size: 18px; font-weight: 600; margin: 32px 0 12px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+  .toggle-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .toggle-bar label { font-size: 13px; font-weight: 500; cursor: pointer; }
+  .section { margin-bottom: 24px; }
+  .control-row { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; margin-bottom: 16px; }
+  .control-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; min-width: 180px; }
+  .control-card .label { font-size: 10px; color: var(--fg2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .control-card .location { font-size: 9px; color: var(--fg2); margin-top: 8px; font-style: italic; }
+  .control-card .tokens { font-size: 9px; color: var(--purple-active); margin-top: 4px; font-family: 'SF Mono', monospace; }
+
+  /* Copy Pill Button */
+  .copy-pill { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11px; font-weight: 500; cursor: pointer; user-select: none; transition: all 0.15s; background: var(--purple-btn-bg); border: 1.5px solid var(--purple-btn-border); color: var(--purple-btn-text); }
+  .copy-pill:hover { background: var(--purple-btn-hover-bg); border-color: var(--purple-btn-hover-border); color: var(--purple-btn-hover-text); }
+  .copy-pill.copied { background: rgba(22,163,74,0.12); border-color: rgba(22,163,74,0.5); color: rgba(22,163,74,0.8); }
+
+  /* Circular Icon Buttons */
+  .icon-btn { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.15s; background: transparent; border: none; }
+  .icon-btn svg { width: 15px; height: 15px; stroke: var(--icon-default); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+  .icon-btn:hover { background: var(--btn-hover-bg); }
+  .icon-btn:hover svg { stroke: var(--icon-hover); }
+
+  /* Tool Buttons */
+  .tool-btn { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; user-select: none; transition: all 0.15s; background: transparent; border: none; }
+  .tool-btn svg { width: 15px; height: 15px; stroke: var(--icon-default); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+  .tool-btn:hover { background: var(--btn-hover-bg); }
+  .tool-btn:hover svg { stroke: var(--icon-hover); }
+  .tool-btn.active { background: var(--tool-active-bg); }
+  .tool-btn.active svg { stroke: var(--purple-active); }
+
+  /* Close Button */
+  .close-btn { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; background: transparent; }
+  .close-btn svg { width: 10px; height: 10px; stroke: var(--icon-default); fill: none; stroke-width: 1.5; stroke-linecap: round; transition: stroke 0.15s; }
+  .close-btn:hover { background: var(--close-hover-bg); }
+  .close-btn:hover svg { stroke: #FF5F57; }
+
+  /* Trash Button */
+  .trash-btn { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; background: transparent; }
+  .trash-btn svg { width: 14px; height: 14px; stroke: var(--icon-default); fill: none; stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+  .trash-btn:hover { background: var(--trash-hover-bg); }
+  .trash-btn:hover svg { stroke: #FF5F57; }
+
+  /* Segmented Control (IDE/App Toggle) */
+  .seg-control { display: inline-flex; height: 28px; border-radius: 14px; background: var(--toggle-bg); padding: 2px; cursor: pointer; user-select: none; }
+  .seg-item { height: 24px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; font-size: 9px; font-weight: 600; transition: all 0.15s; color: var(--toggle-inactive); }
+  .seg-item.active { background: var(--toggle-active-bg); color: var(--purple-active); }
+
+  /* Settings Pill Button */
+  .settings-pill { display: inline-flex; align-items: center; height: 28px; padding: 0 16px; border-radius: 14px; font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s; background: var(--settings-pill-fill); border: 1.5px solid var(--settings-pill-border); color: var(--settings-pill-text); }
+  .settings-pill:hover { filter: brightness(1.15); }
+
+  /* Settings Segmented Control */
+  .settings-seg { display: inline-flex; height: 28px; border-radius: 14px; background: var(--settings-seg-track); padding: 2px; cursor: pointer; user-select: none; border: 1px solid var(--border); }
+  .settings-seg .seg-item.active { background: var(--settings-seg-active); color: var(--purple-active); }
+
+  /* Note Pills */
+  .note-pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; font-size: 12px; cursor: pointer; user-select: none; transition: all 0.15s; background: rgba(255,248,248,0.82); border: 1px solid rgba(239,68,68,0.18); color: #7F1D1D; }
+  .note-pill .prefix { color: rgba(153,27,27,0.4); font-size: 8px; font-weight: 600; }
+  .note-pill:hover { background: rgba(255,245,245,0.88); border-color: rgba(239,68,68,0.4); }
+  .note-pill.editing { background: rgba(255,245,245,0.92); border: 1.5px solid #EF4444; }
+
+  /* Add Image Button */
+  .add-img-btn { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s; background: var(--addimg-bg); border: 1.5px solid var(--addimg-border); color: var(--purple-active); }
+  .add-img-btn:hover { border-color: var(--addimg-hover-border); }
+
+  /* New Capture Button */
+  .new-capture-btn { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s; background: var(--purple-btn-bg); border: 1.5px solid var(--purple-btn-border); color: var(--purple-btn-text); }
+  .new-capture-btn:hover { background: var(--purple-btn-hover-bg); border-color: var(--purple-btn-hover-border); color: var(--purple-btn-hover-text); }
+
+  /* Menu Row (Popover) */
+  .menu-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; border-radius: 6px; font-size: 13px; cursor: pointer; transition: background 0.1s; color: #e0e0e0; min-width: 220px; }
+  .menu-row:hover { background: rgba(175,169,236,0.12); }
+  .menu-row .keys { font-size: 11px; color: rgba(255,255,255,0.3); }
+
+  /* Setup Buttons */
+  .setup-action-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s; background: rgba(175,169,236,0.08); border: 1.5px solid rgba(175,169,236,0.55); color: #6F69DF; }
+  .setup-action-btn:hover { background: rgba(175,169,236,0.16); }
+  .setup-green-btn { display: inline-flex; align-items: center; height: 32px; padding: 0 16px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; user-select: none; transition: all 0.15s; background: rgba(34,197,94,0.08); border: 1.5px solid rgba(34,197,94,0.5); color: #16A34A; }
+  .setup-green-btn:hover { filter: brightness(1.1); }
+
+  /* Role Swatches */
+  .role-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border: 2px solid transparent; }
+  .role-swatch:hover { transform: scale(1.15); }
+  .role-swatch.selected { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor; }
+
+  /* Badge */
+  .badge { width: 18px; height: 18px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
+
+  /* Toolbar mock strip */
+  .toolbar-strip { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 10px; border-radius: 20px; background: var(--toolbar-bg); border: 1px solid var(--toolbar-border); }
+  .toolbar-divider { width: 1px; height: 20px; background: var(--divider); margin: 0 4px; }
+</style>
+</head>
+<body>
+
+<h1>Vibeliner Design Tester</h1>
+<p class="subtitle">Interactive Control Playground — Source: <code>DesignTokens.swift</code> — Hover and click to test states</p>
+
+<div class="toggle-bar">
+  <label><input type="checkbox" id="modeToggle" onchange="document.body.classList.toggle('light', this.checked)"> Light mode</label>
+  <span style="font-size:11px;color:var(--fg2)">Toggle to see all controls in both appearances</span>
+</div>
+
+<!-- TOOLBAR STRIP -->
+<h2>Full Toolbar Strip</h2>
+<div class="section">
+  <div class="toolbar-strip">
+    <div class="close-btn" title="Close"><svg viewBox="0 0 10 10"><line x1="0" y1="10" x2="10" y2="0"/><line x1="0" y1="0" x2="10" y2="10"/></svg></div>
+    <div class="toolbar-divider"></div>
+    <div class="tool-btn" title="Select" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"/></svg></div>
+    <div class="tool-btn active" title="Pin" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4"/><line x1="7.5" y1="9" x2="7.5" y2="14"/></svg></div>
+    <div class="tool-btn" title="Arrow" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"/><polyline points="7,2 13,2 13,8"/></svg></div>
+    <div class="tool-btn" title="Rectangle" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><rect x="2" y="3" width="11" height="9" rx="1"/></svg></div>
+    <div class="tool-btn" title="Circle" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="5.5"/></svg></div>
+    <div class="tool-btn" title="Freehand" onclick="selectTool(this)"><svg viewBox="0 0 15 15"><path d="M2 10 Q4 4 7 7 T13 5" fill="none"/></svg></div>
+    <div class="trash-btn" title="Delete"><svg viewBox="0 0 14 14"><path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M3.5 4l.5 8.5a1 1 0 001 .5h4a1 1 0 001-.5L11 4"/></svg></div>
+    <div class="toolbar-divider"></div>
+    <div class="icon-btn" title="Undo"><svg viewBox="0 0 15 15"><path d="M3 5l3-3M3 5l3 3M3 5h7a3 3 0 010 6H8"/></svg></div>
+    <div class="icon-btn" title="Redo"><svg viewBox="0 0 15 15"><path d="M12 5l-3-3M12 5l-3 3M12 5H5a3 3 0 000 6h2"/></svg></div>
+    <div class="add-img-btn">+ Add image</div>
+    <div class="new-capture-btn">New capture</div>
+    <div class="toolbar-divider"></div>
+    <div class="seg-control" onclick="toggleSeg(this)"><div class="seg-item active">IDE</div><div class="seg-item">App</div></div>
+    <div class="toolbar-divider"></div>
+    <div class="copy-pill" onclick="simulateCopy(this)">Copy Prompt</div>
+    <div class="copy-pill" onclick="simulateCopy(this)">Copy Image</div>
+  </div>
+  <div style="margin-top:6px;font-size:10px;color:var(--fg2)">Tokens: toolbarBg, toolbarBorder, toolbarDivider, toolbarIconDefault/Hover, toolbarPurpleActive, toolbarPurpleButton*, toolbarToolActiveBg, toolbarCloseHoverBg, toolbarTrashHoverBg, addImageBg/Border, toolbarToggle*</div>
+  <div style="font-size:9px;color:var(--fg2);font-style:italic">Where: Editor toolbar (ToolbarView.swift, ToolButton.swift)</div>
+</div>
+
+<!-- COPY BUTTONS -->
+<h2>Copy Pill Buttons</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Default</div>
+    <div class="copy-pill" onclick="simulateCopy(this)">Copy Prompt</div>
+    <div class="tokens">toolbarPurpleButtonBg, toolbarPurpleButtonBorder, toolbarPurpleButtonText</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Hover (move mouse over)</div>
+    <div class="copy-pill">Copy Image</div>
+    <div class="tokens">toolbarPurpleButtonHoverBg/Border/Text</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Copied (click to trigger)</div>
+    <div class="copy-pill" onclick="simulateCopy(this)">Copy Prompt</div>
+    <div class="tokens">copiedGreenBg, copiedGreenBorder, copiedGreenText</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+</div>
+
+<!-- TOOL BUTTONS -->
+<h2>Tool Buttons (Circular)</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Default (hover me)</div>
+    <div style="display:flex;gap:6px">
+      <div class="tool-btn"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4"/><line x1="7.5" y1="9" x2="7.5" y2="14"/></svg></div>
+      <div class="tool-btn"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"/><polyline points="7,2 13,2 13,8"/></svg></div>
+      <div class="tool-btn"><svg viewBox="0 0 15 15"><rect x="2" y="3" width="11" height="9" rx="1"/></svg></div>
+    </div>
+    <div class="tokens">toolbarIconDefault, toolbarButtonHoverBg</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Active (selected tool)</div>
+    <div style="display:flex;gap:6px">
+      <div class="tool-btn active"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4"/><line x1="7.5" y1="9" x2="7.5" y2="14"/></svg></div>
+      <div class="tool-btn active"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="5.5"/></svg></div>
+    </div>
+    <div class="tokens">toolbarToolActiveBg, toolbarPurpleActive</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+</div>
+
+<!-- CLOSE & TRASH -->
+<h2>Close & Trash Buttons</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Close (X) — hover for red</div>
+    <div class="close-btn"><svg viewBox="0 0 10 10"><line x1="0" y1="10" x2="10" y2="0"/><line x1="0" y1="0" x2="10" y2="10"/></svg></div>
+    <div class="tokens">toolbarCloseHoverBg, toolbarCloseIconHover (#FF5F57)</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Trash — hover for red</div>
+    <div class="trash-btn"><svg viewBox="0 0 14 14"><path d="M2 4h10M5 4V2.5a.5.5 0 01.5-.5h3a.5.5 0 01.5.5V4M3.5 4l.5 8.5a1 1 0 001 .5h4a1 1 0 001-.5L11 4"/></svg></div>
+    <div class="tokens">toolbarTrashHoverBg, #FF5F57</div>
+    <div class="location">Editor toolbar</div>
+  </div>
+</div>
+
+<!-- SEGMENTED CONTROLS -->
+<h2>Segmented Controls</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">IDE / App Toggle</div>
+    <div class="seg-control" onclick="toggleSeg(this)"><div class="seg-item active">IDE</div><div class="seg-item">App</div></div>
+    <div class="tokens">toolbarToggleBg, toolbarToggleActiveBg, toolbarToggleInactiveText, toolbarPurpleActive</div>
+    <div class="location">Editor toolbar (ModeToggleView)</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Settings Tab Selector</div>
+    <div class="settings-seg" onclick="toggleSeg(this)"><div class="seg-item active">General</div><div class="seg-item">Prompt</div><div class="seg-item">About</div></div>
+    <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
+    <div class="location">Settings window (SettingsWindowController)</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Prompt Sub-tabs</div>
+    <div class="settings-seg" onclick="toggleSeg(this)"><div class="seg-item active">Preamble</div><div class="seg-item">Tools</div><div class="seg-item">Footer</div><div class="seg-item">Multi-image</div></div>
+    <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
+    <div class="location">Settings Prompt tab (PromptTabView)</div>
+  </div>
+</div>
+
+<!-- + ADD IMAGE & NEW CAPTURE -->
+<h2>+ Add Image & New Capture</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">+ Add Image (hover for border change)</div>
+    <div class="add-img-btn">+ Add image</div>
+    <div class="tokens">addImageBg, addImageBorder, addImageHoverBorder, purpleLight</div>
+    <div class="location">Editor toolbar (ToolbarView)</div>
+  </div>
+  <div class="control-card">
+    <div class="label">New Capture (hover for purple shift)</div>
+    <div class="new-capture-btn">New capture</div>
+    <div class="tokens">toolbarPurpleButtonBg/Border/Text, toolbarPurpleButtonHover*</div>
+    <div class="location">Editor toolbar (ToolbarView)</div>
+  </div>
+</div>
+
+<!-- SETTINGS PILL BUTTONS -->
+<h2>Settings Pill Buttons</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Change / Save / Reset</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="settings-pill">Change</div>
+      <div class="settings-pill">Save</div>
+      <div class="settings-pill">Reset to default</div>
+    </div>
+    <div class="tokens">settingsPillBorder, settingsPillFill, settingsPillText</div>
+    <div class="location">Settings window (GeneralTabView, PromptTabView)</div>
+  </div>
+</div>
+
+<!-- NOTE PILLS -->
+<h2>Note Pills</h2>
+<div class="control-row">
+  <div class="control-card" style="background:#888">
+    <div class="label" style="color:#ddd">Default (hover me)</div>
+    <div class="note-pill"><span class="prefix">1.</span> Fix the button color</div>
+    <div class="tokens" style="color:#AFA9EC">redNoteBg, redNoteBorder, noteTextColor, notePrefixColor</div>
+    <div class="location" style="color:#ccc">Editor canvas (NotePillRenderer)</div>
+  </div>
+  <div class="control-card" style="background:#888">
+    <div class="label" style="color:#ddd">Editing (click to toggle)</div>
+    <div class="note-pill" onclick="this.classList.toggle('editing')"><span class="prefix">2.</span> Click me to edit</div>
+    <div class="tokens" style="color:#AFA9EC">noteEditingBg, red (#EF4444 border)</div>
+    <div class="location" style="color:#ccc">Editor canvas (CanvasView)</div>
+  </div>
+</div>
+
+<!-- MENU ROWS -->
+<h2>Popover Menu Rows</h2>
+<div class="control-row">
+  <div class="control-card" style="background:rgba(30,30,30,0.95);border-color:rgba(255,255,255,0.08)">
+    <div class="label" style="color:#888">Hover for highlight</div>
+    <div class="menu-row"><span>Capture Now</span><span class="keys">⌘⇧6</span></div>
+    <div class="menu-row"><span>Recent Captures</span><span class="keys">›</span></div>
+    <div class="menu-row"><span>Settings…</span><span class="keys">⌘,</span></div>
+    <div class="menu-row"><span>Quit Vibeliner</span><span class="keys">⌘Q</span></div>
+    <div class="tokens" style="color:#AFA9EC">purpleLight (hover bg), darkChromePopover</div>
+    <div class="location" style="color:#888">Popover menu (PopoverViewController)</div>
+  </div>
+</div>
+
+<!-- SETUP BUTTONS -->
+<h2>Setup Window Buttons</h2>
+<div class="control-row">
+  <div class="control-card" style="background:#1e1e1e;border-color:#333">
+    <div class="label" style="color:#888">Action Buttons</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="setup-action-btn">Open Settings</div>
+      <div class="setup-action-btn">Create Folder</div>
+    </div>
+    <div class="tokens" style="color:#6F69DF">setupButtonFill, setupButtonBorder, setupButtonText, setupButtonHoverBg</div>
+    <div class="location" style="color:#888">Setup window (SetupWindowController)</div>
+  </div>
+  <div class="control-card" style="background:#1e1e1e;border-color:#333">
+    <div class="label" style="color:#888">Green CTA</div>
+    <div class="setup-green-btn">Start Using Vibeliner</div>
+    <div class="tokens" style="color:#16A34A">setupGreenBg, setupGreenBorder, setupGreenText</div>
+    <div class="location" style="color:#888">Setup window footer</div>
+  </div>
+</div>
+
+<!-- ROLE SWATCHES -->
+<h2>Role Color Swatches</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Click to select</div>
+    <div style="display:flex;gap:8px">
+      <div class="role-swatch" style="background:#AFA9EC;color:#AFA9EC" onclick="selectRole(this)" title="Observed (purple)"></div>
+      <div class="role-swatch" style="background:#22C55E;color:#22C55E" onclick="selectRole(this)" title="Expected (green)"></div>
+      <div class="role-swatch" style="background:#3B82F6;color:#3B82F6" onclick="selectRole(this)" title="Reference (blue)"></div>
+      <div class="role-swatch" style="background:#EF4444;color:#EF4444" onclick="selectRole(this)" title="Error (red)"></div>
+      <div class="role-swatch" style="background:#F59E0B;color:#F59E0B" onclick="selectRole(this)" title="Warning (amber)"></div>
+      <div class="role-swatch" style="background:#8B5CF6;color:#8B5CF6" onclick="selectRole(this)" title="Debug (violet)"></div>
+      <div class="role-swatch" style="background:#EC4899;color:#EC4899" onclick="selectRole(this)" title="Custom (pink)"></div>
+      <div class="role-swatch" style="background:#06B6D4;color:#06B6D4" onclick="selectRole(this)" title="Info (cyan)"></div>
+    </div>
+    <div class="tokens">roleObservedBorder (#AFA9EC), roleExpectedBorder (#22C55E), roleReferenceBorder (#3B82F6)</div>
+    <div class="location">Settings Prompt tab (PromptTabView)</div>
+  </div>
+</div>
+
+<!-- TITLE PILL (Filmstrip) -->
+<h2>Title Pill (Filmstrip Cell)</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Editable title + role dropdown. Click role to change.</div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <div id="titlePillObserved" onclick="cyclePillRole('titlePillObserved')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(83,74,183,0.50);border:1px solid #AFA9EC;cursor:pointer;user-select:none">
+        <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 1</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Observed</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+      </div>
+      <div id="titlePillExpected" onclick="cyclePillRole('titlePillExpected')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(22,100,52,0.45);border:1px solid #22C55E;cursor:pointer;user-select:none">
+        <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 2</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Expected</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+      </div>
+      <div id="titlePillReference" onclick="cyclePillRole('titlePillReference')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(30,70,140,0.45);border:1px solid #3B82F6;cursor:pointer;user-select:none">
+        <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 3</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Reference</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+      </div>
+    </div>
+    <div class="tokens">titlePillHeight (30px), titlePillGap (6px), roleObservedBg, roleExpectedBg, roleReferenceBg</div>
+    <div class="location">Editor filmstrip (TitlePillView, FilmstripGridView)</div>
+  </div>
+</div>
+
+<!-- ANNOTATION BADGE -->
+<h2>Annotation Badge</h2>
+<div class="control-row">
+  <div class="control-card" style="background:#888">
+    <div class="label" style="color:#ddd">Badge sizes</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="badge">1</div>
+      <div class="badge">2</div>
+      <div class="badge">3</div>
+      <div class="badge" style="font-size:8px">12</div>
+    </div>
+    <div class="tokens" style="color:#AFA9EC">red (#EF4444), badgeDiameter (18px), badgeFont (9px semibold)</div>
+    <div class="location" style="color:#ccc">Editor canvas (BadgeRenderer)</div>
+  </div>
+</div>
+
+<script>
+function simulateCopy(el) {
+  const orig = el.textContent;
+  el.classList.add('copied');
+  el.textContent = 'Copied ✓';
+  setTimeout(() => { el.classList.remove('copied'); el.textContent = orig; }, 1500);
+}
+
+function toggleSeg(container) {
+  const items = container.querySelectorAll('.seg-item');
+  let activeIdx = -1;
+  items.forEach((item, i) => { if (item.classList.contains('active')) activeIdx = i; });
+  const nextIdx = (activeIdx + 1) % items.length;
+  items.forEach(item => item.classList.remove('active'));
+  items[nextIdx].classList.add('active');
+}
+
+function selectTool(el) {
+  const strip = el.closest('.toolbar-strip') || el.closest('.control-card');
+  if (strip) strip.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function selectRole(el) {
+  el.parentElement.querySelectorAll('.role-swatch').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+const pillRoles = [
+  {name:'Observed', bg:'rgba(83,74,183,0.50)', border:'#AFA9EC'},
+  {name:'Expected', bg:'rgba(22,100,52,0.45)', border:'#22C55E'},
+  {name:'Reference', bg:'rgba(30,70,140,0.45)', border:'#3B82F6'}
+];
+const pillState = {};
+function cyclePillRole(id) {
+  if (!(id in pillState)) pillState[id] = pillRoles.findIndex(r => document.getElementById(id).querySelector('span:nth-child(2)').textContent === r.name);
+  pillState[id] = (pillState[id] + 1) % pillRoles.length;
+  const role = pillRoles[pillState[id]];
+  const el = document.getElementById(id);
+  el.style.background = role.bg;
+  el.style.borderColor = role.border;
+  el.querySelector('span:nth-child(2)').textContent = role.name;
+}
+</script>
+</body>
+</html>
