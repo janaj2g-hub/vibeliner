@@ -34,12 +34,13 @@ final class FreehandTool: AnnotationTool {
         let smoothed = Self.smoothPoints(points, passes: 3)
         let badgePos = smoothed.first ?? point
 
-        let annotation = Annotation(
+        var annotation = Annotation(
             type: .freehand,
             number: 0,
             position: .freehand(points: smoothed),
             badgePosition: badgePos
         )
+        annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         points.removeAll()

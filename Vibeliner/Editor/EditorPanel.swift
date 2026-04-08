@@ -272,6 +272,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             return false
         }
 
+        // VIB-326: Don't swallow keys when ANY text field is first responder
+        // (covers title pill fields, search fields, etc. beyond annotation notes)
+        guard KeyEventGuard.shouldHandleShortcut(in: self) else { return false }
+
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let keyCode = event.keyCode
 
@@ -369,7 +373,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidRequestCopyImage() {
         let canvasSize = CGSize(width: displayWidth, height: displayHeight)
-        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)
+        // VIB-297: Pass all images for composite stitching when in filmstrip mode
+        let allImages = isFilmstripMode ? images : nil
+        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, allImages: allImages)
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
     }
@@ -406,6 +412,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                         self.refreshFilmstrip()
                     }
                 }
+
+                // VIB-297: Keep auto-save manager in sync for composite export
+                self.autoSaveManager?.allImages = self.images
 
                 // Update add image button state
                 self.toolbarView.updateAddImageState(imageCount: self.images.count)
@@ -450,7 +459,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     private func filmstripCellSelected(_ index: Int) {
-        // Future: switch annotation context per-image
-        // For now, just update the filmstrip selection visual
+        // VIB-269: Track which image is active so new annotations get the right parentImageIndex
+        annotationStore.currentImageIndex = index
     }
 }

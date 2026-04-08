@@ -9,6 +9,10 @@ final class AnnotationStore {
     private(set) var annotations: [Annotation] = []
     private var nextNumber: Int = 1
 
+    /// VIB-269: Current image index in filmstrip mode. Set by EditorPanel when
+    /// the filmstrip selection changes. Tools read this to set parentImageIndex.
+    var currentImageIndex: Int = 0
+
     var count: Int { annotations.count }
 
     var selectedAnnotation: Annotation? {
