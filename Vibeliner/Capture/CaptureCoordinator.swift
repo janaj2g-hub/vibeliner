@@ -12,12 +12,16 @@ final class CaptureCoordinator {
     private var isCapturing = false
     /// VIB-262: When set, captured image is returned to this handler instead of opening a new editor.
     private var addImageCompletion: ((NSImage) -> Void)?
+    /// VIB-329: Called when add-image capture is canceled so the editor can restore itself.
+    private var addImageCancelHandler: (() -> Void)?
 
     private init() {}
 
     /// VIB-262: Start capture in add-image mode — image returned via completion instead of new editor.
-    func startAddImageCapture(completion: @escaping (NSImage) -> Void) {
+    /// VIB-329: Added onCancel so the editor can restore when Escape is pressed.
+    func startAddImageCapture(completion: @escaping (NSImage) -> Void, onCancel: (() -> Void)? = nil) {
         addImageCompletion = completion
+        addImageCancelHandler = onCancel
         startCapture()
     }
 
@@ -47,8 +51,12 @@ final class CaptureCoordinator {
     }
 
     func cancelCapture() {
+        let cancelHandler = addImageCancelHandler
         addImageCompletion = nil
+        addImageCancelHandler = nil
         dismissOverlays()
+        // VIB-329: Notify the editor so it can restore itself after hide
+        cancelHandler?()
     }
 
     func completeSelection(rect: NSRect) {
@@ -72,6 +80,7 @@ final class CaptureCoordinator {
             // VIB-262: Add-image mode — return image to editor instead of opening new one
             if let completion = self.addImageCompletion {
                 self.addImageCompletion = nil
+                self.addImageCancelHandler = nil
                 self.cleanupAfterCapture()
                 completion(image)
                 return

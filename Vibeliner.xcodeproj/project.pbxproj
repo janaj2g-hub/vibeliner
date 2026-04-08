@@ -21,6 +21,7 @@
 		A1000001000000000000000B /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000C /* main.swift */; };
 		A1000001000000000000000C /* EditorPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000D /* EditorPanel.swift */; };
 		A1000001000000000000000D /* ScreenshotCanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000E /* ScreenshotCanvasView.swift */; };
+		F32900010000000000000001 /* FilmstripGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32900020000000000000001 /* FilmstripGridView.swift */; };
 		A1000001000000000000000E /* ToolButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000000F /* ToolButton.swift */; };
 		A1000001000000000000000F /* ToolbarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000011 /* ToolbarView.swift */; };
 		A10000010000000000000010 /* StatusPillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000012 /* StatusPillView.swift */; };
@@ -77,6 +78,7 @@
 		A2000001000000000000000C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		A2000001000000000000000D /* EditorPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPanel.swift; sourceTree = "<group>"; };
 		A2000001000000000000000E /* ScreenshotCanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenshotCanvasView.swift; sourceTree = "<group>"; };
+		F32900020000000000000001 /* FilmstripGridView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripGridView.swift; sourceTree = "<group>"; };
 		A2000001000000000000000F /* ToolButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolButton.swift; sourceTree = "<group>"; };
 		A20000010000000000000010 /* Vibeliner.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Vibeliner.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A20000010000000000000011 /* ToolbarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarView.swift; sourceTree = "<group>"; };
@@ -255,6 +257,7 @@
 			children = (
 				A2000001000000000000000D /* EditorPanel.swift */,
 				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
+				F32900020000000000000001 /* FilmstripGridView.swift */,
 				A2000001000000000000000F /* ToolButton.swift */,
 				A20000010000000000000011 /* ToolbarView.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
@@ -399,6 +402,7 @@
 				A1000001000000000000000B /* main.swift in Sources */,
 				A1000001000000000000000C /* EditorPanel.swift in Sources */,
 				A1000001000000000000000D /* ScreenshotCanvasView.swift in Sources */,
+				F32900010000000000000001 /* FilmstripGridView.swift in Sources */,
 				A1000001000000000000000E /* ToolButton.swift in Sources */,
 				A1000001000000000000000F /* ToolbarView.swift in Sources */,
 				A10000010000000000000010 /* StatusPillView.swift in Sources */,
