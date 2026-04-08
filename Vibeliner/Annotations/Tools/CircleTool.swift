@@ -30,12 +30,13 @@ final class CircleTool: AnnotationTool {
 
         guard radius >= 10 else { return }
 
-        let annotation = Annotation(
+        var annotation = Annotation(
             type: .circle,
             number: 0,
             position: .circle(center: c, radius: radius),
             badgePosition: point
         )
+        annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         canvas.openNoteEditor(for: added)

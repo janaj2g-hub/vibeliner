@@ -113,10 +113,21 @@ final class CrosshairView: NSView {
         CaptureCoordinator.shared.handleMouseUp(at: point, in: self)
     }
 
+    // VIB-317: Handle Escape via both keyDown and performKeyEquivalent.
+    // On borderless windows, performKeyEquivalent may fire before keyDown
+    // depending on responder chain state. Belt-and-suspenders approach.
     override func keyDown(with event: NSEvent) {
         if event.keyCode == 53 { // Escape
             CaptureCoordinator.shared.cancelCapture()
         }
+    }
+
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        if event.keyCode == 53 { // Escape
+            CaptureCoordinator.shared.cancelCapture()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
     }
 
     private func updateMousePosition(with event: NSEvent) {

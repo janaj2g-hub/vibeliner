@@ -28,12 +28,13 @@ final class ArrowTool: AnnotationTool {
         let distance = hypot(end.x - start.x, end.y - start.y)
         guard distance >= 20 else { return }
 
-        let annotation = Annotation(
+        var annotation = Annotation(
             type: .arrow,
             number: 0,
             position: .arrow(start: start, end: end),
             badgePosition: start
         )
+        annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         canvas.openNoteEditor(for: added)

@@ -6,6 +6,8 @@ final class AutoSaveManager {
     private let captureFolder: URL
     private let originalImage: NSImage
     private let canvasSize: CGSize
+    /// VIB-297: All images in filmstrip mode; nil for single-image.
+    var allImages: [NSImage]?
     private var storeObserver: Any?
     private var debounceTimer: Timer?
     private var isDirty = false
@@ -50,9 +52,24 @@ private func scheduleSave() {
         let folder = captureFolder
         let image = originalImage
         let size = canvasSize
+        let currentAllImages = allImages
         isDirty = false
         DispatchQueue.global(qos: .userInitiated).async {
-            ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
+            // VIB-297: Multi-image composite when 2+ images
+            if let allImages = currentAllImages, allImages.count >= 2 {
+                let captureImages = allImages.enumerated().map { i, img in
+                    CaptureImage(sourceImage: img, title: "Image \(i + 1)", role: .observed, originalSize: img.size, index: i)
+                }
+                if let composite = CompositeStitcher.stitch(images: captureImages, annotations: annotations, canvasSize: size) {
+                    let fileURL = folder.appendingPathComponent("screenshot.png")
+                    let tempURL = folder.appendingPathComponent(".screenshot.png.tmp")
+                    _ = composite.savePNG(to: tempURL)
+                    try? FileManager.default.removeItem(at: fileURL)
+                    try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+                }
+            } else {
+                ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
+            }
             PromptGenerator.savePromptFile(to: folder, annotations: annotations)
             // VIB-183: Invalidate captures cache so next submenu open shows the new capture
             CapturesManager.shared.invalidateCache()

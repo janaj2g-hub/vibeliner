@@ -36,11 +36,12 @@ final class PinTool: AnnotationTool {
         }
 
         store.deselectAll()
-        let annotation = Annotation(
+        var annotation = Annotation(
             type: .pin, number: 0, noteText: "",
             position: .pin(tip: point),
             badgePosition: CGPoint(x: point.x, y: point.y + DesignTokens.stakeLength + DesignTokens.badgeDiameter / 2)
         )
+        annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         canvas.openNoteEditor(for: added)

@@ -28,12 +28,13 @@ final class RectangleTool: AnnotationTool {
         let rect = rectFromPoints(start, end)
         guard rect.width >= 15, rect.height >= 15 else { return }
 
-        let annotation = Annotation(
+        var annotation = Annotation(
             type: .rectangle,
             number: 0,
             position: .rectangle(origin: rect.origin, size: rect.size),
             badgePosition: start
         )
+        annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         canvas.openNoteEditor(for: added)
