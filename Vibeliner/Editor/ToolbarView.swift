@@ -8,6 +8,8 @@ protocol ToolbarDelegate: AnyObject {
     func toolbarDidRequestRedo()
     func toolbarDidRequestCopyPrompt()
     func toolbarDidRequestCopyImage()
+    func toolbarDidRequestNewCapture()
+    func toolbarDidRequestAddImage()
 }
 
 final class ToolbarView: NSView {
@@ -17,6 +19,8 @@ final class ToolbarView: NSView {
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
     private var trashButton: ToolButton?  // VIB-202: enabled/disabled based on selection
+    private var addImageButton: NSView?   // VIB-262: + Add image
+    private var captureButtonEnabled = true  // VIB-236: debounce new capture
     private var copyImageButton: NSView?
     private let blurView = NSVisualEffectView()
     private var tintOverlay: NSView?
@@ -38,26 +42,25 @@ final class ToolbarView: NSView {
         layer?.shadowRadius = 20
         layer?.shadowOpacity = 0.25
         layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.chromeBorder.cgColor
 
-        // Blur background
-        blurView.material = .hudWindow
+        // Blur background — uses .popover which auto-adapts to light/dark
+        blurView.material = .popover
         blurView.blendingMode = .behindWindow
         blurView.state = .active
-        blurView.appearance = NSAppearance(named: .darkAqua)
         blurView.wantsLayer = true
         blurView.layer?.cornerRadius = DesignTokens.toolbarCornerRadius
         blurView.layer?.masksToBounds = true
         addSubview(blurView)
 
-        // Dark tint overlay
+        // Tint overlay — appearance-aware background
         let tintView = NSView()
         tintView.wantsLayer = true
-        tintView.layer?.backgroundColor = DesignTokens.darkChrome.cgColor
         tintView.layer?.cornerRadius = DesignTokens.toolbarCornerRadius
         tintView.layer?.masksToBounds = true
         addSubview(tintView)
         self.tintOverlay = tintView
+
+        refreshAppearanceColors()
 
         // Build button strip
         var x: CGFloat = 6  // 6px left padding (prototype: paddingLeft: 6)
@@ -78,7 +81,7 @@ final class ToolbarView: NSView {
         let closeY = (DesignTokens.toolbarHeight - DesignTokens.closeButtonSize) / 2
         closeBtn.setFrameOrigin(NSPoint(x: x, y: closeY))
         addSubview(closeBtn)
-        x += DesignTokens.closeButtonSize + 30
+        x += DesignTokens.closeButtonSize + 6
 
         // Divider
         x = addDivider(at: x)
@@ -235,7 +238,20 @@ final class ToolbarView: NSView {
         redoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestRedo() }
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(redoBtn)
-        x += DesignTokens.iconButtonSize + 20
+        x += DesignTokens.iconButtonSize + 10
+
+        // VIB-262: + Add image button
+        let addImgBtn = makeAddImageButton()
+        addImgBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - addImgBtn.frame.height) / 2))
+        addSubview(addImgBtn)
+        self.addImageButton = addImgBtn
+        x += addImgBtn.frame.width + 4
+
+        // VIB-321: New capture button — purple pill next to + Add image
+        let captureBtn = makeNewCaptureButton()
+        captureBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - captureBtn.frame.height) / 2))
+        addSubview(captureBtn)
+        x += captureBtn.frame.width + 10
 
         x = addDivider(at: x)
         x += 10
@@ -284,6 +300,27 @@ final class ToolbarView: NSView {
         updateCopyButtonVisibility(mode: ConfigManager.shared.copyMode)
     }
 
+    // VIB-235: Live appearance update
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshAppearanceColors()
+        // ToolButtons redraw via needsDisplay automatically since they use dynamic colors in draw()
+        for subview in subviews {
+            subview.needsDisplay = true
+        }
+    }
+
+    private func refreshAppearanceColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            self.layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+            self.tintOverlay?.layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
+            // Refresh divider colors
+            for subview in self.subviews where subview.frame.width == 1 {
+                subview.layer?.backgroundColor = DesignTokens.toolbarDivider.cgColor
+            }
+        }
+    }
+
     // VIB-214: Restore system cursor when entering the toolbar (drawing tools hide it)
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -292,7 +329,7 @@ final class ToolbarView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        NSCursor.unhide()
+        CursorManager.shared.showCursor()
     }
 
     func selectTool(_ tool: AnnotationToolType) {
@@ -361,13 +398,90 @@ final class ToolbarView: NSView {
     private func addDivider(at x: CGFloat) -> CGFloat {
         let divider = NSView(frame: NSRect(x: x, y: (DesignTokens.toolbarHeight - 16) / 2, width: 1, height: 16))
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = DesignTokens.dividerColor.cgColor
+        divider.layer?.backgroundColor = DesignTokens.toolbarDivider.cgColor
         addSubview(divider)
         return x + 1
     }
 
     private func makeCopyButton(title: String) -> CopyPillButton {
         return CopyPillButton(title: title)
+    }
+
+    // VIB-262: + Add image pill button
+    private func makeAddImageButton() -> NSView {
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 90, height: 26))
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 13
+        container.layer?.backgroundColor = DesignTokens.addImageBg.cgColor
+        container.layer?.borderWidth = 1.5
+        container.layer?.borderColor = DesignTokens.addImageBorder.cgColor
+
+        let label = NSTextField(labelWithString: "+ Add image")
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = DesignTokens.purpleLight
+        label.sizeToFit()
+        label.frame.origin = NSPoint(
+            x: (90 - label.frame.width) / 2,
+            y: (26 - label.frame.height) / 2
+        )
+        container.addSubview(label)
+
+        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: container)
+        container.addTrackingArea(area)
+
+        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
+        container.addGestureRecognizer(clickGR)
+
+        return container
+    }
+
+    @objc private func addImageClicked() {
+        delegate?.toolbarDidRequestAddImage()
+    }
+
+    // VIB-321: New capture purple pill button
+    private func makeNewCaptureButton() -> NSView {
+        let container = NSView(frame: NSRect(x: 0, y: 0, width: 100, height: 26))
+        container.wantsLayer = true
+        container.layer?.cornerRadius = 13
+        container.layer?.backgroundColor = DesignTokens.toolbarPurpleButtonBg.cgColor
+        container.layer?.borderWidth = 1.5
+        container.layer?.borderColor = DesignTokens.toolbarPurpleButtonBorder.cgColor
+
+        let label = NSTextField(labelWithString: "New capture")
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.textColor = DesignTokens.toolbarPurpleButtonText
+        label.sizeToFit()
+        label.frame.origin = NSPoint(
+            x: (100 - label.frame.width) / 2,
+            y: (26 - label.frame.height) / 2
+        )
+        container.addSubview(label)
+
+        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self)
+        container.addTrackingArea(area)
+
+        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(newCaptureClicked))
+        container.addGestureRecognizer(clickGR)
+
+        return container
+    }
+
+    @objc private func newCaptureClicked() {
+        guard captureButtonEnabled else { return }
+        captureButtonEnabled = false
+        delegate?.toolbarDidRequestNewCapture()
+    }
+
+    /// VIB-262: Disable the button at 12 images.
+    func updateAddImageState(imageCount: Int) {
+        addImageButton?.alphaValue = imageCount >= 12 ? 0.3 : 1.0
+        if imageCount >= 12 {
+            addImageButton?.gestureRecognizers.removeAll()
+        } else if addImageButton?.gestureRecognizers.isEmpty == true {
+            let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
+            addImageButton?.addGestureRecognizer(clickGR)
+        }
     }
 
     // MARK: - Icon drawing functions
@@ -475,11 +589,11 @@ final class ModeToggleView: NSView {
     private func setupView() {
         wantsLayer = true
         layer?.cornerRadius = 14
-        layer?.backgroundColor = DesignTokens.toggleBg.cgColor
+        layer?.backgroundColor = DesignTokens.toolbarToggleBg.cgColor
 
         highlightView.wantsLayer = true
         highlightView.layer?.cornerRadius = 12
-        highlightView.layer?.backgroundColor = DesignTokens.toggleActiveBg.cgColor
+        highlightView.layer?.backgroundColor = DesignTokens.toolbarToggleActiveBg.cgColor
         addSubview(highlightView)
 
         for label in [ideLabel, appLabel] {
@@ -505,15 +619,28 @@ final class ModeToggleView: NSView {
         updateAppearance()
     }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshToggleColors()
+    }
+
+    private func refreshToggleColors() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            self.layer?.backgroundColor = DesignTokens.toolbarToggleBg.cgColor
+            self.highlightView.layer?.backgroundColor = DesignTokens.toolbarToggleActiveBg.cgColor
+        }
+        updateAppearance()
+    }
+
     private func updateAppearance() {
         if currentMode == "ide" {
             highlightView.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
-            ideLabel.textColor = DesignTokens.purpleLight
-            appLabel.textColor = DesignTokens.toggleInactiveText
+            ideLabel.textColor = DesignTokens.toolbarPurpleActive
+            appLabel.textColor = DesignTokens.toolbarToggleInactiveText
         } else {
             highlightView.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
-            appLabel.textColor = DesignTokens.purpleLight
-            ideLabel.textColor = DesignTokens.toggleInactiveText
+            appLabel.textColor = DesignTokens.toolbarPurpleActive
+            ideLabel.textColor = DesignTokens.toolbarToggleInactiveText
         }
     }
 
@@ -547,7 +674,7 @@ final class CopyPillButton: NSView {
         layer?.borderWidth = 1.5
 
         label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = DesignTokens.purpleButton
+        label.textColor = DesignTokens.toolbarPurpleButtonText
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
@@ -595,17 +722,22 @@ final class CopyPillButton: NSView {
         )
     }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+    }
+
     private func updateAppearance() {
         if isCopied {
             layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
             layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
             label.textColor = DesignTokens.copiedGreenText
         } else {
-            let borderColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
-            let bgColor = isHovered ? DesignTokens.purpleButtonBgHover : DesignTokens.purpleButtonBg
+            let borderColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBorder : DesignTokens.toolbarPurpleButtonBorder
+            let bgColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBg : DesignTokens.toolbarPurpleButtonBg
             layer?.borderColor = borderColor.cgColor
             layer?.backgroundColor = bgColor.cgColor
-            label.textColor = isHovered ? DesignTokens.purpleButtonHover : DesignTokens.purpleButton
+            label.textColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverText : DesignTokens.toolbarPurpleButtonText
         }
     }
 

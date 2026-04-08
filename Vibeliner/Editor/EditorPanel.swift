@@ -170,6 +170,23 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         }
     }
 
+    // VIB-318: Safety nets — always restore cursor on deactivation or close
+    override func resignKey() {
+        super.resignKey()
+        CursorManager.shared.forceShow()
+    }
+
+    override func close() {
+        // VIB-326: Remove key monitor on close, not just deinit.
+        // Prevents stale monitor from intercepting keys in the next editor.
+        if let monitor = keyMonitor {
+            NSEvent.removeMonitor(monitor)
+            keyMonitor = nil
+        }
+        CursorManager.shared.forceShow()
+        super.close()
+    }
+
     override var canBecomeKey: Bool { true }
     override var canBecomeMain: Bool { false }
 
@@ -205,6 +222,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // so handleKeyEvent never sees these events.
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let chars = event.charactersIgnoringModifiers ?? ""
+        // VIB-239: Cmd+W closes editor (replaces old Escape-closes behavior)
+        if flags == .command && chars == "w" {
+            autoSaveManager?.saveNow()
+            close()
+            return true
+        }
         if flags == .command && chars == "c" {
             toolbarDidRequestCopyPrompt()
             return true
@@ -242,8 +265,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let keyCode = event.keyCode
 
-        if keyCode == 53 { // Escape
-            // VIB-213: If a shape is selected, deselect it and hide handles — do NOT close
+        if keyCode == 53 { // Escape — VIB-239: cascade dismiss, never close
+            // Priority 2: Deselect selected shape
             if let canvas = canvasOverlay, canvas.marksLayer.selectedId != nil {
                 annotationStore.deselectAll()
                 canvas.marksLayer.selectedId = nil
@@ -251,8 +274,15 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 canvas.refreshNotePills()
                 return true
             }
-            autoSaveManager?.saveNow()
-            close()
+            // Priority 3: Dearm active annotation tool → switch to select
+            if toolbarView.selectedTool.isDrawingTool {
+                toolbarView.selectTool(.select)
+                canvasOverlay?.marksLayer.ghostTool = nil
+                canvasOverlay?.marksLayer.ghostPosition = nil
+                canvasOverlay?.marksLayer.needsDisplay = true
+                return true
+            }
+            // Priority 4: No-op — editor stays open
             return true
         } else if keyCode >= 18 && keyCode <= 23 && flags.isEmpty {
             let keyMap: [UInt16: AnnotationToolType] = [18: .select, 19: .pin, 20: .arrow, 21: .rectangle, 22: .circle, 23: .freehand]
@@ -319,10 +349,42 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         toolbarView.markCopyState(.prompt)
     }
 
+    func toolbarDidRequestNewCapture() {
+        autoSaveManager?.saveNow()
+        close()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+            CaptureCoordinator.shared.startCapture()
+        }
+    }
+
     func toolbarDidRequestCopyImage() {
         let canvasSize = CGSize(width: displayWidth, height: displayHeight)
         ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize)
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
+    }
+
+    // MARK: - VIB-262: Add image
+
+    func toolbarDidRequestAddImage() {
+        // Auto-save before dimming
+        autoSaveManager?.saveNow()
+
+        // Dim editor
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            self.animator().alphaValue = 0.15
+        }
+
+        // Start add-image capture
+        CaptureCoordinator.shared.startAddImageCapture { [weak self] _ in
+            guard let self else { return }
+
+            // Restore editor opacity (image handling is future work)
+            NSAnimationContext.runAnimationGroup { ctx in
+                ctx.duration = 0.2
+                self.animator().alphaValue = 1.0
+            }
+        }
     }
 }

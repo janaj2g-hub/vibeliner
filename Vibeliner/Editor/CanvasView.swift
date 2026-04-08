@@ -76,18 +76,16 @@ final class CanvasView: NSView, NotePillDelegate {
         let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
         marksLayer.suppressGhost = shouldSuppressGhost
 
-        // VIB-201/VIB-221/VIB-223: Cursor management
-        // Use setHiddenUntilMouseMoves(true) instead of hide() — it auto-unhides when
-        // the cursor enters a different NSView (e.g. toolbar), avoiding reference-count imbalance.
+        // VIB-318: Cursor management via CursorManager (balanced hide/unhide)
         if isDrawingToolActive && !isEditingNote {
             if shouldSuppressGhost {
-                NSCursor.unhide()
+                CursorManager.shared.showCursor()
                 NSCursor.arrow.set()
             } else {
-                NSCursor.setHiddenUntilMouseMoves(true)
+                CursorManager.shared.hideCursor()
             }
         } else {
-            NSCursor.unhide()
+            CursorManager.shared.showCursor()
         }
 
         marksLayer.needsDisplay = true
@@ -192,9 +190,13 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     private func handleEditHit(id: UUID, at point: CGPoint) {
-        if pillHoveredId == id, let annotation = store.annotation(for: id) {
-            openNoteEditor(for: annotation)
-            return
+        if let annotation = store.annotation(for: id) {
+            // Open editor if pill is hovered or badge clicked with no note
+            let badgeClicked = hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12
+            if pillHoveredId == id || (badgeClicked && annotation.noteText.isEmpty) {
+                openNoteEditor(for: annotation)
+                return
+            }
         }
         guard let undoMgr = undoManager_ else { return }
         store.select(id: id)
@@ -234,7 +236,7 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
-        NSCursor.unhide()
+        CursorManager.shared.showCursor()
         marksLayer.suppressGhost = false
         ghostPosition = nil
         marksLayer.ghostPosition = nil
@@ -259,7 +261,7 @@ final class CanvasView: NSView, NotePillDelegate {
             refreshNotePills()
             // VIB-221: Show arrow cursor when pill hovered with drawing tool
             if isDrawingToolActive && !isEditingNote && pillHoveredId != nil {
-                NSCursor.unhide()
+                CursorManager.shared.showCursor()
                 NSCursor.arrow.set()
             }
         }
@@ -273,6 +275,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     var activeNoteField: NSTextField?
     private var editingAnnotationId: UUID?
+    private var preEditNoteText: String?  // VIB-327: text before editing started
     private var noteFieldDelegate: CanvasNoteFieldDelegate?
     // VIB-215: Separate shape hover (drives marksLayer halo) from pill hover (drives pill highlight)
     private var shapeHoveredId: UUID?
@@ -281,7 +284,7 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
-        NSCursor.unhide()  // VIB-201: Restore cursor when editor opens
+        CursorManager.shared.showCursor()  // VIB-201: Restore cursor when editor opens
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
@@ -345,6 +348,7 @@ final class CanvasView: NSView, NotePillDelegate {
         // VIB-204 (attempt 3): Set editingAnnotationId BEFORE adding pill to view
         // so refreshNotePills() removes the resting pill (no ghost behind editing pill)
         editingAnnotationId = annotation.id
+        preEditNoteText = annotation.noteText  // VIB-327: save for cancel logic
         refreshNotePills()
 
         notesLayer.addSubview(pillContainer)
@@ -412,18 +416,16 @@ final class CanvasView: NSView, NotePillDelegate {
     func confirmNoteEditing() {
         guard let id = editingAnnotationId, let field = activeNoteField else { return }
         let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        if text.isEmpty {
-            store.remove(id: id)
-        } else {
-            store.update(id: id, noteText: text)
-            if let _ = store.annotation(for: id) {
-                undoManager_?.record(.editText(id: id, oldText: "", newText: text))
-            }
+        let oldText = store.annotation(for: id)?.noteText ?? ""
+        store.update(id: id, noteText: text)
+        if oldText != text {
+            undoManager_?.record(.editText(id: id, oldText: oldText, newText: text))
         }
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
+        preEditNoteText = nil
         noteFieldDelegate = nil
         refreshNotePills()
         if activeTool?.toolType.isDrawingTool == true {
@@ -434,13 +436,22 @@ final class CanvasView: NSView, NotePillDelegate {
 
     func cancelNoteEditing() {
         guard let id = editingAnnotationId else { return }
-        if let annotation = store.annotation(for: id), annotation.noteText.isEmpty {
-            store.remove(id: id)
+
+        // VIB-327: If this was a first-time edit (pre-edit text empty) and field is
+        // still empty, the user is cancelling a brand-new annotation → delete it.
+        let fieldText = activeNoteField?.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if (preEditNoteText ?? "").isEmpty && fieldText.isEmpty {
+            if let annotation = store.annotation(for: id) {
+                store.remove(id: id)
+                undoManager_?.record(.remove(annotation: annotation))
+            }
         }
+
         activeEditorPill?.removeFromSuperview()
         activeEditorPill = nil
         activeNoteField = nil
         editingAnnotationId = nil
+        preEditNoteText = nil
         noteFieldDelegate = nil
         refreshNotePills()
         if activeTool?.toolType.isDrawingTool == true {

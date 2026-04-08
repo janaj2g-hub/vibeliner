@@ -50,8 +50,8 @@ Canonical reference for every design token in the Vibeliner design system.
 
 | Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
 |---|---|---|---|---|---|
-| `darkChrome` | rgba(30, 30, 30, 0.92) | rgba(30, 30, 30, 0.92) | Yes | Toolbar background | ToolbarView |
-| `darkChromeStatus` | rgba(30, 30, 30, 0.88) | rgba(30, 30, 30, 0.88) | Yes | Status pill background | StatusPillView |
+| `darkChrome` | rgba(30, 30, 30, 0.92) | rgba(30, 30, 30, 0.92) | Yes | Capture overlay, tooltip (toolbar moved to `toolbarBg`) | FirstUseTooltipView |
+| `darkChromeStatus` | rgba(30, 30, 30, 0.88) | rgba(30, 30, 30, 0.88) | Yes | (legacy — status pill moved to `statusPillBg`) | — |
 | `darkChromePopover` | rgba(30, 30, 30, 0.95) | rgba(30, 30, 30, 0.95) | Yes | Popover background | (unused) |
 | `chromeBorder` | rgba(175, 169, 236, 0.12) | rgba(175, 169, 236, 0.12) | Yes | Toolbar/canvas border | ToolbarView, ScreenshotCanvasView |
 | `toolActiveBg` | rgba(175, 169, 236, 0.2) | rgba(175, 169, 236, 0.2) | Yes | Active tool background | ToolButton |
@@ -99,6 +99,34 @@ Canonical reference for every design token in the Vibeliner design system.
 | `settingsPillFill` | rgba(175, 169, 236, 0.16) | rgba(175, 169, 236, 0.10) | No | Pill button fill | SettingsUI, PromptTabView |
 | `settingsPillText` | rgba(114, 103, 221, 1.0) | #AFA9EC | No | Pill button text | SettingsUI, PromptTabView, AboutTabView |
 | `settingsFieldBorder` | rgba(15, 23, 42, 0.08) | rgba(255, 255, 255, 0.12) | No | Field border | SettingsUI |
+
+### Toolbar Family (appearance-aware, VIB-235)
+
+| Token Name | Light Value | Dark Value | Static? | Usage | Consuming Files |
+|---|---|---|---|---|---|
+| `toolbarBg` | rgba(255, 255, 255, 0.88) | rgba(30, 30, 30, 0.92) | No | Toolbar background | ToolbarView |
+| `toolbarBorder` | rgba(0, 0, 0, 0.06) | rgba(255, 255, 255, 0.12) | No | Toolbar border | ToolbarView |
+| `statusPillBg` | rgba(255, 255, 255, 0.85) | rgba(30, 30, 30, 0.88) | No | Status pill background | StatusPillView |
+| `statusPillTextColor` | rgba(0, 0, 0, 0.70) | white | No | Status pill text | StatusPillView |
+| `statusPillBorder` | rgba(0, 0, 0, 0.06) | clear | No | Status pill border | StatusPillView |
+| `toolbarIconDefault` | rgba(0, 0, 0, 0.45) | rgba(255, 255, 255, 0.40) | No | Default icon stroke | ToolButton |
+| `toolbarIconHover` | rgba(0, 0, 0, 0.70) | rgba(255, 255, 255, 0.70) | No | Hover icon stroke | ToolButton |
+| `toolbarDivider` | rgba(0, 0, 0, 0.08) | rgba(255, 255, 255, 0.08) | No | Divider lines | ToolbarView |
+| `toolbarPurpleActive` | #534AB7 | #AFA9EC | No | Active tool highlight | ToolButton, ModeToggleView |
+| `toolbarPurpleButtonBorder` | #534AB7 | #A796EB | No | Copy button border | CopyPillButton |
+| `toolbarPurpleButtonText` | #534AB7 | #A796EB | No | Copy button text | CopyPillButton |
+| `toolbarPurpleButtonBg` | rgba(83, 74, 183, 0.08) | rgba(116, 97, 194, 0.25) | No | Copy button fill | CopyPillButton |
+| `toolbarPurpleButtonHoverBorder` | #7461C2 | #C4B8F5 | No | Copy button hover border | CopyPillButton |
+| `toolbarPurpleButtonHoverText` | #7461C2 | #C4B8F5 | No | Copy button hover text | CopyPillButton |
+| `toolbarPurpleButtonHoverBg` | rgba(83, 74, 183, 0.12) | rgba(116, 97, 194, 0.35) | No | Copy button hover fill | CopyPillButton |
+| `toolbarButtonHoverBg` | rgba(0, 0, 0, 0.06) | rgba(255, 255, 255, 0.08) | No | Button hover background | ToolButton |
+| `toolbarCloseHoverBg` | rgba(255, 87, 87, 0.15) | rgba(255, 87, 87, 0.2) | No | Close button hover | ToolButton |
+| `toolbarCloseIconHover` | #FF5F57 | #FF5F57 | Yes | Close icon hover | ToolButton |
+| `toolbarTrashHoverBg` | rgba(255, 87, 87, 0.12) | rgba(255, 87, 87, 0.15) | No | Trash button hover | ToolButton |
+| `toolbarToolActiveBg` | rgba(83, 74, 183, 0.12) | rgba(175, 169, 236, 0.2) | No | Active tool bg | ToolButton |
+| `toolbarToggleBg` | rgba(0, 0, 0, 0.04) | rgba(255, 255, 255, 0.06) | No | Toggle background | ModeToggleView |
+| `toolbarToggleActiveBg` | rgba(83, 74, 183, 0.15) | rgba(175, 169, 236, 0.25) | No | Toggle active bg | ModeToggleView |
+| `toolbarToggleInactiveText` | rgba(0, 0, 0, 0.35) | rgba(255, 255, 255, 0.3) | No | Toggle inactive text | ModeToggleView |
 
 ### Setup Family
 

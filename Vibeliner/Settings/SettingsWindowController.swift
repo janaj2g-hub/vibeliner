@@ -12,7 +12,7 @@ final class SettingsWindowController: NSWindowController {
     /// Cached tab views — created lazily on first display.
     private var cachedTabViews: [Int: NSView] = [:]
 
-    private static let tabBarHeight: CGFloat = 36
+    private static let tabBarHeight: CGFloat = 44
 
     // MARK: - Lifecycle
 
@@ -81,8 +81,10 @@ final class SettingsWindowController: NSWindowController {
             NSLayoutConstraint.activate([
                 container.widthAnchor.constraint(equalToConstant: tabWidth),
                 container.heightAnchor.constraint(equalToConstant: Self.tabBarHeight),
-                button.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-                button.centerYAnchor.constraint(equalTo: container.centerYAnchor),
+                button.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+                button.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+                button.topAnchor.constraint(equalTo: container.topAnchor),
+                button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
                 underline.centerXAnchor.constraint(equalTo: container.centerXAnchor),
                 underline.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -2),
                 underline.widthAnchor.constraint(equalToConstant: 56),

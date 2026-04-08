@@ -232,11 +232,12 @@ final class PopoverContentView: NSView {
     // MARK: - Actions
 
     @objc private func captureNow() {
-        // VIB-169 (attempt 4): Trigger capture IMMEDIATELY. The capture overlay is at
-        // .screenSaver level which renders ABOVE the popover (.popUpMenu level).
-        // The popover will auto-close when it loses focus to the overlay.
+        // VIB-317: Close popover first, then defer capture by one run-loop cycle
+        // so the popover fully releases key-window status before the overlay takes over.
         popoverWindow?.closePopover()
-        CaptureCoordinator.shared.startCapture()
+        DispatchQueue.main.async {
+            CaptureCoordinator.shared.startCapture()
+        }
     }
 
     private var submenuPanel: NSPanel?

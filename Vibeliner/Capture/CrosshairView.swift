@@ -12,9 +12,21 @@ final class CrosshairView: NSView {
 
     var isDragging: Bool = false
 
+    // VIB-318: Transparent cursor so no arrow shows alongside crosshairs.
+    // resetCursorRects is more reliable than NSCursor.hide() for persistent hiding.
+    private static let invisibleCursor: NSCursor = {
+        let size = NSSize(width: 1, height: 1)
+        let image = NSImage(size: size)
+        return NSCursor(image: image, hotSpot: .zero)
+    }()
+
     override var acceptsFirstResponder: Bool { true }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+    override func resetCursorRects() {
+        addCursorRect(bounds, cursor: CrosshairView.invisibleCursor)
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)

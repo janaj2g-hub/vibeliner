@@ -10,14 +10,27 @@ final class CaptureCoordinator {
     private var activeView: CrosshairView?
     private var editorPanel: EditorPanel?
     private var isCapturing = false
+    /// VIB-262: When set, captured image is returned to this handler instead of opening a new editor.
+    private var addImageCompletion: ((NSImage) -> Void)?
 
     private init() {}
+
+    /// VIB-262: Start capture in add-image mode — image returned via completion instead of new editor.
+    func startAddImageCapture(completion: @escaping (NSImage) -> Void) {
+        addImageCompletion = completion
+        startCapture()
+    }
 
     func startCapture() {
         guard !isCapturing else { return }
         isCapturing = true
 
-        NSCursor.hide()
+        // VIB-317: Ensure app is activated so overlay windows can become key.
+        // Critical for the popover trigger path where the app may lose activation
+        // after the popover closes (menu bar app has no dock icon).
+        NSApp.activate(ignoringOtherApps: true)
+
+        CursorManager.shared.hideCursor()
 
         for screen in NSScreen.screens {
             let window = CaptureOverlayWindow(screen: screen)
@@ -26,6 +39,7 @@ final class CaptureCoordinator {
 
             window.contentView = crosshairView
             window.makeKeyAndOrderFront(nil)
+            window.makeFirstResponder(crosshairView)
 
             overlayWindows.append(window)
             crosshairViews.append(crosshairView)
@@ -33,6 +47,7 @@ final class CaptureCoordinator {
     }
 
     func cancelCapture() {
+        addImageCompletion = nil
         dismissOverlays()
     }
 
@@ -49,7 +64,16 @@ final class CaptureCoordinator {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [self] in
             guard let image = ScreenCapture.captureRegion(rect: rect, on: screen) else {
                 print("Vibeliner: Capture failed")
+                self.addImageCompletion = nil
                 dismissOverlays()
+                return
+            }
+
+            // VIB-262: Add-image mode — return image to editor instead of opening new one
+            if let completion = self.addImageCompletion {
+                self.addImageCompletion = nil
+                self.cleanupAfterCapture()
+                completion(image)
                 return
             }
 
@@ -160,7 +184,7 @@ final class CaptureCoordinator {
     }
 
     private func cleanupAfterCapture() {
-        NSCursor.unhide()
+        CursorManager.shared.forceShow()
         removeDimensionLabel()
         overlayWindows.removeAll()
         crosshairViews.removeAll()
@@ -170,7 +194,7 @@ final class CaptureCoordinator {
     }
 
     private func dismissOverlays() {
-        NSCursor.unhide()
+        CursorManager.shared.forceShow()
         removeDimensionLabel()
 
         for window in overlayWindows {
