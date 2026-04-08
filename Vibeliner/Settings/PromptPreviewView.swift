@@ -94,8 +94,7 @@ final class PromptPreviewView: NSView {
             mode: .clipboardIDE(absolutePath: samplePath),
             preambleOverride: preamble,
             footerOverride: footer,
-            toolDescriptionsOverride: toolDescriptions,
-            roleDescriptionsOverride: roleDescriptions
+            toolDescriptionsOverride: toolDescriptions
         )
 
         previewText.string = prompt
