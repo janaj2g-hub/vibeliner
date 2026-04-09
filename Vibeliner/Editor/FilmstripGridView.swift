@@ -318,12 +318,7 @@ private final class FilmstripCellView: NSView {
     }
 
     private func updateSelectionAppearance() {
-        let borderColor: NSColor
-        switch role {
-        case .observed:  borderColor = DesignTokens.roleObservedBorder
-        case .expected:  borderColor = DesignTokens.roleExpectedBorder
-        case .reference: borderColor = DesignTokens.roleReferenceBorder
-        }
+        let borderColor = DesignTokens.roleColor(forHex: role.colorHex)
 
         if isSelected {
             clipView.layer?.borderColor = borderColor.cgColor

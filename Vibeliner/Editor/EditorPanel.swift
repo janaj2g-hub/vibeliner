@@ -547,7 +547,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             }
             filmstrip.onRoleChanged = { [weak self] index, newRole in
                 guard let self, index < self.imageRoles.count else { return }
-                self.imageRoles[index] = newRole.rawValue
+                self.imageRoles[index] = newRole.name.lowercased()
             }
             filmstrip.onTitleChanged = { [weak self] index, newTitle in
                 guard let self, index < self.imageTitles.count else { return }

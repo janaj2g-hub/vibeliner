@@ -21,14 +21,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         var preamble: String
         var footer: String
         var toolDescriptions: [String: String]
-        var roleDescriptions: [String: String]
+        var roles: [RoleConfig]
 
         static func current() -> PromptDrafts {
             PromptDrafts(
                 preamble: ConfigManager.shared.preamble,
                 footer: ConfigManager.shared.footer,
                 toolDescriptions: ConfigManager.shared.toolDescriptions,
-                roleDescriptions: ConfigManager.shared.roleDescriptions
+                roles: ConfigManager.shared.roles
             )
         }
     }
@@ -292,7 +292,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private func buildMultiImageContent() {
         let description = SettingsUI.bodyCopy(
-            "Role descriptions explain how each image type is used in multi-image prompts."
+            "Configure roles for multi-image prompts. Each role has a name, description, and color."
         )
         activeContentStack.addArrangedSubview(description)
 
@@ -303,60 +303,147 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         rowsStack.translatesAutoresizingMaskIntoConstraints = false
         activeContentStack.addArrangedSubview(rowsStack)
 
-        let roles: [(String, String, NSColor)] = [
-            ("Observed", "observed", DesignTokens.roleObservedBorder),
-            ("Expected", "expected", DesignTokens.roleExpectedBorder),
-            ("Reference", "reference", DesignTokens.roleReferenceBorder),
-        ]
-
-        for (title, key, color) in roles {
-            let row = makeRoleRow(title: title, key: key, swatchColor: color)
+        for (i, role) in drafts.roles.enumerated() {
+            let row = makeDynamicRoleRow(index: i, role: role)
             rowsStack.addArrangedSubview(row)
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
+
+        // "+ Add role" button
+        let addBtn = SettingsPillButton(title: drafts.roles.count >= 10 ? "Maximum 10 roles" : "+ Add role", target: self, action: #selector(addRoleClicked))
+        addBtn.isEnabled = drafts.roles.count < 10
+        addBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
+        activeContentStack.addArrangedSubview(addBtn)
     }
 
-    private func makeRoleRow(title: String, key: String, swatchColor: NSColor) -> NSView {
+    private func makeDynamicRoleRow(index: Int, role: RoleConfig) -> NSView {
         let row = NSView()
         row.translatesAutoresizingMaskIntoConstraints = false
 
+        let swatchColor = DesignTokens.roleColor(forHex: role.colorHex)
         let swatch = RoleSwatchView(color: swatchColor)
-        let nameLabel = SettingsUI.regularLabel(title)
-        nameLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
+        swatch.onClicked = { [weak self] swatchView in
+            self?.showInlineColorPicker(for: index, swatch: swatchView)
+        }
 
-        let field = SettingsTextField()
-        field.stringValue = drafts.roleDescriptions[key] ?? ""
-        field.delegate = self
-        field.identifier = NSUserInterfaceItemIdentifier("role_\(key)")
-        field.translatesAutoresizingMaskIntoConstraints = false
-        roleFields[key] = field
+        let nameField = SettingsTextField()
+        nameField.stringValue = role.name
+        nameField.placeholderString = "Role name"
+        nameField.delegate = self
+        nameField.identifier = NSUserInterfaceItemIdentifier("rolename_\(index)")
+        nameField.translatesAutoresizingMaskIntoConstraints = false
+
+        let descField = SettingsTextField()
+        descField.stringValue = role.description
+        descField.placeholderString = "Description for LLM prompt"
+        descField.delegate = self
+        descField.identifier = NSUserInterfaceItemIdentifier("roledesc_\(index)")
+        descField.translatesAutoresizingMaskIntoConstraints = false
+
+        let deleteBtn = NSButton(title: "×", target: self, action: #selector(deleteRoleClicked(_:)))
+        deleteBtn.tag = index
+        deleteBtn.isBordered = false
+        deleteBtn.font = NSFont.systemFont(ofSize: 14, weight: .medium)
+        deleteBtn.contentTintColor = .tertiaryLabelColor
+        deleteBtn.translatesAutoresizingMaskIntoConstraints = false
 
         row.addSubview(swatch)
-        row.addSubview(nameLabel)
-        row.addSubview(field)
+        row.addSubview(nameField)
+        row.addSubview(descField)
+        row.addSubview(deleteBtn)
 
         swatch.translatesAutoresizingMaskIntoConstraints = false
-        nameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             row.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
             swatch.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 8),
             swatch.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            swatch.widthAnchor.constraint(equalToConstant: 12),
-            swatch.heightAnchor.constraint(equalToConstant: 12),
+            swatch.widthAnchor.constraint(equalToConstant: 14),
+            swatch.heightAnchor.constraint(equalToConstant: 14),
 
-            nameLabel.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 10),
-            nameLabel.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            nameLabel.widthAnchor.constraint(equalToConstant: 80),
+            nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 10),
+            nameField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            nameField.widthAnchor.constraint(equalToConstant: 90),
+            nameField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
-            field.leadingAnchor.constraint(equalTo: nameLabel.trailingAnchor, constant: 14),
-            field.trailingAnchor.constraint(equalTo: row.trailingAnchor),
-            field.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            field.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
+            descField.leadingAnchor.constraint(equalTo: nameField.trailingAnchor, constant: 10),
+            descField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            descField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
+
+            deleteBtn.leadingAnchor.constraint(equalTo: descField.trailingAnchor, constant: 6),
+            deleteBtn.trailingAnchor.constraint(equalTo: row.trailingAnchor),
+            deleteBtn.centerYAnchor.constraint(equalTo: row.centerYAnchor),
+            deleteBtn.widthAnchor.constraint(equalToConstant: 22),
         ])
 
         return row
+    }
+
+    @objc private func addRoleClicked() {
+        guard drafts.roles.count < 10 else { return }
+        // Pick next unused preset color, cycling through all 8
+        let usedHexes = Set(drafts.roles.map { $0.colorHex.lowercased() })
+        let nextColor = DesignTokens.rolePresetColors.first { !usedHexes.contains($0.hex.lowercased()) }?.hex
+            ?? DesignTokens.rolePresetColors[drafts.roles.count % DesignTokens.rolePresetColors.count].hex
+        drafts.roles.append(RoleConfig(name: "New role", description: "", colorHex: nextColor))
+        selectSubTab(.multiImage)
+        refreshPreview()
+    }
+
+    @objc private func deleteRoleClicked(_ sender: NSButton) {
+        let index = sender.tag
+        guard index < drafts.roles.count else { return }
+        drafts.roles.remove(at: index)
+        selectSubTab(.multiImage)
+        refreshPreview()
+    }
+
+    private func showInlineColorPicker(for roleIndex: Int, swatch: RoleSwatchView) {
+        // If a picker is already showing, remove it
+        swatch.colorPicker?.removeFromSuperview()
+        swatch.colorPicker = nil
+
+        let picker = NSStackView()
+        picker.orientation = .horizontal
+        picker.spacing = 4
+        picker.translatesAutoresizingMaskIntoConstraints = false
+
+        for preset in DesignTokens.rolePresetColors {
+            let dot = NSButton(frame: NSRect(x: 0, y: 0, width: 16, height: 16))
+            dot.isBordered = false
+            dot.wantsLayer = true
+            dot.layer?.cornerRadius = 8
+            dot.layer?.backgroundColor = preset.color.cgColor
+            dot.layer?.borderWidth = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased() ? 2 : 0
+            dot.layer?.borderColor = NSColor.labelColor.cgColor
+            dot.target = self
+            dot.action = #selector(colorPickerDotClicked(_:))
+            dot.tag = roleIndex * 100 + DesignTokens.rolePresetColors.firstIndex(where: { $0.hex == preset.hex })!
+            dot.translatesAutoresizingMaskIntoConstraints = false
+            NSLayoutConstraint.activate([
+                dot.widthAnchor.constraint(equalToConstant: 16),
+                dot.heightAnchor.constraint(equalToConstant: 16),
+            ])
+            picker.addArrangedSubview(dot)
+        }
+
+        guard let swatchSuperview = swatch.superview else { return }
+        swatchSuperview.addSubview(picker)
+        NSLayoutConstraint.activate([
+            picker.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 6),
+            picker.centerYAnchor.constraint(equalTo: swatch.centerYAnchor),
+        ])
+        swatch.colorPicker = picker
+    }
+
+    @objc private func colorPickerDotClicked(_ sender: NSButton) {
+        let roleIndex = sender.tag / 100
+        let colorIndex = sender.tag % 100
+        guard roleIndex < drafts.roles.count, colorIndex < DesignTokens.rolePresetColors.count else { return }
+        drafts.roles[roleIndex].colorHex = DesignTokens.rolePresetColors[colorIndex].hex
+        selectSubTab(.multiImage)
+        refreshPreview()
     }
 
     // MARK: - Helpers
@@ -482,18 +569,19 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         case .footer:
             drafts.footer = footerEditor?.string ?? drafts.footer
         case .multiImage:
-            for (key, field) in roleFields {
-                drafts.roleDescriptions[key] = field.stringValue
-            }
+            // Role drafts are updated in real-time via field delegates
+            break
         }
     }
 
     private func refreshPreview() {
+        var roleDescs: [String: String] = [:]
+        for role in drafts.roles { roleDescs[role.name.lowercased()] = role.description }
         previewView.refresh(
             preamble: drafts.preamble,
             footer: drafts.footer,
             toolDescriptions: drafts.toolDescriptions,
-            roleDescriptions: drafts.roleDescriptions
+            roleDescriptions: roleDescs
         )
     }
 
@@ -502,7 +590,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ConfigManager.shared.preamble = drafts.preamble
         ConfigManager.shared.footer = drafts.footer
         ConfigManager.shared.toolDescriptions = drafts.toolDescriptions
-        ConfigManager.shared.roleDescriptions = drafts.roleDescriptions
+        ConfigManager.shared.roles = drafts.roles
         ConfigManager.shared.save()
         refreshPreview()
 
@@ -535,10 +623,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             drafts.footer = Self.defaultFooter
             footerEditor?.string = Self.defaultFooter
         case .multiImage:
-            drafts.roleDescriptions = Self.defaultRoleDescriptions
-            for (key, value) in Self.defaultRoleDescriptions {
-                roleFields[key]?.stringValue = value
-            }
+            drafts.roles = RoleConfig.defaultRoles
+            selectSubTab(.multiImage)
         }
         refreshPreview()
     }
@@ -559,9 +645,12 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     func controlTextDidChange(_ notification: Notification) {
         guard let field = notification.object as? NSTextField,
               let key = field.identifier?.rawValue else { return }
-        if key.hasPrefix("role_") {
-            let roleKey = String(key.dropFirst(5))
-            drafts.roleDescriptions[roleKey] = field.stringValue
+        if key.hasPrefix("rolename_"), let idx = Int(key.dropFirst(9)) {
+            guard idx < drafts.roles.count else { return }
+            drafts.roles[idx].name = field.stringValue
+        } else if key.hasPrefix("roledesc_"), let idx = Int(key.dropFirst(9)) {
+            guard idx < drafts.roles.count else { return }
+            drafts.roles[idx].description = field.stringValue
         } else {
             drafts.toolDescriptions[key] = field.stringValue
         }
@@ -582,11 +671,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         "freehand": "marks an irregular area",
     ]
 
-    private static let defaultRoleDescriptions: [String: String] = [
-        "observed": "shows the current state of the app",
-        "expected": "shows the desired or correct state",
-        "reference": "provides supplementary context or a design spec",
-    ]
 }
 
 // MARK: - Tool icon view
@@ -630,6 +714,9 @@ private final class ToolIconView: NSView {
 
 private final class RoleSwatchView: NSView {
 
+    var onClicked: ((RoleSwatchView) -> Void)?
+    var colorPicker: NSView?
+
     private let swatchColor: NSColor
 
     init(color: NSColor) {
@@ -645,5 +732,9 @@ private final class RoleSwatchView: NSView {
         let path = NSBezierPath(ovalIn: bounds)
         swatchColor.setFill()
         path.fill()
+    }
+
+    override func mouseDown(with event: NSEvent) {
+        onClicked?(self)
     }
 }

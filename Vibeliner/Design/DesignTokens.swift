@@ -420,6 +420,50 @@ enum DesignTokens {
     /// Role reference background — blue tint
     static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.45)
 
+    // VIB-322: Additional role preset colors
+    /// Role orange border: #F97316
+    static let roleOrangeBorder = NSColor(red: 249/255, green: 115/255, blue: 22/255, alpha: 1.0)
+    /// Role pink border: #EC4899
+    static let rolePinkBorder = NSColor(red: 236/255, green: 72/255, blue: 153/255, alpha: 1.0)
+    /// Role teal border: #14B8A6
+    static let roleTealBorder = NSColor(red: 20/255, green: 184/255, blue: 166/255, alpha: 1.0)
+    /// Role yellow border: #EAB308
+    static let roleYellowBorder = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 1.0)
+    /// Role gray border: #6B7280
+    static let roleGrayBorder = NSColor(red: 107/255, green: 114/255, blue: 128/255, alpha: 1.0)
+
+    /// All 8 preset role colors: (name, hex, NSColor)
+    static let rolePresetColors: [(name: String, hex: String, color: NSColor)] = [
+        ("Purple", "#AFA9EC", roleObservedBorder),
+        ("Green", "#22C55E", roleExpectedBorder),
+        ("Blue", "#3B82F6", roleReferenceBorder),
+        ("Orange", "#F97316", roleOrangeBorder),
+        ("Pink", "#EC4899", rolePinkBorder),
+        ("Teal", "#14B8A6", roleTealBorder),
+        ("Yellow", "#EAB308", roleYellowBorder),
+        ("Gray", "#6B7280", roleGrayBorder),
+    ]
+
+    /// Look up an NSColor for a role color hex string
+    static func roleColor(forHex hex: String) -> NSColor {
+        rolePresetColors.first { $0.hex.lowercased() == hex.lowercased() }?.color ?? roleObservedBorder
+    }
+
+    /// Look up a border NSColor for an ImageRole, using ConfigManager roles
+    static func roleBorderColor(forRoleName name: String) -> NSColor {
+        let roles = ConfigManager.shared.roles
+        guard let role = roles.first(where: { $0.name.lowercased() == name.lowercased() }) else {
+            return roleObservedBorder
+        }
+        return roleColor(forHex: role.colorHex)
+    }
+
+    /// Generate a semi-transparent background color for a role pill from its hex
+    static func roleBgColor(forHex hex: String) -> NSColor {
+        let border = roleColor(forHex: hex)
+        return (border.blended(withFraction: 0.55, of: .black) ?? border).withAlphaComponent(0.45)
+    }
+
     /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
     static let settingsFieldBorder = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {

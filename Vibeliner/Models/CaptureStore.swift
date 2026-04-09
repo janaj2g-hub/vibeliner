@@ -58,10 +58,14 @@ final class CaptureStore {
         images[index].role = role
     }
 
-    /// Default role for any new image — always .observed.
+    /// Default role for any new image — uses the first configured role, or .observed.
     /// User changes roles manually via the dropdown.
     static func defaultRole(forIndex index: Int) -> ImageRole {
-        return .observed
+        let roles = ConfigManager.shared.roles
+        if index < roles.count {
+            return ImageRole(name: roles[index].name)
+        }
+        return roles.first.map { ImageRole(name: $0.name) } ?? .observed
     }
 
     /// Update indices to match array positions (call after add/remove).
