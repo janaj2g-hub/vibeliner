@@ -4,8 +4,7 @@ final class SettingsWindowController: NSWindowController {
 
     // MARK: - State
 
-    private var tabButtons: [NSButton] = []
-    private var tabUnderlines: [NSView] = []
+    private var tabSegmented: SettingsSegmentedControl?
     private let contentContainer = NSView()
     private var activeTabIndex = -1
 
@@ -38,62 +37,24 @@ final class SettingsWindowController: NSWindowController {
         guard let contentView = window?.contentView else { return }
         contentView.wantsLayer = true
 
-        // ── Tab bar ──
+        // ── Tab bar with segmented control ──
 
         let tabBar = NSView()
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabBar)
 
-        let tabTitles = ["General", "Prompt", "About"]
-        let tabWidth: CGFloat = 96
-
-        let tabStack = NSStackView()
-        tabStack.orientation = .horizontal
-        tabStack.alignment = .centerY
-        tabStack.spacing = 0
-        tabStack.translatesAutoresizingMaskIntoConstraints = false
-        tabBar.addSubview(tabStack)
+        let segmented = SettingsSegmentedControl(items: ["General", "Prompt", "About"])
+        tabBar.addSubview(segmented)
+        self.tabSegmented = segmented
 
         NSLayoutConstraint.activate([
-            tabStack.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
-            tabStack.centerYAnchor.constraint(equalTo: tabBar.centerYAnchor),
+            segmented.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
+            segmented.centerYAnchor.constraint(equalTo: tabBar.centerYAnchor),
+            segmented.widthAnchor.constraint(equalToConstant: 280),
         ])
 
-        for (index, title) in tabTitles.enumerated() {
-            let container = NSView()
-            container.translatesAutoresizingMaskIntoConstraints = false
-
-            let button = NSButton(title: title, target: self, action: #selector(tabClicked(_:)))
-            button.isBordered = false
-            button.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-            button.tag = index
-            button.translatesAutoresizingMaskIntoConstraints = false
-            container.addSubview(button)
-
-            let underline = NSView()
-            underline.translatesAutoresizingMaskIntoConstraints = false
-            underline.wantsLayer = true
-            underline.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
-            underline.layer?.cornerRadius = 1
-            underline.isHidden = true
-            container.addSubview(underline)
-
-            NSLayoutConstraint.activate([
-                container.widthAnchor.constraint(equalToConstant: tabWidth),
-                container.heightAnchor.constraint(equalToConstant: Self.tabBarHeight),
-                button.leadingAnchor.constraint(equalTo: container.leadingAnchor),
-                button.trailingAnchor.constraint(equalTo: container.trailingAnchor),
-                button.topAnchor.constraint(equalTo: container.topAnchor),
-                button.bottomAnchor.constraint(equalTo: container.bottomAnchor),
-                underline.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-                underline.bottomAnchor.constraint(equalTo: container.bottomAnchor, constant: -2),
-                underline.widthAnchor.constraint(equalToConstant: 56),
-                underline.heightAnchor.constraint(equalToConstant: 2),
-            ])
-
-            tabStack.addArrangedSubview(container)
-            tabButtons.append(button)
-            tabUnderlines.append(underline)
+        segmented.onSelectionChanged = { [weak self] index in
+            self?.selectTab(index)
         }
 
         // ── Divider ──
@@ -164,10 +125,6 @@ final class SettingsWindowController: NSWindowController {
 
     // MARK: - Tab switching
 
-    @objc private func tabClicked(_ sender: NSButton) {
-        selectTab(sender.tag)
-    }
-
     private func selectTab(_ index: Int) {
         guard index >= 0, index < 3, index != activeTabIndex else { return }
 
@@ -199,10 +156,9 @@ final class SettingsWindowController: NSWindowController {
             documentView.scroll(.zero)
         }
 
-        for (i, button) in tabButtons.enumerated() {
-            let active = i == index
-            button.contentTintColor = active ? DesignTokens.purpleLight : .secondaryLabelColor
-            tabUnderlines[i].isHidden = !active
+        // Sync segmented control for programmatic tab switches
+        if tabSegmented?.selectedIndex != index {
+            tabSegmented?.setSelectedIndex(index, notify: false)
         }
     }
 
