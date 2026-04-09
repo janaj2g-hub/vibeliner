@@ -100,13 +100,28 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | `toolbarTrashHoverBg` | rgba(255,87,87,0.15) | rgba(255,87,87,0.12) | Trash button hover bg | ToolButton |
 | `toolbarToolActiveBg` | rgba(175,169,236,0.2) | rgba(83,74,183,0.12) | Selected tool bg | ToolButton |
 
-### Add Image Button — Appearance-Aware (VIB-262/320)
+### Secondary Toolbar Buttons — Appearance-Aware (VIB-330)
+
+Used by "+ Add image" and "New capture" — subtle outlined style, secondary to Copy Prompt/Image.
 
 | Token | Dark value | Light value | Usage | Consuming files |
 |-------|-----------|-------------|-------|-----------------|
-| `addImageBg` | rgba(175,169,236,0.14) | rgba(83,74,183,0.08) | Add image button bg | ToolbarView |
-| `addImageBorder` | rgba(175,169,236,0.22) | rgba(83,74,183,0.15) | Add image button border | ToolbarView |
-| `addImageHoverBorder` | rgba(175,169,236,0.34) | rgba(83,74,183,0.25) | Add image hover border | ToolbarView |
+| `toolbarSecondaryBorder` | rgba(255,255,255,0.20) | rgba(0,0,0,0.15) | Secondary button border | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryText` | rgba(255,255,255,0.60) | rgba(0,0,0,0.55) | Secondary button text | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryBg` | transparent | transparent | Secondary button bg | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryHoverBorder` | rgba(255,255,255,0.35) | rgba(0,0,0,0.25) | Secondary hover border | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryHoverText` | rgba(255,255,255,0.80) | rgba(0,0,0,0.75) | Secondary hover text | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryHoverBg` | rgba(255,255,255,0.05) | rgba(0,0,0,0.04) | Secondary hover bg | ToolbarView (SecondaryPillButton) |
+
+### Add Image Button — Deprecated (VIB-262/320)
+
+Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibility.
+
+| Token | Dark value | Light value | Usage | Consuming files |
+|-------|-----------|-------------|-------|-----------------|
+| `addImageBg` | rgba(175,169,236,0.14) | rgba(83,74,183,0.08) | Add image button bg (deprecated) | — |
+| `addImageBorder` | rgba(175,169,236,0.22) | rgba(83,74,183,0.15) | Add image button border (deprecated) | — |
+| `addImageHoverBorder` | rgba(175,169,236,0.34) | rgba(83,74,183,0.25) | Add image hover border (deprecated) | — |
 
 ### Toggle — Appearance-Aware
 
@@ -167,6 +182,7 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | `titlePillHeight` | 30px | Height of title pill in filmstrip | TitlePillView, FilmstripGridView |
 | `titlePillGap` | 6px | Gap between title pill and image | FilmstripGridView |
 | `titlePillExportShadow` | rgba(0,0,0,0.3) | Export title pill shadow | CompositeStitcher |
+| `minCellWidth` | 200px | Minimum filmstrip cell width before scrolling | FilmstripGridView |
 
 ### Ghost Preview
 

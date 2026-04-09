@@ -407,64 +407,22 @@ final class ToolbarView: NSView {
         return CopyPillButton(title: title)
     }
 
-    // VIB-262: + Add image pill button
-    private func makeAddImageButton() -> NSView {
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: 90, height: 26))
-        container.wantsLayer = true
-        container.layer?.cornerRadius = 13
-        container.layer?.backgroundColor = DesignTokens.addImageBg.cgColor
-        container.layer?.borderWidth = 1.5
-        container.layer?.borderColor = DesignTokens.addImageBorder.cgColor
-
-        let label = NSTextField(labelWithString: "+ Add image")
-        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        label.textColor = DesignTokens.purpleLight
-        label.sizeToFit()
-        label.frame.origin = NSPoint(
-            x: (90 - label.frame.width) / 2,
-            y: (26 - label.frame.height) / 2
-        )
-        container.addSubview(label)
-
-        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: container)
-        container.addTrackingArea(area)
-
-        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
-        container.addGestureRecognizer(clickGR)
-
-        return container
+    // VIB-330: + Add image — secondary button style (subtle, neutral)
+    private func makeAddImageButton() -> SecondaryPillButton {
+        let btn = SecondaryPillButton(title: "+ Add image")
+        btn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestAddImage() }
+        return btn
     }
 
     @objc private func addImageClicked() {
         delegate?.toolbarDidRequestAddImage()
     }
 
-    // VIB-321: New capture purple pill button
-    private func makeNewCaptureButton() -> NSView {
-        let container = NSView(frame: NSRect(x: 0, y: 0, width: 100, height: 26))
-        container.wantsLayer = true
-        container.layer?.cornerRadius = 13
-        container.layer?.backgroundColor = DesignTokens.toolbarPurpleButtonBg.cgColor
-        container.layer?.borderWidth = 1.5
-        container.layer?.borderColor = DesignTokens.toolbarPurpleButtonBorder.cgColor
-
-        let label = NSTextField(labelWithString: "New capture")
-        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        label.textColor = DesignTokens.toolbarPurpleButtonText
-        label.sizeToFit()
-        label.frame.origin = NSPoint(
-            x: (100 - label.frame.width) / 2,
-            y: (26 - label.frame.height) / 2
-        )
-        container.addSubview(label)
-
-        let area = NSTrackingArea(rect: container.bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self)
-        container.addTrackingArea(area)
-
-        let clickGR = NSClickGestureRecognizer(target: self, action: #selector(newCaptureClicked))
-        container.addGestureRecognizer(clickGR)
-
-        return container
+    // VIB-330: New capture — secondary button style (subtle, neutral)
+    private func makeNewCaptureButton() -> SecondaryPillButton {
+        let btn = SecondaryPillButton(title: "New capture")
+        btn.onClick = { [weak self] in self?.newCaptureClicked() }
+        return btn
     }
 
     @objc private func newCaptureClicked() {
@@ -473,14 +431,10 @@ final class ToolbarView: NSView {
         delegate?.toolbarDidRequestNewCapture()
     }
 
-    /// VIB-262: Disable the button at 12 images.
+    /// VIB-262/330: Disable the button at 12 images — no alphaValue, use isEnabled.
     func updateAddImageState(imageCount: Int) {
-        addImageButton?.alphaValue = imageCount >= 12 ? 0.3 : 1.0
-        if imageCount >= 12 {
-            addImageButton?.gestureRecognizers.removeAll()
-        } else if addImageButton?.gestureRecognizers.isEmpty == true {
-            let clickGR = NSClickGestureRecognizer(target: self, action: #selector(addImageClicked))
-            addImageButton?.addGestureRecognizer(clickGR)
+        if let btn = addImageButton as? SecondaryPillButton {
+            btn.isButtonEnabled = imageCount < 12
         }
     }
 
@@ -750,4 +704,84 @@ final class CopyPillButton: NSView {
     override func mouseEntered(with event: NSEvent) { isHovered = true }
     override func mouseExited(with event: NSEvent) { isHovered = false }
     override func mouseDown(with event: NSEvent) { onClick?() }
+}
+
+// MARK: - VIB-330: Secondary Pill Button
+
+/// Subtle outlined pill button for secondary actions (+ Add image, New capture).
+/// Uses `toolbarSecondary*` design tokens — neutral border/text, no purple, fully opaque.
+final class SecondaryPillButton: NSView {
+
+    var onClick: (() -> Void)?
+    var isButtonEnabled: Bool = true {
+        didSet { updateAppearance() }
+    }
+    private let label: NSTextField
+    private var isHovered = false { didSet { updateAppearance() } }
+
+    init(title: String) {
+        label = NSTextField(labelWithString: title)
+        super.init(frame: .zero)
+
+        wantsLayer = true
+        layer?.cornerRadius = 13
+        layer?.masksToBounds = true
+        layer?.borderWidth = 1
+
+        label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+        label.isBezeled = false
+        label.drawsBackground = false
+        label.isEditable = false
+        label.isSelectable = false
+        addSubview(label)
+
+        label.sizeToFit()
+        let w = label.frame.width + 24  // 12px padding each side
+        let h: CGFloat = 26
+        setFrameSize(NSSize(width: w, height: h))
+        label.frame = NSRect(
+            x: 12,
+            y: (h - label.frame.height) / 2,
+            width: label.frame.width,
+            height: label.frame.height
+        )
+
+        updateAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    private func updateAppearance() {
+        if !isButtonEnabled {
+            label.textColor = DesignTokens.toolbarSecondaryText.withAlphaComponent(0.3)
+            layer?.borderColor = DesignTokens.toolbarSecondaryBorder.withAlphaComponent(0.15).cgColor
+            layer?.backgroundColor = NSColor.clear.cgColor
+        } else if isHovered {
+            label.textColor = DesignTokens.toolbarSecondaryHoverText
+            layer?.borderColor = DesignTokens.toolbarSecondaryHoverBorder.cgColor
+            layer?.backgroundColor = DesignTokens.toolbarSecondaryHoverBg.cgColor
+        } else {
+            label.textColor = DesignTokens.toolbarSecondaryText
+            layer?.borderColor = DesignTokens.toolbarSecondaryBorder.cgColor
+            layer?.backgroundColor = DesignTokens.toolbarSecondaryBg.cgColor
+        }
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+    }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
+    }
+
+    override func mouseEntered(with event: NSEvent) { isHovered = true }
+    override func mouseExited(with event: NSEvent) { isHovered = false }
+    override func mouseDown(with event: NSEvent) {
+        guard isButtonEnabled else { return }
+        onClick?()
+    }
 }

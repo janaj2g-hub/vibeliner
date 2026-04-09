@@ -35,13 +35,15 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
     }()
 
     /// VIB-295: Standard popup with hidden arrows — single ▾ chevron added separately.
-    /// VIB-312: Minimized internal padding for tighter text-to-chevron alignment.
+    /// VIB-312/330: Minimized internal padding for tighter text-to-chevron alignment.
     private let rolePopUp: NSPopUpButton = {
         let popup = NSPopUpButton(frame: .zero, pullsDown: false)
         popup.isBordered = false
         popup.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
         (popup.cell as? NSPopUpButtonCell)?.arrowPosition = .noArrow
         popup.alignment = .right
+        // VIB-330: Use secondaryLabelColor for auto-adapting contrast
+        popup.contentTintColor = .secondaryLabelColor
         popup.addItems(withTitles: [
             ImageRole.observed.displayName,
             ImageRole.expected.displayName,
@@ -50,11 +52,11 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         return popup
     }()
 
-    /// VIB-295: Single down chevron label positioned tight to the right of role text.
+    /// VIB-295/330: Single down chevron label with auto-adapting contrast.
     private let chevronLabel: NSTextField = {
         let label = NSTextField(labelWithString: "▾")
         label.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
-        label.textColor = NSColor(white: 1.0, alpha: 0.6)
+        label.textColor = .secondaryLabelColor
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
@@ -109,7 +111,7 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         layer?.borderWidth = 1
         layer?.masksToBounds = true
 
-        // VIB-312: Chevron on the far right, vertically centered
+        // VIB-312/330: Chevron on the far right, vertically centered
         chevronLabel.sizeToFit()
         let chevronW = chevronLabel.frame.width
         let chevronX = bounds.width - chevronW - 8
@@ -117,12 +119,11 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         let chevronY = (h - chevronH) / 2
         chevronLabel.frame = NSRect(x: chevronX, y: chevronY, width: chevronW, height: chevronH)
 
-        // VIB-312: Role popup tight to chevron, vertically centered.
-        // Minimal gap between role text and chevron for a compact dropdown feel.
+        // VIB-330: Role popup left of chevron with 8px gap for readability
         rolePopUp.sizeToFit()
         let popupW = rolePopUp.frame.width
         let popupH = rolePopUp.frame.height
-        let popupX = chevronX - popupW + 4  // VIB-312: tighter overlap for flush alignment
+        let popupX = chevronX - popupW - 4  // VIB-330: 8px visual gap (4px + popup trailing space)
         let popupY = (h - popupH) / 2
         rolePopUp.frame = NSRect(x: popupX, y: popupY, width: popupW, height: popupH)
 
