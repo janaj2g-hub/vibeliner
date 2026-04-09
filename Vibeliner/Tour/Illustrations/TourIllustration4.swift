@@ -31,7 +31,7 @@ final class TourIllustration4: NSView {
     private let composerLine3: NSView
     private let sendCircle: NSView
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let sectionGap: CGFloat = 10
 
     override init(frame frameRect: NSRect) {
@@ -53,7 +53,7 @@ final class TourIllustration4: NSView {
 
         // -- Bottom: LLM panel --
         llmPanel = NSView()
-        llmDot = NSView(frame: NSRect(x: 0, y: 0, width: 7, height: 7))
+        llmDot = NSView(frame: NSRect(x: 0, y: 0, width: DesignTokens.tourLLMDotSize, height: DesignTokens.tourLLMDotSize))
         llmLabel = NSTextField(labelWithString: "Your AI tool")
 
         chatBubble = NSView()
@@ -82,16 +82,16 @@ final class TourIllustration4: NSView {
 
         // Configure LLM panel
         llmPanel.wantsLayer = true
-        llmPanel.layer?.cornerRadius = 8
-        llmPanel.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+        llmPanel.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
+        llmPanel.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         llmPanel.layer?.borderWidth = 1
         llmPanel.layer?.borderColor = DesignTokens.chromeBorder.cgColor
 
         llmDot.wantsLayer = true
-        llmDot.layer?.cornerRadius = 3.5
+        llmDot.layer?.cornerRadius = DesignTokens.tourLLMDotSize / 2
         llmDot.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
 
-        llmLabel.font = NSFont.systemFont(ofSize: 11, weight: .bold)
+        llmLabel.font = DesignTokens.tourLLMHeaderFont
         llmLabel.textColor = DesignTokens.tourTextSecondary
         llmLabel.isBezeled = false
         llmLabel.drawsBackground = false
@@ -100,9 +100,9 @@ final class TourIllustration4: NSView {
 
         chatBubble.wantsLayer = true
         chatBubble.layer?.cornerRadius = 12
-        chatBubble.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.04).cgColor
+        chatBubble.layer?.backgroundColor = DesignTokens.tourLLMBubbleBg.cgColor
 
-        chatText.font = NSFont.systemFont(ofSize: 11, weight: .regular)
+        chatText.font = DesignTokens.tourLLMBubbleFont
         chatText.textColor = DesignTokens.tourTextSecondary
         chatText.isBezeled = false
         chatText.drawsBackground = false
@@ -112,24 +112,23 @@ final class TourIllustration4: NSView {
         chatText.usesSingleLineMode = false
 
         composerBar.wantsLayer = true
-        composerBar.layer?.cornerRadius = 8
-        composerBar.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+        composerBar.layer?.cornerRadius = DesignTokens.tourLLMComposerRadius
+        composerBar.layer?.backgroundColor = DesignTokens.tourLLMComposerBg.cgColor
         composerBar.layer?.borderWidth = 1
-        composerBar.layer?.borderColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+        composerBar.layer?.borderColor = DesignTokens.tourLLMComposerBorder.cgColor
 
         thumbnailPlaceholder.wantsLayer = true
-        thumbnailPlaceholder.layer?.cornerRadius = 4
-        // Gray gradient approximation
+        thumbnailPlaceholder.layer?.cornerRadius = DesignTokens.tourMiniScreenshotRadius
         thumbnailPlaceholder.layer?.backgroundColor = NSColor(white: 0.3, alpha: 1.0).cgColor
 
         for line in [composerLine1, composerLine2, composerLine3] {
             line.wantsLayer = true
             line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.08).cgColor
+            line.layer?.backgroundColor = DesignTokens.dividerColor.cgColor
         }
 
         sendCircle.wantsLayer = true
-        sendCircle.layer?.cornerRadius = 12
+        sendCircle.layer?.cornerRadius = DesignTokens.tourLLMSendSize / 2
         sendCircle.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
 
         // Build hierarchy
@@ -206,12 +205,13 @@ final class TourIllustration4: NSView {
         let panelW = contentW
 
         // Purple dot + label at top-left
-        let dotY = bottomH - panelPad - 7
-        llmDot.frame = CGRect(x: panelPad, y: dotY, width: 7, height: 7)
+        let dotSize = DesignTokens.tourLLMDotSize
+        let dotY = bottomH - panelPad - dotSize
+        llmDot.frame = CGRect(x: panelPad, y: dotY, width: dotSize, height: dotSize)
         llmLabel.sizeToFit()
         llmLabel.frame.origin = NSPoint(
-            x: panelPad + 7 + 6,
-            y: dotY + (7 - llmLabel.frame.height) / 2
+            x: panelPad + dotSize + 6,
+            y: dotY + (dotSize - llmLabel.frame.height) / 2
         )
 
         // Composer bar at bottom
@@ -221,8 +221,8 @@ final class TourIllustration4: NSView {
         let cBarW = composerBar.frame.width
 
         // Thumbnail in composer
-        let thumbW: CGFloat = 36
-        let thumbH: CGFloat = 28
+        let thumbW = DesignTokens.tourLLMThumbWidth
+        let thumbH = DesignTokens.tourLLMThumbHeight
         thumbnailPlaceholder.frame = CGRect(x: 8, y: (composerH - thumbH) / 2, width: thumbW, height: thumbH)
         thumbnailBadge.frame = CGRect(x: thumbW - 2, y: thumbH - 8, width: 14, height: 14)
         thumbnailBadge.layer?.cornerRadius = 7
@@ -235,7 +235,8 @@ final class TourIllustration4: NSView {
         composerLine3.frame = CGRect(x: lineX, y: composerH - 28, width: min(lineW * 0.5, 50), height: 4)
 
         // Send circle
-        sendCircle.frame = CGRect(x: cBarW - 24 - 8, y: (composerH - 24) / 2, width: 24, height: 24)
+        let sendSize = DesignTokens.tourLLMSendSize
+        sendCircle.frame = CGRect(x: cBarW - sendSize - 8, y: (composerH - sendSize) / 2, width: sendSize, height: sendSize)
 
         // Chat bubble between label and composer
         let bubbleTop = dotY - 10

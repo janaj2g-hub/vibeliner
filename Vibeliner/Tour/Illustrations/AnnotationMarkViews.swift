@@ -7,9 +7,10 @@ final class TourAnnotationBadge: NSView {
 
     init(number: Int) {
         self.number = number
-        super.init(frame: NSRect(x: 0, y: 0, width: 18, height: 18))
+        let d = DesignTokens.badgeDiameter
+        super.init(frame: NSRect(x: 0, y: 0, width: d, height: d))
         wantsLayer = true
-        layer?.cornerRadius = 9
+        layer?.cornerRadius = d / 2
         layer?.backgroundColor = DesignTokens.red.cgColor
         layer?.shadowColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.35).cgColor
         layer?.shadowOffset = CGSize(width: 0, height: -4)
@@ -17,7 +18,7 @@ final class TourAnnotationBadge: NSView {
         layer?.shadowOpacity = 1
 
         let label = NSTextField(labelWithString: "\(number)")
-        label.font = NSFont.systemFont(ofSize: 9, weight: .bold)
+        label.font = DesignTokens.badgeFont
         label.textColor = .white
         label.alignment = .center
         label.isBezeled = false
@@ -25,15 +26,17 @@ final class TourAnnotationBadge: NSView {
         label.isEditable = false
         label.sizeToFit()
         label.frame.origin = NSPoint(
-            x: (18 - label.frame.width) / 2,
-            y: (18 - label.frame.height) / 2
+            x: (d - label.frame.width) / 2,
+            y: (d - label.frame.height) / 2
         )
         addSubview(label)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: NSSize { NSSize(width: 18, height: 18) }
+    override var intrinsicContentSize: NSSize {
+        NSSize(width: DesignTokens.badgeDiameter, height: DesignTokens.badgeDiameter)
+    }
 }
 
 // MARK: - Note pill (26px height, red-tinted)
@@ -42,8 +45,8 @@ final class TourAnnotationNote: NSView {
     init(text: String) {
         super.init(frame: .zero)
         wantsLayer = true
-        layer?.cornerRadius = 13
-        layer?.backgroundColor = NSColor(red: 255/255, green: 248/255, blue: 248/255, alpha: 0.92).cgColor
+        layer?.cornerRadius = DesignTokens.noteCornerRadius
+        layer?.backgroundColor = DesignTokens.redNoteBg.cgColor
         layer?.borderWidth = 1
         layer?.borderColor = DesignTokens.redNoteBorder.cgColor
         layer?.shadowColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor
@@ -60,10 +63,11 @@ final class TourAnnotationNote: NSView {
         label.sizeToFit()
 
         let hPad: CGFloat = 10
+        let noteH = DesignTokens.noteHeight
         let w = label.frame.width + hPad * 2
-        setFrameSize(NSSize(width: w, height: 26))
+        setFrameSize(NSSize(width: w, height: noteH))
 
-        label.frame.origin = NSPoint(x: hPad, y: (26 - label.frame.height) / 2)
+        label.frame.origin = NSPoint(x: hPad, y: (noteH - label.frame.height) / 2)
         addSubview(label)
     }
 
@@ -93,7 +97,7 @@ final class TourAnnotationArrow: NSView {
         let end = CGPoint(x: start.x + length * cos(angle), y: start.y - length * sin(angle))
 
         ctx.setStrokeColor(DesignTokens.red.cgColor)
-        ctx.setLineWidth(2.5)
+        ctx.setLineWidth(DesignTokens.strokeWidth)
         ctx.setLineCap(.round)
 
         // Main line
@@ -102,7 +106,7 @@ final class TourAnnotationArrow: NSView {
         ctx.strokePath()
 
         // Chevron
-        let chevLen: CGFloat = 10
+        let chevLen: CGFloat = DesignTokens.arrowChevronLength
         let chevAngle: CGFloat = .pi / 4
         let lineAngle = atan2(start.y - end.y, end.x - start.x) + .pi
 
@@ -130,8 +134,8 @@ final class TourAnnotationRect: NSView {
     init(size: CGSize) {
         super.init(frame: NSRect(origin: .zero, size: size))
         wantsLayer = true
-        layer?.cornerRadius = 3
-        layer?.borderWidth = 2.5
+        layer?.cornerRadius = DesignTokens.rectCornerRadius
+        layer?.borderWidth = DesignTokens.strokeWidth
         layer?.borderColor = DesignTokens.red.cgColor
         layer?.backgroundColor = DesignTokens.redFill.cgColor
     }
@@ -146,7 +150,7 @@ final class TourAnnotationCircle: NSView {
         super.init(frame: NSRect(x: 0, y: 0, width: diameter, height: diameter))
         wantsLayer = true
         layer?.cornerRadius = diameter / 2
-        layer?.borderWidth = 2.5
+        layer?.borderWidth = DesignTokens.strokeWidth
         layer?.borderColor = DesignTokens.red.cgColor
         layer?.backgroundColor = DesignTokens.redFill.cgColor
     }
@@ -154,18 +158,20 @@ final class TourAnnotationCircle: NSView {
     required init?(coder: NSCoder) { fatalError() }
 }
 
-// MARK: - Stake (2×10px red rect)
+// MARK: - Stake (2x10px red rect)
 
 final class TourAnnotationStake: NSView {
     init() {
-        super.init(frame: NSRect(x: 0, y: 0, width: 2, height: 10))
+        super.init(frame: NSRect(x: 0, y: 0, width: DesignTokens.stakeWidth, height: DesignTokens.stakeLength))
         wantsLayer = true
         layer?.backgroundColor = DesignTokens.red.cgColor
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: NSSize { NSSize(width: 2, height: 10) }
+    override var intrinsicContentSize: NSSize {
+        NSSize(width: DesignTokens.stakeWidth, height: DesignTokens.stakeLength)
+    }
 }
 
 // MARK: - Flow arrow (vertical, purple, pointing down)
@@ -173,21 +179,23 @@ final class TourAnnotationStake: NSView {
 final class TourFlowArrow: NSView {
     private let arrowHeight: CGFloat
 
-    init(height: CGFloat = 28) {
+    init(height: CGFloat = DesignTokens.tourFlowArrowHeight) {
         self.arrowHeight = height
-        super.init(frame: NSRect(x: 0, y: 0, width: 14, height: height))
+        super.init(frame: NSRect(x: 0, y: 0, width: DesignTokens.tourFlowArrowWidth + 12, height: height))
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: NSSize { NSSize(width: 14, height: arrowHeight) }
+    override var intrinsicContentSize: NSSize {
+        NSSize(width: DesignTokens.tourFlowArrowWidth + 12, height: arrowHeight)
+    }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         let midX = bounds.midX
-        ctx.setStrokeColor(DesignTokens.purpleLight.cgColor)
-        ctx.setLineWidth(2)
+        ctx.setStrokeColor(DesignTokens.tourFlowArrowColor.cgColor)
+        ctx.setLineWidth(DesignTokens.tourFlowArrowWidth)
         ctx.setLineCap(.round)
 
         // Vertical line (top to bottom, AppKit y is flipped for drawing)
@@ -196,7 +204,7 @@ final class TourFlowArrow: NSView {
         ctx.strokePath()
 
         // Chevron at bottom
-        let chevLen: CGFloat = 6
+        let chevLen: CGFloat = DesignTokens.tourFlowArrowChevronSize
         ctx.move(to: CGPoint(x: midX - chevLen, y: chevLen))
         ctx.addLine(to: CGPoint(x: midX, y: 0))
         ctx.addLine(to: CGPoint(x: midX + chevLen, y: chevLen))

@@ -27,7 +27,7 @@ final class TourIllustration3: NSView {
     private let leftHint: NSTextField
     private let rightHint: NSTextField
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let sectionGap: CGFloat = 10
     private let columnGap: CGFloat = 14
     private let arrowGap: CGFloat = 80
@@ -68,7 +68,7 @@ final class TourIllustration3: NSView {
 
         // Configure hint labels
         for hint in [leftHint, rightHint] {
-            hint.font = NSFont.systemFont(ofSize: 10, weight: .regular)
+            hint.font = DesignTokens.tourHintFont
             hint.textColor = DesignTokens.tourTextDim
             hint.isBezeled = false
             hint.drawsBackground = false

@@ -26,7 +26,7 @@ final class TourIllustration7: NSView {
     // Bottom: prompt sheet
     private let promptSheet: TourPromptSheet
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let sectionGap: CGFloat = 16
     private let filmstripGap: CGFloat = 10
 
@@ -67,15 +67,15 @@ final class TourIllustration7: NSView {
         // Cell styling
         for cell in [cell1, cell2, cell3] {
             cell.wantsLayer = true
-            cell.layer?.cornerRadius = 6
-            cell.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+            cell.layer?.cornerRadius = DesignTokens.tourFilmstripCellRadius
+            cell.layer?.backgroundColor = DesignTokens.tourOutputCardBorder.cgColor
         }
 
         // Lines
         for line in [cell1Line1, cell1Line2, cell2Line1, cell2Line2, cell3Line1, cell3Line2] {
             line.wantsLayer = true
             line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.10).cgColor
+            line.layer?.backgroundColor = DesignTokens.tooltipDarkBorder.cgColor
         }
 
         // Build hierarchy

@@ -13,7 +13,7 @@ final class TourIllustration0: NSView {
     private let llmLabel: NSTextField
     private let promptText: NSTextField
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let gap: CGFloat = 16
 
     override init(frame frameRect: NSRect) {
@@ -24,7 +24,7 @@ final class TourIllustration0: NSView {
         llmStrip = NSView()
 
         // Purple dot
-        purpleDot = NSView(frame: NSRect(x: 0, y: 0, width: 7, height: 7))
+        purpleDot = NSView(frame: NSRect(x: 0, y: 0, width: DesignTokens.tourLLMDotSize, height: DesignTokens.tourLLMDotSize))
 
         // "LLM" label
         llmLabel = NSTextField(labelWithString: "LLM")
@@ -47,18 +47,18 @@ final class TourIllustration0: NSView {
 
         // Configure LLM strip
         llmStrip.wantsLayer = true
-        llmStrip.layer?.cornerRadius = 8
-        llmStrip.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+        llmStrip.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
+        llmStrip.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         llmStrip.layer?.borderWidth = 1
         llmStrip.layer?.borderColor = DesignTokens.chromeBorder.cgColor
 
         // Purple dot
         purpleDot.wantsLayer = true
-        purpleDot.layer?.cornerRadius = 3.5
+        purpleDot.layer?.cornerRadius = DesignTokens.tourLLMDotSize / 2
         purpleDot.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
 
         // LLM label
-        llmLabel.font = NSFont.systemFont(ofSize: 11, weight: .bold)
+        llmLabel.font = DesignTokens.tourLLMHeaderFont
         llmLabel.textColor = DesignTokens.tourTextSecondary
         llmLabel.isBezeled = false
         llmLabel.drawsBackground = false
@@ -66,7 +66,7 @@ final class TourIllustration0: NSView {
         llmLabel.sizeToFit()
 
         // Prompt text
-        promptText.font = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular)
+        promptText.font = DesignTokens.tourLLMChatFont
         promptText.textColor = DesignTokens.tourTextDim
         promptText.isBezeled = false
         promptText.drawsBackground = false
@@ -109,13 +109,14 @@ final class TourIllustration0: NSView {
         let stripPad: CGFloat = 12
 
         // Purple dot + LLM label on top-left of strip
-        let dotY = stripH - stripPad - 7
-        purpleDot.frame = CGRect(x: stripPad, y: dotY, width: 7, height: 7)
+        let dotSize = DesignTokens.tourLLMDotSize
+        let dotY = stripH - stripPad - dotSize
+        purpleDot.frame = CGRect(x: stripPad, y: dotY, width: dotSize, height: dotSize)
 
         llmLabel.sizeToFit()
         llmLabel.frame.origin = NSPoint(
-            x: stripPad + 7 + 6,
-            y: dotY + (7 - llmLabel.frame.height) / 2
+            x: stripPad + dotSize + 6,
+            y: dotY + (dotSize - llmLabel.frame.height) / 2
         )
 
         // Prompt text below dot/label
