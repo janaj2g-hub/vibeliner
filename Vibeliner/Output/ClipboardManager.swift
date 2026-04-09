@@ -2,8 +2,8 @@ import AppKit
 
 final class ClipboardManager {
 
-    static func copyPromptToClipboard(annotations: [Annotation], captureFolder: URL) {
-        let prompt = PromptGenerator.clipboardPrompt(annotations: annotations, captureFolder: captureFolder)
+    static func copyPromptToClipboard(annotations: [Annotation], captureFolder: URL, captureStore: CaptureStore? = nil) {
+        let prompt = PromptGenerator.clipboardPrompt(annotations: annotations, captureFolder: captureFolder, captureStore: captureStore)
         let pasteboard = NSPasteboard.general
         pasteboard.clearContents()
         pasteboard.setString(prompt, forType: .string)
