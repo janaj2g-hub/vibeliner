@@ -161,12 +161,14 @@ final class GeneralTabView: NSView {
     }
 
     @objc private func changeFolderClicked() {
+        guard let parentWindow = window else { return }
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
         panel.canChooseFiles = false
         panel.canCreateDirectories = true
         panel.directoryURL = URL(fileURLWithPath: ConfigManager.shared.expandedCapturesFolder)
-        panel.begin { [weak self] response in
+        // VIB-300: Show as sheet so it appears on top of the floating settings window
+        panel.beginSheetModal(for: parentWindow) { [weak self] response in
             guard response == .OK, let url = panel.url else { return }
             ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
