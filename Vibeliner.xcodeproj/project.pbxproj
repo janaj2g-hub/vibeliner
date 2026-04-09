@@ -44,6 +44,8 @@
 		A10000010000000000000022 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* ClipboardManager.swift */; };
 		A10000010000000000000023 /* AutoSaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* AutoSaveManager.swift */; };
 		A10000010000000000000025 /* SetupWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000027 /* SetupWindowController.swift */; };
+		T10000010000000000000001 /* TourStepData.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000001 /* TourStepData.swift */; };
+		T10000010000000000000002 /* TourWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000002 /* TourWindowController.swift */; };
 		A10000010000000000000029 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002B /* SettingsWindowController.swift */; };
 		A1000001000000000000002A /* GeneralTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002C /* GeneralTabView.swift */; };
 		A1000001000000000000002B /* PromptTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002D /* PromptTabView.swift */; };
@@ -111,6 +113,8 @@
 		A20000010000000000000024 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000025 /* AutoSaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSaveManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000027 /* SetupWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindowController.swift; sourceTree = "<group>"; };
+		T20000010000000000000001 /* TourStepData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourStepData.swift; sourceTree = "<group>"; };
+		T20000010000000000000002 /* TourWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourWindowController.swift; sourceTree = "<group>"; };
 		A2000001000000000000002B /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		A2000001000000000000002C /* GeneralTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralTabView.swift; sourceTree = "<group>"; };
 		A2000001000000000000002D /* PromptTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTabView.swift; sourceTree = "<group>"; };
@@ -207,6 +211,7 @@
 				A4000001000000000000000C /* Output */,
 				R30000010000000000000002 /* Services */,
 				A4000001000000000000000D /* Setup */,
+				T40000010000000000000001 /* Tour */,
 				74CC6D134E7FEDDA6B308270 /* Utilities */,
 				R30000010000000000000003 /* Views */,
 				A4000001000000000000000E /* Settings */,
@@ -324,6 +329,15 @@
 				A20000010000000000000027 /* SetupWindowController.swift */,
 			);
 			path = Setup;
+			sourceTree = "<group>";
+		};
+		T40000010000000000000001 /* Tour */ = {
+			isa = PBXGroup;
+			children = (
+				T20000010000000000000001 /* TourStepData.swift */,
+				T20000010000000000000002 /* TourWindowController.swift */,
+			);
+			path = Tour;
 			sourceTree = "<group>";
 		};
 		A4000001000000000000000E /* Settings */ = {
@@ -504,6 +518,8 @@
 				R20000010000000000000007 /* KeyEventGuard.swift in Sources */,
 				R20000010000000000000008 /* FilmCellView.swift in Sources */,
 				R20000010000000000000009 /* TitlePillView.swift in Sources */,
+				T10000010000000000000001 /* TourStepData.swift in Sources */,
+				T10000010000000000000002 /* TourWindowController.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

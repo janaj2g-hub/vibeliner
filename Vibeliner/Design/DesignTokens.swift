@@ -791,6 +791,48 @@ enum DesignTokens {
     static let setupKbdFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
     static let setupShortcutHintFont = NSFont.systemFont(ofSize: 12, weight: .regular)
 
+    // MARK: - Tour Window Colors (Static Dark)
+
+    /// Tour window background: rgba(30,30,30,0.92) — same as darkChrome
+    static let tourWindowBg = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
+    /// Tour header/footer overlay: rgba(255,255,255,0.015)
+    static let tourBarOverlay = NSColor(white: 1.0, alpha: 0.015)
+    /// Tour progress active: #AFA9EC — same as purpleLight
+    static let tourProgressActive = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
+    /// Tour progress inactive: rgba(255,255,255,0.06)
+    static let tourProgressInactive = NSColor(white: 1.0, alpha: 0.06)
+    /// Tour text primary: #E0E0E0
+    static let tourTextPrimary = NSColor(red: 224/255, green: 224/255, blue: 224/255, alpha: 1.0)
+    /// Tour text secondary: rgba(255,255,255,0.55)
+    static let tourTextSecondary = NSColor(white: 1.0, alpha: 0.55)
+    /// Tour text dim: rgba(255,255,255,0.35)
+    static let tourTextDim = NSColor(white: 1.0, alpha: 0.35)
+
+    // MARK: - Tour Window Dimensions
+
+    static let tourWindowWidth: CGFloat = 880
+    static let tourWindowHeight: CGFloat = 700
+    static let tourWindowRadius: CGFloat = 10
+    static let tourHeaderHeight: CGFloat = 44
+    static let tourFooterHeight: CGFloat = 48
+    static let tourIllustrationRatio: CGFloat = 0.6
+    static let tourTextMaxWidth: CGFloat = 300
+    static let tourProgressBarWidth: CGFloat = 16
+    static let tourProgressBarHeight: CGFloat = 3
+    static let tourNextButtonHeight: CGFloat = 34
+    static let tourNextButtonPaddingH: CGFloat = 18
+
+    // MARK: - Tour Window Fonts
+
+    static let tourHeaderFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
+    static let tourStepBadgeFont = NSFont.systemFont(ofSize: 11, weight: .medium)
+    static let tourTitleFont = NSFont.systemFont(ofSize: 22, weight: .bold)
+    static let tourBodyFont = NSFont.systemFont(ofSize: 14, weight: .regular)
+    static let tourProgressFont = NSFont.systemFont(ofSize: 11, weight: .medium)
+    static let tourButtonFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
+    static let tourExitFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
+    static let tourDoneTitleFont = NSFont.systemFont(ofSize: 26, weight: .bold)
+
     // MARK: - Vertically Centered Text Field
 
     /// Creates an NSTextField that is vertically centered within a given container height.
