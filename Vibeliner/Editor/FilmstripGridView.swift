@@ -2,8 +2,12 @@ import AppKit
 
 /// Horizontal filmstrip that displays multiple captured images as cells with
 /// editable title pills and role-colored borders. Used when the editor has 2+ images.
-/// VIB-330: Images maintain a minimum width (200px); scrolls horizontally when needed.
+/// Images maintain a minimum cell width of 250px; horizontal scrolling activates
+/// when content overflows the available width.
 final class FilmstripGridView: NSView {
+
+    /// Minimum cell width — images will not be compressed below this.
+    static let minCellWidth: CGFloat = 250
 
     /// Called when user clicks a cell. Parameter is the image index.
     var onCellSelected: ((Int) -> Void)?
@@ -11,21 +15,22 @@ final class FilmstripGridView: NSView {
     var onRoleChanged: ((Int, ImageRole) -> Void)?
     /// Called when user edits a cell's title.
     var onTitleChanged: ((Int, String) -> Void)?
-
-    private var cellViews: [FilmstripCellView] = []
-    private(set) var selectedIndex: Int = 0
-    /// The image-area rect in filmstrip-local coordinates (below title pills).
-    private(set) var imageAreaRect: NSRect = .zero
     /// Called when user requests to delete an image at the given index.
     var onDeleteImage: ((Int) -> Void)?
 
-    /// VIB-330: Minimum cell width — images won't shrink below this
-    static let minCellWidth: CGFloat = 200
+    private var cellViews: [FilmstripCellView] = []
+    private(set) var selectedIndex: Int = 0
+    /// The image-area rect in scrollableContentView coordinates (below title pills).
+    private(set) var imageAreaRect: NSRect = .zero
 
-    /// VIB-330: Scroll view used only when content exceeds available width
+    /// Scroll view wrapping cells when content overflows.
     private var scrollView: NSScrollView?
-    /// The document view that holds cells (either self or scroll view's documentView)
-    private var contentHost: NSView { scrollView?.documentView ?? self }
+
+    /// The view that contains cell subviews. Overlay views (like CanvasView)
+    /// that should scroll with the filmstrip content should be added here.
+    var scrollableContentView: NSView {
+        scrollView?.documentView ?? self
+    }
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -39,7 +44,7 @@ final class FilmstripGridView: NSView {
     func setImages(_ images: [NSImage], roles: [String], selectedIndex: Int) {
         self.selectedIndex = selectedIndex
 
-        // Remove old cells and scroll view
+        // Clean up old views
         for cell in cellViews { cell.removeFromSuperview() }
         cellViews.removeAll()
         scrollView?.removeFromSuperview()
@@ -55,32 +60,13 @@ final class FilmstripGridView: NSView {
         let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
         let imageSizes = images.map { $0.size }
 
-        // VIB-330: Check if images need minimum width enforcement.
-        // Compute what row height would give each image at least minCellWidth.
-        let minRowHeight = Self.minRowHeightForMinCellWidth(
-            imageSizes: imageSizes, minCellWidth: Self.minCellWidth
-        )
-
-        // Compute the ideal row height that fits everything in available width
-        let idealRowHeight = Self.computeFittingRowHeight(
+        // Compute row height respecting 250px min cell width
+        let rowHeight = Self.computeFittingRowHeight(
             imageSizes: imageSizes,
             availableWidth: availableWidth,
             availableHeight: availableHeight - pillTotalH,
             gap: gap
         )
-
-        // Use the ideal height if it gives wide enough cells, otherwise enforce min
-        let rowHeight: CGFloat
-        let needsScroll: Bool
-        if idealRowHeight >= minRowHeight {
-            // Images fit at a comfortable size — no scrolling needed
-            rowHeight = idealRowHeight
-            needsScroll = false
-        } else {
-            // Images would be too small — use min row height and scroll
-            rowHeight = min(minRowHeight, availableHeight - pillTotalH)
-            needsScroll = true
-        }
 
         let (frames, totalWidth) = LayoutCalculator.computeFrames(
             imageSizes: imageSizes,
@@ -89,37 +75,38 @@ final class FilmstripGridView: NSView {
             titlePillTotalHeight: pillTotalH
         )
 
+        let needsScroll = totalWidth > availableWidth + 1  // +1 for floating point tolerance
         let contentHeight = frames.first?.size.height ?? 0
-        let yOffset = max(0, bounds.height - contentHeight)
 
-        // VIB-330: If content overflows, wrap in horizontal scroll view
-        let hostView: NSView
-        if needsScroll && totalWidth > availableWidth {
+        // Create container: scroll view for overflow, self otherwise
+        let cellContainer: NSView
+        if needsScroll {
+            let yOffset = max(0, bounds.height - contentHeight)
             let sv = NSScrollView(frame: NSRect(x: 0, y: yOffset, width: availableWidth, height: contentHeight))
             sv.hasHorizontalScroller = true
             sv.hasVerticalScroller = false
-            sv.autohidesScrollers = true
-            sv.borderType = .noBorder
-            sv.drawsBackground = false
-            sv.horizontalScrollElasticity = .allowed
             sv.scrollerStyle = .overlay
-
+            sv.autohidesScrollers = true
+            sv.drawsBackground = false
+            sv.borderType = .noBorder
+            sv.horizontalScrollElasticity = .allowed
             let docView = NSView(frame: NSRect(x: 0, y: 0, width: totalWidth, height: contentHeight))
             docView.wantsLayer = true
             sv.documentView = docView
             addSubview(sv)
             self.scrollView = sv
-            hostView = docView
+            cellContainer = docView
         } else {
-            hostView = self
+            cellContainer = self
         }
 
-        // Center content horizontally when not scrolling
-        let xOffset: CGFloat = needsScroll ? 0 : max(0, (bounds.width - totalWidth) / 2)
+        // Position content: top-aligned (high Y in AppKit) and horizontally centered (if no scroll)
+        let yOffset = max(0, bounds.height - contentHeight)
+        let xOffset: CGFloat = needsScroll ? 0 : max(0, (availableWidth - totalWidth) / 2)
 
         for (i, image) in images.enumerated() {
             guard i < frames.count else { break }
-            let frame = frames[i]
+            let f = frames[i]
 
             let roleStr = i < roles.count ? roles[i] : "observed"
             let imageRole = ImageRole.from(string: roleStr)
@@ -133,10 +120,10 @@ final class FilmstripGridView: NSView {
 
             let cellY: CGFloat = needsScroll ? 0 : yOffset
             cell.frame = NSRect(
-                x: xOffset + frame.origin.x,
+                x: xOffset + f.origin.x,
                 y: cellY,
-                width: frame.size.width,
-                height: frame.size.height
+                width: f.size.width,
+                height: f.size.height
             )
             cell.onClick = { [weak self] idx in
                 self?.selectCell(idx)
@@ -150,15 +137,15 @@ final class FilmstripGridView: NSView {
             cell.onDelete = { [weak self] idx in
                 self?.onDeleteImage?(idx)
             }
-            hostView.addSubview(cell)
+            cellContainer.addSubview(cell)
             cellViews.append(cell)
         }
 
-        // Track image area (below title pills) for canvas overlay positioning
-        let imageAreaWidth = needsScroll ? totalWidth : bounds.width
+        // Track image area (below title pills) in cellContainer coordinates
+        let imageAreaWidth = needsScroll ? totalWidth : availableWidth
         imageAreaRect = NSRect(
-            x: 0,
-            y: yOffset,
+            x: needsScroll ? 0 : xOffset,
+            y: needsScroll ? 0 : yOffset,
             width: imageAreaWidth,
             height: rowHeight
         )
@@ -173,20 +160,10 @@ final class FilmstripGridView: NSView {
         onCellSelected?(index)
     }
 
-    /// Select the cell containing the given point (in filmstrip coordinates).
+    /// Select the cell containing the given point (in scrollableContentView coordinates).
     func selectCellAtPoint(_ point: CGPoint) {
         for (i, cell) in cellViews.enumerated() {
-            // Convert point to cell's parent coordinate system
-            let cellFrame = cell.frame
-            let testPoint: CGPoint
-            if let sv = scrollView {
-                // Convert filmstrip point to scroll content point
-                let scrollContentPoint = sv.contentView.convert(point, from: self)
-                testPoint = scrollContentPoint
-            } else {
-                testPoint = point
-            }
-            if cellFrame.contains(testPoint) {
+            if cell.frame.contains(point) {
                 if i != selectedIndex { selectCell(i) }
                 return
             }
@@ -195,8 +172,10 @@ final class FilmstripGridView: NSView {
 
     // MARK: - Fitting
 
-    /// Compute a row height so all images fit within availableWidth.
-    private static func computeFittingRowHeight(
+    /// Compute a row height so all images fit within availableWidth, respecting
+    /// the minimum cell width of 250px. If enforcing the minimum would make content
+    /// wider than availableWidth, that's OK — the scroll view handles overflow.
+    static func computeFittingRowHeight(
         imageSizes: [CGSize],
         availableWidth: CGFloat,
         availableHeight: CGFloat,
@@ -204,27 +183,28 @@ final class FilmstripGridView: NSView {
     ) -> CGFloat {
         guard !imageSizes.isEmpty else { return 200 }
 
+        // Sum of aspect ratios — each image width = rowHeight * ar
         let totalAR = imageSizes.reduce(CGFloat(0)) { sum, size in
             sum + (size.height > 0 ? size.width / size.height : 1)
         }
         let totalGap = CGFloat(max(0, imageSizes.count - 1)) * gap
-        let idealRowHeight = (availableWidth - totalGap) / totalAR
+        let idealRowHeight = totalAR > 0 ? (availableWidth - totalGap) / totalAR : 200
 
-        // Clamp to LayoutCalculator limits and available height
-        let upper = min(LayoutCalculator.maxRowHeight, availableHeight)
-        return min(idealRowHeight, upper)
-    }
+        // Check: would the narrowest cell be < minCellWidth at idealRowHeight?
+        let minAR = imageSizes.map { $0.height > 0 ? $0.width / $0.height : CGFloat(1) }.min() ?? 1.0
+        let minCellAtIdeal = idealRowHeight * minAR
 
-    /// VIB-330: Compute the minimum row height that ensures all cells are at least minCellWidth wide.
-    private static func minRowHeightForMinCellWidth(imageSizes: [CGSize], minCellWidth: CGFloat) -> CGFloat {
-        var maxNeeded: CGFloat = 0
-        for size in imageSizes {
-            let ar = size.height > 0 ? size.width / size.height : 1
-            // cellWidth = rowHeight * ar → rowHeight = cellWidth / ar
-            let needed = minCellWidth / ar
-            maxNeeded = max(maxNeeded, needed)
+        let targetHeight: CGFloat
+        if minCellAtIdeal >= minCellWidth {
+            targetHeight = idealRowHeight
+        } else {
+            // Bump up so the narrowest cell reaches minCellWidth (content will overflow → scroll)
+            targetHeight = minCellWidth / minAR
         }
-        return maxNeeded
+
+        // Clamp: at least minRowHeight, at most maxRowHeight / availableHeight
+        let upper = min(LayoutCalculator.maxRowHeight, availableHeight)
+        return max(LayoutCalculator.minRowHeight, min(targetHeight, upper))
     }
 }
 
@@ -295,7 +275,7 @@ private final class FilmstripCellView: NSView {
         deleteIndicator.addSubview(xLbl)
         deleteIndicator.toolTip = "Remove image"
         addSubview(deleteIndicator)
-        deleteIndicator.isHidden = true  // VIB-330: hidden by default, shown on hover
+        deleteIndicator.isHidden = true  // hidden by default, shown on hover
 
         // Image in clip view with rounded corners and border
         clipView.wantsLayer = true
@@ -332,7 +312,6 @@ private final class FilmstripCellView: NSView {
             width: deleteSize,
             height: deleteSize
         )
-        deleteIndicator.isHidden = !isSelected
 
         let imageY: CGFloat = 0
         let imageH = bounds.height - pillH - pillGap
