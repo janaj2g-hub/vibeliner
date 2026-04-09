@@ -133,6 +133,14 @@
   /* Badge */
   .badge { width: 18px; height: 18px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
 
+  /* Toggle switch (light/dark mode) */
+  .toggle-switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: var(--border); border-radius: 12px; transition: background 0.2s; }
+  .toggle-slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: var(--fg); border-radius: 50%; transition: transform 0.2s; }
+  .toggle-switch input:checked + .toggle-slider { background: var(--purple-active); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(20px); background: white; }
+
   /* Toolbar mock strip */
   .toolbar-strip { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 10px; border-radius: 20px; background: var(--toolbar-bg); border: 1px solid var(--toolbar-border); }
   .toolbar-divider { width: 1px; height: 20px; background: var(--divider); margin: 0 4px; }
@@ -144,7 +152,8 @@
 <p class="subtitle">Interactive Control Playground — Source: <code>DesignTokens.swift</code> — Hover and click to test states</p>
 
 <div class="toggle-bar">
-  <label><input type="checkbox" id="modeToggle" onchange="document.body.classList.toggle('light', this.checked)"> Light mode</label>
+  <label class="toggle-switch"><input type="checkbox" id="modeToggle" onchange="document.body.classList.toggle('light', this.checked)"><span class="toggle-slider"></span></label>
+  <label for="modeToggle" style="cursor:pointer;font-size:13px;font-weight:500">Light mode</label>
   <span style="font-size:11px;color:var(--fg2)">Toggle to see all controls in both appearances</span>
 </div>
 
@@ -164,15 +173,15 @@
     <div class="toolbar-divider"></div>
     <div class="icon-btn" title="Undo"><svg viewBox="0 0 15 15"><path d="M3 5l3-3M3 5l3 3M3 5h7a3 3 0 010 6H8"/></svg></div>
     <div class="icon-btn" title="Redo"><svg viewBox="0 0 15 15"><path d="M12 5l-3-3M12 5l-3 3M12 5H5a3 3 0 000 6h2"/></svg></div>
-    <div class="add-img-btn">+ Add image</div>
-    <div class="new-capture-btn">New capture</div>
+    <div class="secondary-pill">+ Add image</div>
+    <div class="secondary-pill">New capture</div>
     <div class="toolbar-divider"></div>
     <div class="seg-control" onclick="toggleSeg(this)"><div class="seg-item active">IDE</div><div class="seg-item">App</div></div>
     <div class="toolbar-divider"></div>
     <div class="copy-pill" onclick="simulateCopy(this)">Copy Prompt</div>
     <div class="copy-pill" onclick="simulateCopy(this)">Copy Image</div>
   </div>
-  <div style="margin-top:6px;font-size:10px;color:var(--fg2)">Tokens: toolbarBg, toolbarBorder, toolbarDivider, toolbarIconDefault/Hover, toolbarPurpleActive, toolbarPurpleButton*, toolbarToolActiveBg, toolbarCloseHoverBg, toolbarTrashHoverBg, addImageBg/Border, toolbarToggle*</div>
+  <div style="margin-top:6px;font-size:10px;color:var(--fg2)">Tokens: toolbarBg, toolbarBorder, toolbarDivider, toolbarIconDefault/Hover, toolbarPurpleActive, toolbarPurpleButton*, toolbarToolActiveBg, toolbarCloseHoverBg, toolbarTrashHoverBg, toolbarSecondary*, toolbarToggle*</div>
   <div style="font-size:9px;color:var(--fg2);font-style:italic">Where: Editor toolbar (ToolbarView.swift, ToolButton.swift)</div>
 </div>
 
@@ -250,16 +259,16 @@
     <div class="location">Editor toolbar (ModeToggleView)</div>
   </div>
   <div class="control-card">
-    <div class="label">Settings Tab Selector</div>
-    <div class="settings-seg" onclick="toggleSeg(this)"><div class="seg-item active">General</div><div class="seg-item">Prompt</div><div class="seg-item">About</div></div>
+    <div class="label">Settings Tab Selector (click to switch)</div>
+    <div class="settings-seg" onclick="toggleSeg(this)" style="min-width:240px"><div class="seg-item active" style="flex:1;text-align:center">General</div><div class="seg-item" style="flex:1;text-align:center">Prompt</div><div class="seg-item" style="flex:1;text-align:center">About</div></div>
     <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
-    <div class="location">Settings window (SettingsWindowController)</div>
+    <div class="location">Settings window (SettingsWindowController — SettingsSegmentedControl)</div>
   </div>
   <div class="control-card">
-    <div class="label">Prompt Sub-tabs</div>
-    <div class="settings-seg" onclick="toggleSeg(this)"><div class="seg-item active">Preamble</div><div class="seg-item">Tools</div><div class="seg-item">Footer</div><div class="seg-item">Multi-image</div></div>
+    <div class="label">Prompt Sub-tabs (click to switch)</div>
+    <div class="settings-seg" onclick="toggleSeg(this)" style="min-width:300px"><div class="seg-item active" style="flex:1;text-align:center">Preamble</div><div class="seg-item" style="flex:1;text-align:center">Tools</div><div class="seg-item" style="flex:1;text-align:center">Footer</div><div class="seg-item" style="flex:1;text-align:center">Multi-image</div></div>
     <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
-    <div class="location">Settings Prompt tab (PromptTabView)</div>
+    <div class="location">Settings Prompt tab (PromptTabView — SettingsSegmentedControl)</div>
   </div>
 </div>
 
@@ -267,16 +276,16 @@
 <h2>+ Add Image & New Capture</h2>
 <div class="control-row">
   <div class="control-card">
-    <div class="label">+ Add Image (hover for border change)</div>
-    <div class="add-img-btn">+ Add image</div>
-    <div class="tokens">addImageBg, addImageBorder, addImageHoverBorder, purpleLight</div>
-    <div class="location">Editor toolbar (ToolbarView)</div>
+    <div class="label">+ Add Image (secondary pill — hover for border change)</div>
+    <div class="secondary-pill">+ Add image</div>
+    <div class="tokens">toolbarSecondaryBg, toolbarSecondaryBorder, toolbarSecondaryText</div>
+    <div class="location">Editor toolbar (ToolbarView — SecondaryPillButton)</div>
   </div>
   <div class="control-card">
-    <div class="label">New Capture (hover for purple shift)</div>
-    <div class="new-capture-btn">New capture</div>
-    <div class="tokens">toolbarPurpleButtonBg/Border/Text, toolbarPurpleButtonHover*</div>
-    <div class="location">Editor toolbar (ToolbarView)</div>
+    <div class="label">New Capture (secondary pill — hover for shift)</div>
+    <div class="secondary-pill">New capture</div>
+    <div class="tokens">toolbarSecondaryHoverBg/Border/Text</div>
+    <div class="location">Editor toolbar (ToolbarView — SecondaryPillButton)</div>
   </div>
 </div>
 

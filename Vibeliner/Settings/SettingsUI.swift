@@ -300,7 +300,7 @@ final class SettingsSegmentedControl: NSView {
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
         stackView.distribution = .fillEqually
-        stackView.spacing = 2
+        stackView.spacing = 4
 
         addSubview(trackView)
         trackView.addSubview(highlightView)
