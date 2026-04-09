@@ -170,6 +170,25 @@ final class FilmstripGridView: NSView {
         }
     }
 
+    /// VIB-333: Return the image index whose cell contains the given point
+    /// (in scrollableContentView coordinates). Falls back to nearest cell in gaps.
+    func imageIndexAtPoint(_ point: CGPoint) -> Int {
+        // Direct hit
+        for (i, cell) in cellViews.enumerated() {
+            if cell.frame.contains(point) { return i }
+        }
+        // Nearest cell by horizontal distance
+        guard !cellViews.isEmpty else { return 0 }
+        var bestIdx = 0
+        var bestDist = CGFloat.greatestFiniteMagnitude
+        for (i, cell) in cellViews.enumerated() {
+            let cx = cell.frame.midX
+            let d = abs(point.x - cx)
+            if d < bestDist { bestDist = d; bestIdx = i }
+        }
+        return bestIdx
+    }
+
     // MARK: - Fitting
 
     /// Compute a row height so all images fit within availableWidth, respecting

@@ -1,6 +1,6 @@
 # Vibeliner Design System — Token Reference
 
-Last updated: 2026-04-07
+Last updated: 2026-04-08
 Source of truth: `Vibeliner/Design/DesignTokens.swift`
 
 ---
@@ -166,11 +166,11 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `roleObservedBorder` | #AFA9EC (purple) | Observed role border | PromptTabView, FilmstripGridView, TitlePillView |
-| `roleObservedBg` | rgba(83,74,183,0.50) | Observed role pill fill | TitlePillView, CompositeStitcher |
+| `roleObservedBg` | rgba(83,74,183,0.85) | Observed role pill fill | TitlePillView, CompositeStitcher |
 | `roleExpectedBorder` | #22C55E (green) | Expected role border | PromptTabView, FilmstripGridView, TitlePillView |
-| `roleExpectedBg` | rgba(22,100,52,0.45) | Expected role pill fill | TitlePillView, CompositeStitcher |
+| `roleExpectedBg` | rgba(22,100,52,0.85) | Expected role pill fill | TitlePillView, CompositeStitcher |
 | `roleReferenceBorder` | #3B82F6 (blue) | Reference role border | PromptTabView, FilmstripGridView, TitlePillView |
-| `roleReferenceBg` | rgba(30,70,140,0.45) | Reference role pill fill | TitlePillView, CompositeStitcher |
+| `roleReferenceBg` | rgba(30,70,140,0.85) | Reference role pill fill | TitlePillView, CompositeStitcher |
 
 ### Filmstrip & Title Pill
 

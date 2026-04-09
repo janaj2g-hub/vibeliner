@@ -8,6 +8,8 @@ final class CanvasView: NSView, NotePillDelegate {
     var selectTool: SelectTool?
     /// Filmstrip mode: fired on every canvas mouseDown with the local click point.
     var onBackgroundClick: ((CGPoint) -> Void)?
+    /// VIB-333: Resolve a canvas point to the image index it's over. Set by EditorPanel in filmstrip mode.
+    var imageIndexAtPoint: ((CGPoint) -> Int)?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
@@ -66,6 +68,12 @@ final class CanvasView: NSView, NotePillDelegate {
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         ghostPosition = point
+
+        // VIB-334: Safety net — if no drawing tool active but cursor is hidden, force-show
+        if activeTool?.toolType.isDrawingTool != true && CursorManager.shared.isCursorHidden {
+            CursorManager.shared.forceShow()
+        }
+
         activeTool?.mouseMoved(to: point, in: self)
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
@@ -169,6 +177,11 @@ final class CanvasView: NSView, NotePillDelegate {
 
         // Filmstrip mode: forward click for cell selection
         onBackgroundClick?(point)
+
+        // VIB-333: Set currentImageIndex based on where the click landed, not which cell is selected
+        if let resolver = imageIndexAtPoint {
+            store.currentImageIndex = resolver(point)
+        }
 
         // VIB-193: Click outside editing pill = commit text
         if isEditingNote {

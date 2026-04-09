@@ -42,15 +42,17 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         popup.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
         (popup.cell as? NSPopUpButtonCell)?.arrowPosition = .noArrow
         popup.alignment = .right
-        popup.contentTintColor = .secondaryLabelColor
+        // VIB-335: White text for readability against opaque pill background
+        popup.contentTintColor = NSColor(white: 1.0, alpha: 0.92)
         return popup
     }()
 
-    /// VIB-295/330: Single down chevron label with auto-adapting contrast.
+    /// VIB-295/330: Single down chevron label.
     private let chevronLabel: NSTextField = {
         let label = NSTextField(labelWithString: "▾")
         label.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
-        label.textColor = .secondaryLabelColor
+        // VIB-335: White chevron for readability
+        label.textColor = NSColor(white: 1.0, alpha: 0.92)
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
@@ -103,7 +105,7 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         let h = bounds.height
         let cornerRadius = h / 2
         layer?.cornerRadius = cornerRadius
-        layer?.borderWidth = 1
+        layer?.borderWidth = 2
         layer?.masksToBounds = true
 
         let roles = ConfigManager.shared.roles

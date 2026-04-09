@@ -307,6 +307,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let keyMap: [UInt16: AnnotationToolType] = [18: .select, 19: .pin, 20: .arrow, 21: .rectangle, 22: .circle, 23: .freehand]
             if let tool = keyMap[keyCode] {
                 toolbarView.selectTool(tool)
+                // VIB-334: Show cursor when switching to select tool via keyboard
+                if tool == .select {
+                    CursorManager.shared.showCursor()
+                }
                 return true
             }
         } else if flags == .command && event.charactersIgnoringModifiers == "z" {
@@ -481,6 +485,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.filmstripCellSelected(filmstrip.selectedIndex)
         }
 
+        // VIB-333: Resolve click point to image index for annotation assignment
+        canvasOverlay?.imageIndexAtPoint = { [weak self] point in
+            guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return 0 }
+            let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
+            return filmstrip.imageIndexAtPoint(contentPoint)
+        }
+
         statusPill.updateNoteCount(annotationStore.count)
     }
 
@@ -637,6 +648,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.removeFromSuperview()
         canvasOverlay?.frame = NSRect(x: 0, y: 0, width: displayWidth, height: displayHeight)
         canvasOverlay?.onBackgroundClick = nil
+        canvasOverlay?.imageIndexAtPoint = nil
         canvasView.addSubview(canvasOverlay ?? NSView())
         canvasOverlay?.updateTrackingAreas()
 

@@ -35,6 +35,13 @@ final class ArrowTool: AnnotationTool {
             badgePosition: start
         )
         annotation.parentImageIndex = store.currentImageIndex
+        // VIB-333: Set endImageIndex from arrow end point for cross-image arrows
+        if let resolver = canvas.imageIndexAtPoint {
+            let endIndex = resolver(end)
+            if endIndex != annotation.parentImageIndex {
+                annotation.endImageIndex = endIndex
+            }
+        }
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         canvas.openNoteEditor(for: added)

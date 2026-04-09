@@ -184,6 +184,15 @@ final class SelectTool: AnnotationTool {
     }
 
     func mouseUp(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
+        // VIB-333: Update parentImageIndex if annotation was dragged to a different image
+        if case .movingAnnotation(let id, _, _) = dragState,
+           let resolver = canvas.imageIndexAtPoint,
+           let annotation = store.annotation(for: id) {
+            let newIndex = resolver(annotation.badgePosition)
+            if newIndex != annotation.parentImageIndex {
+                store.updateParentImageIndex(id: id, index: newIndex)
+            }
+        }
         dragState = nil
     }
 
