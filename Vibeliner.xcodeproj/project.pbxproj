@@ -46,6 +46,20 @@
 		A10000010000000000000025 /* SetupWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000027 /* SetupWindowController.swift */; };
 		T10000010000000000000001 /* TourStepData.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000001 /* TourStepData.swift */; };
 		T10000010000000000000002 /* TourWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000002 /* TourWindowController.swift */; };
+		T10000010000000000000010 /* AnnotationMarkViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000010 /* AnnotationMarkViews.swift */; };
+		T10000010000000000000011 /* WireframeAppMock.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000011 /* WireframeAppMock.swift */; };
+		T10000010000000000000012 /* TourMiniToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000012 /* TourMiniToolbar.swift */; };
+		T10000010000000000000013 /* TourOutputCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000013 /* TourOutputCard.swift */; };
+		T10000010000000000000014 /* TourPromptSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000014 /* TourPromptSheet.swift */; };
+		T10000010000000000000015 /* TourTitlePill.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000015 /* TourTitlePill.swift */; };
+		T10000010000000000000020 /* TourIllustration0.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000020 /* TourIllustration0.swift */; };
+		T10000010000000000000021 /* TourIllustration1.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000021 /* TourIllustration1.swift */; };
+		T10000010000000000000022 /* TourIllustration2.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000022 /* TourIllustration2.swift */; };
+		T10000010000000000000023 /* TourIllustration3.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000023 /* TourIllustration3.swift */; };
+		T10000010000000000000024 /* TourIllustration4.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000024 /* TourIllustration4.swift */; };
+		T10000010000000000000025 /* TourIllustration5.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000025 /* TourIllustration5.swift */; };
+		T10000010000000000000026 /* TourIllustration6.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000026 /* TourIllustration6.swift */; };
+		T10000010000000000000027 /* TourIllustration7.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000027 /* TourIllustration7.swift */; };
 		A10000010000000000000029 /* SettingsWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002B /* SettingsWindowController.swift */; };
 		A1000001000000000000002A /* GeneralTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002C /* GeneralTabView.swift */; };
 		A1000001000000000000002B /* PromptTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000002D /* PromptTabView.swift */; };
@@ -54,7 +68,6 @@
 		A1000001000000000000002E /* PopoverViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000030 /* PopoverViewController.swift */; };
 		A1000001000000000000002F /* RecentCapturesSubmenu.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000031 /* RecentCapturesSubmenu.swift */; };
 		A10000010000000000000030 /* CaptureRowView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000032 /* CaptureRowView.swift */; };
-		A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000033 /* FirstUseTooltipView.swift */; };
 		A10000010000000000000032 /* NotePillRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000034 /* NotePillRenderer.swift */; };
 		A10000010000000000000033 /* SettingsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* SettingsUI.swift */; };
 		A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* HotkeyCapturePanel.swift */; };
@@ -115,6 +128,20 @@
 		A20000010000000000000027 /* SetupWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindowController.swift; sourceTree = "<group>"; };
 		T20000010000000000000001 /* TourStepData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourStepData.swift; sourceTree = "<group>"; };
 		T20000010000000000000002 /* TourWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourWindowController.swift; sourceTree = "<group>"; };
+		T20000010000000000000010 /* AnnotationMarkViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationMarkViews.swift; sourceTree = "<group>"; };
+		T20000010000000000000011 /* WireframeAppMock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WireframeAppMock.swift; sourceTree = "<group>"; };
+		T20000010000000000000012 /* TourMiniToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourMiniToolbar.swift; sourceTree = "<group>"; };
+		T20000010000000000000013 /* TourOutputCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourOutputCard.swift; sourceTree = "<group>"; };
+		T20000010000000000000014 /* TourPromptSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourPromptSheet.swift; sourceTree = "<group>"; };
+		T20000010000000000000015 /* TourTitlePill.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourTitlePill.swift; sourceTree = "<group>"; };
+		T20000010000000000000020 /* TourIllustration0.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration0.swift; sourceTree = "<group>"; };
+		T20000010000000000000021 /* TourIllustration1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration1.swift; sourceTree = "<group>"; };
+		T20000010000000000000022 /* TourIllustration2.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration2.swift; sourceTree = "<group>"; };
+		T20000010000000000000023 /* TourIllustration3.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration3.swift; sourceTree = "<group>"; };
+		T20000010000000000000024 /* TourIllustration4.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration4.swift; sourceTree = "<group>"; };
+		T20000010000000000000025 /* TourIllustration5.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration5.swift; sourceTree = "<group>"; };
+		T20000010000000000000026 /* TourIllustration6.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration6.swift; sourceTree = "<group>"; };
+		T20000010000000000000027 /* TourIllustration7.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourIllustration7.swift; sourceTree = "<group>"; };
 		A2000001000000000000002B /* SettingsWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindowController.swift; sourceTree = "<group>"; };
 		A2000001000000000000002C /* GeneralTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GeneralTabView.swift; sourceTree = "<group>"; };
 		A2000001000000000000002D /* PromptTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTabView.swift; sourceTree = "<group>"; };
@@ -123,7 +150,6 @@
 		A20000010000000000000030 /* PopoverViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverViewController.swift; sourceTree = "<group>"; };
 		A20000010000000000000031 /* RecentCapturesSubmenu.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentCapturesSubmenu.swift; sourceTree = "<group>"; };
 		A20000010000000000000032 /* CaptureRowView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureRowView.swift; sourceTree = "<group>"; };
-		A20000010000000000000033 /* FirstUseTooltipView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirstUseTooltipView.swift; sourceTree = "<group>"; };
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
 		A20000010000000000000035 /* SettingsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUI.swift; sourceTree = "<group>"; };
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
@@ -318,7 +344,6 @@
 				A20000010000000000000011 /* ToolbarView.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
 				A20000010000000000000017 /* CanvasView.swift */,
-				A20000010000000000000033 /* FirstUseTooltipView.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -336,8 +361,30 @@
 			children = (
 				T20000010000000000000001 /* TourStepData.swift */,
 				T20000010000000000000002 /* TourWindowController.swift */,
+				T40000010000000000000002 /* Illustrations */,
 			);
 			path = Tour;
+			sourceTree = "<group>";
+		};
+		T40000010000000000000002 /* Illustrations */ = {
+			isa = PBXGroup;
+			children = (
+				T20000010000000000000010 /* AnnotationMarkViews.swift */,
+				T20000010000000000000011 /* WireframeAppMock.swift */,
+				T20000010000000000000012 /* TourMiniToolbar.swift */,
+				T20000010000000000000013 /* TourOutputCard.swift */,
+				T20000010000000000000014 /* TourPromptSheet.swift */,
+				T20000010000000000000015 /* TourTitlePill.swift */,
+				T20000010000000000000020 /* TourIllustration0.swift */,
+				T20000010000000000000021 /* TourIllustration1.swift */,
+				T20000010000000000000022 /* TourIllustration2.swift */,
+				T20000010000000000000023 /* TourIllustration3.swift */,
+				T20000010000000000000024 /* TourIllustration4.swift */,
+				T20000010000000000000025 /* TourIllustration5.swift */,
+				T20000010000000000000026 /* TourIllustration6.swift */,
+				T20000010000000000000027 /* TourIllustration7.swift */,
+			);
+			path = Illustrations;
 			sourceTree = "<group>";
 		};
 		A4000001000000000000000E /* Settings */ = {
@@ -504,7 +551,6 @@
 				A1000001000000000000002E /* PopoverViewController.swift in Sources */,
 				A1000001000000000000002F /* RecentCapturesSubmenu.swift in Sources */,
 				A10000010000000000000030 /* CaptureRowView.swift in Sources */,
-				A10000010000000000000031 /* FirstUseTooltipView.swift in Sources */,
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
@@ -520,6 +566,20 @@
 				R20000010000000000000009 /* TitlePillView.swift in Sources */,
 				T10000010000000000000001 /* TourStepData.swift in Sources */,
 				T10000010000000000000002 /* TourWindowController.swift in Sources */,
+				T10000010000000000000010 /* AnnotationMarkViews.swift in Sources */,
+				T10000010000000000000011 /* WireframeAppMock.swift in Sources */,
+				T10000010000000000000012 /* TourMiniToolbar.swift in Sources */,
+				T10000010000000000000013 /* TourOutputCard.swift in Sources */,
+				T10000010000000000000014 /* TourPromptSheet.swift in Sources */,
+				T10000010000000000000015 /* TourTitlePill.swift in Sources */,
+				T10000010000000000000020 /* TourIllustration0.swift in Sources */,
+				T10000010000000000000021 /* TourIllustration1.swift in Sources */,
+				T10000010000000000000022 /* TourIllustration2.swift in Sources */,
+				T10000010000000000000023 /* TourIllustration3.swift in Sources */,
+				T10000010000000000000024 /* TourIllustration4.swift in Sources */,
+				T10000010000000000000025 /* TourIllustration5.swift in Sources */,
+				T10000010000000000000026 /* TourIllustration6.swift in Sources */,
+				T10000010000000000000027 /* TourIllustration7.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

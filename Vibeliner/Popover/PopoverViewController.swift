@@ -328,7 +328,6 @@ final class PopoverContentView: NSView {
     private func reRunSetup() {
         popoverWindow?.closePopover()
         ConfigManager.shared.setupComplete = false
-        ConfigManager.shared.tooltipDismissed = false
         ConfigManager.shared.save()
         if let delegate = NSApp.delegate as? AppDelegate {
             delegate.showSetupWindow()
