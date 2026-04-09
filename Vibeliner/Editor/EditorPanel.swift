@@ -471,9 +471,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasView.isHidden = true
         layoutFilmstripMode(newFilmstrip: true)
 
-        // Wire canvas click-through for cell selection
+        // Wire canvas click-through for cell selection (VIB-271: only with select tool)
         canvasOverlay?.onBackgroundClick = { [weak self] point in
             guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return }
+            // Only switch filmstrip selection when the select tool is active
+            guard self.toolbarView.selectedTool == .select else { return }
             let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
             filmstrip.selectCellAtPoint(contentPoint)
             self.filmstripCellSelected(filmstrip.selectedIndex)
@@ -547,7 +549,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             }
             filmstrip.onRoleChanged = { [weak self] index, newRole in
                 guard let self, index < self.imageRoles.count else { return }
-                self.imageRoles[index] = newRole.rawValue
+                self.imageRoles[index] = newRole.name.lowercased()
             }
             filmstrip.onTitleChanged = { [weak self] index, newTitle in
                 guard let self, index < self.imageTitles.count else { return }
@@ -590,6 +592,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private func removeImageAtIndex(_ index: Int) {
         guard index < images.count, images.count > 1 else { return }
 
+        // VIB-271: Clean up annotations belonging to the deleted image
+        annotationStore.removeAnnotations(forImageIndex: index)
+        annotationStore.shiftImageIndices(above: index)
+
         images.remove(at: index)
         imageRoles.remove(at: index)
         if index < imageTitles.count { imageTitles.remove(at: index) }
@@ -600,6 +606,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             refreshFilmstrip()
         }
 
+        canvasOverlay?.marksLayer.needsDisplay = true
+        canvasOverlay?.refreshNotePills()
         autoSaveManager?.allImages = images.count > 1 ? images : nil
         toolbarView.updateAddImageState(imageCount: images.count)
     }

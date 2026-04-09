@@ -93,6 +93,27 @@ final class AnnotationStore {
         notifyChange()
     }
 
+    /// VIB-271: Remove all annotations belonging to a deleted image.
+    func removeAnnotations(forImageIndex imageIndex: Int) {
+        annotations.removeAll { $0.parentImageIndex == imageIndex }
+        // Also remove cross-image arrows that reference the deleted image
+        annotations.removeAll { $0.endImageIndex == imageIndex }
+        renumber()
+        notifyChange()
+    }
+
+    /// VIB-271: Shift parentImageIndex down by 1 for annotations on images after the deleted one.
+    func shiftImageIndices(above deletedIndex: Int) {
+        for i in annotations.indices {
+            if annotations[i].parentImageIndex > deletedIndex {
+                annotations[i].parentImageIndex -= 1
+            }
+            if let endIdx = annotations[i].endImageIndex, endIdx > deletedIndex {
+                annotations[i].endImageIndex = endIdx - 1
+            }
+        }
+    }
+
     private func notifyChange() {
         NotificationCenter.default.post(name: .annotationsDidChange, object: self)
     }

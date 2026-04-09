@@ -165,20 +165,10 @@ final class CompositeStitcher {
             color: (shadow.shadowColor as? NSColor)?.cgColor ?? NSColor(red: 0, green: 0, blue: 0, alpha: 0.3).cgColor
         )
 
-        // Background — role-tinted, matching DesignTokens
-        let bgColor: NSColor
-        let borderColor: NSColor
-        switch role {
-        case .observed:
-            bgColor = DesignTokens.roleObservedBg
-            borderColor = DesignTokens.roleObservedBorder
-        case .expected:
-            bgColor = DesignTokens.roleExpectedBg
-            borderColor = DesignTokens.roleExpectedBorder
-        case .reference:
-            bgColor = DesignTokens.roleReferenceBg
-            borderColor = DesignTokens.roleReferenceBorder
-        }
+        // Background — role-tinted, matching DesignTokens (VIB-322: dynamic colors)
+        let hex = role.colorHex
+        let bgColor = DesignTokens.roleBgColor(forHex: hex)
+        let borderColor = DesignTokens.roleColor(forHex: hex)
 
         let pillPath = NSBezierPath(roundedRect: pillRect, xRadius: cornerRadius, yRadius: cornerRadius)
         bgColor.setFill()

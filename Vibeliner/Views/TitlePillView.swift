@@ -2,7 +2,8 @@ import AppKit
 
 /// Pill-shaped header for a filmstrip image cell: editable title + role dropdown.
 /// Background and border colors change based on the selected `ImageRole`.
-/// VIB-295: Role-tinted backgrounds, single ▾ chevron, backdrop blur, tight alignment.
+/// VIB-295: Role-tinted backgrounds, single chevron, backdrop blur, tight alignment.
+/// VIB-322: Dynamic role dropdown from ConfigManager.shared.roles.
 final class TitlePillView: NSView, NSTextFieldDelegate {
 
     // MARK: - Callbacks
@@ -34,21 +35,14 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         return field
     }()
 
-    /// VIB-295: Standard popup with hidden arrows — single ▾ chevron added separately.
-    /// VIB-312/330: Minimized internal padding for tighter text-to-chevron alignment.
+    /// VIB-295/322: Popup with hidden arrows — items populated dynamically.
     private let rolePopUp: NSPopUpButton = {
         let popup = NSPopUpButton(frame: .zero, pullsDown: false)
         popup.isBordered = false
         popup.font = NSFont.systemFont(ofSize: 9, weight: .semibold)
         (popup.cell as? NSPopUpButtonCell)?.arrowPosition = .noArrow
         popup.alignment = .right
-        // VIB-330: Use secondaryLabelColor for auto-adapting contrast
         popup.contentTintColor = .secondaryLabelColor
-        popup.addItems(withTitles: [
-            ImageRole.observed.displayName,
-            ImageRole.expected.displayName,
-            ImageRole.reference.displayName,
-        ])
         return popup
     }()
 
@@ -85,13 +79,14 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         titleField.delegate = self
         addSubview(titleField)
 
-        rolePopUp.selectItem(at: roleIndex(for: role))
         rolePopUp.target = self
         rolePopUp.action = #selector(roleChanged(_:))
         addSubview(rolePopUp)
 
         addSubview(chevronLabel)
 
+        reloadRoleItems()
+        rolePopUp.selectItem(at: roleIndex(for: role))
         updateColors()
     }
 
@@ -111,29 +106,39 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         layer?.borderWidth = 1
         layer?.masksToBounds = true
 
-        // VIB-312/330: Chevron on the far right, vertically centered
-        chevronLabel.sizeToFit()
-        let chevronW = chevronLabel.frame.width
-        let chevronX = bounds.width - chevronW - 8
-        let chevronH = chevronLabel.frame.height
-        let chevronY = (h - chevronH) / 2
-        chevronLabel.frame = NSRect(x: chevronX, y: chevronY, width: chevronW, height: chevronH)
+        let roles = ConfigManager.shared.roles
 
-        // VIB-330: Role popup left of chevron with 8px gap for readability
-        rolePopUp.sizeToFit()
-        let popupW = rolePopUp.frame.width
-        let popupH = rolePopUp.frame.height
-        let popupX = chevronX - popupW - 4  // VIB-330: 8px visual gap (4px + popup trailing space)
-        let popupY = (h - popupH) / 2
-        rolePopUp.frame = NSRect(x: popupX, y: popupY, width: popupW, height: popupH)
+        if roles.count <= 1 {
+            // 0 or 1 role: no dropdown, title fills width
+            let titleX: CGFloat = 10
+            let titleW = bounds.width - titleX - 10
+            titleField.sizeToFit()
+            let titleH = titleField.frame.height
+            let titleY = (h - titleH) / 2
+            titleField.frame = NSRect(x: titleX, y: titleY, width: max(titleW, 30), height: titleH)
+        } else {
+            // 2+ roles: chevron on far right, popup left of chevron, title fills remainder
+            chevronLabel.sizeToFit()
+            let chevronW = chevronLabel.frame.width
+            let chevronX = bounds.width - chevronW - 8
+            let chevronH = chevronLabel.frame.height
+            let chevronY = (h - chevronH) / 2
+            chevronLabel.frame = NSRect(x: chevronX, y: chevronY, width: chevronW, height: chevronH)
 
-        // VIB-312: Title text left-padded 10px, vertically centered, fills up to role popup
-        let titleX: CGFloat = 10
-        let titleW = popupX - titleX - 2
-        titleField.sizeToFit()
-        let titleH = titleField.frame.height
-        let titleY = (h - titleH) / 2
-        titleField.frame = NSRect(x: titleX, y: titleY, width: max(titleW, 30), height: titleH)
+            rolePopUp.sizeToFit()
+            let popupW = rolePopUp.frame.width
+            let popupH = rolePopUp.frame.height
+            let popupX = chevronX - popupW - 4
+            let popupY = (h - popupH) / 2
+            rolePopUp.frame = NSRect(x: popupX, y: popupY, width: popupW, height: popupH)
+
+            let titleX: CGFloat = 10
+            let titleW = popupX - titleX - 2
+            titleField.sizeToFit()
+            let titleH = titleField.frame.height
+            let titleY = (h - titleH) / 2
+            titleField.frame = NSRect(x: titleX, y: titleY, width: max(titleW, 30), height: titleH)
+        }
     }
 
     override var intrinsicContentSize: NSSize {
@@ -146,19 +151,45 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
         previousTitle = title
         titleField.stringValue = title
         self.role = role
+        reloadRoleItems()
         rolePopUp.selectItem(at: roleIndex(for: role))
+    }
+
+    // MARK: - Dynamic role items
+
+    private func reloadRoleItems() {
+        rolePopUp.removeAllItems()
+        let roles = ConfigManager.shared.roles
+
+        if roles.isEmpty {
+            // No roles configured — hide role UI entirely
+            rolePopUp.isHidden = true
+            chevronLabel.isHidden = true
+        } else if roles.count == 1 {
+            // Single role — show as static text, no dropdown
+            rolePopUp.addItem(withTitle: roles[0].name)
+            rolePopUp.isEnabled = false
+            rolePopUp.isHidden = false
+            chevronLabel.isHidden = true
+        } else {
+            // 2+ roles — full dropdown
+            rolePopUp.isHidden = false
+            rolePopUp.isEnabled = true
+            chevronLabel.isHidden = false
+            for r in roles {
+                rolePopUp.addItem(withTitle: r.name)
+            }
+        }
+        needsLayout = true
     }
 
     // MARK: - Role change
 
     @objc private func roleChanged(_ sender: NSPopUpButton) {
-        let newRole: ImageRole
-        switch sender.indexOfSelectedItem {
-        case 0: newRole = .observed
-        case 1: newRole = .expected
-        case 2: newRole = .reference
-        default: newRole = .observed
-        }
+        let roles = ConfigManager.shared.roles
+        let idx = sender.indexOfSelectedItem
+        guard idx >= 0, idx < roles.count else { return }
+        let newRole = ImageRole(name: roles[idx].name)
         role = newRole
         onRoleChanged?(newRole)
     }
@@ -178,20 +209,9 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
     // MARK: - Colors
 
     private func updateColors() {
-        let bgColor: NSColor
-        let borderColor: NSColor
-
-        switch role {
-        case .observed:
-            bgColor = DesignTokens.roleObservedBg
-            borderColor = DesignTokens.roleObservedBorder
-        case .expected:
-            bgColor = DesignTokens.roleExpectedBg
-            borderColor = DesignTokens.roleExpectedBorder
-        case .reference:
-            bgColor = DesignTokens.roleReferenceBg
-            borderColor = DesignTokens.roleReferenceBorder
-        }
+        let hex = role.colorHex
+        let bgColor = DesignTokens.roleBgColor(forHex: hex)
+        let borderColor = DesignTokens.roleColor(forHex: hex)
 
         layer?.backgroundColor = bgColor.cgColor
         layer?.borderColor = borderColor.cgColor
@@ -202,10 +222,7 @@ final class TitlePillView: NSView, NSTextFieldDelegate {
     // MARK: - Helpers
 
     private func roleIndex(for role: ImageRole) -> Int {
-        switch role {
-        case .observed: return 0
-        case .expected: return 1
-        case .reference: return 2
-        }
+        let roles = ConfigManager.shared.roles
+        return roles.firstIndex(where: { $0.name.lowercased() == role.name.lowercased() }) ?? 0
     }
 }

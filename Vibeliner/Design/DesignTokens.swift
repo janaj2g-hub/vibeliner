@@ -420,6 +420,50 @@ enum DesignTokens {
     /// Role reference background — blue tint
     static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.45)
 
+    // VIB-322: Additional role preset colors
+    /// Role orange border: #F97316
+    static let roleOrangeBorder = NSColor(red: 249/255, green: 115/255, blue: 22/255, alpha: 1.0)
+    /// Role pink border: #EC4899
+    static let rolePinkBorder = NSColor(red: 236/255, green: 72/255, blue: 153/255, alpha: 1.0)
+    /// Role teal border: #14B8A6
+    static let roleTealBorder = NSColor(red: 20/255, green: 184/255, blue: 166/255, alpha: 1.0)
+    /// Role yellow border: #EAB308
+    static let roleYellowBorder = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 1.0)
+    /// Role gray border: #6B7280
+    static let roleGrayBorder = NSColor(red: 107/255, green: 114/255, blue: 128/255, alpha: 1.0)
+
+    /// All 8 preset role colors: (name, hex, NSColor)
+    static let rolePresetColors: [(name: String, hex: String, color: NSColor)] = [
+        ("Purple", "#AFA9EC", roleObservedBorder),
+        ("Green", "#22C55E", roleExpectedBorder),
+        ("Blue", "#3B82F6", roleReferenceBorder),
+        ("Orange", "#F97316", roleOrangeBorder),
+        ("Pink", "#EC4899", rolePinkBorder),
+        ("Teal", "#14B8A6", roleTealBorder),
+        ("Yellow", "#EAB308", roleYellowBorder),
+        ("Gray", "#6B7280", roleGrayBorder),
+    ]
+
+    /// Look up an NSColor for a role color hex string
+    static func roleColor(forHex hex: String) -> NSColor {
+        rolePresetColors.first { $0.hex.lowercased() == hex.lowercased() }?.color ?? roleObservedBorder
+    }
+
+    /// Look up a border NSColor for an ImageRole, using ConfigManager roles
+    static func roleBorderColor(forRoleName name: String) -> NSColor {
+        let roles = ConfigManager.shared.roles
+        guard let role = roles.first(where: { $0.name.lowercased() == name.lowercased() }) else {
+            return roleObservedBorder
+        }
+        return roleColor(forHex: role.colorHex)
+    }
+
+    /// Generate a semi-transparent background color for a role pill from its hex
+    static func roleBgColor(forHex hex: String) -> NSColor {
+        let border = roleColor(forHex: hex)
+        return (border.blended(withFraction: 0.55, of: .black) ?? border).withAlphaComponent(0.45)
+    }
+
     /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
     static let settingsFieldBorder = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {
@@ -628,82 +672,97 @@ enum DesignTokens {
     /// Settings pill text: system 11px weight 600
     static let settingsPillFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
 
-    // MARK: - Setup Window Colors
+    // MARK: - Setup Window Colors (appearance-aware)
 
+    // Green/amber status — fixed brand colors (must be visible in both modes)
     /// #22c55e — badge done border/text
     static let setupGreen = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
-
     /// rgba(34, 197, 94, 0.1) — badge done fill
     static let setupGreenBadgeBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.1)
-
     /// #16a34a — status text, green button text
     static let setupGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1.0)
-
     /// rgba(34, 197, 94, 0.08) — green button fill
     static let setupGreenBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08)
-
     /// rgba(34, 197, 94, 0.5) — green button border
     static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
-
     /// rgba(234, 179, 8, 0.08) — amber status background
     static let setupAmberBg = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 0.08)
-
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
-    /// #1e1e1e — setup window background
-    static let setupWindowBg = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1.0)
+    // Window/container backgrounds — appearance-aware
+    /// Setup window background — follows system
+    static let setupWindowBg = NSColor.windowBackgroundColor
+    /// Setup title bar background — slightly offset from window bg
+    static let setupTitleBarBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 0.165, alpha: 1) : NSColor(white: 0.96, alpha: 1)
+    }
+    /// Setup footer background — slightly different from window bg
+    static let setupFooterBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 0.133, alpha: 1) : NSColor(white: 0.94, alpha: 1)
+    }
+    /// Setup dividers and borders
+    static let setupBorder = NSColor.separatorColor
+    /// Setup field background (path box, shortcut group)
+    static let setupFieldBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.05) : NSColor(white: 0, alpha: 0.03)
+    }
+    /// Setup field border
+    static let setupFieldBorder = NSColor.separatorColor
 
-    /// #2a2a2a — setup title bar background
-    static let setupTitleBarBg = NSColor(red: 42/255, green: 42/255, blue: 42/255, alpha: 1.0)
+    // Text — appearance-aware (system colors)
+    /// Setup primary text
+    static let setupTextPrimary = NSColor.labelColor
+    /// Setup secondary text
+    static let setupTextSecondary = NSColor.secondaryLabelColor
+    /// Setup dim/helper text
+    static let setupTextDim = NSColor.tertiaryLabelColor
+    /// Setup locked badge/gray status text
+    static let setupGrayText = NSColor.tertiaryLabelColor
+    /// Setup locked badge bg
+    static let setupGrayBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.03) : NSColor(white: 0, alpha: 0.03)
+    }
 
-    /// #222222 — setup footer background
-    static let setupFooterBg = NSColor(red: 34/255, green: 34/255, blue: 34/255, alpha: 1.0)
+    // Action buttons — appearance-aware (matches settingsPill family)
+    /// Setup action button fill
+    static let setupButtonFill = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.10)
+            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
+    }
+    /// Setup action button border
+    static let setupButtonBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.55)
+            : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.26)
+    }
+    /// Setup action button/label text
+    static let setupButtonText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
+            : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
+    }
+    /// Setup arrow hover bg
+    static let setupButtonHoverBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
+            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
+    }
 
-    /// #333333 — setup dividers and borders
-    static let setupBorder = NSColor(red: 51/255, green: 51/255, blue: 51/255, alpha: 1.0)
-
-    /// rgba(255, 255, 255, 0.05) — setup field background
-    static let setupFieldBg = NSColor(white: 1.0, alpha: 0.05)
-
-    /// rgba(255, 255, 255, 0.08) — setup field border
-    static let setupFieldBorder = NSColor(white: 1.0, alpha: 0.08)
-
-    /// #e0e0e0 — setup primary text
-    static let setupTextPrimary = NSColor(red: 224/255, green: 224/255, blue: 224/255, alpha: 1.0)
-
-    /// #888888 — setup secondary text
-    static let setupTextSecondary = NSColor(red: 136/255, green: 136/255, blue: 136/255, alpha: 1.0)
-
-    /// #666666 — setup dim/helper text
-    static let setupTextDim = NSColor(red: 102/255, green: 102/255, blue: 102/255, alpha: 1.0)
-
-    /// #555555 — setup locked badge/gray status text
-    static let setupGrayText = NSColor(red: 85/255, green: 85/255, blue: 85/255, alpha: 1.0)
-
-    /// rgba(255, 255, 255, 0.03) — setup locked badge bg
-    static let setupGrayBg = NSColor(white: 1.0, alpha: 0.03)
-
-    /// rgba(175, 169, 236, 0.08) — setup action button fill
-    static let setupButtonFill = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.08)
-
-    /// rgba(175, 169, 236, 0.55) — setup action button border
-    static let setupButtonBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.55)
-
-    /// #6f69df — setup action button/label text
-    static let setupButtonText = NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
-
-    /// rgba(175, 169, 236, 0.16) — setup arrow hover bg
-    static let setupButtonHoverBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-
-    /// rgba(255, 255, 255, 0.12) — setup kbd pill border
-    static let setupKbdBorder = NSColor(white: 1.0, alpha: 0.12)
-
-    /// rgba(255, 255, 255, 0.08) — setup kbd pill bg
-    static let setupKbdBg = NSColor(white: 1.0, alpha: 0.08)
-
-    /// rgba(255, 255, 255, 0.55) — setup kbd pill text
-    static let setupKbdText = NSColor(white: 1.0, alpha: 0.55)
+    // Kbd pills — appearance-aware
+    /// Setup kbd pill border
+    static let setupKbdBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
+    }
+    /// Setup kbd pill bg
+    static let setupKbdBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
+    }
+    /// Setup kbd pill text
+    static let setupKbdText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
+    }
 
     // MARK: - Setup Window Dimensions
 

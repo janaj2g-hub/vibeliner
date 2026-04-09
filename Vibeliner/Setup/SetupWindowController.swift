@@ -1,6 +1,16 @@
 import AppKit
 import ApplicationServices
 
+/// VIB-332: Content view that notifies the controller on appearance changes
+/// so layer-backed CGColors can be re-applied with the new appearance.
+private class SetupContentView: NSView {
+    var onAppearanceChange: (() -> Void)?
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        onAppearanceChange?()
+    }
+}
+
 /// 3-panel setup: Captures Folder → Accessibility → Screen Recording (VIB-303)
 final class SetupWindowController: NSWindowController {
 
@@ -32,6 +42,9 @@ final class SetupWindowController: NSWindowController {
     private var status2: NSTextField!
     private var status3: NSTextField!
     private var permissionTimer: Timer?
+    private var divider1: NSView!
+    private var divider2: NSView!
+    private var footerBorderView: NSView!
 
     // MARK: - Init
 
@@ -47,7 +60,7 @@ final class SetupWindowController: NSWindowController {
         window.title = "Welcome to Vibeliner"
         window.center()
         window.isReleasedWhenClosed = false
-        window.appearance = NSAppearance(named: .darkAqua)
+        // VIB-332: Follow system appearance — no forced dark mode
         window.backgroundColor = DesignTokens.setupWindowBg
         self.init(window: window)
         buildUI()
@@ -66,9 +79,13 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Build UI
 
     private func buildUI() {
+        // VIB-332: Use SetupContentView to track appearance changes for layer color re-application
+        let contentView = SetupContentView(frame: window?.contentView?.frame ?? .zero)
+        contentView.wantsLayer = true
+        window?.contentView = contentView
+        contentView.onAppearanceChange = { [weak self] in self?.reapplyLayerColors() }
         guard let cv = window?.contentView else { return }
         cv.wantsLayer = true
-        cv.layer?.backgroundColor = DesignTokens.setupWindowBg.cgColor
 
         let winW = DesignTokens.setupWindowWidth
         let footerH = DesignTokens.setupFooterHeight
@@ -83,8 +100,8 @@ final class SetupWindowController: NSWindowController {
         cv.addSubview(panel1Container)
 
         // Divider 1
-        let d1 = makeDivider(x: panelW, y: panelsY, height: panelH)
-        cv.addSubview(d1)
+        divider1 = makeDivider(x: panelW, y: panelsY, height: panelH)
+        cv.addSubview(divider1)
 
         // VIB-303: Panel 2: Accessibility (locked until folder chosen)
         panel2Container = NSView(frame: NSRect(x: panelW + 1, y: panelsY, width: panelW, height: panelH))
@@ -93,8 +110,8 @@ final class SetupWindowController: NSWindowController {
         panel2Container.alphaValue = 0.35
 
         // Divider 2
-        let d2 = makeDivider(x: panelW * 2 + 1, y: panelsY, height: panelH)
-        cv.addSubview(d2)
+        divider2 = makeDivider(x: panelW * 2 + 1, y: panelsY, height: panelH)
+        cv.addSubview(divider2)
 
         // VIB-303: Panel 3: Screen recording (locked until accessibility granted)
         panel3Container = NSView(frame: NSRect(x: panelW * 2 + 2, y: panelsY, width: panelW, height: panelH))
@@ -108,9 +125,9 @@ final class SetupWindowController: NSWindowController {
         footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
         cv.addSubview(footerContent)
 
-        let footerBorder = makeDivider(x: 0, y: footerH - 1, height: 1)
-        footerBorder.frame.size.width = winW
-        cv.addSubview(footerBorder)
+        footerBorderView = makeDivider(x: 0, y: footerH - 1, height: 1)
+        footerBorderView.frame.size.width = winW
+        cv.addSubview(footerBorderView)
 
         updateFooter()
     }
@@ -604,6 +621,24 @@ final class SetupWindowController: NSWindowController {
 
     private func checkCompletion() {
         updateFooter()
+    }
+
+    /// VIB-332: Re-apply all layer-backed CGColors after an appearance change.
+    /// Dynamic NSColor resolves correctly when .cgColor is called again.
+    private func reapplyLayerColors() {
+        window?.backgroundColor = DesignTokens.setupWindowBg
+        footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
+        divider1?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        divider2?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        footerBorderView?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
+        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        // Rebuild footer (shortcut group, start button) with fresh colors
+        updateFooter()
+        // Rebuild badges with fresh colors for current state
+        replaceBadge(&badge1View, num: 1, state: step1Done ? .done : .active)
+        replaceBadge(&badge2View, num: 2, state: step2Done ? .done : (step1Done ? .active : .locked))
+        replaceBadge(&badge3View, num: 3, state: step3Done ? .done : (step2Done ? .active : .locked))
     }
 
     // MARK: - Permission polling

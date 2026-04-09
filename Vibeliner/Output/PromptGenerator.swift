@@ -46,11 +46,19 @@ final class PromptGenerator {
             lines.append("")
             lines.append("Images:")
             for img in store.images {
-                lines.append("- \(img.title) (\(img.role.displayName))")
+                let roleDesc = ConfigManager.shared.roles.first(where: { $0.name.lowercased() == img.role.name.lowercased() })?.description ?? ""
+                if roleDesc.isEmpty {
+                    lines.append("- \(img.title) (\(img.role.displayName))")
+                } else {
+                    lines.append("- \(img.title) (\(img.role.displayName)) — \(roleDesc)")
+                }
             }
             lines.append("")
-            lines.append("Use the visible frame title bars to determine which image each note belongs to.")
-            lines.append("Use the visible role pills to determine whether an image is Observed, Reference, or Expected.")
+            lines.append("Use the visible frame title bars to determine which image each annotation belongs to.")
+            let roleNames = Array(Set(store.images.map { $0.role.displayName })).sorted()
+            if !roleNames.isEmpty {
+                lines.append("Use the visible role pills to identify each image's role (\(roleNames.joined(separator: ", "))).")
+            }
             multiImageBlock = lines.joined(separator: "\n")
         }
 
