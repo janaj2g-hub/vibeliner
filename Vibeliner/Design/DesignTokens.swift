@@ -405,20 +405,20 @@ enum DesignTokens {
     /// Role observed border: #AFA9EC (purple)
     static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
 
-    /// Role observed background — purple tint
-    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.50)
+    /// Role observed background — purple tint (VIB-335: 0.85 alpha for readability)
+    static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.85)
 
     /// Role expected border: #22C55E (green)
     static let roleExpectedBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
 
-    /// Role expected background — green tint
-    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.45)
+    /// Role expected background — green tint (VIB-335: 0.85 alpha for readability)
+    static let roleExpectedBg = NSColor(red: 22/255, green: 100/255, blue: 52/255, alpha: 0.85)
 
     /// Role reference border: #3B82F6 (blue)
     static let roleReferenceBorder = NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 1.0)
 
-    /// Role reference background — blue tint
-    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.45)
+    /// Role reference background — blue tint (VIB-335: 0.85 alpha for readability)
+    static let roleReferenceBg = NSColor(red: 30/255, green: 70/255, blue: 140/255, alpha: 0.85)
 
     // VIB-322: Additional role preset colors
     /// Role orange border: #F97316
@@ -458,10 +458,10 @@ enum DesignTokens {
         return roleColor(forHex: role.colorHex)
     }
 
-    /// Generate a semi-transparent background color for a role pill from its hex
+    /// Generate a semi-transparent background color for a role pill from its hex (VIB-335: 0.85 alpha)
     static func roleBgColor(forHex hex: String) -> NSColor {
         let border = roleColor(forHex: hex)
-        return (border.blended(withFraction: 0.55, of: .black) ?? border).withAlphaComponent(0.45)
+        return (border.blended(withFraction: 0.55, of: .black) ?? border).withAlphaComponent(0.85)
     }
 
     /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)

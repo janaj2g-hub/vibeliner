@@ -396,20 +396,20 @@
   <div class="control-card">
     <div class="label">Editable title + role dropdown. Click role to change.</div>
     <div style="display:flex;gap:12px;align-items:center">
-      <div id="titlePillObserved" onclick="cyclePillRole('titlePillObserved')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(83,74,183,0.50);border:1px solid #AFA9EC;cursor:pointer;user-select:none">
+      <div id="titlePillObserved" onclick="cyclePillRole('titlePillObserved')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(83,74,183,0.85);border:2px solid #AFA9EC;cursor:pointer;user-select:none">
         <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 1</span>
-        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Observed</span>
-        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.92)">Observed</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.92)">&#9662;</span>
       </div>
-      <div id="titlePillExpected" onclick="cyclePillRole('titlePillExpected')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(22,100,52,0.45);border:1px solid #22C55E;cursor:pointer;user-select:none">
+      <div id="titlePillExpected" onclick="cyclePillRole('titlePillExpected')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(22,100,52,0.85);border:2px solid #22C55E;cursor:pointer;user-select:none">
         <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 2</span>
-        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Expected</span>
-        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.92)">Expected</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.92)">&#9662;</span>
       </div>
-      <div id="titlePillReference" onclick="cyclePillRole('titlePillReference')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(30,70,140,0.45);border:1px solid #3B82F6;cursor:pointer;user-select:none">
+      <div id="titlePillReference" onclick="cyclePillRole('titlePillReference')" style="display:inline-flex;align-items:center;gap:4px;padding:2px 10px;height:30px;border-radius:15px;background:rgba(30,70,140,0.85);border:2px solid #3B82F6;cursor:pointer;user-select:none">
         <span contenteditable="true" style="font-size:10px;font-weight:600;color:rgba(255,255,255,0.92);outline:none;min-width:40px">Image 3</span>
-        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.7)">Reference</span>
-        <span style="font-size:9px;color:rgba(255,255,255,0.6)">&#9662;</span>
+        <span style="font-size:9px;font-weight:600;color:rgba(255,255,255,0.92)">Reference</span>
+        <span style="font-size:9px;color:rgba(255,255,255,0.92)">&#9662;</span>
       </div>
     </div>
     <div class="tokens">titlePillHeight (30px), titlePillGap (6px), roleObservedBg, roleExpectedBg, roleReferenceBg</div>
@@ -462,9 +462,9 @@ function selectRole(el) {
 }
 
 const pillRoles = [
-  {name:'Observed', bg:'rgba(83,74,183,0.50)', border:'#AFA9EC'},
-  {name:'Expected', bg:'rgba(22,100,52,0.45)', border:'#22C55E'},
-  {name:'Reference', bg:'rgba(30,70,140,0.45)', border:'#3B82F6'}
+  {name:'Observed', bg:'rgba(83,74,183,0.85)', border:'#AFA9EC'},
+  {name:'Expected', bg:'rgba(22,100,52,0.85)', border:'#22C55E'},
+  {name:'Reference', bg:'rgba(30,70,140,0.85)', border:'#3B82F6'}
 ];
 const pillState = {};
 function cyclePillRole(id) {
