@@ -222,6 +222,18 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupKbdBg` | rgba(255,255,255,0.08) | Kbd pill bg | SetupWindowController |
 | `setupKbdText` | rgba(255,255,255,0.55) | Kbd pill text | SetupWindowController |
 
+### Tour Window Colors (Static Dark)
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourWindowBg` | rgba(30,30,30,0.92) | Tour window background | TourWindowController |
+| `tourBarOverlay` | rgba(255,255,255,0.015) | Header/footer overlay | TourWindowController |
+| `tourProgressActive` | #AFA9EC | Active progress bar | TourWindowController |
+| `tourProgressInactive` | rgba(255,255,255,0.06) | Inactive progress bar | TourWindowController |
+| `tourTextPrimary` | #E0E0E0 | Tour primary text | TourWindowController |
+| `tourTextSecondary` | rgba(255,255,255,0.55) | Tour secondary text | TourWindowController |
+| `tourTextDim` | rgba(255,255,255,0.35) | Tour dim text | TourWindowController |
+
 ---
 
 ## Dimension Tokens
@@ -325,6 +337,22 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupWindowRadius` | 18px | Window corner radius | — |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
 
+### Tour Window
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourWindowWidth` | 880px | Window width | TourWindowController |
+| `tourWindowHeight` | 700px | Window height | TourWindowController |
+| `tourWindowRadius` | 10px | Window corner radius | TourWindowController |
+| `tourHeaderHeight` | 44px | Header bar height | TourWindowController |
+| `tourFooterHeight` | 48px | Footer bar height | TourWindowController |
+| `tourIllustrationRatio` | 0.6 | Illustration pane width ratio | TourWindowController |
+| `tourTextMaxWidth` | 300px | Text pane max content width | TourWindowController |
+| `tourProgressBarWidth` | 16px | Progress bar segment width | TourWindowController |
+| `tourProgressBarHeight` | 3px | Progress bar segment height | TourWindowController |
+| `tourNextButtonHeight` | 34px | Next/Back button height | TourWindowController |
+| `tourNextButtonPaddingH` | 18px | Next button horizontal padding | TourWindowController |
+
 ---
 
 ## Font Tokens
@@ -361,6 +389,19 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupKbdFont` | System 12px semibold | Keyboard pills | SetupWindowController |
 | `setupShortcutHintFont` | System 12px regular | Shortcut hints | SetupWindowController |
 
+### Tour Window Fonts
+
+| Token | Spec | Usage | Consuming files |
+|-------|------|-------|-----------------|
+| `tourHeaderFont` | System 13px semibold | Header title | TourWindowController |
+| `tourStepBadgeFont` | System 11px medium | Step badge ("Step N of 9") | TourWindowController |
+| `tourTitleFont` | System 22px bold | Step title | TourWindowController |
+| `tourBodyFont` | System 14px regular | Step body text | TourWindowController |
+| `tourProgressFont` | System 11px medium | Progress label | TourWindowController |
+| `tourButtonFont` | System 13px semibold | Navigation buttons | TourWindowController |
+| `tourExitFont` | System 11px semibold | Exit tour button | TourWindowController |
+| `tourDoneTitleFont` | System 26px bold | Final step heading | TourWindowController |
+
 ---
 
 ## Appearance Strategy
@@ -377,6 +418,7 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Popover menu | Appearance-aware | System colors + `.popover` material |
 | Settings window | Appearance-aware | Dynamic tokens (`settingsFieldSurface`, `settingsPillText`, etc.) |
 | Setup window | Static dark | DesignTokens directly (`setupWindowBg`, `setupBorder`, etc.) |
+| Tour window | Static dark | DesignTokens directly (`tourWindowBg`, `tourTextPrimary`, etc.) |
 
 ### How appearance-aware tokens work
 
