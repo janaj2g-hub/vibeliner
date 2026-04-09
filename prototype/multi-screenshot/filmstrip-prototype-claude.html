@@ -1,0 +1,1163 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner — 237D/E Filmstrip Grid + Add Image Prototype</title>
+<style>
+:root {
+  /* Vibeliner core tokens */
+  --purple-light: #AFA9EC;
+  --purple-dark: #534AB7;
+  --purple-fill: rgba(175,169,236,0.16);
+  --purple-fill-strong: rgba(175,169,236,0.22);
+  --purple-button: #A796EB;
+  --purple-button-hover: #C4B8F5;
+  --purple-button-bg: rgba(116,97,194,0.25);
+  --red: #EF4444;
+  --red-fill: rgba(239,68,68,0.06);
+  --red-note-bg: rgba(239,68,68,0.05);
+  --red-note-border: rgba(239,68,68,0.10);
+
+  /* Role colors */
+  --role-observed-bg: rgba(175,169,236,0.18);
+  --role-observed-border: rgba(175,169,236,0.36);
+  --role-observed-select: rgba(175,169,236,0.14);
+  --role-expected-bg: rgba(34,197,94,0.16);
+  --role-expected-border: rgba(134,239,172,0.36);
+  --role-expected-select: rgba(134,239,172,0.14);
+  --role-reference-bg: rgba(59,130,246,0.16);
+  --role-reference-border: rgba(147,197,253,0.36);
+  --role-reference-select: rgba(147,197,253,0.14);
+
+  /* Chrome */
+  --dark-chrome: rgba(30,30,30,0.92);
+  --dark-chrome-status: rgba(30,30,30,0.88);
+  --chrome-border: rgba(255,255,255,0.08);
+  --divider: rgba(255,255,255,0.08);
+
+  /* Text */
+  --text-primary: rgba(255,255,255,0.92);
+  --text-secondary: rgba(255,255,255,0.56);
+  --text-dim: rgba(255,255,255,0.36);
+
+  /* Surfaces */
+  --surface-editor: rgba(255,255,255,0.03);
+
+  /* Fonts */
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+
+  /* Geometry */
+  --badge-diameter: 18px;
+  --note-height: 26px;
+  --note-radius: 13px;
+  --stroke-width: 2.5px;
+  --toolbar-height: 40px;
+  --toolbar-radius: 20px;
+  --status-pill-radius: 12px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: #0e0e12;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── Demo shell ── */
+.demo-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.demo-header {
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.demo-header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--purple-light);
+  margin-bottom: 4px;
+}
+
+.demo-header p {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.demo-controls {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.demo-btn {
+  appearance: none;
+  border: 1px solid var(--chrome-border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 7px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.demo-btn:hover {
+  background: var(--purple-fill);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.24);
+}
+
+.demo-btn.active {
+  background: var(--purple-fill-strong);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.32);
+}
+
+.demo-btn.danger {
+  color: rgba(239,100,100,0.7);
+}
+
+.demo-btn.danger:hover {
+  background: rgba(239,68,68,0.12);
+  border-color: rgba(239,68,68,0.24);
+  color: var(--red);
+}
+
+/* ── Editor window ── */
+.editor-window {
+  background: rgba(24,24,28,0.96);
+  border: 1px solid rgba(175,169,236,0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+/* ── Toolbar ── */
+.toolbar-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  height: var(--toolbar-height);
+  padding: 0 6px;
+  border-radius: var(--toolbar-radius);
+  background: var(--dark-chrome);
+  border: 1px solid var(--chrome-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.52);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: all 120ms ease;
+  flex-shrink: 0;
+}
+
+.tb:hover { color: rgba(255,255,255,0.8); }
+
+.tb svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.tb.icon { width: 28px; height: 28px; }
+
+.tb.close-btn {
+  width: 24px;
+  height: 24px;
+  margin-right: 4px;
+}
+
+.tb.close-btn:hover {
+  background: rgba(239,68,68,0.2);
+  color: var(--red);
+}
+
+.tb.close-btn svg { width: 10px; height: 10px; }
+
+.tb.tool {
+  width: 30px;
+  height: 30px;
+  position: relative;
+}
+
+.tb.tool.active {
+  background: var(--purple-fill-strong);
+  color: var(--purple-light);
+}
+
+.tb.tool .pin-head { fill: none; }
+.tb.tool.pin-active .pin-head {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Pin counter badge */
+.tb.tool .pin-counter {
+  position: absolute;
+  top: 1px;
+  right: 0px;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: var(--purple-light);
+  color: #1e1e1e;
+  font-size: 8px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.tb-divider {
+  width: 1px;
+  height: 16px;
+  background: var(--divider);
+  margin: 0 6px;
+  flex-shrink: 0;
+}
+
+.tb.action {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+  border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+
+.tb.action.add-img {
+  background: rgba(175,169,236,0.14);
+  border: 1.5px solid rgba(175,169,236,0.22);
+  color: var(--purple-light);
+}
+
+.tb.action.add-img:hover {
+  background: rgba(175,169,236,0.22);
+  border-color: rgba(175,169,236,0.34);
+}
+
+.tb.action.add-img.pulsing {
+  animation: addPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes addPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(175,169,236,0); }
+  50% { box-shadow: 0 0 0 6px rgba(175,169,236,0.15); }
+}
+
+.mode-slider {
+  display: inline-flex;
+  height: 28px;
+  padding: 2px;
+  border-radius: 14px;
+  background: rgba(255,255,255,0.06);
+}
+
+.mode-segment {
+  min-width: 40px;
+  height: 24px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: rgba(255,255,255,0.3);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.mode-segment.active {
+  background: rgba(175,169,236,0.25);
+  color: var(--purple-light);
+}
+
+.tb.action.copy {
+  background: var(--purple-button-bg);
+  border: 1.5px solid var(--purple-button);
+  color: var(--purple-light);
+}
+
+.tb.action.copy:hover {
+  background: rgba(116,97,194,0.35);
+  border-color: var(--purple-button-hover);
+  color: var(--purple-button-hover);
+}
+
+/* ── Editor body ── */
+.editor-body {
+  padding: 18px 24px 64px;
+  position: relative;
+  min-height: 200px;
+  transition: min-height 300ms ease;
+}
+
+/* ── Filmstrip container ── */
+.filmstrip-container {
+  border-radius: 6px;
+  background: var(--surface-editor);
+  padding: 16px;
+  position: relative;
+  transition: all 300ms ease;
+}
+
+.filmstrip-container.multi {
+  box-shadow: inset 0 0 0 1px rgba(175,169,236,0.12);
+}
+
+/* ── Grid ── */
+.filmstrip-grid {
+  display: grid;
+  gap: 14px;
+  transition: all 300ms ease;
+}
+
+.filmstrip-grid[data-cols="1"] { grid-template-columns: 1fr; }
+.filmstrip-grid[data-cols="2"] { grid-template-columns: repeat(2, minmax(0,1fr)); }
+.filmstrip-grid[data-cols="3"] { grid-template-columns: repeat(3, minmax(0,1fr)); }
+
+/* ── Film cell ── */
+.film-cell {
+  border-radius: 6px;
+  overflow: visible;
+  position: relative;
+  animation: cellAppear 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes cellAppear {
+  from { opacity: 0; transform: scale(0.92) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Title pill ── */
+.film-meta {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px 6px;
+}
+
+.title-pill {
+  height: 32px;
+  width: 100%;
+  max-width: 320px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transition: all 200ms ease;
+}
+
+.title-pill.observed {
+  background: var(--role-observed-bg);
+  border: 1px solid var(--role-observed-border);
+}
+
+.title-pill.expected {
+  background: var(--role-expected-bg);
+  border: 1px solid var(--role-expected-border);
+}
+
+.title-pill.reference {
+  background: var(--role-reference-bg);
+  border: 1px solid var(--role-reference-border);
+}
+
+.title-input {
+  flex: 1;
+  min-width: 0;
+  height: 26px;
+  padding: 0 4px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: white;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.title-input:focus { outline: none; background: rgba(255,255,255,0.06); }
+
+.role-select {
+  min-width: 76px;
+  height: 22px;
+  padding: 0 20px 0 8px;
+  border-radius: 999px;
+  border: 0;
+  appearance: none;
+  -webkit-appearance: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='rgba(255,255,255,0.7)' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") calc(100% - 7px) 50% / 8px 5px no-repeat,
+    rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.88);
+  font: inherit;
+  font-size: 9px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.role-select:focus { outline: none; }
+.role-select option { background: #232327; color: white; }
+
+/* ── Mock screenshot ── */
+.mock-screen {
+  border-radius: 4px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f5f7fb 0%, #edf1f6 100%);
+  position: relative;
+  aspect-ratio: 16 / 10;
+}
+
+.mock-screen .screen-bar {
+  height: 28px;
+  padding: 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.7);
+}
+
+.mock-screen .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+}
+
+.mock-screen .dot.r { background: #ff5f57; }
+.mock-screen .dot.y { background: #febc2e; }
+.mock-screen .dot.g { background: #28c840; }
+
+.mock-screen .screen-body {
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.mock-screen .block {
+  border-radius: 3px;
+  background: rgba(15,23,42,0.06);
+}
+
+.mock-screen .block.accent {
+  background: rgba(83,74,183,0.1);
+}
+
+.mock-screen .block.warn {
+  background: rgba(239,68,68,0.08);
+  box-shadow: inset 0 0 0 1px rgba(239,68,68,0.1);
+}
+
+/* ── Annotations (on mock screens) ── */
+.annotation {
+  position: absolute;
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.badge {
+  width: var(--badge-diameter);
+  height: var(--badge-diameter);
+  border-radius: 999px;
+  background: var(--red);
+  color: white;
+  display: grid;
+  place-items: center;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+}
+
+.note-pill {
+  height: var(--note-height);
+  padding: 0 10px;
+  border-radius: var(--note-radius);
+  background: rgba(255,248,248,0.9);
+  border: 1px solid rgba(239,68,68,0.14);
+  color: #7f1d1d;
+  font-size: 11px;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(44,11,11,0.06);
+}
+
+.note-pill .prefix {
+  color: rgba(153,27,27,0.4);
+  font-weight: 700;
+  font-size: 9px;
+}
+
+/* ── Status pill ── */
+.status-pill {
+  position: absolute;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: var(--status-pill-radius);
+  background: var(--dark-chrome-status);
+  border: 1px solid var(--chrome-border);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  z-index: 5;
+  transition: all 200ms ease;
+}
+
+/* ── Capture overlay ── */
+.capture-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  cursor: crosshair;
+}
+
+.capture-overlay.active { display: block; }
+
+.capture-crosshair {
+  position: fixed;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+.capture-crosshair::before,
+.capture-crosshair::after {
+  content: "";
+  position: absolute;
+  background: rgba(175,169,236,0.85);
+  border-radius: 999px;
+}
+
+.capture-crosshair::before {
+  width: 2.3px;
+  height: 20px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.capture-crosshair::after {
+  width: 20px;
+  height: 2.3px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.capture-selection {
+  position: fixed;
+  border: 1.5px solid rgba(175,169,236,0.9);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  pointer-events: none;
+  z-index: 1001;
+  display: none;
+}
+
+.capture-dim-pill {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 10px);
+  transform: translateX(-50%);
+  padding: 6px 10px;
+  border-radius: 5px;
+  background: var(--purple-dark);
+  color: white;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.capture-helper {
+  position: fixed;
+  left: 28px;
+  bottom: 28px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: rgba(28,28,32,0.92);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.82);
+  font-size: 12px;
+  z-index: 1002;
+}
+
+.capture-helper strong { color: var(--purple-light); }
+
+/* mini editor preview during capture */
+.capture-mini-preview {
+  position: fixed;
+  right: 28px;
+  bottom: 28px;
+  width: 220px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(31,31,34,0.94);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+  z-index: 1002;
+  display: none;
+}
+
+.capture-mini-preview .mini-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.capture-mini-preview .mini-grid {
+  display: grid;
+  gap: 4px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.capture-mini-preview .mini-thumb {
+  height: 28px;
+  border-radius: 3px;
+  background: rgba(255,255,255,0.05);
+}
+
+.capture-mini-preview .mini-thumb.new {
+  border: 1px dashed rgba(175,169,236,0.4);
+  background: rgba(175,169,236,0.06);
+}
+
+/* ── Empty state (no images) ── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  color: var(--text-dim);
+  gap: 12px;
+}
+
+.empty-state .empty-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--purple-fill);
+  display: grid;
+  place-items: center;
+  color: var(--purple-light);
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.empty-state p { font-size: 13px; }
+.empty-state .hint { font-size: 11px; color: var(--text-dim); }
+
+/* ── Transition for single → multi ── */
+.film-cell.entering-multi .title-pill {
+  animation: pillReveal 300ms ease both;
+}
+
+@keyframes pillReveal {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Layout info overlay ── */
+.layout-info {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.6);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: 9px;
+  font-weight: 600;
+  z-index: 4;
+  pointer-events: none;
+}
+</style>
+</head>
+<body>
+
+<!-- ─── Demo controls ─── -->
+<div class="demo-shell">
+  <div class="demo-header">
+    <h1>237D · Filmstrip Grid Layout + 237E · Add Image Flow</h1>
+    <p>Click "+ Add image" in the toolbar to trigger the capture overlay. Click & drag to simulate a capture.</p>
+  </div>
+
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="resetTo(1)">1 image</button>
+    <button class="demo-btn" onclick="resetTo(2)">2 images</button>
+    <button class="demo-btn" onclick="resetTo(3)">3 images</button>
+    <button class="demo-btn" onclick="resetTo(4)">4 images</button>
+    <button class="demo-btn" onclick="resetTo(6)">6 images</button>
+    <button class="demo-btn" onclick="resetTo(9)">9 images</button>
+    <button class="demo-btn" onclick="resetTo(12)">12 images</button>
+    <button class="demo-btn danger" onclick="resetTo(0)">Clear all</button>
+  </div>
+
+  <!-- ─── Editor window ─── -->
+  <div class="editor-window" id="editorWindow">
+
+    <!-- Toolbar -->
+    <div class="toolbar-wrap">
+      <div class="toolbar">
+        <button class="tb close-btn" title="Close">
+          <svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+
+        <button class="tb tool" title="Select">
+          <svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"/></svg>
+        </button>
+        <button class="tb tool active pin-active" title="Pin">
+          <svg viewBox="0 0 15 15"><circle class="pin-head" cx="7.5" cy="5" r="4.5"/><line x1="7.5" y1="9.5" x2="7.5" y2="14"/></svg>
+          <span class="pin-counter" id="pinCounter">0</span>
+        </button>
+        <button class="tb tool" title="Arrow">
+          <svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"/><polyline points="8,2 13,2 13,7"/></svg>
+        </button>
+        <button class="tb tool" title="Rectangle">
+          <svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"/></svg>
+        </button>
+        <button class="tb tool" title="Circle">
+          <svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"/></svg>
+        </button>
+        <button class="tb tool" title="Freehand">
+          <svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"/></svg>
+        </button>
+
+        <button class="tb icon" title="Delete">
+          <svg viewBox="0 0 16 16"><path d="M2 4h12"/><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"/><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+        <button class="tb icon" title="Undo">
+          <svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"/><polyline points="6,5 3,8 6,11"/></svg>
+        </button>
+        <button class="tb icon" title="Redo">
+          <svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"/><polyline points="10,5 13,8 10,11"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+
+        <button class="tb action add-img" id="addImageBtn" title="Add another screenshot to this composite" onclick="startCapture()">+ Add image</button>
+
+        <div class="tb-divider"></div>
+
+        <div class="mode-slider">
+          <button class="mode-segment">IDE</button>
+          <button class="mode-segment active">App</button>
+        </div>
+
+        <button class="tb action copy">Copy prompt</button>
+        <button class="tb action copy">Copy image</button>
+      </div>
+    </div>
+
+    <!-- Editor body -->
+    <div class="editor-body" id="editorBody">
+      <div class="filmstrip-container" id="filmstripContainer">
+        <div class="filmstrip-grid" id="filmstripGrid" data-cols="1">
+          <!-- cells injected by JS -->
+        </div>
+        <div class="layout-info" id="layoutInfo"></div>
+      </div>
+
+      <div class="status-pill" id="statusPill">1240 × 782 · 1 note</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── Capture overlay (237E) ─── -->
+<div class="capture-overlay" id="captureOverlay">
+  <div class="capture-crosshair" id="captureCrosshair"></div>
+  <div class="capture-selection" id="captureSelection">
+    <div class="capture-dim-pill" id="captureDimPill">w 0  h 0</div>
+  </div>
+  <div class="capture-helper">Press <strong>Esc</strong> to cancel · Click & drag to select a region</div>
+  <div class="capture-mini-preview" id="captureMiniPreview">
+    <div class="mini-label">Composite preview</div>
+    <div class="mini-grid" id="miniGrid"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const images = [];
+let annotationCount = 0;
+
+const roles = ["observed", "expected", "reference"];
+const roleLabels = { observed: "Observed", expected: "Expected", reference: "Reference" };
+
+const mockVariants = [
+  // Dashboard with metrics + table
+  (idx) => `
+    <div class="screen-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="screen-body">
+      <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:6px;">
+        <div class="block ${idx%3===0?'warn':''}" style="height:52px;"></div>
+        <div class="block" style="height:52px;"></div>
+        <div class="block accent" style="height:52px;"></div>
+      </div>
+      <div class="block" style="height:24px;"></div>
+      <div class="block" style="height:18px; width:70%;"></div>
+      <div class="block" style="height:18px; width:50%;"></div>
+    </div>`,
+  // Form layout
+  (idx) => `
+    <div class="screen-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="screen-body">
+      <div class="block" style="height:14px; width:40%;"></div>
+      <div class="block" style="height:32px; border-radius:4px;"></div>
+      <div class="block" style="height:14px; width:55%;"></div>
+      <div class="block" style="height:32px; border-radius:4px;"></div>
+      <div class="block accent" style="height:36px; border-radius:4px;"></div>
+    </div>`,
+  // Card grid
+  (idx) => `
+    <div class="screen-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="screen-body">
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div class="block" style="height:64px;"></div>
+        <div class="block ${idx%2===0?'warn':''}" style="height:64px;"></div>
+        <div class="block accent" style="height:64px;"></div>
+        <div class="block" style="height:64px;"></div>
+      </div>
+    </div>`,
+  // List view
+  (idx) => `
+    <div class="screen-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="screen-body">
+      <div class="block" style="height:12px; width:30%;"></div>
+      ${[1,2,3,4].map(i => `<div class="block${i===2&&idx%2===0?' warn':''}" style="height:22px;"></div>`).join("")}
+    </div>`,
+];
+
+const sampleNotes = [
+  "padding too tight here",
+  "wrong border radius",
+  "font weight should be 600",
+  "this card needs more height",
+  "alignment is off by 4px",
+  "color doesn't match spec",
+  "spacing inconsistent",
+  "button should be full width",
+  "shadow too aggressive",
+  "missing hover state",
+  "text truncates too early",
+  "icon misaligned",
+];
+
+// ── Grid layout rules ──
+function getGridCols(count) {
+  if (count <= 1) return 1;
+  if (count === 2) return 2;
+  return 3;
+}
+
+function getGridLabel(count) {
+  if (count <= 1) return "1×1";
+  if (count === 2) return "1×2";
+  if (count === 3) return "1×3";
+  const rows = Math.ceil(count / 3);
+  return `${rows}×3`;
+}
+
+// ── Render ──
+function render() {
+  const grid = document.getElementById("filmstripGrid");
+  const container = document.getElementById("filmstripContainer");
+  const statusPill = document.getElementById("statusPill");
+  const layoutInfo = document.getElementById("layoutInfo");
+  const pinCounter = document.getElementById("pinCounter");
+  const isMulti = images.length >= 2;
+
+  grid.innerHTML = "";
+  grid.dataset.cols = getGridCols(images.length);
+  container.classList.toggle("multi", isMulti);
+
+  if (images.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">+</div>
+        <p>No images yet</p>
+        <span class="hint">Click "+ Add image" in the toolbar to capture a screenshot</span>
+      </div>`;
+    statusPill.textContent = "No images";
+    layoutInfo.textContent = "";
+    pinCounter.textContent = "0";
+    highlightDemoBtn(0);
+    return;
+  }
+
+  images.forEach((img, i) => {
+    const cell = document.createElement("div");
+    cell.className = "film-cell";
+    cell.style.animationDelay = `${i * 60}ms`;
+
+    // Title pill (only for multi-image)
+    let metaHTML = "";
+    if (isMulti) {
+      cell.classList.add("entering-multi");
+      metaHTML = `
+        <div class="film-meta">
+          <div class="title-pill ${img.role}">
+            <input class="title-input" value="${img.title}" oninput="updateTitle(${i}, this.value)">
+            <select class="role-select" onchange="updateRole(${i}, this.value)">
+              ${roles.map(r => `<option value="${r}" ${r===img.role?"selected":""}>${roleLabels[r]}</option>`).join("")}
+            </select>
+          </div>
+        </div>`;
+    }
+
+    // Mock screenshot
+    const variant = mockVariants[i % mockVariants.length];
+    let annotationHTML = "";
+    if (img.annotations.length > 0) {
+      img.annotations.forEach(a => {
+        const prefix = isMulti ? `${img.title}: ` : "";
+        annotationHTML += `
+          <div class="annotation" style="left:${a.x}%;top:${a.y}%;">
+            <div class="badge">${a.num}</div>
+            <div class="note-pill"><span class="prefix">${a.num}</span>${prefix}${a.text}</div>
+          </div>`;
+      });
+    }
+
+    cell.innerHTML = `
+      ${metaHTML}
+      <div class="mock-screen">
+        ${variant(i)}
+        ${annotationHTML}
+      </div>`;
+
+    grid.appendChild(cell);
+  });
+
+  // Status pill
+  const totalNotes = images.reduce((sum, img) => sum + img.annotations.length, 0);
+  if (isMulti) {
+    statusPill.textContent = `composite · ${images.length} images · ${totalNotes} note${totalNotes !== 1 ? "s" : ""}`;
+  } else {
+    statusPill.textContent = `1240 × 782 · ${totalNotes} note${totalNotes !== 1 ? "s" : ""}`;
+  }
+
+  layoutInfo.textContent = images.length > 1 ? getGridLabel(images.length) : "";
+  pinCounter.textContent = String(annotationCount);
+  highlightDemoBtn(images.length);
+}
+
+function updateTitle(index, value) {
+  if (images[index]) images[index].title = value;
+}
+
+function updateRole(index, value) {
+  if (images[index]) {
+    images[index].role = value;
+    render();
+  }
+}
+
+function addImage(role) {
+  const idx = images.length;
+  const r = role || (idx === 0 ? "observed" : roles[idx % roles.length]);
+  const noteCount = Math.random() > 0.5 ? 1 : 0;
+  const annotations = [];
+  for (let n = 0; n < noteCount; n++) {
+    annotationCount++;
+    annotations.push({
+      num: annotationCount,
+      text: sampleNotes[(annotationCount - 1) % sampleNotes.length],
+      x: 15 + Math.random() * 50,
+      y: 35 + Math.random() * 35,
+    });
+  }
+
+  images.push({
+    title: `Image ${idx + 1}`,
+    role: r,
+    annotations,
+  });
+}
+
+function resetTo(count) {
+  images.length = 0;
+  annotationCount = 0;
+  for (let i = 0; i < count; i++) {
+    addImage(i === 0 ? "observed" : undefined);
+  }
+  render();
+}
+
+function highlightDemoBtn(count) {
+  document.querySelectorAll(".demo-btn").forEach(btn => {
+    const label = btn.textContent.trim();
+    const num = parseInt(label);
+    if (label === "Clear all") {
+      btn.classList.toggle("active", count === 0);
+    } else {
+      btn.classList.toggle("active", num === count);
+    }
+  });
+}
+
+// ── 237E: Capture overlay flow ──
+let captureActive = false;
+let dragStart = null;
+let isDragging = false;
+
+function startCapture() {
+  if (images.length >= 12) return;
+  captureActive = true;
+  const overlay = document.getElementById("captureOverlay");
+  const miniPreview = document.getElementById("captureMiniPreview");
+  overlay.classList.add("active");
+
+  // Show mini preview if we already have images
+  if (images.length > 0) {
+    miniPreview.style.display = "block";
+    const miniGrid = document.getElementById("miniGrid");
+    miniGrid.style.gridTemplateColumns = images.length >= 3 ? "1fr 1fr 1fr" : `repeat(${images.length + 1}, 1fr)`;
+    miniGrid.innerHTML = images.map(() => '<div class="mini-thumb"></div>').join("") + '<div class="mini-thumb new"></div>';
+  }
+}
+
+function endCapture(success) {
+  captureActive = false;
+  dragStart = null;
+  isDragging = false;
+  const overlay = document.getElementById("captureOverlay");
+  const selection = document.getElementById("captureSelection");
+  const miniPreview = document.getElementById("captureMiniPreview");
+  overlay.classList.remove("active");
+  selection.style.display = "none";
+  miniPreview.style.display = "none";
+
+  if (success) {
+    addImage();
+    render();
+    // Pulse the add button briefly
+    const btn = document.getElementById("addImageBtn");
+    btn.classList.remove("pulsing");
+    void btn.offsetWidth;
+    if (images.length < 12) btn.classList.add("pulsing");
+    setTimeout(() => btn.classList.remove("pulsing"), 3600);
+  }
+}
+
+document.getElementById("captureOverlay").addEventListener("mousedown", (e) => {
+  if (!captureActive) return;
+  dragStart = { x: e.clientX, y: e.clientY };
+  isDragging = true;
+  const sel = document.getElementById("captureSelection");
+  sel.style.display = "block";
+  sel.style.left = e.clientX + "px";
+  sel.style.top = e.clientY + "px";
+  sel.style.width = "0";
+  sel.style.height = "0";
+});
+
+document.addEventListener("mousemove", (e) => {
+  if (captureActive) {
+    const ch = document.getElementById("captureCrosshair");
+    ch.style.left = e.clientX + "px";
+    ch.style.top = e.clientY + "px";
+  }
+
+  if (!isDragging || !dragStart) return;
+  const x = Math.min(dragStart.x, e.clientX);
+  const y = Math.min(dragStart.y, e.clientY);
+  const w = Math.abs(e.clientX - dragStart.x);
+  const h = Math.abs(e.clientY - dragStart.y);
+  const sel = document.getElementById("captureSelection");
+  sel.style.left = x + "px";
+  sel.style.top = y + "px";
+  sel.style.width = w + "px";
+  sel.style.height = h + "px";
+  document.getElementById("captureDimPill").textContent = `w ${w}  h ${h}`;
+});
+
+document.addEventListener("mouseup", () => {
+  if (!isDragging) return;
+  isDragging = false;
+  const sel = document.getElementById("captureSelection");
+  const w = parseInt(sel.style.width);
+  const h = parseInt(sel.style.height);
+  if (w > 20 && h > 20) {
+    endCapture(true);
+  } else {
+    endCapture(false);
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && captureActive) {
+    endCapture(false);
+  }
+});
+
+// ── Init with 1 image ──
+resetTo(1);
+</script>
+</body>
+</html>

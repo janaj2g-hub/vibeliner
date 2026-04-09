@@ -1,5 +1,18 @@
 import Foundation
 
+/// VIB-322: Dynamic role configuration
+struct RoleConfig {
+    var name: String
+    var description: String
+    var colorHex: String
+
+    static let defaultRoles: [RoleConfig] = [
+        RoleConfig(name: "Observed", description: "shows the current state of the app", colorHex: "#AFA9EC"),
+        RoleConfig(name: "Expected", description: "shows the desired or correct state", colorHex: "#22C55E"),
+        RoleConfig(name: "Reference", description: "provides supplementary context or a design spec", colorHex: "#3B82F6"),
+    ]
+}
+
 final class ConfigManager {
     static let shared = ConfigManager()
 
@@ -22,11 +35,16 @@ final class ConfigManager {
         "circle": "calls out a specific element",
         "freehand": "marks an irregular area"
     ]
-    var roleDescriptions: [String: String] = [
-        "observed": "shows the current state of the app",
-        "expected": "shows the desired or correct state",
-        "reference": "provides supplementary context or a design spec"
-    ]
+    var roles: [RoleConfig] = RoleConfig.defaultRoles
+
+    /// Backward-compatible accessor for prompt preview and legacy code
+    var roleDescriptions: [String: String] {
+        var dict: [String: String] = [:]
+        for role in roles {
+            dict[role.name.lowercased()] = role.description
+        }
+        return dict
+    }
 
     var expandedCapturesFolder: String {
         return (capturesFolder as NSString).expandingTildeInPath
@@ -89,11 +107,7 @@ final class ConfigManager {
                 "circle": "calls out a specific element",
                 "freehand": "marks an irregular area"
             ]
-            roleDescriptions = [
-                "observed": "shows the current state of the app",
-                "expected": "shows the desired or correct state",
-                "reference": "provides supplementary context or a design spec"
-            ]
+            roles = RoleConfig.defaultRoles
             saveInternal()
         }
     }
@@ -145,6 +159,10 @@ final class ConfigManager {
 
     private func parseToml(_ contents: String) {
         var currentSection = ""
+        var parsedRoles: [RoleConfig] = []
+        var hasRolesSection = false
+        var legacyRoleDescriptions: [String: String] = [:]
+        var hasLegacyRoles = false
 
         for line in contents.components(separatedBy: "\n") {
             let trimmed = line.trimmingCharacters(in: .whitespaces)
@@ -155,6 +173,7 @@ final class ConfigManager {
 
             if trimmed.hasPrefix("[") && trimmed.hasSuffix("]") {
                 currentSection = String(trimmed.dropFirst().dropLast())
+                if currentSection == "roles" { hasRolesSection = true }
                 continue
             }
 
@@ -167,8 +186,19 @@ final class ConfigManager {
                 toolDescriptions[key] = unquoteString(rawValue)
                 continue
             }
+            // VIB-322: New roles array format — pipe-separated "name|description|colorHex"
+            if currentSection == "roles" {
+                let value = unquoteString(rawValue)
+                let parts = value.components(separatedBy: "|")
+                if parts.count >= 3 {
+                    parsedRoles.append(RoleConfig(name: parts[0], description: parts[1], colorHex: parts[2]))
+                }
+                continue
+            }
+            // Legacy format migration
             if currentSection == "role_descriptions" {
-                roleDescriptions[key] = unquoteString(rawValue)
+                hasLegacyRoles = true
+                legacyRoleDescriptions[key] = unquoteString(rawValue)
                 continue
             }
 
@@ -195,6 +225,23 @@ final class ConfigManager {
                 break
             }
         }
+
+        // VIB-322: Apply parsed roles
+        if hasRolesSection {
+            roles = parsedRoles
+        } else if hasLegacyRoles {
+            // Migrate from old [role_descriptions] format
+            let defaultColorMap: [String: String] = [
+                "observed": "#AFA9EC", "expected": "#22C55E", "reference": "#3B82F6"
+            ]
+            roles = legacyRoleDescriptions.keys.sorted().map { key in
+                RoleConfig(
+                    name: key.prefix(1).uppercased() + key.dropFirst(),
+                    description: legacyRoleDescriptions[key] ?? "",
+                    colorHex: defaultColorMap[key] ?? "#AFA9EC"
+                )
+            }
+        }
     }
 
     private func generateToml() -> String {
@@ -219,13 +266,10 @@ final class ConfigManager {
         }
 
         lines.append("")
-        lines.append("[role_descriptions]")
-
-        let sortedRoleKeys = roleDescriptions.keys.sorted()
-        for key in sortedRoleKeys {
-            if let value = roleDescriptions[key] {
-                lines.append("\(key) = \"\(escapeString(value))\"")
-            }
+        lines.append("[roles]")
+        for (i, role) in roles.enumerated() {
+            let encoded = "\(escapeString(role.name))|\(escapeString(role.description))|\(role.colorHex)"
+            lines.append("role_\(i) = \"\(encoded)\"")
         }
 
         lines.append("")

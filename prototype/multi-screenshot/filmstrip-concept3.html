@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner — Filmstrip Prototype (Concept 3: Uniform Row Height)</title>
+<style>
+:root {
+  --purple-light: #AFA9EC;
+  --purple-dark: #534AB7;
+  --purple-fill: rgba(175,169,236,0.16);
+  --purple-fill-strong: rgba(175,169,236,0.22);
+  --purple-button: #A796EB;
+  --purple-button-hover: #C4B8F5;
+  --purple-button-bg: rgba(116,97,194,0.25);
+  --red: #EF4444;
+  --red-fill: rgba(239,68,68,0.06);
+  --red-note-bg: rgba(239,68,68,0.05);
+  --red-note-border: rgba(239,68,68,0.10);
+
+  --role-observed-bg: rgba(175,169,236,0.18);
+  --role-observed-border: rgba(175,169,236,0.36);
+  --role-observed-select: rgba(175,169,236,0.14);
+  --role-expected-bg: rgba(34,197,94,0.16);
+  --role-expected-border: rgba(134,239,172,0.36);
+  --role-expected-select: rgba(134,239,172,0.14);
+  --role-reference-bg: rgba(59,130,246,0.16);
+  --role-reference-border: rgba(147,197,253,0.36);
+  --role-reference-select: rgba(147,197,253,0.14);
+
+  --dark-chrome: rgba(30,30,30,0.92);
+  --dark-chrome-status: rgba(30,30,30,0.88);
+  --chrome-border: rgba(255,255,255,0.08);
+  --divider: rgba(255,255,255,0.08);
+
+  --text-primary: rgba(255,255,255,0.92);
+  --text-secondary: rgba(255,255,255,0.56);
+  --text-dim: rgba(255,255,255,0.36);
+
+  --surface-editor: rgba(255,255,255,0.03);
+
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+
+  --badge-diameter: 18px;
+  --note-height: 26px;
+  --note-radius: 13px;
+  --toolbar-height: 40px;
+  --toolbar-radius: 20px;
+  --status-pill-radius: 12px;
+
+  --filmstrip-gap: 14px;
+  --filmstrip-padding: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: #0e0e12;
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+.demo-shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 24px 20px 60px;
+}
+
+.demo-header {
+  text-align: center;
+  margin-bottom: 6px;
+}
+
+.demo-header h1 {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--purple-light);
+  margin-bottom: 4px;
+}
+
+.demo-header p {
+  font-size: 11px;
+  color: var(--text-dim);
+  line-height: 1.5;
+}
+
+/* ── Demo controls ── */
+.controls-row {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0;
+  flex-wrap: wrap;
+}
+
+.controls-row .label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  align-self: center;
+  margin-right: 4px;
+}
+
+.demo-btn {
+  appearance: none;
+  border: 1px solid var(--chrome-border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.demo-btn:hover {
+  background: var(--purple-fill);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.24);
+}
+
+.demo-btn.active {
+  background: var(--purple-fill-strong);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.32);
+}
+
+.demo-btn.danger { color: rgba(239,100,100,0.6); }
+.demo-btn.danger:hover { background: rgba(239,68,68,0.12); border-color: rgba(239,68,68,0.2); color: var(--red); }
+
+/* ── Editor window ── */
+.editor-window {
+  background: rgba(24,24,28,0.96);
+  border: 1px solid rgba(175,169,236,0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.2);
+  position: relative;
+}
+
+/* ── Toolbar ── */
+.toolbar-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 14px 20px 0;
+  position: relative;
+  z-index: 10;
+}
+
+.toolbar {
+  display: inline-flex;
+  align-items: center;
+  height: var(--toolbar-height);
+  padding: 0 6px;
+  border-radius: var(--toolbar-radius);
+  background: var(--dark-chrome);
+  border: 1px solid var(--chrome-border);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.tb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.52);
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: var(--font-ui);
+  transition: all 120ms ease;
+  flex-shrink: 0;
+}
+
+.tb:hover { color: rgba(255,255,255,0.8); }
+
+.tb svg {
+  width: 14px; height: 14px;
+  stroke: currentColor; fill: none;
+  stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.tb.icon { width: 28px; height: 28px; }
+
+.tb.close-btn { width: 24px; height: 24px; margin-right: 4px; }
+.tb.close-btn:hover { background: rgba(239,68,68,0.2); color: var(--red); }
+.tb.close-btn svg { width: 10px; height: 10px; }
+
+.tb.tool { width: 30px; height: 30px; position: relative; }
+.tb.tool.active { background: var(--purple-fill-strong); color: var(--purple-light); }
+.tb.tool .pin-head { fill: none; }
+.tb.tool.pin-active .pin-head { fill: currentColor; stroke: none; }
+
+.tb.tool .pin-counter {
+  position: absolute; top: 1px; right: 0px;
+  width: 14px; height: 14px; border-radius: 999px;
+  background: var(--purple-light); color: #1e1e1e;
+  font-size: 8px; font-weight: 700;
+  display: grid; place-items: center; pointer-events: none;
+}
+
+.tb-divider {
+  width: 1px; height: 16px;
+  background: var(--divider);
+  margin: 0 6px; flex-shrink: 0;
+}
+
+.tb.action {
+  height: 28px; padding: 0 12px;
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap; border-radius: 999px;
+  letter-spacing: 0.01em;
+}
+
+.tb.action.add-img {
+  background: rgba(175,169,236,0.14);
+  border: 1.5px solid rgba(175,169,236,0.22);
+  color: var(--purple-light);
+}
+.tb.action.add-img:hover {
+  background: rgba(175,169,236,0.22);
+  border-color: rgba(175,169,236,0.34);
+}
+.tb.action.add-img.disabled {
+  opacity: 0.35; pointer-events: none;
+}
+
+.mode-slider {
+  display: inline-flex; height: 28px; padding: 2px;
+  border-radius: 14px; background: rgba(255,255,255,0.06);
+}
+
+.mode-segment {
+  min-width: 40px; height: 24px; border: 0; border-radius: 12px;
+  background: transparent; color: rgba(255,255,255,0.3);
+  font: inherit; font-size: 9px; font-weight: 600; cursor: pointer;
+  transition: all 120ms ease;
+}
+.mode-segment.active { background: rgba(175,169,236,0.25); color: var(--purple-light); }
+
+.tb.action.copy {
+  background: var(--purple-button-bg);
+  border: 1.5px solid var(--purple-button);
+  color: var(--purple-light);
+}
+.tb.action.copy:hover {
+  background: rgba(116,97,194,0.35);
+  border-color: var(--purple-button-hover);
+  color: var(--purple-button-hover);
+}
+
+/* ── Editor body ── */
+.editor-body {
+  padding: 18px 24px 64px;
+  position: relative;
+  min-height: 200px;
+  overflow-y: auto;
+  max-height: 80vh;
+}
+
+/* ── Filmstrip container ── */
+.filmstrip-container {
+  border-radius: 6px;
+  background: var(--surface-editor);
+  padding: var(--filmstrip-padding);
+  position: relative;
+  transition: all 300ms ease;
+}
+
+.filmstrip-container.multi {
+  box-shadow: inset 0 0 0 1px rgba(175,169,236,0.10);
+}
+
+/* ── Concept 3 layout: uniform row height, flex widths ── */
+.filmstrip-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--filmstrip-gap);
+}
+
+.filmstrip-row {
+  display: flex;
+  gap: var(--filmstrip-gap);
+  align-items: stretch;
+  justify-content: center;
+}
+
+/* ── Film cell ── */
+.film-cell {
+  overflow: visible;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  animation: cellAppear 350ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  min-width: 0;
+}
+
+@keyframes cellAppear {
+  from { opacity: 0; transform: scale(0.94) translateY(6px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* ── Title pill — centered on image ── */
+.film-meta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0 6px;
+}
+
+.title-pill {
+  height: 30px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.12);
+  transition: all 200ms ease;
+  max-width: 100%;
+}
+
+.title-pill.observed {
+  background: var(--role-observed-bg);
+  border: 1px solid var(--role-observed-border);
+}
+.title-pill.expected {
+  background: var(--role-expected-bg);
+  border: 1px solid var(--role-expected-border);
+}
+.title-pill.reference {
+  background: var(--role-reference-bg);
+  border: 1px solid var(--role-reference-border);
+}
+
+.title-input {
+  flex: 1; min-width: 0; height: 24px; padding: 0 4px;
+  border: 0; border-radius: 999px; background: transparent;
+  color: white; font: inherit; font-size: 10px; font-weight: 600;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.title-input:focus { outline: none; background: rgba(255,255,255,0.06); }
+
+.role-select {
+  min-width: 72px; height: 22px; padding: 0 18px 0 7px;
+  border-radius: 999px; border: 0;
+  appearance: none; -webkit-appearance: none;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='rgba(255,255,255,0.65)' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E") calc(100% - 6px) 50% / 8px 5px no-repeat,
+    rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.85); font: inherit; font-size: 9px; font-weight: 600; cursor: pointer;
+}
+.role-select:focus { outline: none; }
+.role-select option { background: #232327; color: white; }
+
+/* ── Mock screenshot ── */
+.mock-screen {
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+}
+
+.mock-screen .screen-bar {
+  height: 24px; padding: 0 8px;
+  display: flex; align-items: center; gap: 4px;
+  background: rgba(255,255,255,0.72);
+}
+
+.mock-screen .dot { width: 6px; height: 6px; border-radius: 999px; }
+.mock-screen .dot.r { background: #ff5f57; }
+.mock-screen .dot.y { background: #febc2e; }
+.mock-screen .dot.g { background: #28c840; }
+
+.mock-screen .screen-body {
+  padding: 8px;
+  display: grid;
+  gap: 5px;
+}
+
+.mock-screen .block {
+  border-radius: 2px;
+  background: rgba(15,23,42,0.07);
+}
+.mock-screen .block.accent { background: rgba(83,74,183,0.12); }
+.mock-screen .block.warn { background: rgba(239,68,68,0.1); box-shadow: inset 0 0 0 1px rgba(239,68,68,0.08); }
+
+/* ── Annotations ── */
+.annotation {
+  position: absolute;
+  display: flex; align-items: flex-start; gap: 8px;
+  z-index: 3; pointer-events: none;
+}
+
+.badge {
+  width: var(--badge-diameter); height: var(--badge-diameter);
+  border-radius: 999px; background: var(--red);
+  color: white; display: grid; place-items: center;
+  font-size: 9px; font-weight: 700; flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(239,68,68,0.3);
+}
+
+.note-pill {
+  height: var(--note-height); padding: 0 10px;
+  border-radius: var(--note-radius);
+  background: rgba(255,248,248,0.9);
+  border: 1px solid rgba(239,68,68,0.14);
+  color: #7f1d1d; font-size: 11px; font-weight: 500;
+  display: inline-flex; align-items: center; gap: 4px;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(44,11,11,0.06);
+}
+
+.note-pill .prefix {
+  color: rgba(153,27,27,0.4);
+  font-weight: 700; font-size: 9px;
+}
+
+/* ── Size label ── */
+.size-label {
+  position: absolute; bottom: 4px; right: 4px;
+  padding: 2px 6px; border-radius: 4px;
+  background: rgba(0,0,0,0.55);
+  color: rgba(255,255,255,0.6);
+  font-family: var(--font-mono); font-size: 8px; font-weight: 600;
+  pointer-events: none;
+}
+
+/* ── Status pill ── */
+.status-pill {
+  position: absolute; left: 50%; bottom: 20px;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: var(--status-pill-radius);
+  background: var(--dark-chrome-status);
+  border: 1px solid var(--chrome-border);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  color: white; font-family: var(--font-mono);
+  font-size: 10px; font-weight: 500; white-space: nowrap;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18); z-index: 5;
+}
+
+/* ── Layout info ── */
+.layout-info {
+  position: absolute; top: 8px; right: 8px;
+  padding: 3px 8px; border-radius: 999px;
+  background: rgba(0,0,0,0.5);
+  color: var(--text-dim); font-family: var(--font-mono);
+  font-size: 9px; font-weight: 600; z-index: 4; pointer-events: none;
+}
+
+/* ── Empty state ── */
+.empty-state {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 20px; color: var(--text-dim); gap: 10px;
+}
+
+.empty-state .empty-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--purple-fill);
+  display: grid; place-items: center;
+  color: var(--purple-light); font-size: 20px;
+}
+
+.empty-state p { font-size: 12px; }
+.empty-state .hint { font-size: 10px; color: var(--text-dim); }
+
+/* ── Capture overlay ── */
+.capture-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.55);
+  display: none; cursor: crosshair;
+}
+.capture-overlay.active { display: block; }
+
+.capture-crosshair {
+  position: fixed; pointer-events: none; z-index: 1001;
+}
+.capture-crosshair::before, .capture-crosshair::after {
+  content: ""; position: absolute;
+  background: rgba(175,169,236,0.85); border-radius: 999px;
+}
+.capture-crosshair::before { width: 2.3px; height: 20px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+.capture-crosshair::after { width: 20px; height: 2.3px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+
+.capture-selection {
+  position: fixed;
+  border: 1.5px solid rgba(175,169,236,0.9);
+  box-shadow: 0 0 0 9999px rgba(0,0,0,0.55);
+  pointer-events: none; z-index: 1001; display: none;
+}
+
+.capture-dim-pill {
+  position: absolute; left: 50%; top: calc(100% + 10px);
+  transform: translateX(-50%);
+  padding: 6px 10px; border-radius: 5px;
+  background: var(--purple-dark); color: white;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500; white-space: nowrap;
+}
+
+.capture-helper {
+  position: fixed; left: 28px; bottom: 28px;
+  padding: 10px 16px; border-radius: 999px;
+  background: rgba(28,28,32,0.92);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.3);
+  color: rgba(255,255,255,0.82); font-size: 12px; z-index: 1002;
+}
+.capture-helper strong { color: var(--purple-light); }
+
+.capture-mini-preview {
+  position: fixed; right: 28px; bottom: 28px;
+  width: 200px; padding: 10px;
+  border-radius: 8px;
+  background: rgba(31,31,34,0.94);
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 16px 32px rgba(0,0,0,0.3);
+  z-index: 1002; display: none;
+}
+
+.capture-mini-preview .mini-label {
+  font-size: 9px; color: var(--text-dim); margin-bottom: 6px;
+  font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+}
+
+.capture-mini-preview .mini-row {
+  display: flex; gap: 3px; margin-bottom: 3px;
+}
+
+.capture-mini-preview .mini-thumb {
+  height: 22px; flex: 1;
+  border-radius: 2px; background: rgba(255,255,255,0.05);
+}
+
+.capture-mini-preview .mini-thumb.new {
+  border: 1px dashed rgba(175,169,236,0.4);
+  background: rgba(175,169,236,0.06);
+}
+</style>
+</head>
+<body>
+
+<div class="demo-shell">
+  <div class="demo-header">
+    <h1>Filmstrip Prototype — Concept 3: Uniform Row Height</h1>
+    <p>Images in each row share the same height. Widths flex proportionally to aspect ratio. Title pills centered on each image.</p>
+  </div>
+
+  <div class="controls-row">
+    <span class="label">Presets</span>
+    <button class="demo-btn active" data-count="1" onclick="resetTo(1)">1 image</button>
+    <button class="demo-btn" data-count="2" onclick="resetTo(2)">2 images</button>
+    <button class="demo-btn" data-count="3" onclick="resetTo(3)">3 images</button>
+    <button class="demo-btn" data-count="6" onclick="resetTo(6)">6 images</button>
+    <button class="demo-btn" data-count="9" onclick="resetTo(9)">9 images</button>
+    <button class="demo-btn" data-count="12" onclick="resetTo(12)">12 images</button>
+    <button class="demo-btn danger" data-count="0" onclick="resetTo(0)">Clear</button>
+  </div>
+
+  <div class="controls-row">
+    <span class="label">Sizes</span>
+    <button class="demo-btn active" data-mix="mixed" onclick="setMix('mixed')">Mixed</button>
+    <button class="demo-btn" data-mix="uniform" onclick="setMix('uniform')">All same</button>
+    <button class="demo-btn" data-mix="extreme" onclick="setMix('extreme')">Extreme</button>
+    <button class="demo-btn" data-mix="tall" onclick="setMix('tall')">All tall</button>
+    <button class="demo-btn" data-mix="wide" onclick="setMix('wide')">All wide</button>
+  </div>
+
+  <!-- Editor -->
+  <div class="editor-window">
+    <div class="toolbar-wrap">
+      <div class="toolbar">
+        <button class="tb close-btn" title="Close">
+          <svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+        <button class="tb tool" title="Select">
+          <svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"/></svg>
+        </button>
+        <button class="tb tool active pin-active" title="Pin">
+          <svg viewBox="0 0 15 15"><circle class="pin-head" cx="7.5" cy="5" r="4.5"/><line x1="7.5" y1="9.5" x2="7.5" y2="14"/></svg>
+          <span class="pin-counter" id="pinCounter">0</span>
+        </button>
+        <button class="tb tool" title="Arrow">
+          <svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"/><polyline points="8,2 13,2 13,7"/></svg>
+        </button>
+        <button class="tb tool" title="Rectangle">
+          <svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"/></svg>
+        </button>
+        <button class="tb tool" title="Circle">
+          <svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"/></svg>
+        </button>
+        <button class="tb tool" title="Freehand">
+          <svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"/></svg>
+        </button>
+        <button class="tb icon" title="Delete">
+          <svg viewBox="0 0 16 16"><path d="M2 4h12"/><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"/><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+        <button class="tb icon" title="Undo">
+          <svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"/><polyline points="6,5 3,8 6,11"/></svg>
+        </button>
+        <button class="tb icon" title="Redo">
+          <svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"/><polyline points="10,5 13,8 10,11"/></svg>
+        </button>
+        <div class="tb-divider"></div>
+        <button class="tb action add-img" id="addImageBtn" onclick="startCapture()">+ Add image</button>
+        <div class="tb-divider"></div>
+        <div class="mode-slider">
+          <button class="mode-segment">IDE</button>
+          <button class="mode-segment active">App</button>
+        </div>
+        <button class="tb action copy">Copy prompt</button>
+        <button class="tb action copy">Copy image</button>
+      </div>
+    </div>
+
+    <div class="editor-body" id="editorBody">
+      <div class="filmstrip-container" id="filmstripContainer">
+        <div id="filmstripContent"></div>
+        <div class="layout-info" id="layoutInfo"></div>
+      </div>
+      <div class="status-pill" id="statusPill">1240 × 782 · 1 note</div>
+    </div>
+  </div>
+</div>
+
+<!-- Capture overlay -->
+<div class="capture-overlay" id="captureOverlay">
+  <div class="capture-crosshair" id="captureCrosshair"></div>
+  <div class="capture-selection" id="captureSelection">
+    <div class="capture-dim-pill" id="captureDimPill">w 0  h 0</div>
+  </div>
+  <div class="capture-helper">Press <strong>Esc</strong> to cancel · Click & drag to select a region</div>
+  <div class="capture-mini-preview" id="captureMiniPreview">
+    <div class="mini-label">Composite preview</div>
+    <div id="miniGrid"></div>
+  </div>
+</div>
+
+<script>
+// ── State ──
+const images = [];
+let annotationCount = 0;
+let currentMix = "mixed";
+
+const roles = ["observed","expected","reference"];
+const roleLabels = { observed:"Observed", expected:"Expected", reference:"Reference" };
+
+// ── Screenshot size profiles ──
+const sizeProfiles = {
+  mixed: [
+    { w: 1280, h: 800 },  // standard landscape
+    { w: 390, h: 680 },   // mobile portrait
+    { w: 1440, h: 900 },  // wide landscape
+    { w: 800, h: 600 },   // 4:3
+    { w: 520, h: 840 },   // tall panel
+    { w: 1920, h: 1080 }, // full HD
+    { w: 640, h: 480 },   // small 4:3
+    { w: 375, h: 812 },   // iPhone
+    { w: 1280, h: 720 },  // 16:9
+    { w: 768, h: 1024 },  // iPad portrait
+    { w: 1440, h: 400 },  // ultra-wide banner
+    { w: 600, h: 600 },   // square
+  ],
+  uniform: [
+    { w: 1280, h: 800 }, { w: 1280, h: 800 }, { w: 1280, h: 800 },
+    { w: 1280, h: 800 }, { w: 1280, h: 800 }, { w: 1280, h: 800 },
+    { w: 1280, h: 800 }, { w: 1280, h: 800 }, { w: 1280, h: 800 },
+    { w: 1280, h: 800 }, { w: 1280, h: 800 }, { w: 1280, h: 800 },
+  ],
+  extreme: [
+    { w: 2560, h: 1440 }, { w: 280, h: 120 }, { w: 390, h: 844 },
+    { w: 1920, h: 200 },  { w: 300, h: 900 }, { w: 1280, h: 800 },
+    { w: 160, h: 160 },   { w: 2000, h: 600 }, { w: 400, h: 1200 },
+    { w: 1600, h: 900 },  { w: 500, h: 500 }, { w: 320, h: 568 },
+  ],
+  tall: [
+    { w: 390, h: 844 }, { w: 375, h: 812 }, { w: 414, h: 896 },
+    { w: 360, h: 780 }, { w: 320, h: 568 }, { w: 428, h: 926 },
+    { w: 390, h: 844 }, { w: 375, h: 812 }, { w: 414, h: 896 },
+    { w: 360, h: 780 }, { w: 320, h: 568 }, { w: 428, h: 926 },
+  ],
+  wide: [
+    { w: 1920, h: 400 }, { w: 1440, h: 300 }, { w: 1600, h: 500 },
+    { w: 2560, h: 600 }, { w: 1280, h: 280 }, { w: 1800, h: 450 },
+    { w: 1920, h: 400 }, { w: 1440, h: 300 }, { w: 1600, h: 500 },
+    { w: 2560, h: 600 }, { w: 1280, h: 280 }, { w: 1800, h: 450 },
+  ],
+};
+
+const mockBgs = ["#f5f7fb","#f0ebfd","#f0f4f0","#fff8f0","#f0f7ff","#fdf5f5","#f5f0eb","#edf6f0","#f3f0fa","#f7f5f0","#f0f5f5","#faf5f0"];
+
+const sampleNotes = [
+  "padding too tight","wrong border radius","font weight should be 600",
+  "needs more height","alignment off by 4px","color mismatch",
+  "spacing inconsistent","button should be full width","shadow too strong",
+  "missing hover state","text truncates early","icon misaligned",
+];
+
+// ── Layout: rows of up to 3 ──
+function chunkRows(items) {
+  const rows = [];
+  for (let i = 0; i < items.length; i += 3) {
+    rows.push(items.slice(i, i + 3));
+  }
+  return rows;
+}
+
+// ── Render ──
+function render() {
+  const content = document.getElementById("filmstripContent");
+  const container = document.getElementById("filmstripContainer");
+  const statusPill = document.getElementById("statusPill");
+  const layoutInfo = document.getElementById("layoutInfo");
+  const pinCounter = document.getElementById("pinCounter");
+  const addBtn = document.getElementById("addImageBtn");
+  const isMulti = images.length >= 2;
+
+  container.classList.toggle("multi", isMulti);
+  addBtn.classList.toggle("disabled", images.length >= 12);
+
+  if (images.length === 0) {
+    content.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">+</div>
+        <p>No images yet</p>
+        <span class="hint">Click "+ Add image" to capture a screenshot</span>
+      </div>`;
+    statusPill.textContent = "No images";
+    layoutInfo.textContent = "";
+    pinCounter.textContent = "0";
+    syncBtns(); return;
+  }
+
+  if (images.length === 1) {
+    // Single image: no title pill, no filmstrip chrome
+    const img = images[0];
+    const maxH = 360;
+    const ar = img.w / img.h;
+    const dispH = Math.min(maxH, 360);
+    const dispW = Math.round(dispH * ar);
+
+    let annotHTML = "";
+    img.annotations.forEach(a => {
+      annotHTML += `<div class="annotation" style="left:${a.x}%;top:${a.y}%;">
+        <div class="badge">${a.num}</div>
+        <div class="note-pill"><span class="prefix">${a.num}</span>${a.text}</div>
+      </div>`;
+    });
+
+    content.innerHTML = `
+      <div style="display:flex; justify-content:center;">
+        <div class="film-cell" style="max-width:${Math.min(dispW, 800)}px; width:100%;">
+          <div class="mock-screen" style="aspect-ratio:${img.w}/${img.h}; background:${img.bg};">
+            ${mockScreenContent(img, 0)}
+            ${annotHTML}
+            <div class="size-label">${img.w}×${img.h}</div>
+          </div>
+        </div>
+      </div>`;
+
+    const notes = img.annotations.length;
+    statusPill.textContent = `${img.w} × ${img.h} · ${notes} note${notes !== 1 ? "s" : ""}`;
+    layoutInfo.textContent = "";
+    pinCounter.textContent = String(annotationCount);
+    syncBtns(); return;
+  }
+
+  // Multi-image: Concept 3 layout
+  const rows = chunkRows(images);
+  let rowsHTML = "";
+
+  rows.forEach((row, ri) => {
+    // Compute flex values: each image's flex-grow = its aspect ratio
+    // This makes all images in the row the same height
+    const flexes = row.map(img => img.w / img.h);
+
+    let cellsHTML = row.map((img, ci) => {
+      const globalIdx = ri * 3 + ci;
+      const ar = img.w / img.h;
+
+      let annotHTML = "";
+      img.annotations.forEach(a => {
+        const prefix = `${img.title}: `;
+        annotHTML += `<div class="annotation" style="left:${a.x}%;top:${a.y}%;">
+          <div class="badge">${a.num}</div>
+          <div class="note-pill"><span class="prefix">${a.num}</span>${prefix}${a.text}</div>
+        </div>`;
+      });
+
+      return `
+        <div class="film-cell" style="flex:${ar.toFixed(3)} 1 0; min-width:0; animation-delay:${globalIdx * 50}ms;">
+          <div class="film-meta">
+            <div class="title-pill ${img.role}">
+              <input class="title-input" value="${img.title}" oninput="updateTitle(${globalIdx}, this.value)">
+              <select class="role-select" onchange="updateRole(${globalIdx}, this.value)">
+                ${roles.map(r => `<option value="${r}" ${r === img.role ? "selected" : ""}>${roleLabels[r]}</option>`).join("")}
+              </select>
+            </div>
+          </div>
+          <div class="mock-screen" style="aspect-ratio:${img.w}/${img.h}; background:${img.bg};">
+            ${mockScreenContent(img, globalIdx)}
+            ${annotHTML}
+            <div class="size-label">${img.w}×${img.h}</div>
+          </div>
+        </div>`;
+    }).join("");
+
+    rowsHTML += `<div class="filmstrip-row">${cellsHTML}</div>`;
+  });
+
+  content.innerHTML = `<div class="filmstrip-rows">${rowsHTML}</div>`;
+
+  const totalNotes = images.reduce((s, img) => s + img.annotations.length, 0);
+  const rowCount = rows.length;
+  statusPill.textContent = `composite · ${images.length} images · ${totalNotes} note${totalNotes !== 1 ? "s" : ""}`;
+  layoutInfo.textContent = `${rowCount} row${rowCount > 1 ? "s" : ""} · ${images.length} img`;
+  pinCounter.textContent = String(annotationCount);
+  syncBtns();
+}
+
+function mockScreenContent(img, idx) {
+  const blockTypes = [
+    ["","accent",""],
+    ["warn","",""],
+    ["","","accent"],
+    ["accent","warn",""],
+  ];
+  const bt = blockTypes[idx % blockTypes.length];
+
+  return `
+    <div class="screen-bar">
+      <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+    </div>
+    <div class="screen-body">
+      <div class="block ${bt[0]}" style="height:28%;"></div>
+      <div class="block ${bt[1]}" style="height:22%;"></div>
+      <div class="block ${bt[2]}" style="height:18%; width:70%;"></div>
+    </div>`;
+}
+
+function updateTitle(idx, val) { if (images[idx]) images[idx].title = val; }
+function updateRole(idx, val) { if (images[idx]) { images[idx].role = val; render(); } }
+
+function addImage(roleOverride) {
+  const idx = images.length;
+  const sizes = sizeProfiles[currentMix];
+  const sz = sizes[idx % sizes.length];
+  const r = roleOverride || (idx === 0 ? "observed" : roles[idx % roles.length]);
+  const hasNote = Math.random() > 0.4;
+  const annotations = [];
+  if (hasNote) {
+    annotationCount++;
+    annotations.push({
+      num: annotationCount,
+      text: sampleNotes[(annotationCount - 1) % sampleNotes.length],
+      x: 12 + Math.random() * 50,
+      y: 30 + Math.random() * 35,
+    });
+  }
+  images.push({
+    title: `Image ${idx + 1}`,
+    role: r,
+    w: sz.w, h: sz.h,
+    bg: mockBgs[idx % mockBgs.length],
+    annotations,
+  });
+}
+
+function resetTo(count) {
+  images.length = 0;
+  annotationCount = 0;
+  for (let i = 0; i < count; i++) addImage();
+  render();
+}
+
+function setMix(mix) {
+  currentMix = mix;
+  document.querySelectorAll("[data-mix]").forEach(b => b.classList.toggle("active", b.dataset.mix === mix));
+  const count = images.length || 3;
+  resetTo(count);
+}
+
+function syncBtns() {
+  const count = images.length;
+  document.querySelectorAll("[data-count]").forEach(b => {
+    b.classList.toggle("active", parseInt(b.dataset.count) === count);
+  });
+}
+
+// ── Capture overlay (237E) ──
+let captureActive = false;
+let dragStart = null;
+let isDragging = false;
+
+function startCapture() {
+  if (images.length >= 12) return;
+  captureActive = true;
+  document.getElementById("captureOverlay").classList.add("active");
+
+  if (images.length > 0) {
+    const mp = document.getElementById("captureMiniPreview");
+    mp.style.display = "block";
+    const mg = document.getElementById("miniGrid");
+    const rows = chunkRows([...images, { _new: true }]);
+    mg.innerHTML = rows.map(row =>
+      `<div class="mini-row">${row.map(img =>
+        `<div class="mini-thumb${img._new ? ' new' : ''}"></div>`
+      ).join("")}</div>`
+    ).join("");
+  }
+}
+
+function endCapture(success) {
+  captureActive = false; dragStart = null; isDragging = false;
+  document.getElementById("captureOverlay").classList.remove("active");
+  document.getElementById("captureSelection").style.display = "none";
+  document.getElementById("captureMiniPreview").style.display = "none";
+  if (success) { addImage(); render(); }
+}
+
+document.getElementById("captureOverlay").addEventListener("mousedown", e => {
+  if (!captureActive) return;
+  dragStart = { x: e.clientX, y: e.clientY };
+  isDragging = true;
+  const sel = document.getElementById("captureSelection");
+  sel.style.display = "block";
+  sel.style.left = e.clientX + "px";
+  sel.style.top = e.clientY + "px";
+  sel.style.width = "0"; sel.style.height = "0";
+});
+
+document.addEventListener("mousemove", e => {
+  if (captureActive) {
+    const ch = document.getElementById("captureCrosshair");
+    ch.style.left = e.clientX + "px"; ch.style.top = e.clientY + "px";
+  }
+  if (!isDragging || !dragStart) return;
+  const x = Math.min(dragStart.x, e.clientX);
+  const y = Math.min(dragStart.y, e.clientY);
+  const w = Math.abs(e.clientX - dragStart.x);
+  const h = Math.abs(e.clientY - dragStart.y);
+  const sel = document.getElementById("captureSelection");
+  sel.style.left = x+"px"; sel.style.top = y+"px";
+  sel.style.width = w+"px"; sel.style.height = h+"px";
+  document.getElementById("captureDimPill").textContent = `w ${w}  h ${h}`;
+});
+
+document.addEventListener("mouseup", () => {
+  if (!isDragging) return;
+  isDragging = false;
+  const sel = document.getElementById("captureSelection");
+  const w = parseInt(sel.style.width);
+  const h = parseInt(sel.style.height);
+  endCapture(w > 20 && h > 20);
+});
+
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && captureActive) endCapture(false);
+});
+
+// ── Init ──
+resetTo(1);
+</script>
+</body>
+</html>

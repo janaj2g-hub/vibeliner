@@ -1,0 +1,1965 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vibeliner Tutorial Prototype</title>
+  <style>
+    :root {
+      --bg-top: #15161b;
+      --bg-bottom: #101117;
+      --surface-window: #242424;
+      --surface-title: #2a2a2a;
+      --surface-panel: rgba(255, 255, 255, 0.02);
+      --surface-soft: rgba(255, 255, 255, 0.04);
+      --surface-editor: rgba(255, 255, 255, 0.03);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --border-faint: rgba(255, 255, 255, 0.04);
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.6);
+      --text-dim: rgba(255, 255, 255, 0.38);
+      --purple-light: #afa9ec;
+      --purple-dark: #534ab7;
+      --purple-fill: rgba(175, 169, 236, 0.16);
+      --purple-fill-strong: rgba(175, 169, 236, 0.24);
+      --green: #22c55e;
+      --green-fill: rgba(34, 197, 94, 0.14);
+      --green-border: rgba(74, 222, 128, 0.34);
+      --shadow-window: 0 32px 84px rgba(0, 0, 0, 0.42);
+      --shadow-floating: 0 18px 36px rgba(0, 0, 0, 0.26);
+      --radius-window: 3px;
+      --radius-panel: 3px;
+      --radius-pill: 999px;
+      --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+      --transition-fast: 160ms ease;
+    }
+
+    body.light-mode {
+      --bg-top: #efeff5;
+      --bg-bottom: #e2e4ed;
+      --surface-window: #f6f7fb;
+      --surface-title: #fbfbff;
+      --surface-panel: rgba(15, 23, 42, 0.02);
+      --surface-soft: rgba(15, 23, 42, 0.04);
+      --surface-editor: rgba(15, 23, 42, 0.03);
+      --border-soft: rgba(15, 23, 42, 0.08);
+      --border-faint: rgba(15, 23, 42, 0.05);
+      --text-primary: rgba(15, 23, 42, 0.92);
+      --text-secondary: rgba(15, 23, 42, 0.62);
+      --text-dim: rgba(15, 23, 42, 0.42);
+      --purple-fill: rgba(83, 74, 183, 0.1);
+      --purple-fill-strong: rgba(83, 74, 183, 0.16);
+      --shadow-window: 0 28px 68px rgba(28, 31, 43, 0.18);
+      --shadow-floating: 0 14px 28px rgba(28, 31, 43, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at top, rgba(175, 169, 236, 0.12), transparent 26%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    }
+
+    .shell {
+      width: min(1380px, calc(100vw - 28px));
+      margin: 28px auto 40px;
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .chrome {
+      width: min(100%, 1240px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .toggle {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+    }
+
+    .toggle button,
+    .tour-actions button,
+    .preview-button,
+    .tour-pill {
+      appearance: none;
+      border: 0;
+      font: inherit;
+    }
+
+    .toggle button {
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-pill);
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast);
+    }
+
+    .toggle button.active {
+      background: var(--purple-fill);
+      color: var(--purple-light);
+    }
+
+    body.light-mode .toggle button.active {
+      color: var(--purple-dark);
+    }
+
+    .window {
+      width: min(100%, 1220px);
+      background: linear-gradient(180deg, var(--surface-title) 0%, var(--surface-window) 76px, var(--surface-window) 100%);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-window);
+      box-shadow: var(--shadow-window);
+      overflow: hidden;
+    }
+
+    .titlebar {
+      position: relative;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .traffic {
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .traffic span {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: block;
+    }
+
+    .traffic span:nth-child(1) { background: #ff5f57; }
+    .traffic span:nth-child(2) { background: #febc2e; }
+    .traffic span:nth-child(3) { background: #28c840; }
+
+    .window-title {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .window-subtitle {
+      margin-top: 4px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .stage {
+      min-height: 760px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, rgba(175, 169, 236, 0.06), transparent 24%),
+        linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+    }
+
+    body.light-mode .stage {
+      background:
+        radial-gradient(circle at top, rgba(83, 74, 183, 0.05), transparent 24%),
+        linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%);
+    }
+
+    .scene {
+      min-height: 760px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .launch-banner {
+      position: absolute;
+      left: 28px;
+      top: 24px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(27, 27, 30, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.82);
+      z-index: 3;
+    }
+
+    body.light-mode .launch-banner {
+      background: rgba(255, 255, 255, 0.92);
+      color: rgba(15, 23, 42, 0.84);
+    }
+
+    .launch-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-dark) 100%);
+    }
+
+    .desktop-scene,
+    .capture-scene,
+    .editor-scene,
+    .done-scene {
+      display: none;
+      min-height: 700px;
+      position: relative;
+      border-radius: 3px;
+      overflow: hidden;
+      background: var(--surface-panel);
+    }
+
+    .desktop-scene.active,
+    .capture-scene.active,
+    .editor-scene.active,
+    .done-scene.active {
+      display: block;
+    }
+
+    .desktop-fill {
+      min-height: 700px;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(12, 12, 16, 0.16) 0%, rgba(12, 12, 16, 0.08) 100%),
+        linear-gradient(180deg, #596477 0%, #353c4a 100%);
+    }
+
+    body.light-mode .desktop-fill {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%),
+        linear-gradient(180deg, #d4ddea 0%, #b8c4d4 100%);
+    }
+
+    .desktop-menubar {
+      height: 28px;
+      padding: 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.82);
+      background: rgba(20, 20, 22, 0.48);
+    }
+
+    body.light-mode .desktop-menubar {
+      color: rgba(15, 23, 42, 0.84);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .desktop-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .menu-icon {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-dark) 100%);
+      box-shadow: 0 0 0 8px rgba(175, 169, 236, 0.12);
+    }
+
+    .hotkey-chip {
+      position: absolute;
+      left: 50%;
+      top: 118px;
+      transform: translateX(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(27, 27, 30, 0.92);
+      border: 1px solid rgba(175, 169, 236, 0.24);
+      box-shadow: var(--shadow-floating);
+      font-size: 12px;
+      z-index: 2;
+    }
+
+    body.light-mode .hotkey-chip {
+      background: rgba(255, 255, 255, 0.92);
+      color: rgba(15, 23, 42, 0.88);
+    }
+
+    .kbd {
+      min-width: 24px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: white;
+    }
+
+    body.light-mode .kbd {
+      background: rgba(15, 23, 42, 0.08);
+      color: rgba(15, 23, 42, 0.88);
+    }
+
+    .popover {
+      position: absolute;
+      right: 54px;
+      top: 70px;
+      width: 240px;
+      border-radius: 3px;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      padding: 6px;
+    }
+
+    body.light-mode .popover {
+      background: rgba(255, 255, 255, 0.94);
+    }
+
+    .popover-row {
+      min-height: 32px;
+      border-radius: 3px;
+      padding: 0 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      color: var(--text-primary);
+    }
+
+    .popover-row.active {
+      background: rgba(175, 169, 236, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(175, 169, 236, 0.24);
+    }
+
+    .popover-divider {
+      height: 1px;
+      margin: 6px 0;
+      background: var(--border-faint);
+    }
+
+    .setup-window {
+      position: absolute;
+      left: 50%;
+      top: 86px;
+      transform: translateX(-50%);
+      width: 760px;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      overflow: hidden;
+      box-shadow: var(--shadow-floating);
+    }
+
+    body.light-mode .setup-window {
+      background: rgba(250, 250, 254, 0.96);
+      border-color: rgba(15, 23, 42, 0.08);
+    }
+
+    .setup-head {
+      height: 58px;
+      border-bottom: 1px solid var(--border-faint);
+      display: grid;
+      place-items: center;
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .setup-panels {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      border-bottom: 1px solid var(--border-faint);
+    }
+
+    .setup-panel {
+      min-height: 228px;
+      padding: 24px;
+      position: relative;
+      border-right: 1px solid var(--border-faint);
+    }
+
+    .setup-panel:last-child { border-right: 0; }
+
+    .setup-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .setup-step .done {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 2px solid var(--green);
+      color: var(--green);
+      display: grid;
+      place-items: center;
+      font-size: 14px;
+    }
+
+    .setup-copy {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.45;
+      max-width: 178px;
+    }
+
+    .setup-footer {
+      height: 64px;
+      padding: 0 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      background: rgba(0, 0, 0, 0.05);
+    }
+
+    .footer-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-secondary);
+      font-size: 12px;
+    }
+
+    .footer-actions {
+      display: inline-flex;
+      gap: 10px;
+    }
+
+    .preview-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    .preview-button.secondary {
+      color: var(--purple-light);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(175, 169, 236, 0.38);
+    }
+
+    .preview-button.primary {
+      color: white;
+      background: rgba(34, 197, 94, 0.18);
+      border: 1px solid var(--green-border);
+    }
+
+    .capture-fill {
+      min-height: 700px;
+      position: relative;
+      background: rgba(0, 0, 0, 0.56);
+    }
+
+    .crosshair {
+      position: absolute;
+      left: 52%;
+      top: 44%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+    }
+
+    .crosshair::before,
+    .crosshair::after,
+    .crosshair span::before,
+    .crosshair span::after {
+      content: "";
+      position: absolute;
+      background: rgba(175, 169, 236, 0.86);
+      border-radius: 999px;
+    }
+
+    .crosshair::before,
+    .crosshair::after {
+      width: 2px;
+      height: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+
+    .crosshair::before { top: 0; }
+    .crosshair::after { bottom: 0; }
+
+    .crosshair span::before,
+    .crosshair span::after {
+      width: 10px;
+      height: 2px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .crosshair span::before { left: 0; }
+    .crosshair span::after { right: 0; }
+
+    .selection {
+      position: absolute;
+      left: 50%;
+      top: 48%;
+      width: 430px;
+      height: 270px;
+      transform: translate(-50%, -50%);
+      border: 1px solid rgba(175, 169, 236, 0.9);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.48);
+    }
+
+    .dimension-pill {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 10px);
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 6px;
+      background: var(--purple-dark);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+    }
+
+    .editor-window {
+      width: min(1040px, 100%);
+      min-height: 610px;
+      margin: 22px auto 0;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.96);
+      border: 1px solid rgba(175, 169, 236, 0.08);
+      overflow: hidden;
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.28);
+      position: relative;
+    }
+
+    body.light-mode .editor-window {
+      background: rgba(250, 250, 254, 0.98);
+      border-color: rgba(83, 74, 183, 0.08);
+    }
+
+    .editor-header {
+      height: 58px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border-faint);
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .toolbar {
+      position: absolute;
+      left: 50%;
+      top: 74px;
+      transform: translateX(-50%);
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 6px;
+      border-radius: 20px;
+      background: rgba(30, 30, 30, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+      z-index: 5;
+    }
+
+    body.light-mode .toolbar {
+      background: rgba(250, 250, 254, 0.94);
+    }
+
+    .tb {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.74);
+      border-radius: 999px;
+      cursor: default;
+      font: inherit;
+    }
+
+    body.light-mode .tb {
+      color: rgba(15, 23, 42, 0.68);
+    }
+
+    .tb svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      stroke-width: 1.65;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .tb.icon { width: 28px; height: 28px; }
+    .tb.tool { width: 30px; height: 30px; }
+
+    .tb.tool.active,
+    .mode-segment.active {
+      background: rgba(175, 169, 236, 0.24);
+      color: var(--purple-light);
+    }
+
+    body.light-mode .tb.tool.active,
+    body.light-mode .mode-segment.active {
+      color: var(--purple-dark);
+    }
+
+    .tb.action {
+      height: 28px;
+      padding: 0 14px;
+      background: rgba(116, 97, 194, 0.25);
+      border: 1px solid rgba(167, 150, 235, 0.36);
+      color: var(--purple-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .tb.action.copy {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(167, 150, 235, 0.9);
+    }
+
+    .tb-divider {
+      width: 1px;
+      align-self: stretch;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0 4px;
+    }
+
+    body.light-mode .tb-divider {
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .mode-slider {
+      display: inline-flex;
+      gap: 3px;
+      padding: 3px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .mode-segment {
+      min-width: 52px;
+      height: 28px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--text-secondary);
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .editor-body {
+      padding: 118px 28px 76px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .canvas-wrap {
+      width: min(850px, 100%);
+      padding: 18px;
+      border-radius: 3px;
+      background: var(--surface-editor);
+      position: relative;
+    }
+
+    .status-pill {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(30, 30, 30, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    .tour-canvas-header {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+
+    .tour-header-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 250px;
+      height: 34px;
+      padding: 0 5px 0 12px;
+      border-radius: 999px;
+      background: rgba(83, 74, 183, 0.24);
+      border: 1px solid rgba(175, 169, 236, 0.32);
+      color: white;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    }
+
+    .tour-header-pill .name {
+      min-width: 0;
+      flex: 1 1 auto;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .tour-header-pill .role {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      height: 24px;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(197, 191, 244, 0.18);
+      font-size: 9px;
+      font-weight: 600;
+    }
+
+    .tour-header-pill .role::after {
+      content: "";
+      width: 8px;
+      height: 5px;
+      display: block;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='rgba(255,255,255,0.88)' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/8px 5px no-repeat;
+    }
+
+    .mock-screen {
+      position: relative;
+      background: linear-gradient(180deg, #f5f7fb 0%, #edf1f6 100%);
+      overflow: hidden;
+      border-radius: 3px;
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+      min-height: 420px;
+    }
+
+    .screen-top {
+      height: 54px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #263041;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .brand-mark {
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(83, 74, 183, 1) 0%, rgba(83, 74, 183, 0.72) 100%);
+    }
+
+    .top-pills {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .pill {
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .pill.wide { width: 112px; }
+    .pill.mid { width: 78px; }
+    .pill.small { width: 38px; }
+
+    .screen-layout {
+      display: grid;
+      grid-template-columns: 188px 1fr;
+      min-height: 366px;
+    }
+
+    .nav {
+      padding: 18px 14px;
+      display: grid;
+      gap: 10px;
+      background: rgba(245, 246, 250, 0.9);
+    }
+
+    .nav-item {
+      height: 28px;
+      border-radius: 3px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .nav-item.active {
+      background: rgba(83, 74, 183, 0.16);
+    }
+
+    .screen-content {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 16px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .metric.bad {
+      box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.12);
+    }
+
+    .head {
+      height: 12px;
+      width: 70%;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.12);
+      margin-bottom: 14px;
+    }
+
+    .line {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      margin-bottom: 8px;
+    }
+
+    .line.short { width: 56%; }
+
+    .data-table {
+      border-radius: 3px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .thead,
+    .row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.8fr 0.8fr 0.8fr;
+      gap: 10px;
+      padding: 12px 14px;
+    }
+
+    .thead {
+      background: rgba(241, 243, 248, 0.94);
+    }
+
+    .row {
+      min-height: 46px;
+      border-top: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .row.bad {
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .annotation {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: #ef4444;
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      box-shadow: 0 10px 18px rgba(239, 68, 68, 0.2);
+    }
+
+    .note-pill {
+      min-height: 26px;
+      max-width: 220px;
+      padding: 6px 10px;
+      border-radius: 13px;
+      background: rgba(255, 248, 248, 0.88);
+      border: 1px solid rgba(239, 68, 68, 0.16);
+      color: #7f1d1d;
+      font-size: 12px;
+      line-height: 1.35;
+      box-shadow: 0 12px 20px rgba(44, 11, 11, 0.08);
+    }
+
+    .highlight-ring {
+      position: absolute;
+      pointer-events: none;
+      border-radius: var(--radius-pill);
+      box-shadow:
+        0 0 0 1px rgba(175, 169, 236, 0.44),
+        0 0 0 10px rgba(175, 169, 236, 0.08),
+        0 16px 36px rgba(0, 0, 0, 0.22);
+    }
+
+    .ring-toolbar {
+      left: 156px;
+      top: 71px;
+      width: 730px;
+      height: 46px;
+      border-radius: 22px;
+    }
+
+    .ring-canvas {
+      left: 266px;
+      top: 157px;
+      width: 744px;
+      height: 438px;
+      border-radius: 6px;
+    }
+
+    .ring-mode {
+      left: 735px;
+      top: 79px;
+      width: 146px;
+      height: 36px;
+      border-radius: 999px;
+    }
+
+    .ring-copy {
+      left: 890px;
+      top: 79px;
+      width: 292px;
+      height: 36px;
+      border-radius: 999px;
+    }
+
+    .ring-hotkey {
+      left: 50%;
+      top: 104px;
+      width: 184px;
+      height: 42px;
+      transform: translateX(-50%);
+    }
+
+    .ring-selection {
+      left: 50%;
+      top: 49%;
+      width: 446px;
+      height: 286px;
+      transform: translate(-50%, -50%);
+      border-radius: 6px;
+      box-shadow:
+        0 0 0 1px rgba(175, 169, 236, 0.74),
+        0 0 0 10px rgba(175, 169, 236, 0.08);
+    }
+
+    .tour-window {
+      position: absolute;
+      right: 38px;
+      top: 118px;
+      width: 360px;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      padding: 18px 18px 16px;
+      z-index: 6;
+    }
+
+    body.light-mode .tour-window {
+      background: rgba(250, 250, 254, 0.98);
+      border-color: rgba(15, 23, 42, 0.08);
+    }
+
+    .tour-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .tour-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--purple-light);
+    }
+
+    body.light-mode .tour-label {
+      color: var(--purple-dark);
+    }
+
+    .tour-progress {
+      font-size: 11px;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .entry-card {
+      padding: 10px 12px;
+      border-radius: 3px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border-faint);
+      margin-bottom: 14px;
+    }
+
+    .entry-kicker {
+      font-size: 11px;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .entry-preview {
+      display: none;
+    }
+
+    .entry-preview.active {
+      display: block;
+    }
+
+    .entry-mini-footer {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .entry-mini-popover {
+      display: grid;
+      gap: 4px;
+    }
+
+    .entry-mini-row {
+      min-height: 26px;
+      padding: 0 9px;
+      display: flex;
+      align-items: center;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.03);
+      font-size: 12px;
+    }
+
+    .entry-mini-row.active {
+      background: rgba(175, 169, 236, 0.14);
+      box-shadow: inset 0 0 0 1px rgba(175, 169, 236, 0.24);
+      color: var(--purple-light);
+    }
+
+    body.light-mode .entry-mini-row.active {
+      color: var(--purple-dark);
+    }
+
+    .tour-title {
+      margin: 0 0 6px;
+      font-size: 22px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .tour-copy {
+      margin: 0 0 14px;
+      font-size: 14px;
+      line-height: 1.5;
+      color: var(--text-secondary);
+    }
+
+    .tour-detail {
+      display: none;
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border-radius: 3px;
+      background: var(--surface-soft);
+      border: 1px solid var(--border-faint);
+      color: var(--text-secondary);
+      font-size: 12px;
+      line-height: 1.45;
+    }
+
+    .tour-detail.active {
+      display: block;
+    }
+
+    .tour-pills {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .tour-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      padding: 0 10px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-faint);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .tour-pill.key {
+      gap: 6px;
+      color: var(--text-primary);
+    }
+
+    .progress-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .progress-row span {
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-row span.active {
+      background: rgba(175, 169, 236, 0.8);
+    }
+
+    body.light-mode .progress-row span {
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    body.light-mode .progress-row span.active {
+      background: rgba(83, 74, 183, 0.76);
+    }
+
+    .tour-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .tour-actions-left,
+    .tour-actions-right {
+      display: flex;
+      gap: 8px;
+    }
+
+    .tour-actions button {
+      height: 32px;
+      padding: 0 14px;
+      border-radius: var(--radius-pill);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
+
+    .ghost {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border-faint);
+    }
+
+    .secondary {
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--purple-light);
+      border: 1px solid rgba(175, 169, 236, 0.38);
+    }
+
+    .primary {
+      background: rgba(34, 197, 94, 0.14);
+      color: white;
+      border: 1px solid var(--green-border);
+    }
+
+    .primary.purple {
+      background: rgba(175, 169, 236, 0.18);
+      color: var(--purple-light);
+      border-color: rgba(175, 169, 236, 0.44);
+    }
+
+    .done-scene .editor-window {
+      display: grid;
+      place-items: center;
+      padding: 100px 40px 90px;
+    }
+
+    .done-card {
+      width: min(560px, 100%);
+      padding: 32px 28px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      text-align: center;
+    }
+
+    .done-mark {
+      width: 54px;
+      height: 54px;
+      margin: 0 auto 18px;
+      border-radius: 999px;
+      display: grid;
+      place-items: center;
+      border: 2px solid var(--green);
+      color: var(--green);
+      font-size: 24px;
+    }
+
+    .done-title {
+      margin: 0 0 8px;
+      font-size: 24px;
+      letter-spacing: -0.03em;
+    }
+
+    .done-copy {
+      margin: 0 0 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text-secondary);
+    }
+
+    .done-loop {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .done-loop span {
+      height: 30px;
+      padding: 0 12px;
+      display: inline-flex;
+      align-items: center;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-faint);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .note {
+      color: var(--text-dim);
+      font-size: 12px;
+      text-align: center;
+      max-width: 880px;
+      line-height: 1.55;
+    }
+
+    @media (max-width: 1180px) {
+      .tour-window {
+        position: relative;
+        right: auto;
+        top: auto;
+        width: min(100%, 460px);
+        margin: 18px auto 0;
+      }
+
+      .scene {
+        display: grid;
+        align-content: start;
+      }
+
+      .setup-window {
+        width: min(100%, 760px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="chrome">
+      <div class="toggle" aria-label="Launch entry">
+        <button class="active" data-entry="setup">Setup footer</button>
+        <button data-entry="popover">Popover menu</button>
+      </div>
+      <div class="toggle" aria-label="Theme">
+        <button class="active" data-theme="dark">Dark</button>
+        <button data-theme="light">Light</button>
+      </div>
+    </div>
+
+    <div class="window">
+      <div class="titlebar">
+        <div class="traffic" aria-hidden="true">
+          <span></span>
+          <span></span>
+          <span></span>
+        </div>
+        <h1 class="window-title">Tutorial Walkthrough</h1>
+        <div class="window-subtitle">A simple one-click tour for capture → annotate → copy → paste.</div>
+      </div>
+
+      <div class="stage">
+        <div class="scene">
+          <div class="launch-banner">
+            <span class="launch-dot"></span>
+            <span data-launch-copy>Launched from setup footer</span>
+          </div>
+
+          <div class="desktop-scene active" data-scene="1">
+            <div class="desktop-fill">
+              <div class="desktop-menubar">
+                <div class="desktop-row">
+                  <span>Finder</span>
+                  <span>File</span>
+                  <span>Edit</span>
+                  <span>View</span>
+                </div>
+                <div class="desktop-row">
+                  <span class="menu-icon"></span>
+                  <span>Mon 2:34 PM</span>
+                </div>
+              </div>
+              <div class="hotkey-chip">
+                <span>Press</span>
+                <span class="kbd">⌘</span>
+                <span class="kbd">⇧</span>
+                <span class="kbd">6</span>
+                <span>to capture</span>
+              </div>
+
+              <div class="setup-window" data-entry-view="setup">
+                <div class="setup-head">Welcome to Vibeliner</div>
+                <div class="setup-panels">
+                  <div class="setup-panel">
+                    <div class="setup-step"><span class="done">✓</span><span>Screen recording</span></div>
+                    <div class="setup-copy">Permission granted so Vibeliner can capture your running app.</div>
+                  </div>
+                  <div class="setup-panel">
+                    <div class="setup-step"><span class="done">✓</span><span>Accessibility</span></div>
+                    <div class="setup-copy">Permission granted so the hotkey works from anywhere.</div>
+                  </div>
+                  <div class="setup-panel">
+                    <div class="setup-step"><span class="done">✓</span><span>Captures folder</span></div>
+                    <div class="setup-copy">Folder chosen for screenshots and prompts.</div>
+                  </div>
+                </div>
+                <div class="setup-footer">
+                  <div class="footer-shortcut">Shortcut:
+                    <span class="kbd">⌘</span>
+                    <span class="kbd">⇧</span>
+                    <span class="kbd">6</span>
+                  </div>
+                  <div class="footer-actions">
+                    <button class="preview-button secondary">Take a tour</button>
+                    <button class="preview-button primary">Start using Vibeliner →</button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="popover" data-entry-view="popover" hidden>
+                <div class="popover-row">Recent Captures<span>›</span></div>
+                <div class="popover-row">Open Captures</div>
+                <div class="popover-row">Settings</div>
+                <div class="popover-row active">Take a tour</div>
+                <div class="popover-divider"></div>
+                <div class="popover-row">Quit</div>
+              </div>
+
+              <div class="highlight-ring ring-hotkey"></div>
+            </div>
+          </div>
+
+          <div class="capture-scene" data-scene="2">
+            <div class="capture-fill">
+              <div class="crosshair"><span></span></div>
+              <div class="selection">
+                <div class="dimension-pill">960 × 620</div>
+              </div>
+              <div class="highlight-ring ring-selection"></div>
+            </div>
+          </div>
+
+          <div class="editor-scene" data-scene="3">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" aria-label="Select"><svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg></button>
+                <button class="tb tool active" aria-label="Pin"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg></button>
+                <button class="tb tool" aria-label="Arrow"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg></button>
+                <button class="tb tool" aria-label="Rectangle"><svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg></button>
+                <button class="tb tool" aria-label="Circle"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg></button>
+                <button class="tb tool" aria-label="Freehand"><svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg></button>
+                <button class="tb icon" aria-label="Delete"><svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo"><svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg></button>
+                <button class="tb icon" aria-label="Redo"><svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg></button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider">
+                  <button class="mode-segment active">App</button>
+                  <button class="mode-segment">IDE</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+              <div class="editor-body">
+                <div class="canvas-wrap">
+                  <div class="tour-canvas-header">
+                    <div class="tour-header-pill">
+                      <span class="name">Image 1</span>
+                      <span class="role">Observed</span>
+                    </div>
+                  </div>
+                  <div class="mock-screen">
+                    <div class="screen-top">
+                      <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                      <div class="top-pills"><span class="pill wide"></span><span class="pill mid"></span><span class="pill small"></span></div>
+                    </div>
+                    <div class="screen-layout">
+                      <div class="nav">
+                        <div class="nav-item active"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                      </div>
+                      <div class="screen-content">
+                        <div class="metric-grid">
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                        </div>
+                        <div class="data-table">
+                          <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="status-pill">1240 × 782 · 0 notes</div>
+              </div>
+              <div class="highlight-ring ring-toolbar"></div>
+            </div>
+          </div>
+
+          <div class="editor-scene" data-scene="4">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" aria-label="Select"><svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg></button>
+                <button class="tb tool active" aria-label="Pin"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg></button>
+                <button class="tb tool" aria-label="Arrow"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg></button>
+                <button class="tb tool" aria-label="Rectangle"><svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg></button>
+                <button class="tb tool" aria-label="Circle"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg></button>
+                <button class="tb tool" aria-label="Freehand"><svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg></button>
+                <button class="tb icon" aria-label="Delete"><svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo"><svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg></button>
+                <button class="tb icon" aria-label="Redo"><svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg></button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider">
+                  <button class="mode-segment active">App</button>
+                  <button class="mode-segment">IDE</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+              <div class="editor-body">
+                <div class="canvas-wrap">
+                  <div class="tour-canvas-header">
+                    <div class="tour-header-pill">
+                      <span class="name">Image 1</span>
+                      <span class="role">Observed</span>
+                    </div>
+                  </div>
+                  <div class="mock-screen">
+                    <div class="screen-top">
+                      <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                      <div class="top-pills"><span class="pill wide"></span><span class="pill mid"></span><span class="pill small"></span></div>
+                    </div>
+                    <div class="screen-layout">
+                      <div class="nav">
+                        <div class="nav-item active"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                      </div>
+                      <div class="screen-content">
+                        <div class="metric-grid">
+                          <div class="metric bad"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                        </div>
+                        <div class="data-table">
+                          <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row bad"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="annotation" style="left: 250px; top: 158px;">
+                      <div class="badge">1</div>
+                      <div class="note-pill">padding is too tight here</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="status-pill">1240 × 782 · 1 note</div>
+              </div>
+              <div class="highlight-ring ring-canvas"></div>
+            </div>
+          </div>
+
+          <div class="editor-scene" data-scene="5">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" aria-label="Select"><svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg></button>
+                <button class="tb tool active" aria-label="Pin"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg></button>
+                <button class="tb tool" aria-label="Arrow"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg></button>
+                <button class="tb tool" aria-label="Rectangle"><svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg></button>
+                <button class="tb tool" aria-label="Circle"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg></button>
+                <button class="tb tool" aria-label="Freehand"><svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg></button>
+                <button class="tb icon" aria-label="Delete"><svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo"><svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg></button>
+                <button class="tb icon" aria-label="Redo"><svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg></button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider">
+                  <button class="mode-segment">IDE</button>
+                  <button class="mode-segment active">App</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+              <div class="editor-body">
+                <div class="canvas-wrap">
+                  <div class="tour-canvas-header">
+                    <div class="tour-header-pill">
+                      <span class="name">Image 1</span>
+                      <span class="role">Observed</span>
+                    </div>
+                  </div>
+                  <div class="mock-screen">
+                    <div class="screen-top">
+                      <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                      <div class="top-pills"><span class="pill wide"></span><span class="pill mid"></span><span class="pill small"></span></div>
+                    </div>
+                    <div class="screen-layout">
+                      <div class="nav">
+                        <div class="nav-item active"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                      </div>
+                      <div class="screen-content">
+                        <div class="metric-grid">
+                          <div class="metric bad"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                        </div>
+                        <div class="data-table">
+                          <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row bad"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="status-pill">1240 × 782 · 1 note</div>
+              </div>
+              <div class="highlight-ring ring-mode"></div>
+            </div>
+          </div>
+
+          <div class="editor-scene" data-scene="6">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close"><svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" aria-label="Select"><svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg></button>
+                <button class="tb tool active" aria-label="Pin"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg></button>
+                <button class="tb tool" aria-label="Arrow"><svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg></button>
+                <button class="tb tool" aria-label="Rectangle"><svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg></button>
+                <button class="tb tool" aria-label="Circle"><svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg></button>
+                <button class="tb tool" aria-label="Freehand"><svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg></button>
+                <button class="tb icon" aria-label="Delete"><svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg></button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo"><svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg></button>
+                <button class="tb icon" aria-label="Redo"><svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg></button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider">
+                  <button class="mode-segment">IDE</button>
+                  <button class="mode-segment active">App</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+              <div class="editor-body">
+                <div class="canvas-wrap">
+                  <div class="tour-canvas-header">
+                    <div class="tour-header-pill">
+                      <span class="name">Image 1</span>
+                      <span class="role">Observed</span>
+                    </div>
+                  </div>
+                  <div class="mock-screen">
+                    <div class="screen-top">
+                      <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                      <div class="top-pills"><span class="pill wide"></span><span class="pill mid"></span><span class="pill small"></span></div>
+                    </div>
+                    <div class="screen-layout">
+                      <div class="nav">
+                        <div class="nav-item active"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                        <div class="nav-item"></div>
+                      </div>
+                      <div class="screen-content">
+                        <div class="metric-grid">
+                          <div class="metric bad"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                          <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                        </div>
+                        <div class="data-table">
+                          <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row bad"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="annotation" style="left: 250px; top: 158px;">
+                      <div class="badge">1</div>
+                      <div class="note-pill">padding is too tight here</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="status-pill">1240 × 782 · 1 note</div>
+              </div>
+              <div class="highlight-ring ring-copy"></div>
+            </div>
+          </div>
+
+          <div class="done-scene" data-scene="7">
+            <div class="editor-window">
+              <div class="done-card">
+                <div class="done-mark">✓</div>
+                <h2 class="done-title">You’re all set</h2>
+                <p class="done-copy">Vibeliner turns a screenshot and a few annotations into a clean prompt for AI coding tools. Press the shortcut any time and run the same loop again.</p>
+                <div class="done-loop">
+                  <span>Capture</span>
+                  <span>Annotate</span>
+                  <span>Copy</span>
+                  <span>Paste</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tour-window">
+            <div class="tour-top">
+              <div class="tour-label">Take a tour</div>
+              <div class="tour-progress" data-progress-copy>1 of 7</div>
+            </div>
+
+            <div class="entry-card">
+              <div class="entry-kicker">Available from</div>
+              <div class="entry-preview active" data-entry-preview="setup">
+                <div class="entry-mini-footer">
+                  <button class="preview-button secondary">Take a tour</button>
+                  <button class="preview-button primary">Start using Vibeliner →</button>
+                </div>
+              </div>
+              <div class="entry-preview" data-entry-preview="popover">
+                <div class="entry-mini-popover">
+                  <div class="entry-mini-row">Settings</div>
+                  <div class="entry-mini-row active">Take a tour</div>
+                  <div class="entry-mini-row">Quit</div>
+                </div>
+              </div>
+            </div>
+
+            <h2 class="tour-title" data-title>Press the hotkey</h2>
+            <p class="tour-copy" data-copy>Press <strong>⌘⇧6</strong> from anywhere to start a capture. This is the fastest way into Vibeliner.</p>
+
+            <div class="tour-pills" data-pill-row>
+              <span class="tour-pill key"><span class="kbd">⌘</span><span class="kbd">⇧</span><span class="kbd">6</span></span>
+            </div>
+
+            <div class="tour-detail active" data-detail>
+              The walkthrough can be re-opened any time from the popover, so it no longer depends on a one-time tooltip.
+            </div>
+
+            <div class="progress-row" data-progress-row>
+              <span class="active"></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+              <span></span>
+            </div>
+
+            <div class="tour-actions">
+              <div class="tour-actions-left">
+                <button class="ghost" data-skip>Skip</button>
+              </div>
+              <div class="tour-actions-right">
+                <button class="ghost" data-back>Back</button>
+                <button class="primary purple" data-next>Next</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      This prototype explores the simpler modal-slideshow version of the tutorial: one centered walkthrough window, one focused step at a time, and reusable entry points from both the completed setup footer and the popover menu. Step 5 absorbs the old IDE/App tooltip content so the product teaches the full loop in one place.
+    </div>
+  </div>
+
+  <script>
+    const steps = [
+      {
+        scene: "1",
+        title: "Press the hotkey",
+        copy: "Press <strong>⌘⇧6</strong> from anywhere to start a capture. This is the fastest way into Vibeliner.",
+        detail: "The walkthrough can be re-opened any time from the popover, so it no longer depends on a one-time tooltip.",
+        pills: [{ type: "key", html: "<span class='kbd'>⌘</span><span class='kbd'>⇧</span><span class='kbd'>6</span>" }],
+        next: "Next"
+      },
+      {
+        scene: "2",
+        title: "Select the region",
+        copy: "Click and drag to select the part of the app you want to annotate. The capture overlay stays focused on just that region.",
+        detail: "If the user is already in the editor, the tour can skip ahead to the next relevant step instead of forcing another capture.",
+        pills: [],
+        next: "Next"
+      },
+      {
+        scene: "3",
+        title: "Use the toolbar",
+        copy: "The toolbar gives you the core annotation tools. Pin points to a spot. Arrow shows direction. Rectangle and circle highlight areas. Freehand draws freely.",
+        detail: "This walkthrough stays lightweight by teaching the tools in one window instead of adding coach marks to each button.",
+        pills: [
+          { type: "default", text: "Pin" },
+          { type: "default", text: "Arrow" },
+          { type: "default", text: "Rectangle" },
+          { type: "default", text: "Circle" }
+        ],
+        next: "Next"
+      },
+      {
+        scene: "4",
+        title: "Place a note",
+        copy: "Click the screenshot to place a pin, then type what is wrong. That note becomes part of the prompt Vibeliner prepares for the AI.",
+        detail: "The screenshot and note stay visually linked so the model can connect the issue description to the exact spot on screen.",
+        pills: [{ type: "default", text: "1 note on canvas" }],
+        next: "Next"
+      },
+      {
+        scene: "5",
+        title: "Pick IDE or App mode",
+        copy: "<strong>IDE</strong> is for terminal tools like Codex or Claude Code. <strong>App</strong> is for chat tools like ChatGPT or Claude. This replaces the old first-use tooltip.",
+        detail: "The walkthrough teaches this in context, right on the toolbar, instead of showing a small one-time explainer that is easy to miss.",
+        pills: [
+          { type: "default", text: "IDE = prompt only" },
+          { type: "default", text: "App = prompt + image" }
+        ],
+        next: "Next"
+      },
+      {
+        scene: "6",
+        title: "Copy and paste",
+        copy: "Click <strong>Copy Prompt</strong> to copy the text. In App mode, also click <strong>Copy Image</strong>. Then paste both into your AI tool.",
+        detail: "This is the end of the loop: capture, annotate, copy, paste.",
+        pills: [
+          { type: "default", text: "Copy Prompt" },
+          { type: "default", text: "Copy Image" }
+        ],
+        next: "Next"
+      },
+      {
+        scene: "7",
+        title: "You’re ready",
+        copy: "That’s the full Vibeliner workflow. Press <strong>⌘⇧6</strong> any time to start again.",
+        detail: "The tour should close cleanly and let the user drop straight into normal app use.",
+        pills: [
+          { type: "default", text: "Capture" },
+          { type: "default", text: "Annotate" },
+          { type: "default", text: "Copy" },
+          { type: "default", text: "Paste" }
+        ],
+        next: "Got it"
+      }
+    ];
+
+    const entryButtons = Array.from(document.querySelectorAll("[data-entry]"));
+    const themeButtons = Array.from(document.querySelectorAll("[data-theme]"));
+    const entryPreviews = Array.from(document.querySelectorAll("[data-entry-preview]"));
+    const entryViews = Array.from(document.querySelectorAll("[data-entry-view]"));
+    const scenes = Array.from(document.querySelectorAll("[data-scene]"));
+    const progressBars = Array.from(document.querySelectorAll("[data-progress-row] span"));
+    const titleEl = document.querySelector("[data-title]");
+    const copyEl = document.querySelector("[data-copy]");
+    const detailEl = document.querySelector("[data-detail]");
+    const pillsEl = document.querySelector("[data-pill-row]");
+    const progressCopy = document.querySelector("[data-progress-copy]");
+    const launchCopy = document.querySelector("[data-launch-copy]");
+    const backButton = document.querySelector("[data-back]");
+    const nextButton = document.querySelector("[data-next]");
+    const skipButton = document.querySelector("[data-skip]");
+
+    let currentEntry = "setup";
+    let currentStep = 0;
+
+    function setTheme(theme) {
+      document.body.classList.toggle("light-mode", theme === "light");
+      themeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.theme === theme);
+      });
+    }
+
+    function setEntry(entry) {
+      currentEntry = entry;
+      entryButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.entry === entry);
+      });
+      entryPreviews.forEach((preview) => {
+        preview.classList.toggle("active", preview.dataset.entryPreview === entry);
+      });
+      entryViews.forEach((view) => {
+        view.hidden = view.dataset.entryView !== entry;
+      });
+      launchCopy.textContent = entry === "setup" ? "Launched from setup footer" : "Launched from popover menu";
+    }
+
+    function renderPills(pills) {
+      pillsEl.innerHTML = "";
+      pills.forEach((pill) => {
+        const el = document.createElement("span");
+        el.className = `tour-pill ${pill.type === "key" ? "key" : ""}`.trim();
+        if (pill.html) {
+          el.innerHTML = pill.html;
+        } else {
+          el.textContent = pill.text;
+        }
+        pillsEl.appendChild(el);
+      });
+      pillsEl.style.display = pills.length ? "flex" : "none";
+    }
+
+    function renderStep(index) {
+      currentStep = index;
+      const step = steps[index];
+      scenes.forEach((scene) => {
+        scene.classList.toggle("active", scene.dataset.scene === step.scene);
+      });
+      titleEl.textContent = step.title;
+      copyEl.innerHTML = step.copy;
+      detailEl.textContent = step.detail;
+      detailEl.classList.toggle("active", Boolean(step.detail));
+      renderPills(step.pills);
+      progressCopy.textContent = `${index + 1} of ${steps.length}`;
+      progressBars.forEach((bar, barIndex) => {
+        bar.classList.toggle("active", barIndex <= index);
+      });
+      backButton.style.visibility = index === 0 ? "hidden" : "visible";
+      nextButton.textContent = step.next;
+      nextButton.classList.add("primary");
+      nextButton.classList.toggle("purple", index !== steps.length - 1);
+      skipButton.style.visibility = index === steps.length - 1 ? "hidden" : "visible";
+    }
+
+    entryButtons.forEach((button) => {
+      button.addEventListener("click", () => setEntry(button.dataset.entry));
+    });
+
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => setTheme(button.dataset.theme));
+    });
+
+    backButton.addEventListener("click", () => {
+      if (currentStep > 0) renderStep(currentStep - 1);
+    });
+
+    nextButton.addEventListener("click", () => {
+      if (currentStep < steps.length - 1) {
+        renderStep(currentStep + 1);
+      } else {
+        renderStep(0);
+      }
+    });
+
+    skipButton.addEventListener("click", () => {
+      renderStep(steps.length - 1);
+    });
+
+    setEntry("setup");
+    setTheme("dark");
+    renderStep(0);
+  </script>
+</body>
+</html>

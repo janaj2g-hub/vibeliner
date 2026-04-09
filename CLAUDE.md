@@ -190,6 +190,22 @@ Vibeliner/
 | In Review | `96216108-e645-49fd-9bb8-8c3952f09f82` |
 | Done | `d2b05df9-b63f-4261-8dcf-12b0241c2e18` |
 
+## Design System
+
+Three files in `docs/design-system/` document the visual design system. These files are PROTECTED — never delete them.
+
+| File | Purpose | Audience |
+|------|---------|----------|
+| `DESIGN_SYSTEM.md` | Machine-readable token reference — names, values (light + dark), usage, consuming files | Claude Code prompts |
+| `design-system.html` | Visual token reference — color swatches, typography, component previews with light/dark toggle | Human review |
+| `Design_Tester.html` | Interactive control playground — every button/control with hover/click states, token mappings | Human review, QA |
+
+**Rules:**
+- The runtime source of truth is `Vibeliner/Design/DesignTokens.swift`
+- Any ticket that adds, changes, or removes a token in DesignTokens.swift MUST also update all 3 design system files
+- Any ticket that adds a new button or interactive control MUST add it to Design_Tester.html
+- Never delete these files or overwrite them with empty content
+
 ## Reference docs
 
 - `docs/VIBELINER_PRD.md` — master product spec (all 13 locked product definitions)

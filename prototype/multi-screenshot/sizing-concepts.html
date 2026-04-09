@@ -1,0 +1,748 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner — Image Sizing Concepts</title>
+<style>
+:root {
+  --purple-light: #AFA9EC;
+  --purple-dark: #534AB7;
+  --purple-fill: rgba(175,169,236,0.16);
+  --purple-fill-strong: rgba(175,169,236,0.22);
+  --red: #EF4444;
+  --dark-chrome: rgba(30,30,30,0.92);
+  --chrome-border: rgba(255,255,255,0.08);
+  --text-primary: rgba(255,255,255,0.92);
+  --text-secondary: rgba(255,255,255,0.56);
+  --text-dim: rgba(255,255,255,0.36);
+  --surface-editor: rgba(255,255,255,0.03);
+  --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", system-ui, sans-serif;
+  --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+
+  --role-observed-bg: rgba(175,169,236,0.18);
+  --role-observed-border: rgba(175,169,236,0.36);
+  --role-expected-bg: rgba(34,197,94,0.16);
+  --role-expected-border: rgba(134,239,172,0.36);
+  --role-reference-bg: rgba(59,130,246,0.16);
+  --role-reference-border: rgba(147,197,253,0.36);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-ui);
+  background: #0e0e12;
+  color: var(--text-primary);
+  min-height: 100vh;
+  line-height: 1.5;
+}
+
+.shell {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+
+h1 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--purple-light);
+  text-align: center;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+
+.intro {
+  max-width: 720px;
+  margin: 0 auto 32px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* ── Screenshot size presets ── */
+.preset-bar {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  appearance: none;
+  border: 1px solid var(--chrome-border);
+  background: rgba(255,255,255,0.03);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 6px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 140ms ease;
+}
+
+.preset-btn:hover {
+  background: var(--purple-fill);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.24);
+}
+
+.preset-btn.active {
+  background: var(--purple-fill-strong);
+  color: var(--purple-light);
+  border-color: rgba(175,169,236,0.32);
+}
+
+/* ── Concept card ── */
+.concept {
+  margin-bottom: 40px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  background: rgba(255,255,255,0.015);
+  overflow: hidden;
+}
+
+.concept-header {
+  padding: 18px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.concept-number {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--purple-light);
+  background: var(--purple-fill);
+  padding: 3px 10px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+.concept-title {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.concept-body {
+  padding: 20px 22px;
+}
+
+.concept-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.65;
+  margin-bottom: 18px;
+  max-width: 800px;
+}
+
+.concept-desc strong { color: var(--text-primary); font-weight: 600; }
+
+.concept-verdict {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.concept-verdict.good {
+  background: rgba(34,197,94,0.08);
+  border: 1px solid rgba(34,197,94,0.15);
+  color: rgba(134,239,172,0.9);
+}
+
+.concept-verdict.bad {
+  background: rgba(239,68,68,0.06);
+  border: 1px solid rgba(239,68,68,0.12);
+  color: rgba(239,140,140,0.9);
+}
+
+.concept-verdict.mixed {
+  background: rgba(250,204,21,0.06);
+  border: 1px solid rgba(250,204,21,0.12);
+  color: rgba(250,224,120,0.9);
+}
+
+.concept-verdict strong { font-weight: 700; }
+
+/* ── Filmstrip demo area ── */
+.filmstrip-demo {
+  border-radius: 6px;
+  background: var(--surface-editor);
+  padding: 14px;
+  position: relative;
+  box-shadow: inset 0 0 0 1px rgba(175,169,236,0.08);
+}
+
+.demo-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+/* ── Individual concepts ── */
+
+/* Concept 1: Fixed frame — all cells same size, images scale to fit */
+.concept-1 .cell {
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.concept-1 .cell-frame {
+  aspect-ratio: 16 / 10;
+  background: rgba(15,23,42,0.04);
+  border-radius: 4px;
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.concept-1 .cell-frame .img-sim {
+  position: absolute;
+  /* object-fit: contain behavior simulated */
+}
+
+.concept-1 .cell-frame .img-sim.fit-contain {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Concept 2: Natural size — each image at its captured dimensions */
+.concept-2 .demo-grid {
+  grid-template-columns: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: start;
+}
+
+.concept-2 .cell {
+  flex-shrink: 0;
+  border-radius: 4px;
+  overflow: visible;
+}
+
+/* Concept 3: Uniform height rows */
+.concept-3 .demo-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.concept-3 .cell {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.concept-3 .cell-frame {
+  overflow: hidden;
+  border-radius: 4px;
+  position: relative;
+}
+
+/* Concept 4: Masonry */
+.concept-4 .demo-grid {
+  columns: 3;
+  column-gap: 12px;
+  display: block;
+}
+
+.concept-4 .cell {
+  break-inside: avoid;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Concept 5: Tallest wins */
+.concept-5 .demo-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-rows: auto;
+}
+
+.concept-5 .cell {
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ── Shared cell parts ── */
+.cell .meta {
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px 4px;
+}
+
+.cell .pill {
+  height: 28px;
+  padding: 0 4px 0 10px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 9px;
+  font-weight: 600;
+  color: white;
+  max-width: 100%;
+}
+
+.cell .pill.observed {
+  background: var(--role-observed-bg);
+  border: 1px solid var(--role-observed-border);
+}
+
+.cell .pill.expected {
+  background: var(--role-expected-bg);
+  border: 1px solid var(--role-expected-border);
+}
+
+.cell .pill.reference {
+  background: var(--role-reference-bg);
+  border: 1px solid var(--role-reference-border);
+}
+
+.cell .pill .role-tag {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  font-size: 8px;
+  font-weight: 600;
+}
+
+.cell .pill .name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Mock screenshot content */
+.img-sim {
+  border-radius: 3px;
+  overflow: hidden;
+  position: relative;
+}
+
+.img-sim .bar-top {
+  height: 22px;
+  padding: 0 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255,255,255,0.7);
+}
+
+.img-sim .dot { width: 5px; height: 5px; border-radius: 999px; }
+.img-sim .dot.r { background: #ff5f57; }
+.img-sim .dot.y { background: #febc2e; }
+.img-sim .dot.g { background: #28c840; }
+
+.img-sim .content {
+  padding: 8px;
+  display: grid;
+  gap: 5px;
+}
+
+.img-sim .block {
+  border-radius: 2px;
+  background: rgba(15,23,42,0.07);
+}
+
+.img-sim .block.accent { background: rgba(83,74,183,0.12); }
+.img-sim .block.warn { background: rgba(239,68,68,0.1); }
+
+/* Size label overlay */
+.size-label {
+  position: absolute;
+  bottom: 4px;
+  right: 4px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(0,0,0,0.65);
+  color: rgba(255,255,255,0.7);
+  font-family: var(--font-mono);
+  font-size: 8px;
+  font-weight: 600;
+  pointer-events: none;
+}
+
+/* Letterbox bars */
+.letterbox {
+  background: rgba(0,0,0,0.06);
+}
+
+/* Crop indicator */
+.crop-indicator {
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed rgba(239,68,68,0.3);
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.crop-label {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(239,68,68,0.15);
+  color: rgba(239,140,140,0.9);
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+
+<div class="shell">
+  <h1>Image Sizing Concepts for Filmstrip Grid</h1>
+  <p class="subtitle">How should screenshots of different sizes fit inside the composite?</p>
+
+  <p class="intro">
+    Users capture screenshots of varying dimensions — a full-screen dashboard (2560×1440), a narrow mobile panel (390×844), a small tooltip crop (280×120). The filmstrip must handle all of these in the same grid. Below are five concepts showing how.
+  </p>
+
+  <div class="preset-bar">
+    <button class="preset-btn active" onclick="setPreset('mixed')">Mixed sizes</button>
+    <button class="preset-btn" onclick="setPreset('uniform')">All same size</button>
+    <button class="preset-btn" onclick="setPreset('extreme')">Extreme variance</button>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONCEPT 1: Fixed frame, contain-fit -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="concept concept-1" id="c1">
+    <div class="concept-header">
+      <span class="concept-number">Concept 1</span>
+      <span class="concept-title">Fixed Frame — Scale to Fit (contain)</span>
+    </div>
+    <div class="concept-body">
+      <p class="concept-desc">
+        Every cell has the <strong>same fixed aspect ratio</strong> (16:10). The screenshot scales down to fit entirely inside the frame, preserving its aspect ratio. Mismatched images get <strong>letterbox bars</strong> (dark padding) on the sides or top/bottom.
+      </p>
+      <div class="filmstrip-demo" id="c1-demo"></div>
+      <div class="concept-verdict mixed">
+        <strong>Verdict: Workable but lossy.</strong> The grid is perfectly predictable — every cell is the same size, easy to lay out. But tall screenshots (like a mobile view) shrink dramatically to fit the wide frame, wasting space. The letterbox bars are visual noise that competes with annotations. And the screenshots aren't 1:1 — a user comparing pixel-level details loses fidelity. Works well when all screenshots happen to be similar aspect ratios. Falls apart with mixed orientations.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONCEPT 2: Natural size (1:1) -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="concept concept-2" id="c2">
+    <div class="concept-header">
+      <span class="concept-number">Concept 2</span>
+      <span class="concept-title">Natural Size — Every Image at Captured Dimensions</span>
+    </div>
+    <div class="concept-body">
+      <p class="concept-desc">
+        Each image renders at its <strong>exact captured pixel dimensions</strong> (or a uniform scale factor). No grid — images flow freely, each one exactly the size the user drew the selection rectangle. This is the "infinite canvas" approach taken literally.
+      </p>
+      <div class="filmstrip-demo" id="c2-demo"></div>
+      <div class="concept-verdict bad">
+        <strong>Verdict: Faithful but chaotic.</strong> Perfect pixel fidelity — what you captured is exactly what you see. But the layout is unpredictable and messy. A tiny tooltip crop sits next to a massive dashboard capture. The stitched export would be enormous and irregular. Comparisons between images are hard because they're different physical sizes. The user has to scroll and hunt. This works for a freeform whiteboard tool, but not for a structured comparison filmstrip.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONCEPT 3: Uniform row height, variable width -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="concept concept-3" id="c3">
+    <div class="concept-header">
+      <span class="concept-number">Concept 3</span>
+      <span class="concept-title">Uniform Row Height — Each Row Normalizes to the Same Height</span>
+    </div>
+    <div class="concept-body">
+      <p class="concept-desc">
+        All images in a row are scaled to the <strong>same height</strong> (the tallest image in that row sets the height). Each image keeps its native aspect ratio, so <strong>widths vary</strong> within the row. The grid columns flex to accommodate different widths. This is similar to how Google Photos or Flickr lay out image grids.
+      </p>
+      <div class="filmstrip-demo" id="c3-demo"></div>
+      <div class="concept-verdict good">
+        <strong>Verdict: Strong balance.</strong> Images keep their aspect ratios — no cropping, no letterboxing. Rows are visually tidy because everything shares a baseline height. Wide screenshots get more horizontal space naturally. Narrow screenshots don't shrink to nothing. The stitched export has clean row breaks. The tradeoff: column widths aren't uniform, so the grid feels less "structured" than Concept 1. But for comparing screenshots, preserving the actual proportions matters more than grid neatness.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONCEPT 4: Masonry -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="concept concept-4" id="c4">
+    <div class="concept-header">
+      <span class="concept-number">Concept 4</span>
+      <span class="concept-title">Masonry — Pinterest-Style Stacking</span>
+    </div>
+    <div class="concept-body">
+      <p class="concept-desc">
+        Fixed column widths (3 columns). Each image scales to fill the column width, keeping its aspect ratio, and <strong>stacks vertically</strong> with no row alignment. Tall images take more vertical space. Short images leave room for the next one. Classic masonry layout.
+      </p>
+      <div class="filmstrip-demo" id="c4-demo"></div>
+      <div class="concept-verdict bad">
+        <strong>Verdict: Pretty but wrong for this use case.</strong> Masonry looks great for browsing photos — but Vibeliner is a comparison and annotation tool, not a gallery. The staggered heights make it hard to compare two images side-by-side because they don't share horizontal baselines. Annotation badges that reference "compare Image 1 to Image 3" are hard to follow when they're at completely different vertical positions. The reading order (column-first instead of row-first) is unintuitive for a numbered annotation sequence. This layout fights the core workflow.
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════ -->
+  <!-- CONCEPT 5: Equal columns, aspect-ratio preserved, row height = tallest -->
+  <!-- ═══════════════════════════════════════ -->
+  <div class="concept concept-5" id="c5">
+    <div class="concept-header">
+      <span class="concept-number">Concept 5</span>
+      <span class="concept-title">Equal Columns + Aspect Fit — Grid Structure with Natural Proportions</span>
+    </div>
+    <div class="concept-body">
+      <p class="concept-desc">
+        Fixed equal-width columns (like Concept 1), but <strong>each image keeps its own aspect ratio</strong> within the column. The row height is set by the tallest image in that row — shorter images are <strong>vertically centered</strong> in the row with subtle background fill behind them. No cropping. No letterboxing. The grid stays structured but respects each screenshot's shape.
+      </p>
+      <div class="filmstrip-demo" id="c5-demo"></div>
+      <div class="concept-verdict good">
+        <strong>Verdict: Recommended.</strong> This is the best of both worlds. Equal column widths give a clean, predictable grid structure (easy to scan, easy to annotate across). Aspect ratio preservation means no information is lost — the user sees exactly what they captured. Row height flexes to the tallest image, so tall screenshots don't get crushed. Shorter images center cleanly in the extra space. The stitched export has consistent column widths, making it easy for LLMs to parse. The only cost: some vertical whitespace when images in the same row have very different heights. That's a good tradeoff — whitespace is better than cropping or distortion.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Screenshot simulation data ──
+const presets = {
+  mixed: [
+    { w: 1280, h: 800, label: "Dashboard", bg: "#f5f7fb", role: "observed" },
+    { w: 390, h: 680, label: "Mobile panel", bg: "#f0ebfd", role: "reference" },
+    { w: 1280, h: 720, label: "Settings page", bg: "#f0f4f0", role: "expected" },
+  ],
+  uniform: [
+    { w: 1280, h: 800, label: "Page A", bg: "#f5f7fb", role: "observed" },
+    { w: 1280, h: 800, label: "Page B", bg: "#f0f4f0", role: "expected" },
+    { w: 1280, h: 800, label: "Page C", bg: "#edf1f6", role: "reference" },
+  ],
+  extreme: [
+    { w: 2560, h: 1440, label: "Full screen", bg: "#f5f7fb", role: "observed" },
+    { w: 280, h: 120, label: "Tiny tooltip", bg: "#fff8f0", role: "reference" },
+    { w: 390, h: 844, label: "Phone screen", bg: "#f0ebfd", role: "expected" },
+  ],
+};
+
+let currentPreset = "mixed";
+
+function pillClass(role) {
+  return role;
+}
+
+function roleTag(role) {
+  return role.charAt(0).toUpperCase() + role.slice(1);
+}
+
+function mockContent(item, displayW, displayH) {
+  const scale = Math.min(displayW / 400, displayH / 300, 1);
+  const barH = Math.round(22 * scale);
+  const pad = Math.round(8 * scale);
+  const gap = Math.round(5 * scale);
+  const blockH = Math.round(Math.max(8, (displayH - barH - pad * 2 - gap * 3) / 4));
+
+  const colors = {
+    observed: "accent",
+    expected: "",
+    reference: "warn",
+  };
+
+  return `
+    <div style="width:${displayW}px; height:${displayH}px; background:${item.bg}; border-radius:3px; overflow:hidden; position:relative;">
+      <div style="height:${barH}px; padding:0 ${pad}px; display:flex; align-items:center; gap:3px; background:rgba(255,255,255,0.7);">
+        <span class="dot r" style="width:${Math.round(5*scale)}px;height:${Math.round(5*scale)}px;"></span>
+        <span class="dot y" style="width:${Math.round(5*scale)}px;height:${Math.round(5*scale)}px;"></span>
+        <span class="dot g" style="width:${Math.round(5*scale)}px;height:${Math.round(5*scale)}px;"></span>
+      </div>
+      <div style="padding:${pad}px; display:grid; gap:${gap}px;">
+        <div class="block" style="height:${blockH}px;"></div>
+        <div class="block ${colors[item.role] || ''}" style="height:${blockH}px;"></div>
+        <div class="block" style="height:${blockH}px; width:70%;"></div>
+      </div>
+      <div class="size-label">${item.w}×${item.h}</div>
+    </div>`;
+}
+
+function metaPill(item, idx) {
+  return `
+    <div class="meta">
+      <div class="pill ${pillClass(item.role)}">
+        <span class="name">${item.label || "Image " + (idx + 1)}</span>
+        <span class="role-tag">${roleTag(item.role)}</span>
+      </div>
+    </div>`;
+}
+
+// ── Concept 1: Fixed frame ──
+function renderC1(items) {
+  const el = document.getElementById("c1-demo");
+  const frameW = 280;
+  const frameH = 175; // 16:10
+
+  el.innerHTML = `<div class="demo-grid">${items.map((item, i) => {
+    const ar = item.w / item.h;
+    const frameAr = frameW / frameH;
+    let imgW, imgH;
+    if (ar > frameAr) {
+      imgW = frameW;
+      imgH = frameW / ar;
+    } else {
+      imgH = frameH;
+      imgW = frameH * ar;
+    }
+
+    return `<div class="cell">
+      ${metaPill(item, i)}
+      <div class="cell-frame" style="width:100%; aspect-ratio:16/10; background:rgba(0,0,0,0.04); display:grid; place-items:center;">
+        ${mockContent(item, Math.round(imgW), Math.round(imgH))}
+      </div>
+    </div>`;
+  }).join("")}</div>`;
+}
+
+// ── Concept 2: Natural size ──
+function renderC2(items) {
+  const el = document.getElementById("c2-demo");
+  const maxDim = 300;
+
+  el.innerHTML = `<div class="demo-grid" style="display:flex; flex-wrap:wrap; gap:12px; align-items:start;">
+    ${items.map((item, i) => {
+      const scale = Math.min(maxDim / item.w, maxDim / item.h, 1);
+      const dispW = Math.round(item.w * scale);
+      const dispH = Math.round(item.h * scale);
+
+      return `<div class="cell" style="flex-shrink:0;">
+        ${metaPill(item, i)}
+        ${mockContent(item, dispW, dispH)}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// ── Concept 3: Uniform row height ──
+function renderC3(items) {
+  const el = document.getElementById("c3-demo");
+  const targetRowH = 200;
+
+  // Calculate widths proportional to aspect ratios at uniform height
+  const ratios = items.map(item => item.w / item.h);
+  const totalRatio = ratios.reduce((a, b) => a + b, 0);
+  const availW = 900; // approximate container
+
+  el.innerHTML = `<div class="demo-grid" style="display:flex; gap:12px; align-items:start;">
+    ${items.map((item, i) => {
+      const dispH = targetRowH;
+      const dispW = Math.round(targetRowH * ratios[i]);
+      const flexBasis = (ratios[i] / totalRatio * 100).toFixed(1);
+
+      return `<div class="cell" style="flex: ${ratios[i].toFixed(2)} 1 0; min-width:0;">
+        ${metaPill(item, i)}
+        <div style="width:100%; aspect-ratio:${item.w}/${item.h}; overflow:hidden; border-radius:3px;">
+          ${mockContent(item, Math.min(dispW, 400), Math.min(dispH, 300))}
+        </div>
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// ── Concept 4: Masonry ──
+function renderC4(items) {
+  const el = document.getElementById("c4-demo");
+  const colW = 260;
+
+  el.innerHTML = `<div class="demo-grid" style="columns:3; column-gap:12px; display:block;">
+    ${items.map((item, i) => {
+      const ar = item.w / item.h;
+      const dispW = colW;
+      const dispH = Math.round(colW / ar);
+
+      return `<div class="cell" style="break-inside:avoid; margin-bottom:12px;">
+        ${metaPill(item, i)}
+        ${mockContent(item, dispW, Math.min(dispH, 500))}
+      </div>`;
+    }).join("")}
+  </div>`;
+}
+
+// ── Concept 5: Equal columns + aspect fit (recommended) ──
+function renderC5(items) {
+  const el = document.getElementById("c5-demo");
+
+  // Group into rows of 3
+  const rows = [];
+  for (let i = 0; i < items.length; i += 3) {
+    rows.push(items.slice(i, i + 3));
+  }
+
+  el.innerHTML = rows.map(row => {
+    // Find tallest aspect in this row
+    const heights = row.map(item => {
+      const ar = item.w / item.h;
+      return 1 / ar; // normalized height at width=1
+    });
+    const maxNormH = Math.max(...heights);
+
+    return `<div style="display:grid; grid-template-columns:repeat(${row.length}, minmax(0,1fr)); gap:12px; margin-bottom:${rows.length > 1 ? '12px' : '0'}; align-items:center;">
+      ${row.map((item, i) => {
+        const ar = item.w / item.h;
+        const colW = 260;
+        const cellH = Math.round(colW * maxNormH);
+        const imgH = Math.round(colW / ar);
+
+        return `<div class="cell" style="position:relative;">
+          ${metaPill(item, i)}
+          <div style="width:100%; background:rgba(0,0,0,0.02); border-radius:4px; display:grid; place-items:center; min-height:${Math.min(cellH, 400)}px;">
+            <div style="width:100%; aspect-ratio:${item.w}/${item.h};">
+              ${mockContent(item, colW, Math.min(imgH, 400))}
+            </div>
+          </div>
+        </div>`;
+      }).join("")}
+    </div>`;
+  }).join("");
+}
+
+// ── Render all ──
+function renderAll() {
+  const items = presets[currentPreset];
+  renderC1(items);
+  renderC2(items);
+  renderC3(items);
+  renderC4(items);
+  renderC5(items);
+}
+
+function setPreset(name) {
+  currentPreset = name;
+  document.querySelectorAll(".preset-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.textContent.toLowerCase().includes(name));
+  });
+  renderAll();
+}
+
+renderAll();
+</script>
+</body>
+</html>

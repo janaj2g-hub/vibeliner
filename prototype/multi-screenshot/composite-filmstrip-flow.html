@@ -1,0 +1,1736 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vibeliner Composite Filmstrip Prototype</title>
+  <style>
+    :root {
+      --bg-top: #15161b;
+      --bg-bottom: #101117;
+      --surface-window: #242424;
+      --surface-title: #2a2a2a;
+      --surface-panel: rgba(255, 255, 255, 0.02);
+      --surface-soft: rgba(255, 255, 255, 0.04);
+      --surface-editor: rgba(255, 255, 255, 0.03);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --border-faint: rgba(255, 255, 255, 0.04);
+      --text-primary: rgba(255, 255, 255, 0.9);
+      --text-secondary: rgba(255, 255, 255, 0.56);
+      --text-dim: rgba(255, 255, 255, 0.36);
+      --purple-light: #afa9ec;
+      --purple-dark: #534ab7;
+      --purple-fill: rgba(175, 169, 236, 0.16);
+      --purple-fill-strong: rgba(175, 169, 236, 0.22);
+      --red: #ef4444;
+      --red-note-bg: rgba(255, 248, 248, 0.88);
+      --red-note-border: rgba(239, 68, 68, 0.16);
+      --shadow-window: 0 32px 84px rgba(0, 0, 0, 0.42);
+      --shadow-floating: 0 18px 36px rgba(0, 0, 0, 0.26);
+      --radius-window: 3px;
+      --radius-panel: 3px;
+      --radius-pill: 999px;
+      --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+      --transition-fast: 160ms ease;
+    }
+
+    body.light-mode {
+      --bg-top: #efeff5;
+      --bg-bottom: #e2e4ed;
+      --surface-window: #f6f7fb;
+      --surface-title: #fbfbff;
+      --surface-panel: rgba(15, 23, 42, 0.02);
+      --surface-soft: rgba(15, 23, 42, 0.04);
+      --surface-editor: rgba(15, 23, 42, 0.03);
+      --border-soft: rgba(15, 23, 42, 0.08);
+      --border-faint: rgba(15, 23, 42, 0.05);
+      --text-primary: rgba(15, 23, 42, 0.92);
+      --text-secondary: rgba(15, 23, 42, 0.62);
+      --text-dim: rgba(15, 23, 42, 0.4);
+      --purple-fill: rgba(83, 74, 183, 0.1);
+      --purple-fill-strong: rgba(83, 74, 183, 0.14);
+      --shadow-window: 0 28px 68px rgba(28, 31, 43, 0.18);
+      --shadow-floating: 0 14px 28px rgba(28, 31, 43, 0.12);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+
+    body {
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      background:
+        radial-gradient(circle at top, rgba(175, 169, 236, 0.12), transparent 26%),
+        linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+    }
+
+    .shell {
+      width: min(1380px, calc(100vw - 28px));
+      margin: 28px auto 40px;
+      display: grid;
+      justify-items: center;
+      gap: 18px;
+    }
+
+    .chrome {
+      width: min(100%, 1240px);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .step-toggle,
+    .theme-toggle,
+    .artifact-toggle {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      border-radius: var(--radius-pill);
+      background: var(--surface-soft);
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03) inset;
+    }
+
+    .step-toggle button,
+    .theme-toggle button,
+    .artifact-toggle button {
+      appearance: none;
+      border: 0;
+      background: transparent;
+      color: var(--text-secondary);
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      font: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      cursor: pointer;
+      transition: background var(--transition-fast), color var(--transition-fast);
+      white-space: nowrap;
+    }
+
+    .step-toggle button.active,
+    .theme-toggle button.active,
+    .artifact-toggle button.active {
+      background: var(--purple-fill);
+      color: var(--purple-light);
+    }
+
+    body.light-mode .step-toggle button.active,
+    body.light-mode .theme-toggle button.active,
+    body.light-mode .artifact-toggle button.active {
+      color: var(--purple-dark);
+    }
+
+    .window {
+      width: min(100%, 1140px);
+      background: linear-gradient(180deg, var(--surface-title) 0%, var(--surface-window) 72px, var(--surface-window) 100%);
+      border: 1px solid var(--border-soft);
+      border-radius: var(--radius-window);
+      box-shadow: var(--shadow-window);
+      overflow: hidden;
+    }
+
+    .titlebar {
+      position: relative;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+
+    .traffic {
+      position: absolute;
+      left: 16px;
+      top: 18px;
+      display: flex;
+      gap: 8px;
+    }
+
+    .traffic span {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      display: block;
+    }
+
+    .traffic span:nth-child(1) { background: #ff5f57; }
+    .traffic span:nth-child(2) { background: #febc2e; }
+    .traffic span:nth-child(3) { background: #28c840; }
+
+    .window-title {
+      margin: 0;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .window-subtitle {
+      margin-top: 4px;
+      text-align: center;
+      color: var(--text-dim);
+      font-size: 12px;
+    }
+
+    .stage {
+      min-height: 700px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at top, rgba(175, 169, 236, 0.06), transparent 24%),
+        linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.02) 100%);
+    }
+
+    body.light-mode .stage {
+      background:
+        radial-gradient(circle at top, rgba(83, 74, 183, 0.05), transparent 24%),
+        linear-gradient(180deg, transparent 0%, rgba(15, 23, 42, 0.02) 100%);
+    }
+
+    .stage-view {
+      display: none;
+      min-height: 700px;
+      padding: 28px;
+      position: relative;
+    }
+
+    .stage-view.active {
+      display: block;
+    }
+
+    .scene {
+      min-height: 642px;
+      border-radius: 3px;
+      position: relative;
+      overflow: hidden;
+      background: var(--surface-panel);
+    }
+
+    .desktop {
+      min-height: 642px;
+      background:
+        linear-gradient(180deg, rgba(12, 12, 16, 0.16) 0%, rgba(12, 12, 16, 0.08) 100%),
+        linear-gradient(180deg, #596477 0%, #353c4a 100%);
+    }
+
+    body.light-mode .desktop {
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.06) 100%),
+        linear-gradient(180deg, #d4ddea 0%, #b8c4d4 100%);
+    }
+
+    .desktop-menubar {
+      height: 28px;
+      padding: 0 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.82);
+      background: rgba(20, 20, 22, 0.48);
+    }
+
+    body.light-mode .desktop-menubar {
+      color: rgba(15, 23, 42, 0.84);
+      background: rgba(255, 255, 255, 0.42);
+    }
+
+    .desktop-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .status-mark {
+      width: 13px;
+      height: 13px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, var(--purple-light) 0%, var(--purple-dark) 100%);
+    }
+
+    .popover {
+      position: absolute;
+      right: 44px;
+      top: 42px;
+      width: 238px;
+      border-radius: 3px;
+      background: rgba(30, 30, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      padding: 6px;
+    }
+
+    .popover-row {
+      min-height: 32px;
+      border-radius: 3px;
+      padding: 0 9px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .popover-row.active {
+      background: rgba(175, 169, 236, 0.14);
+    }
+
+    .popover-row.dim {
+      color: rgba(255, 255, 255, 0.62);
+    }
+
+    .popover-row .keys {
+      display: inline-flex;
+      gap: 3px;
+    }
+
+    .popover-row .keys span {
+      min-width: 20px;
+      height: 20px;
+      padding: 0 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.06);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-family: var(--font-mono);
+    }
+
+    .hotkey-chip {
+      position: absolute;
+      left: 34px;
+      top: 48px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 14px;
+      background: rgba(28, 28, 32, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 12px;
+    }
+
+    .kbd {
+      min-width: 24px;
+      height: 22px;
+      padding: 0 7px;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: white;
+    }
+
+    .helper-pill {
+      position: absolute;
+      left: 34px;
+      bottom: 34px;
+      padding: 12px 16px;
+      border-radius: 999px;
+      background: rgba(28, 28, 32, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      color: rgba(255, 255, 255, 0.84);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .editor-window {
+      width: min(1040px, 100%);
+      min-height: 610px;
+      margin: 12px auto 0;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.96);
+      border: 1px solid rgba(175, 169, 236, 0.08);
+      overflow: hidden;
+      box-shadow: 0 28px 60px rgba(0, 0, 0, 0.28);
+      position: relative;
+    }
+
+    body.light-mode .editor-window {
+      background: rgba(250, 250, 254, 0.98);
+      border-color: rgba(83, 74, 183, 0.08);
+    }
+
+    .editor-header {
+      height: 58px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-bottom: 1px solid var(--border-faint);
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+    }
+
+    .toolbar {
+      position: absolute;
+      left: 50%;
+      top: 74px;
+      transform: translateX(-50%);
+      height: 40px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 6px;
+      border-radius: 20px;
+      background: rgba(30, 30, 30, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+      z-index: 5;
+    }
+
+    .tb {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 0;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.74);
+      border-radius: 999px;
+      cursor: default;
+      font: inherit;
+    }
+
+    .tb.icon { width: 28px; height: 28px; font-size: 11px; font-weight: 700; }
+    .tb.tool { width: 30px; height: 30px; font-size: 11px; font-weight: 700; }
+    .tb.action {
+      height: 28px;
+      padding: 0 14px;
+      background: rgba(116, 97, 194, 0.25);
+      border: 1.5px solid rgba(167, 150, 235, 0.36);
+      color: var(--purple-light);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+
+    .tb.action.secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.72);
+    }
+
+    .tb.action.toggle.active {
+      background: rgba(175, 169, 236, 0.25);
+      border-color: rgba(175, 169, 236, 0.24);
+      color: var(--purple-light);
+    }
+
+    .tb.action.copy {
+      background: rgba(116, 97, 194, 0.25);
+      border-color: #a796eb;
+      color: var(--purple-light);
+    }
+
+    .mode-slider {
+      display: inline-flex;
+      align-items: center;
+      gap: 0;
+      height: 28px;
+      padding: 2px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.06);
+      flex-shrink: 0;
+    }
+
+    .mode-slider .mode-segment {
+      min-width: 46px;
+      height: 24px;
+      border: 0;
+      border-radius: 12px;
+      background: transparent;
+      color: rgba(255,255,255,0.3);
+      font-size: 9px;
+      font-weight: 600;
+      cursor: default;
+    }
+
+    .mode-slider .mode-segment.active {
+      background: rgba(175,169,236,0.25);
+      color: var(--purple-light);
+    }
+
+    .tb.action.add {
+      background: rgba(175, 169, 236, 0.18);
+      border-color: rgba(175, 169, 236, 0.24);
+    }
+
+    .tb.tool.active {
+      background: var(--purple-fill-strong);
+      color: var(--purple-light);
+    }
+
+    .tb svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .tb.tool.pin-active svg .pin-head {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    .tb-divider {
+      width: 1px;
+      height: 20px;
+      background: rgba(255, 255, 255, 0.08);
+      margin: 0 4px;
+    }
+
+    .editor-body {
+      min-height: 552px;
+      padding: 96px 28px 80px;
+      position: relative;
+      display: grid;
+      place-items: center;
+    }
+
+    .canvas-wrap {
+      width: min(850px, 100%);
+      padding: 18px;
+      border-radius: var(--radius-panel);
+      background: var(--surface-editor);
+    }
+
+    .filmstrip-wrap {
+      width: min(920px, 100%);
+      padding: 18px;
+      border-radius: var(--radius-panel);
+      background: var(--surface-editor);
+      box-shadow: inset 0 0 0 1px rgba(175, 169, 236, 0.22);
+    }
+
+    .status-pill {
+      position: absolute;
+      left: 50%;
+      bottom: 24px;
+      transform: translateX(-50%);
+      padding: 10px 14px;
+      border-radius: var(--radius-pill);
+      background: rgba(30, 30, 30, 0.88);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
+    }
+
+    .single-frame,
+    .film-cell {
+      border-radius: 3px;
+      overflow: visible;
+      background: transparent;
+      box-shadow: none;
+      position: relative;
+      min-width: 0;
+    }
+
+    .film-meta {
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px 8px;
+      min-width: 0;
+    }
+
+    .title-pill {
+      height: 34px;
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
+      padding: 0 5px 0 12px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: white;
+      box-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--pill-border, rgba(255, 255, 255, 0.1));
+      pointer-events: auto;
+      background: var(--pill-bg, rgba(30, 30, 30, 0.9));
+    }
+
+    .single-frame .film-meta {
+      justify-content: center;
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+
+    .single-frame .title-pill {
+      width: auto;
+      min-width: 240px;
+      max-width: 340px;
+    }
+
+    .title-pill.is-observed {
+      --pill-bg: rgba(83, 74, 183, 0.24);
+      --pill-border: rgba(175, 169, 236, 0.32);
+      --select-bg: rgba(197, 191, 244, 0.18);
+    }
+
+    .title-pill.is-expected {
+      --pill-bg: rgba(34, 197, 94, 0.2);
+      --pill-border: rgba(134, 239, 172, 0.32);
+      --select-bg: rgba(220, 252, 231, 0.16);
+    }
+
+    .title-pill.is-reference {
+      --pill-bg: rgba(59, 130, 246, 0.2);
+      --pill-border: rgba(147, 197, 253, 0.32);
+      --select-bg: rgba(219, 234, 254, 0.16);
+    }
+
+    .title-input {
+      min-width: 0;
+      flex: 1 1 auto;
+      max-width: 100%;
+      height: 28px;
+      padding: 0 4px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      color: white;
+      font: inherit;
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .title-input:focus {
+      outline: none;
+    }
+
+    .role-select {
+      min-width: 82px;
+      height: 24px;
+      padding: 0 22px 0 9px;
+      border-radius: 999px;
+      border: 0;
+      appearance: none;
+      -webkit-appearance: none;
+      background:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5' viewBox='0 0 8 5'%3E%3Cpath d='M1 1l3 3 3-3' fill='none' stroke='rgba(255,255,255,0.88)' stroke-width='1.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") calc(100% - 9px) 50% / 8px 5px no-repeat,
+        var(--select-bg, rgba(255, 255, 255, 0.08));
+      color: rgba(255, 255, 255, 0.92);
+      font: inherit;
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      text-transform: none;
+      cursor: pointer;
+    }
+
+    .role-select:focus {
+      outline: none;
+    }
+
+    .role-select option {
+      background: #232327;
+      color: white;
+    }
+
+    .mock-screen {
+      position: relative;
+      background: linear-gradient(180deg, #f5f7fb 0%, #edf1f6 100%);
+      overflow: hidden;
+      border-radius: 3px;
+      box-shadow: 0 16px 34px rgba(0, 0, 0, 0.12);
+    }
+
+    .screen-top {
+      height: 54px;
+      padding: 14px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.74);
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      color: #263041;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-mark {
+      width: 22px;
+      height: 22px;
+      border-radius: 3px;
+      background: linear-gradient(180deg, rgba(83, 74, 183, 1) 0%, rgba(83, 74, 183, 0.72) 100%);
+    }
+
+    .top-pills {
+      display: inline-flex;
+      gap: 8px;
+    }
+
+    .pill {
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .pill.wide { width: 112px; }
+    .pill.mid { width: 78px; }
+    .pill.small { width: 38px; }
+
+    .screen-layout {
+      display: grid;
+      grid-template-columns: 188px 1fr;
+      min-height: 392px;
+    }
+
+    .nav {
+      padding: 18px 14px;
+      display: grid;
+      gap: 10px;
+      background: rgba(245, 246, 250, 0.9);
+    }
+
+    .nav-item {
+      height: 28px;
+      border-radius: 3px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .nav-item.active {
+      background: rgba(83, 74, 183, 0.16);
+    }
+
+    .screen-content {
+      padding: 18px;
+      display: grid;
+      gap: 16px;
+      align-content: start;
+    }
+
+    .metric-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric {
+      min-height: 96px;
+      padding: 16px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .metric.bad {
+      box-shadow: inset 0 0 0 1px rgba(239, 68, 68, 0.12);
+    }
+
+    .metric .head {
+      height: 12px;
+      width: 70%;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.12);
+      margin-bottom: 14px;
+    }
+
+    .metric .line {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+      margin-bottom: 8px;
+    }
+
+    .metric .line.short { width: 56%; }
+
+    .data-table {
+      border-radius: 3px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.9);
+    }
+
+    .data-table .thead,
+    .data-table .row {
+      display: grid;
+      grid-template-columns: 1.1fr 0.8fr 0.8fr 0.8fr;
+      gap: 10px;
+      padding: 12px 14px;
+    }
+
+    .data-table .thead {
+      background: rgba(241, 243, 248, 0.94);
+    }
+
+    .data-table .row {
+      min-height: 46px;
+      border-top: 1px solid rgba(15, 23, 42, 0.06);
+    }
+
+    .data-table .row.bad {
+      background: rgba(239, 68, 68, 0.08);
+    }
+
+    .bar {
+      height: 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.08);
+    }
+
+    .annotation {
+      position: absolute;
+      z-index: 3;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      background: var(--red);
+      color: white;
+      display: grid;
+      place-items: center;
+      font-size: 9px;
+      font-weight: 700;
+      box-shadow: 0 10px 18px rgba(239, 68, 68, 0.2);
+    }
+
+    .note-pill {
+      min-height: 26px;
+      max-width: 170px;
+      padding: 6px 10px;
+      border-radius: 13px;
+      background: var(--red-note-bg);
+      border: 1px solid var(--red-note-border);
+      color: #7f1d1d;
+      font-size: 12px;
+      line-height: 1.35;
+      box-shadow: 0 12px 20px rgba(44, 11, 11, 0.08);
+    }
+
+    .note-pill .prefix {
+      color: rgba(153, 27, 27, 0.58);
+      font-weight: 700;
+      margin-right: 4px;
+    }
+
+    .capture-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      overflow: hidden;
+    }
+
+    .crosshair {
+      position: absolute;
+      left: 52%;
+      top: 44%;
+      transform: translate(-50%, -50%);
+      width: 28px;
+      height: 28px;
+    }
+
+    .crosshair::before,
+    .crosshair::after,
+    .crosshair span::before,
+    .crosshair span::after {
+      content: "";
+      position: absolute;
+      background: rgba(175, 169, 236, 0.86);
+      border-radius: 999px;
+    }
+
+    .crosshair::before {
+      width: 2.3px;
+      height: 10px;
+      left: 50%;
+      top: 0;
+      transform: translateX(-50%);
+    }
+
+    .crosshair::after {
+      width: 2.3px;
+      height: 10px;
+      left: 50%;
+      bottom: 0;
+      transform: translateX(-50%);
+    }
+
+    .crosshair span::before {
+      width: 10px;
+      height: 2.3px;
+      left: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .crosshair span::after {
+      width: 10px;
+      height: 2.3px;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .selection {
+      position: absolute;
+      left: 49%;
+      top: 47%;
+      width: 362px;
+      height: 228px;
+      transform: translate(-50%, -50%);
+      border: 1.5px solid rgba(175, 169, 236, 0.9);
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
+
+    .dimension-pill {
+      position: absolute;
+      left: 50%;
+      top: calc(100% + 10px);
+      transform: translateX(-50%);
+      padding: 8px 12px;
+      border-radius: 5px;
+      background: var(--purple-dark);
+      color: white;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .mini-editor {
+      position: absolute;
+      right: 28px;
+      bottom: 28px;
+      width: 290px;
+      padding: 14px;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 12px;
+    }
+
+    .mini-title {
+      margin-bottom: 10px;
+      font-size: 12px;
+    }
+
+    .mini-canvas {
+      height: 150px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.04);
+      opacity: 0.74;
+    }
+
+    .filmstrip-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr) minmax(0, 0.78fr);
+      gap: 14px;
+      align-items: start;
+    }
+
+    .film-cell .mock-screen {
+      min-height: 430px;
+    }
+
+    .stacked-card {
+      position: absolute;
+      right: 18px;
+      top: 110px;
+      width: 246px;
+      border-radius: 3px;
+      background: rgba(31, 31, 34, 0.94);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      box-shadow: var(--shadow-floating);
+      padding: 14px;
+      color: rgba(255, 255, 255, 0.82);
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .stacked-card strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 11px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: rgba(255, 255, 255, 0.56);
+    }
+
+    .draw-surface {
+      position: absolute;
+      left: 18px;
+      right: 18px;
+      top: 62px;
+      bottom: 18px;
+      z-index: 4;
+      pointer-events: auto;
+    }
+
+    .draw-surface svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .draw-shape {
+      fill: none;
+      stroke: var(--red);
+      stroke-width: 2.5;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .draw-label {
+      font-family: var(--font-ui);
+      font-size: 12px;
+      fill: #7f1d1d;
+    }
+
+    .draw-note-bg {
+      fill: rgba(255, 248, 248, 0.92);
+      stroke: rgba(239, 68, 68, 0.18);
+      stroke-width: 1;
+    }
+
+    .artifact {
+      width: min(100%, 1140px);
+      display: grid;
+      gap: 12px;
+    }
+
+    .artifact-panel {
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.55;
+    }
+
+    .artifact-view {
+      display: none;
+    }
+
+    .artifact-view.active {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(21, 22, 26, 0.94);
+      color: #ececf3;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.6;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .footnote {
+      color: var(--text-secondary);
+      font-size: 13px;
+      line-height: 1.6;
+      text-align: center;
+      max-width: 1020px;
+    }
+
+    .footnote strong {
+      color: var(--text-primary);
+    }
+
+    @media (max-width: 1080px) {
+      .filmstrip-grid,
+      .metric-grid,
+      .screen-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .stacked-card,
+      .mini-editor {
+        position: relative;
+        right: auto;
+        top: auto;
+        bottom: auto;
+        width: 100%;
+        margin-top: 18px;
+      }
+
+      .canvas-wrap,
+      .filmstrip-wrap {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="chrome">
+      <div class="step-toggle" id="stepToggle">
+        <button data-stage="start">Start</button>
+        <button class="active" data-stage="editor">Step 1</button>
+        <button data-stage="capture">Step 2</button>
+        <button data-stage="composite">Step 3</button>
+      </div>
+
+      <div class="theme-toggle" id="themeToggle">
+        <button class="active" data-theme="dark">Dark</button>
+        <button data-theme="light">Light</button>
+      </div>
+    </div>
+
+    <section class="window">
+      <div class="titlebar">
+        <div class="traffic"><span></span><span></span><span></span></div>
+        <h1 class="window-title">Multi-image Composite Flow</h1>
+        <div class="window-subtitle">Capture once. Add more images later. Copy one stitched result.</div>
+      </div>
+
+      <div class="stage">
+        <div class="stage-view" data-stage-view="start">
+          <div class="scene desktop">
+            <div class="desktop-menubar">
+              <div class="desktop-row"><strong>Finder</strong><span>File</span><span>Edit</span><span>Window</span></div>
+              <div class="desktop-row"><span>Sun 2:30 PM</span><span class="status-mark"></span></div>
+            </div>
+
+            <div class="hotkey-chip">
+              <span>Capture</span>
+              <span class="kbd">⌘</span>
+              <span class="kbd">⇧</span>
+              <span class="kbd">6</span>
+            </div>
+
+            <div class="popover">
+              <div class="popover-row active">
+                <span>Capture Now</span>
+                <span class="keys"><span>⌘</span><span>⇧</span><span>6</span></span>
+              </div>
+              <div class="popover-row dim"><span>Recent Captures</span><span>›</span></div>
+              <div class="popover-row dim"><span>Open Captures</span></div>
+              <div class="popover-row dim"><span>Settings</span></div>
+            </div>
+
+            <div class="helper-pill">Start with the normal hotkey or popover menu.</div>
+          </div>
+        </div>
+
+        <div class="stage-view active" data-stage-view="editor">
+          <div class="scene">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close">
+                  <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" aria-label="Select">
+                  <svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg>
+                </button>
+                <button class="tb tool active pin-active" aria-label="Pin">
+                  <svg viewBox="0 0 15 15"><circle class="pin-head" cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg>
+                </button>
+                <button class="tb tool" aria-label="Arrow">
+                  <svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg>
+                </button>
+                <button class="tb tool" aria-label="Rectangle">
+                  <svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg>
+                </button>
+                <button class="tb tool" aria-label="Circle">
+                  <svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg>
+                </button>
+                <button class="tb tool" aria-label="Freehand">
+                  <svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg>
+                </button>
+                <button class="tb icon" aria-label="Delete">
+                  <svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo">
+                  <svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg>
+                </button>
+                <button class="tb icon" aria-label="Redo">
+                  <svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb action add">+ Add image</button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider" aria-label="Mode">
+                  <button class="mode-segment">IDE</button>
+                  <button class="mode-segment active">App</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+
+              <div class="editor-body">
+                <div class="canvas-wrap">
+                  <div class="single-frame">
+                    <div class="film-meta">
+                      <div class="title-pill is-observed" data-title-pill>
+                        <input class="title-input" value="Image 1" aria-label="Image title">
+                        <select class="role-select" aria-label="Image role">
+                          <option selected>Observed</option>
+                          <option>Expected</option>
+                          <option>Reference</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    <div class="mock-screen">
+                      <div class="screen-top">
+                        <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                        <div class="top-pills">
+                          <span class="pill wide"></span>
+                          <span class="pill mid"></span>
+                          <span class="pill small"></span>
+                        </div>
+                      </div>
+                      <div class="screen-layout">
+                        <div class="nav">
+                          <div class="nav-item active"></div>
+                          <div class="nav-item"></div>
+                          <div class="nav-item"></div>
+                          <div class="nav-item"></div>
+                        </div>
+                        <div class="screen-content">
+                          <div class="metric-grid">
+                            <div class="metric bad">
+                              <div class="head"></div>
+                              <div class="line"></div>
+                              <div class="line short"></div>
+                            </div>
+                            <div class="metric">
+                              <div class="head"></div>
+                              <div class="line"></div>
+                              <div class="line short"></div>
+                            </div>
+                            <div class="metric">
+                              <div class="head"></div>
+                              <div class="line"></div>
+                              <div class="line short"></div>
+                            </div>
+                          </div>
+                          <div class="data-table">
+                            <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                            <div class="row bad"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                            <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                            <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="annotation" style="left: 250px; top: 160px;">
+                        <div class="badge">1</div>
+                        <div class="note-pill"><span class="prefix">1</span>padding is too tight here</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="status-pill">1240 × 782 · 1 note</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-view" data-stage-view="capture">
+          <div class="scene">
+            <div class="editor-window" style="opacity:0.16; transform:scale(0.98);">
+              <div class="editor-header">Vibeliner</div>
+            </div>
+
+            <div class="capture-overlay">
+              <div class="crosshair"><span></span></div>
+              <div class="selection">
+                <div class="dimension-pill">640 × 480</div>
+              </div>
+
+              <div class="helper-pill">Pressing <strong>Add image</strong> starts another capture in the same session.</div>
+
+              <div class="mini-editor">
+                <div class="mini-title">Composite preview</div>
+                <div class="mini-canvas"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stage-view" data-stage-view="composite">
+          <div class="scene">
+            <div class="editor-window">
+              <div class="editor-header">Vibeliner</div>
+
+              <div class="toolbar">
+                <button class="tb icon" aria-label="Close">
+                  <svg viewBox="0 0 10 10"><line x1="1" y1="1" x2="9" y2="9"></line><line x1="9" y1="1" x2="1" y2="9"></line></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb tool" data-draw-tool="select" aria-label="Select">
+                  <svg viewBox="0 0 15 15"><path d="M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z"></path></svg>
+                </button>
+                <button class="tb tool active pin-active" data-draw-tool="pin" aria-label="Pin">
+                  <svg viewBox="0 0 15 15"><circle class="pin-head" cx="7.5" cy="5" r="4.5"></circle><line x1="7.5" y1="9.5" x2="7.5" y2="14"></line></svg>
+                </button>
+                <button class="tb tool" data-draw-tool="arrow" aria-label="Arrow">
+                  <svg viewBox="0 0 15 15"><line x1="2" y1="13" x2="13" y2="2"></line><polyline points="8,2 13,2 13,7"></polyline></svg>
+                </button>
+                <button class="tb tool" data-draw-tool="rectangle" aria-label="Rectangle">
+                  <svg viewBox="0 0 15 15"><rect x="1.5" y="2.5" width="12" height="10" rx="1.5"></rect></svg>
+                </button>
+                <button class="tb tool" data-draw-tool="circle" aria-label="Circle">
+                  <svg viewBox="0 0 15 15"><circle cx="7.5" cy="7.5" r="6"></circle></svg>
+                </button>
+                <button class="tb tool" aria-label="Freehand">
+                  <svg viewBox="0 0 15 15"><path d="M2 10 Q5 3 8 8 Q11 13 13 5"></path></svg>
+                </button>
+                <button class="tb icon" aria-label="Delete">
+                  <svg viewBox="0 0 16 16"><path d="M2 4h12"></path><path d="M5.3 4V2.7a1.3 1.3 0 011.4-1.4h2.6a1.3 1.3 0 011.4 1.4V4"></path><path d="M3.3 4v9.3a1.3 1.3 0 001.4 1.4h6.6a1.3 1.3 0 001.4-1.4V4"></path></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb icon" aria-label="Undo">
+                  <svg viewBox="0 0 16 16"><path d="M3 8h7a3 3 0 010 6H8"></path><polyline points="6,5 3,8 6,11"></polyline></svg>
+                </button>
+                <button class="tb icon" aria-label="Redo">
+                  <svg viewBox="0 0 16 16"><path d="M13 8H6a3 3 0 000 6h2"></path><polyline points="10,5 13,8 10,11"></polyline></svg>
+                </button>
+                <div class="tb-divider"></div>
+                <button class="tb action add">+ Add image</button>
+                <div class="tb-divider"></div>
+                <div class="mode-slider" aria-label="Mode">
+                  <button class="mode-segment">IDE</button>
+                  <button class="mode-segment active">App</button>
+                </div>
+                <button class="tb action copy">Copy prompt</button>
+                <button class="tb action copy">Copy image</button>
+              </div>
+
+              <div class="editor-body">
+                <div class="filmstrip-wrap">
+                  <div class="filmstrip-grid">
+                    <div class="film-cell">
+                      <div class="film-meta">
+                        <div class="title-pill is-observed" data-title-pill>
+                          <input class="title-input" value="Image 1" aria-label="Image 1 title">
+                          <select class="role-select" aria-label="Image 1 role">
+                            <option selected>Observed</option>
+                            <option>Expected</option>
+                            <option>Reference</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="mock-screen">
+                        <div class="screen-top">
+                          <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                          <div class="top-pills"><span class="pill wide"></span><span class="pill mid"></span><span class="pill small"></span></div>
+                        </div>
+                        <div class="screen-layout">
+                          <div class="nav">
+                            <div class="nav-item active"></div>
+                            <div class="nav-item"></div>
+                            <div class="nav-item"></div>
+                            <div class="nav-item"></div>
+                          </div>
+                          <div class="screen-content">
+                            <div class="metric-grid">
+                              <div class="metric bad"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                              <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                              <div class="metric"><div class="head"></div><div class="line"></div><div class="line short"></div></div>
+                            </div>
+                            <div class="data-table">
+                              <div class="thead"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                              <div class="row bad"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                              <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                              <div class="row"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="annotation" style="left: 164px; top: 164px;">
+                          <div class="badge">1</div>
+                          <div class="note-pill"><span class="prefix">1</span>Image 1: this card is cramped</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="film-cell">
+                      <div class="film-meta">
+                        <div class="title-pill is-reference" data-title-pill>
+                          <input class="title-input" value="Image 2" aria-label="Image 2 title">
+                          <select class="role-select" aria-label="Image 2 role">
+                            <option>Observed</option>
+                            <option>Expected</option>
+                            <option selected>Reference</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="mock-screen">
+                        <div class="screen-top">
+                          <div class="brand"><span class="brand-mark"></span>Pulseboard</div>
+                          <div class="top-pills"><span class="pill mid"></span><span class="pill small"></span></div>
+                        </div>
+                        <div style="padding:28px; display:grid; place-items:center; min-height:392px;">
+                          <div style="width:min(88%, 340px); border-radius:3px; background:white; box-shadow:0 18px 34px rgba(15,23,42,0.12); overflow:hidden;">
+                            <div style="height:46px; padding:0 16px; display:flex; justify-content:space-between; align-items:center; background:rgba(245,247,251,0.9);">
+                              <div class="bar" style="width:120px;"></div>
+                              <div class="bar" style="width:18px;"></div>
+                            </div>
+                            <div style="padding:18px; display:grid; gap:12px;">
+                              <div class="bar" style="height:34px; border-radius:3px;"></div>
+                              <div class="bar" style="height:34px; border-radius:3px;"></div>
+                              <div class="bar" style="height:34px; border-radius:3px;"></div>
+                              <div class="bar" style="height:42px; border-radius:3px; background:rgba(83,74,183,0.16);"></div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="annotation" style="left: 110px; top: 266px;">
+                          <div class="badge">2</div>
+                          <div class="note-pill"><span class="prefix">2</span>Image 2: button alignment shifts here</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="film-cell">
+                      <div class="film-meta">
+                        <div class="title-pill is-expected" data-title-pill>
+                          <input class="title-input" value="Image 3" aria-label="Image 3 title">
+                          <select class="role-select" aria-label="Image 3 role">
+                            <option>Observed</option>
+                            <option selected>Expected</option>
+                            <option>Reference</option>
+                          </select>
+                        </div>
+                      </div>
+                      <div class="mock-screen" style="background:linear-gradient(180deg,#f7f3ff 0%, #f0ebfd 100%);">
+                        <div class="screen-top">
+                          <div class="brand"><span class="brand-mark"></span>Design spec</div>
+                          <div class="top-pills"><span class="pill mid"></span></div>
+                        </div>
+                        <div style="padding:18px; display:grid; gap:16px; min-height:392px;">
+                          <div style="height:72px; border-radius:3px; background:rgba(83,74,183,0.12);"></div>
+                          <div style="height:120px; border-radius:3px; background:rgba(255,255,255,0.78);"></div>
+                          <div style="height:120px; border-radius:3px; background:rgba(255,255,255,0.78);"></div>
+                        </div>
+                        <div class="annotation" style="left: 64px; top: 146px;">
+                          <div class="badge">3</div>
+                          <div class="note-pill"><span class="prefix">3</span>Expected reference: spacing should match</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="draw-surface" id="drawSurface">
+                    <svg id="drawSvg" viewBox="0 0 920 520" preserveAspectRatio="none"></svg>
+                  </div>
+                </div>
+
+                <div class="status-pill">1888 × 782 · 3 images · 3 notes</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="artifact">
+      <div class="artifact-toggle" id="artifactToggle">
+        <button class="active" data-artifact="prompt">Prompt</button>
+        <button data-artifact="naming">Naming</button>
+      </div>
+
+      <div class="artifact-view active" data-artifact-view="prompt">
+        <pre>This screenshot contains 3 framed images in one stitched composite.
+
+Images:
+- Image 1
+- Image 2
+- Image 3
+
+Use the visible frame title bars to determine which image each note belongs to.
+Use the visible role pills to determine whether an image is Observed, Reference, or Expected.
+
+Badges:
+1 [pin] Image 1 — this card is cramped
+2 [pin] Image 2 — button alignment shifts here
+3 [pin] Image 3 — spacing should match
+
+Please fix the observed issues and use the expected reference for alignment and spacing.</pre>
+      </div>
+
+      <div class="artifact-view" data-artifact-view="naming">
+        <div class="artifact-panel">
+          <strong style="color:var(--text-primary);">Naming rule</strong>
+          New images get a generated title like <code>Image 1</code>, <code>Image 2</code>, and so on. The title is editable in the purple header pill, and that pill is part of the stitched export.
+        </div>
+      </div>
+    </section>
+
+    <div class="footnote">
+      <strong>Answer to your question:</strong> the screenshot app should not infer image meaning automatically. It should generate a generic image name, let the user edit the title pill, and let the user assign the role pill in the header. Both are baked into the copied image.
+    </div>
+  </div>
+
+  <script>
+    const stageButtons = Array.from(document.querySelectorAll("[data-stage]"));
+    const stageViews = Array.from(document.querySelectorAll("[data-stage-view]"));
+    const themeButtons = Array.from(document.querySelectorAll("[data-theme]"));
+    const artifactButtons = Array.from(document.querySelectorAll("[data-artifact]"));
+    const artifactViews = Array.from(document.querySelectorAll("[data-artifact-view]"));
+    const drawToolButtons = Array.from(document.querySelectorAll("[data-draw-tool]"));
+    const roleSelects = Array.from(document.querySelectorAll(".role-select"));
+    const drawSurface = document.getElementById("drawSurface");
+    const drawSvg = document.getElementById("drawSvg");
+    let activeDrawTool = "pin";
+    let drawCount = 3;
+    let draftShape = null;
+    let draftStart = null;
+
+    function setStage(stage) {
+      stageButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.stage === stage);
+      });
+      stageViews.forEach((view) => {
+        view.classList.toggle("active", view.dataset.stageView === stage);
+      });
+    }
+
+    function setTheme(theme) {
+      themeButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.theme === theme);
+      });
+      document.body.classList.toggle("light-mode", theme === "light");
+    }
+
+    function setArtifact(artifact) {
+      artifactButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.artifact === artifact);
+      });
+      artifactViews.forEach((view) => {
+        view.classList.toggle("active", view.dataset.artifactView === artifact);
+      });
+    }
+
+    stageButtons.forEach((button) => {
+      button.addEventListener("click", () => setStage(button.dataset.stage));
+    });
+
+    themeButtons.forEach((button) => {
+      button.addEventListener("click", () => setTheme(button.dataset.theme));
+    });
+
+    artifactButtons.forEach((button) => {
+      button.addEventListener("click", () => setArtifact(button.dataset.artifact));
+    });
+
+    function syncTitlePill(select) {
+      const pill = select.closest("[data-title-pill]");
+      if (!pill) return;
+      pill.classList.remove("is-observed", "is-expected", "is-reference");
+      const value = select.value.toLowerCase();
+      if (value === "expected") {
+        pill.classList.add("is-expected");
+      } else if (value === "reference") {
+        pill.classList.add("is-reference");
+      } else {
+        pill.classList.add("is-observed");
+      }
+    }
+
+    roleSelects.forEach((select) => {
+      syncTitlePill(select);
+      select.addEventListener("change", () => syncTitlePill(select));
+    });
+
+    function setDrawTool(tool) {
+      activeDrawTool = tool;
+      drawToolButtons.forEach((button) => {
+        button.classList.toggle("active", button.dataset.drawTool === tool);
+      });
+      if (drawSurface) {
+        drawSurface.style.pointerEvents = tool === "select" ? "none" : "auto";
+      }
+    }
+
+    drawToolButtons.forEach((button) => {
+      button.addEventListener("click", () => setDrawTool(button.dataset.drawTool));
+    });
+
+    function svgPoint(event) {
+      const rect = drawSvg.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 920;
+      const y = ((event.clientY - rect.top) / rect.height) * 520;
+      return { x, y };
+    }
+
+    function imageTitleAt(point) {
+      const frame = eventTargetFrame(point);
+      if (!frame) return "Filmstrip";
+      const input = frame.querySelector(".title-input");
+      return input ? input.value : "Filmstrip";
+    }
+
+    function eventTargetFrame(point) {
+      const frames = Array.from(document.querySelectorAll('.filmstrip-grid .film-cell'));
+      for (const frame of frames) {
+        const rect = frame.getBoundingClientRect();
+        const svgRect = drawSvg.getBoundingClientRect();
+        const px = svgRect.left + (point.x / 920) * svgRect.width;
+        const py = svgRect.top + (point.y / 520) * svgRect.height;
+        if (px >= rect.left && px <= rect.right && py >= rect.top && py <= rect.bottom) {
+          return frame;
+        }
+      }
+      return null;
+    }
+
+    function addBadge(group, x, y, label, text) {
+      const badge = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      badge.setAttribute("cx", x);
+      badge.setAttribute("cy", y);
+      badge.setAttribute("r", "9");
+      badge.setAttribute("fill", "#ef4444");
+      group.appendChild(badge);
+
+      const number = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      number.setAttribute("x", x);
+      number.setAttribute("y", y + 3.5);
+      number.setAttribute("text-anchor", "middle");
+      number.setAttribute("font-size", "9");
+      number.setAttribute("font-weight", "700");
+      number.setAttribute("fill", "white");
+      number.textContent = label;
+      group.appendChild(number);
+
+      const noteWidth = Math.max(120, text.length * 6.1);
+      const note = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      note.setAttribute("x", x + 18);
+      note.setAttribute("y", y - 20);
+      note.setAttribute("width", noteWidth);
+      note.setAttribute("height", "34");
+      note.setAttribute("rx", "13");
+      note.setAttribute("class", "draw-note-bg");
+      group.appendChild(note);
+
+      const noteText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+      noteText.setAttribute("x", x + 28);
+      noteText.setAttribute("y", y + 2);
+      noteText.setAttribute("class", "draw-label");
+      noteText.textContent = label + " " + text;
+      group.appendChild(noteText);
+    }
+
+    if (drawSurface && drawSvg) {
+      drawSurface.style.pointerEvents = "auto";
+      drawSurface.addEventListener("pointerdown", (event) => {
+        if (activeDrawTool === "select") return;
+        const point = svgPoint(event);
+        draftStart = point;
+        if (activeDrawTool === "pin") {
+          drawCount += 1;
+          const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
+          addBadge(group, point.x, point.y, String(drawCount), imageTitleAt(point));
+          drawSvg.appendChild(group);
+          draftStart = null;
+          return;
+        }
+
+        draftShape = document.createElementNS("http://www.w3.org/2000/svg", activeDrawTool === "arrow" ? "line" : activeDrawTool === "rectangle" ? "rect" : "ellipse");
+        draftShape.setAttribute("class", "draw-shape");
+        if (activeDrawTool === "arrow") {
+          draftShape.setAttribute("x1", point.x);
+          draftShape.setAttribute("y1", point.y);
+          draftShape.setAttribute("x2", point.x);
+          draftShape.setAttribute("y2", point.y);
+        } else if (activeDrawTool === "rectangle") {
+          draftShape.setAttribute("x", point.x);
+          draftShape.setAttribute("y", point.y);
+          draftShape.setAttribute("width", 0);
+          draftShape.setAttribute("height", 0);
+          draftShape.setAttribute("rx", 12);
+        } else if (activeDrawTool === "circle") {
+          draftShape.setAttribute("cx", point.x);
+          draftShape.setAttribute("cy", point.y);
+          draftShape.setAttribute("rx", 0);
+          draftShape.setAttribute("ry", 0);
+        }
+        drawSvg.appendChild(draftShape);
+        drawSurface.setPointerCapture(event.pointerId);
+      });
+
+      drawSurface.addEventListener("pointermove", (event) => {
+        if (!draftShape || !draftStart) return;
+        const point = svgPoint(event);
+        if (activeDrawTool === "arrow") {
+          draftShape.setAttribute("x2", point.x);
+          draftShape.setAttribute("y2", point.y);
+        } else if (activeDrawTool === "rectangle") {
+          draftShape.setAttribute("x", Math.min(draftStart.x, point.x));
+          draftShape.setAttribute("y", Math.min(draftStart.y, point.y));
+          draftShape.setAttribute("width", Math.abs(point.x - draftStart.x));
+          draftShape.setAttribute("height", Math.abs(point.y - draftStart.y));
+        } else if (activeDrawTool === "circle") {
+          draftShape.setAttribute("cx", (draftStart.x + point.x) / 2);
+          draftShape.setAttribute("cy", (draftStart.y + point.y) / 2);
+          draftShape.setAttribute("rx", Math.abs(point.x - draftStart.x) / 2);
+          draftShape.setAttribute("ry", Math.abs(point.y - draftStart.y) / 2);
+        }
+      });
+
+      drawSurface.addEventListener("pointerup", (event) => {
+        if (!draftShape || !draftStart) return;
+        const point = svgPoint(event);
+        if (activeDrawTool === "arrow") {
+          draftShape.setAttribute("marker-end", "url(#arrowHead)");
+        }
+        draftShape = null;
+        draftStart = null;
+      });
+
+      const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+      const marker = document.createElementNS("http://www.w3.org/2000/svg", "marker");
+      marker.setAttribute("id", "arrowHead");
+      marker.setAttribute("markerWidth", "10");
+      marker.setAttribute("markerHeight", "10");
+      marker.setAttribute("refX", "8");
+      marker.setAttribute("refY", "3");
+      marker.setAttribute("orient", "auto");
+      const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+      path.setAttribute("d", "M0,0 L8,3 L0,6");
+      path.setAttribute("fill", "none");
+      path.setAttribute("stroke", "#ef4444");
+      path.setAttribute("stroke-width", "2");
+      marker.appendChild(path);
+      defs.appendChild(marker);
+      drawSvg.appendChild(defs);
+    }
+  </script>
+</body>
+</html>
