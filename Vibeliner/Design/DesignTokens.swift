@@ -214,7 +214,48 @@ enum DesignTokens {
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
     }
 
-    // MARK: - Add Image Button
+    // MARK: - Secondary Toolbar Buttons (VIB-330)
+    // Used by + Add image and New capture — subtle outlined style, secondary to Copy Prompt/Image
+
+    /// Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)
+    static let toolbarSecondaryBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1.0, alpha: 0.20)
+            : NSColor(white: 0.0, alpha: 0.15)
+    }
+
+    /// Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)
+    static let toolbarSecondaryText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1.0, alpha: 0.60)
+            : NSColor(white: 0.0, alpha: 0.55)
+    }
+
+    /// Secondary button bg — transparent
+    static let toolbarSecondaryBg = NSColor.clear
+
+    /// Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)
+    static let toolbarSecondaryHoverBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1.0, alpha: 0.35)
+            : NSColor(white: 0.0, alpha: 0.25)
+    }
+
+    /// Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)
+    static let toolbarSecondaryHoverText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1.0, alpha: 0.80)
+            : NSColor(white: 0.0, alpha: 0.75)
+    }
+
+    /// Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)
+    static let toolbarSecondaryHoverBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1.0, alpha: 0.05)
+            : NSColor(white: 0.0, alpha: 0.04)
+    }
+
+    // MARK: - Add Image Button (deprecated — use toolbarSecondary* tokens)
 
     /// Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
     static let addImageBg = NSColor(name: nil) { appearance in
