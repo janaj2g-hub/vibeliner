@@ -316,7 +316,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 return true
             }
         } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
-            toolbarView.delegate?.toolbarDidRequestDelete()
+            if annotationStore.selectedAnnotation != nil {
+                toolbarView.delegate?.toolbarDidRequestDelete()
+            } else if isFilmstripMode, images.count > 1 {
+                removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
+            }
             return true
         }
         return false
@@ -450,20 +454,72 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // Title changes tracked by TitlePillView; future: persist to CaptureStore
             _ = self  // silence warning
         }
+        filmstrip.onDeleteImage = { [weak self] index in
+            self?.removeImageAtIndex(index)
+        }
         container.addSubview(filmstrip)
         self.filmstripView = filmstrip
 
-        // Move canvas overlay to filmstrip
+        // Position canvas overlay to cover filmstrip's image area (below title pills).
+        // Title pills sit ABOVE the canvas overlay, so they receive clicks directly.
         canvasOverlay?.removeFromSuperview()
+        canvasOverlay?.frame = filmstrip.imageAreaRect
         filmstrip.addSubview(canvasOverlay ?? NSView())
+        canvasOverlay?.updateTrackingAreas()
+
+        // Wire filmstrip cell selection from canvas clicks
+        canvasOverlay?.onBackgroundClick = { [weak self] point in
+            guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return }
+            let filmstripPoint = canvas.convert(point, to: filmstrip)
+            filmstrip.selectCellAtPoint(filmstripPoint)
+            self.filmstripCellSelected(filmstrip.selectedIndex)
+        }
 
         // Update status pill for multi-image
         statusPill.updateNoteCount(annotationStore.count)
     }
 
     private func refreshFilmstrip() {
-        guard let filmstrip = filmstripView else { return }
-        filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
+        guard let filmstrip = filmstripView, let canvas = canvasOverlay else { return }
+        // Remove canvas before rebuilding cells, then re-add on top
+        canvas.removeFromSuperview()
+        let newSelectedIndex = min(filmstrip.selectedIndex, images.count - 1)
+        filmstrip.setImages(images, roles: imageRoles, selectedIndex: newSelectedIndex)
+        canvas.frame = filmstrip.imageAreaRect
+        filmstrip.addSubview(canvas)
+        canvas.updateTrackingAreas()
+    }
+
+    private func removeImageAtIndex(_ index: Int) {
+        guard index < images.count, images.count > 1 else { return }
+
+        images.remove(at: index)
+        imageRoles.remove(at: index)
+
+        if images.count == 1 {
+            transitionBackToSingleImage()
+        } else {
+            refreshFilmstrip()
+        }
+
+        autoSaveManager?.allImages = images.count > 1 ? images : nil
+        toolbarView.updateAddImageState(imageCount: images.count)
+    }
+
+    private func transitionBackToSingleImage() {
+        isFilmstripMode = false
+
+        filmstripView?.removeFromSuperview()
+        filmstripView = nil
+
+        canvasView.isHidden = false
+        canvasOverlay?.removeFromSuperview()
+        canvasOverlay?.frame = NSRect(x: 0, y: 0, width: displayWidth, height: displayHeight)
+        canvasOverlay?.onBackgroundClick = nil
+        canvasView.addSubview(canvasOverlay ?? NSView())
+        canvasOverlay?.updateTrackingAreas()
+
+        annotationStore.currentImageIndex = 0
     }
 
     private func filmstripCellSelected(_ index: Int) {
