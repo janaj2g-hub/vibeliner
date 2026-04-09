@@ -22,7 +22,6 @@ final class ConfigManager {
     var hotkey: String = "cmd+shift+6"
     var copyMode: String = "app"
     var setupComplete: Bool = false
-    var tooltipDismissed: Bool = false
     var launchAtLogin: Bool = false
     /// Appearance mode: "system", "dark", or "light"
     var appearance: String = "system"
@@ -95,7 +94,6 @@ final class ConfigManager {
             hotkey = "cmd+shift+6"
             copyMode = "app"
             setupComplete = false
-            tooltipDismissed = false
             launchAtLogin = false
             appearance = "system"
             preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
@@ -212,7 +210,7 @@ final class ConfigManager {
             case "setup_complete":
                 setupComplete = rawValue == "true"
             case "tooltip_dismissed":
-                tooltipDismissed = rawValue == "true"
+                break  // VIB-361: tooltip removed, ignore legacy key
             case "launch_at_login":
                 launchAtLogin = rawValue == "true"
             case "appearance":
@@ -250,7 +248,6 @@ final class ConfigManager {
         lines.append("hotkey = \"\(hotkey)\"")
         lines.append("copy_mode = \"\(copyMode)\"")
         lines.append("setup_complete = \(setupComplete)")
-        lines.append("tooltip_dismissed = \(tooltipDismissed)")
         lines.append("launch_at_login = \(launchAtLogin)")
         lines.append("appearance = \"\(appearance)\"")
         lines.append("preamble = \"\(escapeString(preamble))\"")
