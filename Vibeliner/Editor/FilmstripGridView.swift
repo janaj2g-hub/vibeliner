@@ -14,6 +14,10 @@ final class FilmstripGridView: NSView {
 
     private var cellViews: [FilmstripCellView] = []
     private(set) var selectedIndex: Int = 0
+    /// The image-area rect in filmstrip-local coordinates (below title pills).
+    private(set) var imageAreaRect: NSRect = .zero
+    /// Called when user requests to delete an image at the given index.
+    var onDeleteImage: ((Int) -> Void)?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -31,11 +35,11 @@ final class FilmstripGridView: NSView {
         for cell in cellViews { cell.removeFromSuperview() }
         cellViews.removeAll()
 
-        guard !images.isEmpty else { return }
+        guard !images.isEmpty else { imageAreaRect = .zero; return }
 
         let availableWidth = bounds.width
         let availableHeight = bounds.height
-        guard availableWidth > 0, availableHeight > 0 else { return }
+        guard availableWidth > 0, availableHeight > 0 else { imageAreaRect = .zero; return }
 
         let gap = DesignTokens.filmstripGap
         let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
@@ -49,12 +53,17 @@ final class FilmstripGridView: NSView {
             gap: gap
         )
 
-        let (frames, _) = LayoutCalculator.computeFrames(
+        let (frames, totalWidth) = LayoutCalculator.computeFrames(
             imageSizes: imageSizes,
             rowHeight: rowHeight,
             gap: gap,
             titlePillTotalHeight: pillTotalH
         )
+
+        // Position content: top-aligned (high Y in AppKit) and horizontally centered
+        let contentHeight = frames.first?.size.height ?? 0
+        let yOffset = max(0, bounds.height - contentHeight)
+        let xOffset = max(0, (bounds.width - totalWidth) / 2)
 
         for (i, image) in images.enumerated() {
             guard i < frames.count else { break }
@@ -70,8 +79,8 @@ final class FilmstripGridView: NSView {
                 isSelected: i == selectedIndex
             )
             cell.frame = NSRect(
-                x: frame.origin.x,
-                y: 0,
+                x: xOffset + frame.origin.x,
+                y: yOffset,
                 width: frame.size.width,
                 height: frame.size.height
             )
@@ -84,9 +93,20 @@ final class FilmstripGridView: NSView {
             cell.onTitleChanged = { [weak self] idx, newTitle in
                 self?.onTitleChanged?(idx, newTitle)
             }
+            cell.onDelete = { [weak self] idx in
+                self?.onDeleteImage?(idx)
+            }
             addSubview(cell)
             cellViews.append(cell)
         }
+
+        // Track image area (below title pills) for canvas overlay positioning
+        imageAreaRect = NSRect(
+            x: 0,
+            y: yOffset,
+            width: bounds.width,
+            height: rowHeight
+        )
     }
 
     private func selectCell(_ index: Int) {
@@ -96,6 +116,16 @@ final class FilmstripGridView: NSView {
             cell.isSelected = (i == index)
         }
         onCellSelected?(index)
+    }
+
+    /// Select the cell containing the given point (in filmstrip coordinates).
+    func selectCellAtPoint(_ point: CGPoint) {
+        for (i, cell) in cellViews.enumerated() {
+            if cell.frame.contains(point) {
+                if i != selectedIndex { selectCell(i) }
+                return
+            }
+        }
     }
 
     // MARK: - Fitting
@@ -114,13 +144,11 @@ final class FilmstripGridView: NSView {
             sum + (size.height > 0 ? size.width / size.height : 1)
         }
         let totalGap = CGFloat(max(0, imageSizes.count - 1)) * gap
-        let rowHeight = (availableWidth - totalGap) / totalAR
+        let idealRowHeight = (availableWidth - totalGap) / totalAR
 
-        // Clamp to LayoutCalculator limits and available height
-        return min(
-            min(rowHeight, LayoutCalculator.maxRowHeight),
-            availableHeight
-        )
+        // Clamp: at least minRowHeight for readable thumbnails, at most maxRowHeight/availableHeight
+        let upper = min(LayoutCalculator.maxRowHeight, availableHeight)
+        return max(LayoutCalculator.minRowHeight, min(idealRowHeight, upper))
     }
 }
 
@@ -131,6 +159,7 @@ private final class FilmstripCellView: NSView {
     var onClick: ((Int) -> Void)?
     var onRoleChanged: ((Int, ImageRole) -> Void)?
     var onTitleChanged: ((Int, String) -> Void)?
+    var onDelete: ((Int) -> Void)?
     var isSelected: Bool = false {
         didSet { updateSelectionAppearance() }
     }
@@ -140,6 +169,7 @@ private final class FilmstripCellView: NSView {
     private let imageView = NSImageView()
     private let clipView = NSView()
     private let titlePill: TitlePillView
+    private let deleteIndicator = NSView(frame: NSRect(x: 0, y: 0, width: 18, height: 18))
 
     init(image: NSImage, index: Int, role: ImageRole, isSelected: Bool) {
         self.index = index
@@ -168,6 +198,26 @@ private final class FilmstripCellView: NSView {
         }
         addSubview(titlePill)
 
+        // Delete indicator — small × in top-right, visible only when selected
+        deleteIndicator.wantsLayer = true
+        deleteIndicator.layer?.cornerRadius = 9
+        deleteIndicator.layer?.backgroundColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.55).cgColor
+        let xLbl = NSTextField(labelWithString: "×")
+        xLbl.font = NSFont.systemFont(ofSize: 12, weight: .bold)
+        xLbl.textColor = NSColor(white: 1.0, alpha: 0.9)
+        xLbl.isBezeled = false
+        xLbl.drawsBackground = false
+        xLbl.isEditable = false
+        xLbl.isSelectable = false
+        xLbl.sizeToFit()
+        xLbl.frame.origin = NSPoint(
+            x: (18 - xLbl.frame.width) / 2,
+            y: (18 - xLbl.frame.height) / 2
+        )
+        deleteIndicator.addSubview(xLbl)
+        addSubview(deleteIndicator)
+        deleteIndicator.isHidden = !isSelected
+
         // Image in clip view with rounded corners and border
         clipView.wantsLayer = true
         clipView.layer?.cornerRadius = 6
@@ -187,13 +237,23 @@ private final class FilmstripCellView: NSView {
 
         let pillH = DesignTokens.titlePillHeight
         let pillGap = DesignTokens.titlePillGap
-        let pillW = min(bounds.width, max(120, bounds.width * 0.8))
+        let pillW = min(bounds.width - 24, max(120, bounds.width * 0.75))
         titlePill.frame = NSRect(
             x: (bounds.width - pillW) / 2,
             y: bounds.height - pillH,
             width: pillW,
             height: pillH
         )
+
+        // Delete button in top-right corner of title pill zone
+        let deleteSize: CGFloat = 18
+        deleteIndicator.frame = NSRect(
+            x: bounds.width - deleteSize - 2,
+            y: bounds.height - pillH + (pillH - deleteSize) / 2,
+            width: deleteSize,
+            height: deleteSize
+        )
+        deleteIndicator.isHidden = !isSelected
 
         let imageY: CGFloat = 0
         let imageH = bounds.height - pillH - pillGap
@@ -218,9 +278,24 @@ private final class FilmstripCellView: NSView {
             clipView.layer?.borderWidth = 1.5
             layer?.opacity = 0.7
         }
+        deleteIndicator.isHidden = !isSelected
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        let localPoint = convert(point, from: superview)
+        // Intercept clicks on delete indicator so cell's mouseDown handles them
+        if isSelected && !deleteIndicator.isHidden && deleteIndicator.frame.contains(localPoint) {
+            return self
+        }
+        return super.hitTest(point)
     }
 
     override func mouseDown(with event: NSEvent) {
-        onClick?(index)
+        let localPoint = convert(event.locationInWindow, from: nil)
+        if isSelected && !deleteIndicator.isHidden && deleteIndicator.frame.contains(localPoint) {
+            onDelete?(index)
+        } else {
+            onClick?(index)
+        }
     }
 }

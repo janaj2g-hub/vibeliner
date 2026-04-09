@@ -6,6 +6,8 @@ final class CanvasView: NSView, NotePillDelegate {
     let notesLayer: NSView
     var activeTool: AnnotationTool?
     var selectTool: SelectTool?
+    /// Filmstrip mode: fired on every canvas mouseDown with the local click point.
+    var onBackgroundClick: ((CGPoint) -> Void)?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
@@ -53,6 +55,12 @@ final class CanvasView: NSView, NotePillDelegate {
         super.updateTrackingAreas()
         for area in trackingAreas { removeTrackingArea(area) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .activeAlways, .mouseEnteredAndExited], owner: self))
+    }
+
+    override func layout() {
+        super.layout()
+        marksLayer.frame = NSRect(origin: .zero, size: bounds.size)
+        notesLayer.frame = NSRect(origin: .zero, size: bounds.size)
     }
 
     override func mouseMoved(with event: NSEvent) {
@@ -158,6 +166,9 @@ final class CanvasView: NSView, NotePillDelegate {
     override func mouseDown(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         marksLayer.suppressGhost = false
+
+        // Filmstrip mode: forward click for cell selection
+        onBackgroundClick?(point)
 
         // VIB-193: Click outside editing pill = commit text
         if isEditingNote {
