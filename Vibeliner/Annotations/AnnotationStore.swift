@@ -93,6 +93,13 @@ final class AnnotationStore {
         notifyChange()
     }
 
+    /// VIB-333: Update the parentImageIndex of an annotation (after drag to different image).
+    func updateParentImageIndex(id: UUID, index: Int) {
+        guard let i = annotations.firstIndex(where: { $0.id == id }) else { return }
+        annotations[i].parentImageIndex = index
+        notifyChange()
+    }
+
     /// VIB-271: Remove all annotations belonging to a deleted image.
     func removeAnnotations(forImageIndex imageIndex: Int) {
         annotations.removeAll { $0.parentImageIndex == imageIndex }

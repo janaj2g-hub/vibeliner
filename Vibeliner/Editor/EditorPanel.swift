@@ -481,6 +481,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.filmstripCellSelected(filmstrip.selectedIndex)
         }
 
+        // VIB-333: Resolve click point to image index for annotation assignment
+        canvasOverlay?.imageIndexAtPoint = { [weak self] point in
+            guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return 0 }
+            let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
+            return filmstrip.imageIndexAtPoint(contentPoint)
+        }
+
         statusPill.updateNoteCount(annotationStore.count)
     }
 
@@ -637,6 +644,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.removeFromSuperview()
         canvasOverlay?.frame = NSRect(x: 0, y: 0, width: displayWidth, height: displayHeight)
         canvasOverlay?.onBackgroundClick = nil
+        canvasOverlay?.imageIndexAtPoint = nil
         canvasView.addSubview(canvasOverlay ?? NSView())
         canvasOverlay?.updateTrackingAreas()
 
