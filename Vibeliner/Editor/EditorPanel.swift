@@ -158,18 +158,20 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
         }
 
-        // VIB-193: Key monitor — when editing, only intercept Escape BEFORE handleKeyEvent
-        // This ensures Cmd+C/V/A pass directly to the text field's field editor
+        // VIB-193 / VIB-326: Key monitor — use KeyEventGuard to detect ANY text editing,
+        // not just canvas note editing. This prevents backspace/delete from being swallowed
+        // when the title pill or other text inputs are active.
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.isVisible else { return event }
 
-            // When editing a note, only intercept Escape. ALL other keys pass through untouched.
-            if let canvas = self.canvasOverlay, canvas.isEditingNote {
-                if event.keyCode == 53 { // Escape
+            // VIB-326: Broad guard — if ANY text field/editor is first responder, pass through.
+            // Only intercept Escape for note editing cancellation.
+            if !KeyEventGuard.shouldHandleShortcut(in: self) {
+                if event.keyCode == 53, let canvas = self.canvasOverlay, canvas.isEditingNote {
                     canvas.cancelNoteEditing()
                     return nil  // consumed
                 }
-                return event  // pass through to text field (Cmd+C/V/A, arrows, etc.)
+                return event  // pass through to text field (Cmd+C/V/A, arrows, backspace, etc.)
             }
 
             return self.handleKeyEvent(event) ? nil : event
@@ -325,12 +327,17 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 return true
             }
         } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
+            // VIB-326: Only consume the event when an action is actually performed.
+            // Previously returned true unconditionally, swallowing backspace even
+            // when no annotation was selected and filmstrip wasn't active.
             if annotationStore.selectedAnnotation != nil {
                 toolbarView.delegate?.toolbarDidRequestDelete()
+                return true
             } else if isFilmstripMode, images.count > 1 {
                 removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
+                return true
             }
-            return true
+            return false
         }
         return false
     }
