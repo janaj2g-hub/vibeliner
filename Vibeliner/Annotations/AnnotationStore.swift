@@ -121,6 +121,42 @@ final class AnnotationStore {
         }
     }
 
+    /// VIB-339: Store relative coordinates for an annotation (no notification — metadata only).
+    func setRelativeCoords(id: UUID, relativePosition: AnnotationPosition, relativeBadgePosition: CGPoint) {
+        guard let i = annotations.firstIndex(where: { $0.id == id }) else { return }
+        annotations[i].relativePosition = relativePosition
+        annotations[i].relativeBadgePosition = relativeBadgePosition
+    }
+
+    /// VIB-339: Recalculate absolute positions from stored relative coords.
+    /// Called after filmstrip layout changes so annotations stay on the correct visual content.
+    func recalculateAbsolutePositions(imageFrameProvider: (Int) -> NSRect) {
+        var changed = false
+        for i in annotations.indices {
+            guard let relPos = annotations[i].relativePosition,
+                  let relBadge = annotations[i].relativeBadgePosition else { continue }
+
+            let imageFrame = imageFrameProvider(annotations[i].parentImageIndex)
+            guard imageFrame.width > 0, imageFrame.height > 0 else { continue }
+
+            let endFrame: NSRect?
+            if let endIdx = annotations[i].endImageIndex {
+                endFrame = imageFrameProvider(endIdx)
+            } else {
+                endFrame = nil
+            }
+
+            annotations[i].position = CoordinateConverter.positionToAbsolute(
+                relPos, parentFrame: imageFrame, endFrame: endFrame
+            )
+            annotations[i].badgePosition = CoordinateConverter.relativeToAbsolute(
+                point: relBadge, imageFrame: imageFrame
+            )
+            changed = true
+        }
+        if changed { notifyChange() }
+    }
+
     private func notifyChange() {
         NotificationCenter.default.post(name: .annotationsDidChange, object: self)
     }
