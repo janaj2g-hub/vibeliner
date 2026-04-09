@@ -43,7 +43,16 @@ final class ConfigManager {
         return FileManager.default.fileExists(atPath: configFileURL.path)
     }
 
+    /// Stable config location — survives captures folder changes and clean builds.
+    /// ~/Library/Application Support/Vibeliner/config.toml
     private var configFileURL: URL {
+        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
+        return appSupport.appendingPathComponent("Vibeliner").appendingPathComponent("config.toml")
+    }
+
+    /// Legacy config path inside the captures folder (pre-VIB-301).
+    /// Used only for one-time migration.
+    private var legacyConfigFileURL: URL {
         let path = (capturesFolder as NSString).expandingTildeInPath
         return URL(fileURLWithPath: path).appendingPathComponent("config.toml")
     }
@@ -95,24 +104,37 @@ final class ConfigManager {
         let fileManager = FileManager.default
         let configPath = configFileURL.path
 
-        guard fileManager.fileExists(atPath: configPath) else {
+        // If stable config exists, load it directly.
+        if fileManager.fileExists(atPath: configPath) {
+            if let contents = try? String(contentsOfFile: configPath, encoding: .utf8) {
+                parseToml(contents)
+            }
+            return
+        }
+
+        // Migration: check for legacy config inside the default captures folder.
+        let legacyPath = legacyConfigFileURL.path
+        if fileManager.fileExists(atPath: legacyPath),
+           let legacyContents = try? String(contentsOfFile: legacyPath, encoding: .utf8) {
+            parseToml(legacyContents)
+            // Save to new stable location so future launches use it.
             saveInternal()
+            // Remove legacy file to avoid stale copies.
+            try? fileManager.removeItem(atPath: legacyPath)
             return
         }
 
-        guard let contents = try? String(contentsOfFile: configPath, encoding: .utf8) else {
-            return
-        }
-
-        parseToml(contents)
+        // First launch — write defaults to the new stable location.
+        saveInternal()
     }
 
     private func saveInternal() {
         let fileManager = FileManager.default
-        let folderPath = (capturesFolder as NSString).expandingTildeInPath
 
-        if !fileManager.fileExists(atPath: folderPath) {
-            try? fileManager.createDirectory(atPath: folderPath, withIntermediateDirectories: true)
+        // Ensure the Application Support/Vibeliner directory exists.
+        let configDir = configFileURL.deletingLastPathComponent()
+        if !fileManager.fileExists(atPath: configDir.path) {
+            try? fileManager.createDirectory(at: configDir, withIntermediateDirectories: true)
         }
 
         let toml = generateToml()
