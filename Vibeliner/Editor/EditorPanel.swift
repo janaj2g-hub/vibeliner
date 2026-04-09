@@ -27,6 +27,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var imageRoles: [String] = []
     private var filmstripView: FilmstripGridView?
     private var isFilmstripMode = false
+    private var singleImageWindowFrame: NSRect?
+    private var singleImageToolbarOrigin: NSPoint?
+    private var singleImagePillOrigin: NSPoint?
 
     init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
         self.screenshotImage = image
@@ -435,59 +438,132 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     private func transitionToFilmstrip() {
         isFilmstripMode = true
-        guard let container = contentView else { return }
+        guard contentView != nil else { return }
 
-        // Hide the single-image canvas view
+        // Save original layout for restoration
+        if singleImageWindowFrame == nil {
+            singleImageWindowFrame = frame
+            singleImageToolbarOrigin = toolbarView.frame.origin
+            singleImagePillOrigin = statusPill.frame.origin
+        }
+
         canvasView.isHidden = true
+        layoutFilmstripMode(newFilmstrip: true)
 
-        // Create filmstrip view in the same area as the canvas
-        let filmstrip = FilmstripGridView(frame: canvasView.frame)
-        filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
-        filmstrip.onCellSelected = { [weak self] index in
-            self?.filmstripCellSelected(index)
-        }
-        filmstrip.onRoleChanged = { [weak self] index, newRole in
-            guard let self, index < self.imageRoles.count else { return }
-            self.imageRoles[index] = newRole.rawValue
-        }
-        filmstrip.onTitleChanged = { [weak self] _, _ in
-            // Title changes tracked by TitlePillView; future: persist to CaptureStore
-            _ = self  // silence warning
-        }
-        filmstrip.onDeleteImage = { [weak self] index in
-            self?.removeImageAtIndex(index)
-        }
-        container.addSubview(filmstrip)
-        self.filmstripView = filmstrip
-
-        // Position canvas overlay to cover filmstrip's image area (below title pills).
-        // Title pills sit ABOVE the canvas overlay, so they receive clicks directly.
-        canvasOverlay?.removeFromSuperview()
-        canvasOverlay?.frame = filmstrip.imageAreaRect
-        filmstrip.addSubview(canvasOverlay ?? NSView())
-        canvasOverlay?.updateTrackingAreas()
-
-        // Wire filmstrip cell selection from canvas clicks
+        // Wire canvas click-through for cell selection
         canvasOverlay?.onBackgroundClick = { [weak self] point in
             guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return }
-            let filmstripPoint = canvas.convert(point, to: filmstrip)
-            filmstrip.selectCellAtPoint(filmstripPoint)
+            let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
+            filmstrip.selectCellAtPoint(contentPoint)
             self.filmstripCellSelected(filmstrip.selectedIndex)
         }
 
-        // Update status pill for multi-image
         statusPill.updateNoteCount(annotationStore.count)
     }
 
     private func refreshFilmstrip() {
-        guard let filmstrip = filmstripView, let canvas = canvasOverlay else { return }
-        // Remove canvas before rebuilding cells, then re-add on top
-        canvas.removeFromSuperview()
-        let newSelectedIndex = min(filmstrip.selectedIndex, images.count - 1)
-        filmstrip.setImages(images, roles: imageRoles, selectedIndex: newSelectedIndex)
-        canvas.frame = filmstrip.imageAreaRect
-        filmstrip.addSubview(canvas)
-        canvas.updateTrackingAreas()
+        layoutFilmstripMode(newFilmstrip: false)
+    }
+
+    /// Shared layout engine for filmstrip mode. Resizes the window, positions
+    /// the filmstrip, toolbar, and status pill, and attaches the canvas overlay.
+    private func layoutFilmstripMode(newFilmstrip: Bool) {
+        guard let container = contentView, let screen = self.screen ?? NSScreen.main else { return }
+
+        let screenFrame = screen.visibleFrame
+        let overflowPad: CGFloat = 200
+        let toolbarGap: CGFloat = 48
+        let bottomGap: CGFloat = 44
+        let shadowPad: CGFloat = 24
+        let gap = DesignTokens.filmstripGap
+        let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
+        let imageSizes = images.map { $0.size }
+
+        // Max filmstrip content width: 80% of screen minus overflow padding
+        let maxFilmstripW = screenFrame.width * 0.8 - overflowPad * 2
+
+        // Compute row height at max width (respects 250px min cell width)
+        let rowHeight = FilmstripGridView.computeFittingRowHeight(
+            imageSizes: imageSizes,
+            availableWidth: maxFilmstripW,
+            availableHeight: LayoutCalculator.maxRowHeight,
+            gap: gap
+        )
+
+        // Content width at this row height
+        let (_, contentWidth) = LayoutCalculator.computeFrames(
+            imageSizes: imageSizes, rowHeight: rowHeight, gap: gap, titlePillTotalHeight: pillTotalH
+        )
+
+        // Filmstrip dimensions: fit content up to max, scroll for the rest
+        let filmstripWidth = min(contentWidth, maxFilmstripW)
+        let filmstripHeight = rowHeight + pillTotalH
+
+        // Window dimensions
+        let winWidth = max(filmstripWidth, toolbarView.frame.width) + overflowPad * 2
+        let winHeight = filmstripHeight + toolbarGap + bottomGap + shadowPad + overflowPad
+        let newFrame = NSRect(
+            x: screenFrame.midX - winWidth / 2,
+            y: screenFrame.midY - winHeight / 2,
+            width: winWidth,
+            height: winHeight
+        )
+        setFrame(newFrame, display: true, animate: false)
+        container.frame = NSRect(origin: .zero, size: newFrame.size)
+
+        // Filmstrip position: centered horizontally
+        let filmstripX = (winWidth - filmstripWidth) / 2
+        let filmstripY = bottomGap + overflowPad / 2
+
+        if newFilmstrip {
+            // Create filmstrip
+            let filmstrip = FilmstripGridView(frame: NSRect(
+                x: filmstripX, y: filmstripY, width: filmstripWidth, height: filmstripHeight
+            ))
+            filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
+            filmstrip.onCellSelected = { [weak self] index in
+                self?.filmstripCellSelected(index)
+            }
+            filmstrip.onRoleChanged = { [weak self] index, newRole in
+                guard let self, index < self.imageRoles.count else { return }
+                self.imageRoles[index] = newRole.rawValue
+            }
+            filmstrip.onTitleChanged = { [weak self] _, _ in
+                // Title changes tracked by TitlePillView; future: persist to CaptureStore
+                _ = self  // silence warning
+            }
+            filmstrip.onDeleteImage = { [weak self] index in
+                self?.removeImageAtIndex(index)
+            }
+            canvasOverlay?.removeFromSuperview()
+            container.addSubview(filmstrip)
+            self.filmstripView = filmstrip
+        } else if let filmstrip = filmstripView {
+            // Update existing filmstrip
+            canvasOverlay?.removeFromSuperview()
+            filmstrip.frame = NSRect(
+                x: filmstripX, y: filmstripY, width: filmstripWidth, height: filmstripHeight
+            )
+            let idx = min(filmstrip.selectedIndex, images.count - 1)
+            filmstrip.setImages(images, roles: imageRoles, selectedIndex: idx)
+        }
+
+        guard let filmstrip = filmstripView else { return }
+
+        // Reposition toolbar above filmstrip
+        let toolbarX = (winWidth - toolbarView.frame.width) / 2
+        let toolbarY = filmstripY + filmstripHeight + (toolbarGap - DesignTokens.toolbarHeight) / 2
+        toolbarView.setFrameOrigin(NSPoint(x: toolbarX, y: toolbarY))
+
+        // Status pill 32px below filmstrip
+        let pillX = (winWidth - statusPill.frame.width) / 2
+        let pillY = filmstripY - 32 - statusPill.frame.height
+        statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
+
+        // Canvas overlay in filmstrip's scrollable content view
+        canvasOverlay?.frame = filmstrip.imageAreaRect
+        filmstrip.scrollableContentView.addSubview(canvasOverlay ?? NSView())
+        canvasOverlay?.updateTrackingAreas()
     }
 
     private func removeImageAtIndex(_ index: Int) {
@@ -511,6 +587,21 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         filmstripView?.removeFromSuperview()
         filmstripView = nil
+
+        // Restore original window frame and positions
+        if let originalFrame = singleImageWindowFrame {
+            setFrame(originalFrame, display: true, animate: false)
+            contentView?.frame = NSRect(origin: .zero, size: originalFrame.size)
+        }
+        if let origin = singleImageToolbarOrigin {
+            toolbarView.setFrameOrigin(origin)
+        }
+        if let origin = singleImagePillOrigin {
+            statusPill.setFrameOrigin(origin)
+        }
+        singleImageWindowFrame = nil
+        singleImageToolbarOrigin = nil
+        singleImagePillOrigin = nil
 
         canvasView.isHidden = false
         canvasOverlay?.removeFromSuperview()
