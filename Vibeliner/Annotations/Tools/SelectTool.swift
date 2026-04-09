@@ -192,6 +192,12 @@ final class SelectTool: AnnotationTool {
             if newIndex != annotation.parentImageIndex {
                 store.updateParentImageIndex(id: id, index: newIndex)
             }
+            // VIB-339: Recalculate relative coords from new absolute position
+            editorPanel?.setRelativeCoords(for: id)
+        }
+        // VIB-339: Also update relative coords after handle resize
+        if case .resizingHandle(let id, _) = dragState {
+            editorPanel?.setRelativeCoords(for: id)
         }
         dragState = nil
     }

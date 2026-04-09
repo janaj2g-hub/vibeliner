@@ -189,6 +189,22 @@ final class FilmstripGridView: NSView {
         return bestIdx
     }
 
+    /// VIB-339: Returns the image area frame for the cell at the given index,
+    /// in CanvasView-local coordinates (i.e. relative to imageAreaRect origin).
+    func imageCellFrameInCanvas(at index: Int) -> NSRect {
+        guard index >= 0, index < cellViews.count else {
+            // Fallback: full image area
+            return NSRect(origin: .zero, size: imageAreaRect.size)
+        }
+        let cell = cellViews[index]
+        return NSRect(
+            x: cell.frame.origin.x - imageAreaRect.origin.x,
+            y: 0,
+            width: cell.frame.width,
+            height: imageAreaRect.height
+        )
+    }
+
     // MARK: - Fitting
 
     /// Compute a row height so all images fit within availableWidth, respecting

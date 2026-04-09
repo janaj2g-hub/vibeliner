@@ -44,6 +44,8 @@ final class PinTool: AnnotationTool {
         annotation.parentImageIndex = store.currentImageIndex
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
+        // VIB-339: Store relative coords for layout-safe positioning
+        editorPanel?.setRelativeCoords(for: added.id)
         canvas.openNoteEditor(for: added)
     }
 

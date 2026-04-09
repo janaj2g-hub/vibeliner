@@ -513,8 +513,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
         let imageSizes = images.map { $0.size }
 
-        // Max filmstrip content width: 80% of screen minus overflow padding
-        let maxFilmstripW = screenFrame.width * 0.8 - overflowPad * 2
+        // VIB-339: Window grows to accommodate images — up to 85% of screen width.
+        // Images should never shrink more than ~15% from single-image display.
+        let maxFilmstripW = screenFrame.width * 0.85 - overflowPad * 2
 
         // Compute row height at max width (respects 250px min cell width)
         let rowHeight = FilmstripGridView.computeFittingRowHeight(
@@ -536,9 +537,12 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Window dimensions
         let winWidth = max(filmstripWidth, toolbarView.frame.width) + overflowPad * 2
         let winHeight = filmstripHeight + toolbarGap + bottomGap + shadowPad + overflowPad
+        // VIB-339: Center window on screen, clamp to visible area
+        let winX = max(screenFrame.minX, min(screenFrame.maxX - winWidth, screenFrame.midX - winWidth / 2))
+        let winY = max(screenFrame.minY, min(screenFrame.maxY - winHeight, screenFrame.midY - winHeight / 2))
         let newFrame = NSRect(
-            x: screenFrame.midX - winWidth / 2,
-            y: screenFrame.midY - winHeight / 2,
+            x: winX,
+            y: winY,
             width: winWidth,
             height: winHeight
         )
@@ -598,6 +602,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.frame = filmstrip.imageAreaRect
         filmstrip.scrollableContentView.addSubview(canvasOverlay ?? NSView())
         canvasOverlay?.updateTrackingAreas()
+
+        // VIB-339: Recalculate annotation positions after layout change
+        recalculateAnnotationPositions()
     }
 
     private func removeImageAtIndex(_ index: Int) {
@@ -653,10 +660,58 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.updateTrackingAreas()
 
         annotationStore.currentImageIndex = 0
+
+        // VIB-339: Recalculate annotation positions after returning to single-image
+        recalculateAnnotationPositions()
     }
 
     private func filmstripCellSelected(_ index: Int) {
         // VIB-269: Track which image is active so new annotations get the right parentImageIndex
         annotationStore.currentImageIndex = index
+    }
+
+    // MARK: - VIB-339: Coordinate system helpers
+
+    /// Returns the image frame for the given index in CanvasView-local coordinates.
+    /// In single-image mode, this is the full canvas bounds.
+    /// In filmstrip mode, this is the cell's image area relative to imageAreaRect.
+    func imageFrameInCanvas(at index: Int) -> NSRect {
+        if let filmstrip = filmstripView, isFilmstripMode {
+            return filmstrip.imageCellFrameInCanvas(at: index)
+        }
+        // Single image: entire canvas
+        return canvasOverlay?.bounds ?? NSRect(x: 0, y: 0, width: displayWidth, height: displayHeight)
+    }
+
+    /// VIB-339: Recalculate absolute annotation positions from their stored relative
+    /// coordinates after any layout change (filmstrip transition, add/delete image, resize).
+    private func recalculateAnnotationPositions() {
+        annotationStore.recalculateAbsolutePositions { [weak self] imageIndex in
+            self?.imageFrameInCanvas(at: imageIndex) ?? .zero
+        }
+        canvasOverlay?.marksLayer.needsDisplay = true
+        canvasOverlay?.refreshNotePills()
+    }
+
+    /// VIB-339: Compute and store relative coordinates for an annotation,
+    /// given its current absolute position. Called after creation and after drag.
+    func setRelativeCoords(for annotationId: UUID) {
+        guard let annotation = annotationStore.annotation(for: annotationId) else { return }
+        let imageFrame = imageFrameInCanvas(at: annotation.parentImageIndex)
+
+        let endFrame: CGRect?
+        if let endIdx = annotation.endImageIndex {
+            endFrame = imageFrameInCanvas(at: endIdx)
+        } else {
+            endFrame = nil
+        }
+
+        let relPos = CoordinateConverter.positionToRelative(
+            annotation.position, parentFrame: imageFrame, endFrame: endFrame
+        )
+        let relBadge = CoordinateConverter.absoluteToRelative(
+            point: annotation.badgePosition, imageFrame: imageFrame
+        )
+        annotationStore.setRelativeCoords(id: annotationId, relativePosition: relPos, relativeBadgePosition: relBadge)
     }
 }

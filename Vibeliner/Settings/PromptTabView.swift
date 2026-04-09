@@ -323,7 +323,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         let swatchColor = DesignTokens.roleColor(forHex: role.colorHex)
         let swatch = RoleSwatchView(color: swatchColor)
         swatch.onClicked = { [weak self] swatchView in
-            self?.showInlineColorPicker(for: index, swatch: swatchView)
+            self?.showColorPopover(for: index, swatch: swatchView)
         }
 
         let nameField = SettingsTextField()
@@ -362,16 +362,16 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             swatch.widthAnchor.constraint(equalToConstant: 14),
             swatch.heightAnchor.constraint(equalToConstant: 14),
 
-            nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 10),
+            nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 8),
             nameField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            nameField.widthAnchor.constraint(equalToConstant: 90),
+            nameField.widthAnchor.constraint(equalToConstant: 120),
             nameField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
-            descField.leadingAnchor.constraint(equalTo: nameField.trailingAnchor, constant: 10),
+            descField.leadingAnchor.constraint(equalTo: nameField.trailingAnchor, constant: 8),
             descField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
             descField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
-            deleteBtn.leadingAnchor.constraint(equalTo: descField.trailingAnchor, constant: 6),
+            deleteBtn.leadingAnchor.constraint(equalTo: descField.trailingAnchor, constant: 8),
             deleteBtn.trailingAnchor.constraint(equalTo: row.trailingAnchor),
             deleteBtn.centerYAnchor.constraint(equalTo: row.centerYAnchor),
             deleteBtn.widthAnchor.constraint(equalToConstant: 22),
@@ -399,49 +399,63 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         refreshPreview()
     }
 
-    private func showInlineColorPicker(for roleIndex: Int, swatch: RoleSwatchView) {
-        // If a picker is already showing, remove it
-        swatch.colorPicker?.removeFromSuperview()
-        swatch.colorPicker = nil
+    private var activeColorPopover: NSPopover?
 
-        let picker = NSStackView()
-        picker.orientation = .horizontal
-        picker.spacing = 4
-        picker.translatesAutoresizingMaskIntoConstraints = false
+    private func showColorPopover(for roleIndex: Int, swatch: RoleSwatchView) {
+        // Dismiss any existing popover
+        activeColorPopover?.close()
+        activeColorPopover = nil
 
-        for preset in DesignTokens.rolePresetColors {
-            let dot = NSButton(frame: NSRect(x: 0, y: 0, width: 16, height: 16))
+        let popover = NSPopover()
+        popover.behavior = .transient
+        popover.animates = true
+
+        // Build content: 8 color circles in a single row
+        let contentView = NSView()
+        contentView.wantsLayer = true
+        let dotSize: CGFloat = 20
+        let gap: CGFloat = 6
+        let padding: CGFloat = 10
+        let totalWidth = CGFloat(DesignTokens.rolePresetColors.count) * dotSize + CGFloat(DesignTokens.rolePresetColors.count - 1) * gap + padding * 2
+        let totalHeight = dotSize + padding * 2
+        contentView.frame = NSRect(x: 0, y: 0, width: totalWidth, height: totalHeight)
+
+        for (colorIdx, preset) in DesignTokens.rolePresetColors.enumerated() {
+            let dot = NSButton(frame: NSRect(
+                x: padding + CGFloat(colorIdx) * (dotSize + gap),
+                y: padding,
+                width: dotSize,
+                height: dotSize
+            ))
             dot.isBordered = false
             dot.wantsLayer = true
-            dot.layer?.cornerRadius = 8
+            dot.layer?.cornerRadius = dotSize / 2
             dot.layer?.backgroundColor = preset.color.cgColor
-            dot.layer?.borderWidth = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased() ? 2 : 0
+            let isSelected = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased()
+            dot.layer?.borderWidth = isSelected ? 2 : 0
             dot.layer?.borderColor = NSColor.labelColor.cgColor
             dot.target = self
-            dot.action = #selector(colorPickerDotClicked(_:))
-            dot.tag = roleIndex * 100 + DesignTokens.rolePresetColors.firstIndex(where: { $0.hex == preset.hex })!
-            dot.translatesAutoresizingMaskIntoConstraints = false
-            NSLayoutConstraint.activate([
-                dot.widthAnchor.constraint(equalToConstant: 16),
-                dot.heightAnchor.constraint(equalToConstant: 16),
-            ])
-            picker.addArrangedSubview(dot)
+            dot.action = #selector(colorPopoverDotClicked(_:))
+            dot.tag = roleIndex * 100 + colorIdx
+            contentView.addSubview(dot)
         }
 
-        guard let swatchSuperview = swatch.superview else { return }
-        swatchSuperview.addSubview(picker)
-        NSLayoutConstraint.activate([
-            picker.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 6),
-            picker.centerYAnchor.constraint(equalTo: swatch.centerYAnchor),
-        ])
-        swatch.colorPicker = picker
+        let vc = NSViewController()
+        vc.view = contentView
+        vc.preferredContentSize = NSSize(width: totalWidth, height: totalHeight)
+        popover.contentViewController = vc
+        activeColorPopover = popover
+
+        popover.show(relativeTo: swatch.bounds, of: swatch, preferredEdge: .minY)
     }
 
-    @objc private func colorPickerDotClicked(_ sender: NSButton) {
+    @objc private func colorPopoverDotClicked(_ sender: NSButton) {
         let roleIndex = sender.tag / 100
         let colorIndex = sender.tag % 100
         guard roleIndex < drafts.roles.count, colorIndex < DesignTokens.rolePresetColors.count else { return }
         drafts.roles[roleIndex].colorHex = DesignTokens.rolePresetColors[colorIndex].hex
+        activeColorPopover?.close()
+        activeColorPopover = nil
         selectSubTab(.multiImage)
         refreshPreview()
     }
@@ -715,9 +729,8 @@ private final class ToolIconView: NSView {
 private final class RoleSwatchView: NSView {
 
     var onClicked: ((RoleSwatchView) -> Void)?
-    var colorPicker: NSView?
-
     private let swatchColor: NSColor
+    private var isHovered = false
 
     init(color: NSColor) {
         self.swatchColor = color
@@ -727,11 +740,37 @@ private final class RoleSwatchView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        for area in trackingAreas { removeTrackingArea(area) }
+        addTrackingArea(NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways],
+            owner: self
+        ))
+    }
+
+    override func mouseEntered(with event: NSEvent) {
+        isHovered = true
+        needsDisplay = true
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        isHovered = false
+        needsDisplay = true
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         let path = NSBezierPath(ovalIn: bounds)
         swatchColor.setFill()
         path.fill()
+        // VIB-338: Hover border indicates clickability
+        if isHovered {
+            NSColor.separatorColor.setStroke()
+            path.lineWidth = 1
+            path.stroke()
+        }
     }
 
     override func mouseDown(with event: NSEvent) {
