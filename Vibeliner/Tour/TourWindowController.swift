@@ -514,30 +514,33 @@ final class TourWindowController: NSWindowController {
             // Step 9: full-width "You're all set" content
             buildDoneContent(in: illustrationPane)
         } else {
-            // Placeholder for steps 0–7
-            buildPlaceholder(for: index, in: illustrationPane)
+            // Real illustrations for steps 0–7
+            buildIllustration(for: index, in: illustrationPane)
         }
     }
 
-    // MARK: - Placeholder illustration
+    // MARK: - Illustration factory
 
-    private func buildPlaceholder(for index: Int, in container: NSView) {
-        let label = NSTextField(labelWithString: "Step \(index + 1): \(steps[index].title)")
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = DesignTokens.tourBodyFont
-        label.textColor = DesignTokens.tourTextDim
-        label.alignment = .center
-        label.isBezeled = false
-        label.drawsBackground = false
-        label.isEditable = false
-        label.maximumNumberOfLines = 0
-        label.lineBreakMode = .byWordWrapping
-        container.addSubview(label)
-
+    private func buildIllustration(for index: Int, in container: NSView) {
+        let view: NSView
+        switch index {
+        case 0: view = TourIllustration0()
+        case 1: view = TourIllustration1()
+        case 2: view = TourIllustration2()
+        case 3: view = TourIllustration3()
+        case 4: view = TourIllustration4()
+        case 5: view = TourIllustration5()
+        case 6: view = TourIllustration6()
+        case 7: view = TourIllustration7()
+        default: return
+        }
+        view.translatesAutoresizingMaskIntoConstraints = false
+        container.addSubview(view)
         NSLayoutConstraint.activate([
-            label.centerXAnchor.constraint(equalTo: container.centerXAnchor),
-            label.centerYAnchor.constraint(equalTo: container.centerYAnchor),
-            label.widthAnchor.constraint(lessThanOrEqualTo: container.widthAnchor, constant: -40),
+            view.topAnchor.constraint(equalTo: container.topAnchor),
+            view.bottomAnchor.constraint(equalTo: container.bottomAnchor),
+            view.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+            view.trailingAnchor.constraint(equalTo: container.trailingAnchor),
         ])
     }
 
