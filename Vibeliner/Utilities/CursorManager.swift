@@ -2,32 +2,39 @@ import AppKit
 
 /// Centralized cursor visibility management. All cursor hide/show in the app
 /// goes through this singleton to prevent unbalanced NSCursor.hide()/unhide() calls.
-/// VIB-334: Added isCursorHidden public getter and forceShow safety nets.
+/// VIB-334 attempt 3: Counter-based tracking replaces boolean flag to handle
+/// desync between our state and the AppKit cursor stack.
 final class CursorManager {
     static let shared = CursorManager()
 
-    /// VIB-334: Public read access for safety net checks.
-    private(set) var isCursorHidden = false
+    private var hideCount = 0
+
+    /// Public read access for safety net checks.
+    var isCursorHidden: Bool { hideCount > 0 }
 
     private init() {}
 
     func hideCursor() {
-        guard !isCursorHidden else { return }
+        guard hideCount == 0 else { return }
         NSCursor.hide()
-        isCursorHidden = true
+        hideCount = 1
     }
 
     func showCursor() {
-        guard isCursorHidden else { return }
+        guard hideCount > 0 else { return }
         NSCursor.unhide()
-        isCursorHidden = false
+        hideCount = 0
     }
 
-    /// Emergency reset — call on window deactivation / close to guarantee cursor is visible.
+    /// Emergency reset — unconditionally ensures cursor is visible.
+    /// Calls unhide() regardless of tracked state to fix any desync,
+    /// then resets the arrow cursor to clear custom cursors.
     func forceShow() {
-        if isCursorHidden {
+        NSCursor.unhide()
+        if hideCount > 0 {
             NSCursor.unhide()
-            isCursorHidden = false
         }
+        NSCursor.arrow.set()
+        hideCount = 0
     }
 }
