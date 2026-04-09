@@ -97,6 +97,10 @@ final class CaptureCoordinator {
 
             cleanupAfterCapture()
 
+            // VIB-311+326: Close old editor first — removes its stale key monitor
+            // so it doesn't intercept events meant for the new editor.
+            self.editorPanel?.close()
+
             // Open editor panel
             let panel = EditorPanel(image: image, on: screen, captureFolder: folderURL)
             panel.makeKeyAndOrderFront(nil)

@@ -225,8 +225,9 @@ private final class FilmstripCellView: NSView {
     private let imageView = NSImageView()
     private let clipView = NSView()
     private let titlePill: TitlePillView
-    /// VIB-330: Delete indicator — hidden by default, shown on hover only
-    private let deleteIndicator = NSView(frame: NSRect(x: 0, y: 0, width: 18, height: 18))
+    /// VIB-271: Delete indicator — trash icon, hidden by default, shown when selected
+    private let deleteIndicator = NSView(frame: NSRect(x: 0, y: 0, width: 22, height: 22))
+    private let trashImageView = NSImageView()
     private var isHovered = false
 
     init(image: NSImage, index: Int, role: ImageRole, isSelected: Bool) {
@@ -256,26 +257,23 @@ private final class FilmstripCellView: NSView {
         }
         addSubview(titlePill)
 
-        // VIB-330: Delete indicator — subtle ×, hidden by default, shown on hover only
+        // VIB-271: Delete indicator — trash icon, hidden by default, shown when selected
         deleteIndicator.wantsLayer = true
-        deleteIndicator.layer?.cornerRadius = 9
-        deleteIndicator.layer?.backgroundColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.45).cgColor
-        let xLbl = NSTextField(labelWithString: "×")
-        xLbl.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-        xLbl.textColor = NSColor(white: 1.0, alpha: 0.7)
-        xLbl.isBezeled = false
-        xLbl.drawsBackground = false
-        xLbl.isEditable = false
-        xLbl.isSelectable = false
-        xLbl.sizeToFit()
-        xLbl.frame.origin = NSPoint(
-            x: (18 - xLbl.frame.width) / 2,
-            y: (18 - xLbl.frame.height) / 2
-        )
-        deleteIndicator.addSubview(xLbl)
+        deleteIndicator.layer?.cornerRadius = 11
+        deleteIndicator.layer?.backgroundColor = NSColor(red: 0, green: 0, blue: 0, alpha: 0.5).cgColor
+
+        let trashSize: CGFloat = 12
+        if let trashSymbol = NSImage(systemSymbolName: "trash.fill", accessibilityDescription: "Delete image") {
+            let config = NSImage.SymbolConfiguration(pointSize: trashSize, weight: .medium)
+            trashImageView.image = trashSymbol.withSymbolConfiguration(config)
+        }
+        trashImageView.contentTintColor = NSColor(white: 1.0, alpha: 0.85)
+        trashImageView.imageScaling = .scaleProportionallyUpOrDown
+        trashImageView.frame = NSRect(x: 3, y: 3, width: 16, height: 16)
+        deleteIndicator.addSubview(trashImageView)
         deleteIndicator.toolTip = "Remove image"
         addSubview(deleteIndicator)
-        deleteIndicator.isHidden = true  // hidden by default, shown on hover
+        deleteIndicator.isHidden = true
 
         // Image in clip view with rounded corners and border
         clipView.wantsLayer = true
@@ -304,8 +302,8 @@ private final class FilmstripCellView: NSView {
             height: pillH
         )
 
-        // Delete button in top-right corner of title pill zone
-        let deleteSize: CGFloat = 18
+        // VIB-271: Trash icon centered at right edge of title pill zone
+        let deleteSize: CGFloat = 22
         deleteIndicator.frame = NSRect(
             x: bounds.width - deleteSize - 2,
             y: bounds.height - pillH + (pillH - deleteSize) / 2,
@@ -336,11 +334,14 @@ private final class FilmstripCellView: NSView {
             clipView.layer?.borderWidth = 1.5
             layer?.opacity = 0.7
         }
-        // VIB-330: Only show delete when hovered AND selected
-        deleteIndicator.isHidden = !(isSelected && isHovered)
+        // VIB-271: Show trash when selected, red tint on hover
+        deleteIndicator.isHidden = !isSelected
+        trashImageView.contentTintColor = (isSelected && isHovered)
+            ? NSColor.systemRed
+            : NSColor(white: 1.0, alpha: 0.85)
     }
 
-    // VIB-330: Hover tracking for delete indicator
+    // VIB-271: Hover tracking for trash icon color
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         for area in trackingAreas { removeTrackingArea(area) }
@@ -353,12 +354,15 @@ private final class FilmstripCellView: NSView {
 
     override func mouseEntered(with event: NSEvent) {
         isHovered = true
-        deleteIndicator.isHidden = !(isSelected && isHovered)
+        deleteIndicator.isHidden = !isSelected
+        trashImageView.contentTintColor = isSelected
+            ? NSColor.systemRed
+            : NSColor(white: 1.0, alpha: 0.85)
     }
 
     override func mouseExited(with event: NSEvent) {
         isHovered = false
-        deleteIndicator.isHidden = true
+        trashImageView.contentTintColor = NSColor(white: 1.0, alpha: 0.85)
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {

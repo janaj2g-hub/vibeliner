@@ -25,6 +25,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     // MARK: - Multi-image state
     private var images: [NSImage] = []
     private var imageRoles: [String] = []
+    private var imageTitles: [String] = []
     private var filmstripView: FilmstripGridView?
     private var isFilmstripMode = false
     private var singleImageWindowFrame: NSRect?
@@ -78,6 +79,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // Track images for multi-image support
         self.images = [image]
         self.imageRoles = ["observed"]
+        self.imageTitles = ["Image 1"]
 
         isFloatingPanel = true
         level = .floating
@@ -365,9 +367,27 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidRequestCopyPrompt() {
         guard let folder = captureFolder else { return }
-        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder)
+        // VIB-268: Pass CaptureStore so prompt includes "Image N:" prefixes in filmstrip mode
+        let store = isFilmstripMode ? buildCaptureStore() : nil
+        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder, captureStore: store)
         statusPill.showCopied(message: "Prompt copied")
         toolbarView.markCopyState(.prompt)
+    }
+
+    /// Build a CaptureStore from the current multi-image state for prompt generation.
+    private func buildCaptureStore() -> CaptureStore {
+        let captureImages = images.enumerated().map { i, img in
+            let title = i < imageTitles.count ? imageTitles[i] : "Image \(i + 1)"
+            let roleStr = i < imageRoles.count ? imageRoles[i] : "observed"
+            return CaptureImage(
+                sourceImage: img,
+                title: title,
+                role: ImageRole.from(string: roleStr),
+                originalSize: img.size,
+                index: i
+            )
+        }
+        return CaptureStore(images: captureImages)
     }
 
     func toolbarDidRequestNewCapture() {
@@ -406,6 +426,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 // Add the new image
                 self.images.append(newImage)
                 self.imageRoles.append("observed")
+                self.imageTitles.append("Image \(self.images.count)")
 
                 // Restore editor
                 self.alphaValue = 1.0
@@ -528,9 +549,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 guard let self, index < self.imageRoles.count else { return }
                 self.imageRoles[index] = newRole.rawValue
             }
-            filmstrip.onTitleChanged = { [weak self] _, _ in
-                // Title changes tracked by TitlePillView; future: persist to CaptureStore
-                _ = self  // silence warning
+            filmstrip.onTitleChanged = { [weak self] index, newTitle in
+                guard let self, index < self.imageTitles.count else { return }
+                self.imageTitles[index] = newTitle
             }
             filmstrip.onDeleteImage = { [weak self] index in
                 self?.removeImageAtIndex(index)
@@ -571,6 +592,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         images.remove(at: index)
         imageRoles.remove(at: index)
+        if index < imageTitles.count { imageTitles.remove(at: index) }
 
         if images.count == 1 {
             transitionBackToSingleImage()
