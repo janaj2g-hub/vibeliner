@@ -101,14 +101,16 @@ final class PopoverContentView: NSView {
             let keys: [String]?
             let action: () -> Void
             let hasArrow: Bool
+            let isPurpleHighlight: Bool
         }
 
         let items: [MenuItem] = [
-            MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: { [weak self] in self?.captureNow() }, hasArrow: false),
-            MenuItem(label: "Recent Captures", keys: nil, action: { [weak self] in self?.showRecentSubmenu() }, hasArrow: true),
-            MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false),
-            MenuItem(label: "Settings", keys: nil, action: { [weak self] in self?.openSettings() }, hasArrow: false),
-            MenuItem(label: "Re-run Setup", keys: nil, action: { [weak self] in self?.reRunSetup() }, hasArrow: false),
+            MenuItem(label: "Capture Now", keys: ["⌘", "⇧", "6"], action: { [weak self] in self?.captureNow() }, hasArrow: false, isPurpleHighlight: false),
+            MenuItem(label: "Recent Captures", keys: nil, action: { [weak self] in self?.showRecentSubmenu() }, hasArrow: true, isPurpleHighlight: false),
+            MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false, isPurpleHighlight: false),
+            MenuItem(label: "Settings", keys: nil, action: { [weak self] in self?.openSettings() }, hasArrow: false, isPurpleHighlight: false),
+            MenuItem(label: "Re-run Setup", keys: nil, action: { [weak self] in self?.reRunSetup() }, hasArrow: false, isPurpleHighlight: false),
+            MenuItem(label: "Take a tour", keys: nil, action: { [weak self] in self?.takeATour() }, hasArrow: false, isPurpleHighlight: true),
         ]
 
         // Calculate total height: vPad + items + divider + quit + vPad (no arrow)
@@ -132,7 +134,7 @@ final class PopoverContentView: NSView {
 
         for item in items {
             y -= rowH
-            let row = makeRow(label: item.label, keys: item.keys, onAction: item.action, hasArrow: item.hasArrow, y: y, rowH: rowH, hPad: hPad)
+            let row = makeRow(label: item.label, keys: item.keys, onAction: item.action, hasArrow: item.hasArrow, isPurpleHighlight: item.isPurpleHighlight, y: y, rowH: rowH, hPad: hPad)
             addSubview(row)
             // VIB-168: Add hover tracking on "Recent Captures" row
             if item.hasArrow {
@@ -156,14 +158,22 @@ final class PopoverContentView: NSView {
         addSubview(quitRow)
     }
 
-    private func makeRow(label: String, keys: [String]?, onAction: @escaping () -> Void, hasArrow: Bool, y: CGFloat, rowH: CGFloat, hPad: CGFloat) -> PopoverRowView {
+    private func makeRow(label: String, keys: [String]?, onAction: @escaping () -> Void, hasArrow: Bool, isPurpleHighlight: Bool = false, y: CGFloat, rowH: CGFloat, hPad: CGFloat) -> PopoverRowView {
         let rowW = popWidth - hPad * 2
         let row = PopoverRowView(frame: NSRect(x: hPad, y: y, width: rowW, height: rowH))
         row.onAction = onAction  // VIB-219: closure-based action for first-click support
 
+        // VIB-360: Purple highlight style for "Take a tour" row
+        if isPurpleHighlight {
+            row.wantsLayer = true
+            row.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16).cgColor
+            row.layer?.cornerRadius = 4
+            row.purpleHighlight = true
+        }
+
         let textLabel = NSTextField(labelWithString: label)
-        textLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
-        textLabel.textColor = .labelColor
+        textLabel.font = NSFont.systemFont(ofSize: 13, weight: isPurpleHighlight ? .medium : .regular)
+        textLabel.textColor = isPurpleHighlight ? DesignTokens.purpleLight : .labelColor
         textLabel.sizeToFit()
         textLabel.frame.origin = NSPoint(x: 8, y: (rowH - textLabel.frame.height) / 2)
         row.addSubview(textLabel)
@@ -325,6 +335,13 @@ final class PopoverContentView: NSView {
         }
     }
 
+    private func takeATour() {
+        popoverWindow?.closePopover()
+        DispatchQueue.main.async {
+            TourWindowController.shared.showTour()
+        }
+    }
+
     @objc private func quitApp() {
         NSApplication.shared.terminate(nil)
     }
@@ -336,15 +353,23 @@ final class PopoverRowView: NSView {
     var onAction: (() -> Void)?  // VIB-219: direct closure, works on first click
     var onHoverEnter: (() -> Void)?
     var onHoverExit: (() -> Void)?
-    private var isHovered = false { didSet { needsDisplay = true } }
+    var purpleHighlight = false  // VIB-360: purple highlight for "Take a tour" row
+    private var isHovered = false { didSet { needsDisplay = true; updatePurpleBackground() } }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        if isHovered {
+        if isHovered && !purpleHighlight {
             // Uses labelColor at low opacity — works in both dark (white tint) and light (dark tint)
             NSColor.labelColor.withAlphaComponent(0.08).setFill()
             NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
         }
+    }
+
+    private func updatePurpleBackground() {
+        guard purpleHighlight else { return }
+        layer?.backgroundColor = isHovered
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.24).cgColor
+            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16).cgColor
     }
 
     override func updateTrackingAreas() {

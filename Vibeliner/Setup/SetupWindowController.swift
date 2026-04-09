@@ -426,7 +426,7 @@ final class SetupWindowController: NSWindowController {
             footerContent.addSubview(shortcutGroup)
 
             // Right: Green "Start using Vibeliner →" button
-            let startBtn = NSButton(title: "Start using Vibeliner →", target: self, action: #selector(startClicked))
+            let startBtn = NSButton(title: "Start using Vibeliner \u{2192}", target: self, action: #selector(startClicked))
             startBtn.isBordered = false
             startBtn.wantsLayer = true
             startBtn.font = DesignTokens.setupActionLabelFont
@@ -440,6 +440,22 @@ final class SetupWindowController: NSWindowController {
             startBtn.setFrameSize(NSSize(width: btnW, height: 36))
             startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
             footerContent.addSubview(startBtn)
+
+            // VIB-360: "Take a tour" ghost button, to the left of Start button
+            let tourBtn = NSButton(title: "Take a tour", target: self, action: #selector(tourClicked))
+            tourBtn.isBordered = false
+            tourBtn.wantsLayer = true
+            tourBtn.font = DesignTokens.setupActionLabelFont
+            tourBtn.contentTintColor = DesignTokens.setupTextSecondary
+            tourBtn.layer?.backgroundColor = NSColor.clear.cgColor
+            tourBtn.layer?.borderColor = DesignTokens.setupBorder.cgColor
+            tourBtn.layer?.borderWidth = 1
+            tourBtn.layer?.cornerRadius = 20
+            tourBtn.sizeToFit()
+            let tourBtnW = tourBtn.frame.width + 36
+            tourBtn.setFrameSize(NSSize(width: tourBtnW, height: 36))
+            tourBtn.frame.origin = NSPoint(x: winW - 24 - btnW - 10 - tourBtnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
+            footerContent.addSubview(tourBtn)
         } else {
             let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
@@ -703,6 +719,18 @@ final class SetupWindowController: NSWindowController {
         permissionTimer?.invalidate()
         permissionTimer = nil
         window?.close()
+    }
+
+    /// VIB-360: Close setup (marking complete) and open the tour window
+    @objc private func tourClicked() {
+        ConfigManager.shared.setupComplete = true
+        ConfigManager.shared.save()
+        permissionTimer?.invalidate()
+        permissionTimer = nil
+        window?.close()
+        DispatchQueue.main.async {
+            TourWindowController.shared.showTour()
+        }
     }
 
     @objc private func editShortcut() {
