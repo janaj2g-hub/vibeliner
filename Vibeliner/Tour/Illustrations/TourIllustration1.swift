@@ -11,7 +11,7 @@ final class TourIllustration1: NSView {
     private let badge2: TourAnnotationBadge
     private let promptSheet: TourPromptSheet
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let columnGap: CGFloat = 14
 
     override init(frame frameRect: NSRect) {

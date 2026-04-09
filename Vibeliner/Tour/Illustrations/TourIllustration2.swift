@@ -29,7 +29,7 @@ final class TourIllustration2: NSView {
     private let circle4: TourAnnotationCircle
     private let note4: TourAnnotationNote
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let titleBarHeight: CGFloat = 28
     private let canvasPadding: CGFloat = 8
 
@@ -73,8 +73,8 @@ final class TourIllustration2: NSView {
 
         // Configure editor frame
         editorFrame.wantsLayer = true
-        editorFrame.layer?.cornerRadius = 8
-        editorFrame.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.02).cgColor
+        editorFrame.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
+        editorFrame.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         editorFrame.layer?.borderWidth = 1
         editorFrame.layer?.borderColor = DesignTokens.chromeBorder.cgColor
 

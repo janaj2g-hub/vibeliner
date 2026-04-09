@@ -29,7 +29,7 @@ final class TourIllustration5: NSView {
     private let appChip2: NSView
     private let appChip3: NSView
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
 
     override init(frame frameRect: NSRect) {
         // -- Row 1: Terminal Tools --
@@ -74,7 +74,7 @@ final class TourIllustration5: NSView {
 
         // Section labels
         for label in [terminalLabel, chatLabel] {
-            label.font = NSFont.systemFont(ofSize: 10, weight: .bold)
+            label.font = DesignTokens.tourModeSectionFont
             label.textColor = DesignTokens.tourTextDim
             label.isBezeled = false
             label.drawsBackground = false
@@ -85,15 +85,15 @@ final class TourIllustration5: NSView {
         // Mode cards
         for card in [ideCard, appCard] {
             card.wantsLayer = true
-            card.layer?.cornerRadius = 8
-            card.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+            card.layer?.cornerRadius = DesignTokens.tourModeCardRadius
+            card.layer?.backgroundColor = DesignTokens.tourModeCardBg.cgColor
             card.layer?.borderWidth = 1
             card.layer?.borderColor = DesignTokens.chromeBorder.cgColor
         }
 
         // Title labels
         for title in [ideTitleLabel, appTitleLabel] {
-            title.font = NSFont.systemFont(ofSize: 12, weight: .bold)
+            title.font = DesignTokens.tourModeLabelFont
             title.textColor = DesignTokens.purpleLight
             title.isBezeled = false
             title.drawsBackground = false
@@ -103,7 +103,7 @@ final class TourIllustration5: NSView {
 
         // Description labels
         for desc in [ideDescLabel, appDescLabel] {
-            desc.font = NSFont.systemFont(ofSize: 10, weight: .regular)
+            desc.font = DesignTokens.tourModeDescFont
             desc.textColor = DesignTokens.tourTextDim
             desc.isBezeled = false
             desc.drawsBackground = false
@@ -252,22 +252,22 @@ final class TourIllustration5: NSView {
         let chipHeight: CGFloat = 16
 
         let label = NSTextField(labelWithString: text)
-        label.font = NSFont.systemFont(ofSize: 9, weight: .bold)
+        label.font = DesignTokens.tourChipFont
         label.textColor = DesignTokens.tourTextDim
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
         label.sizeToFit()
 
-        let hPad: CGFloat = 8
+        let hPad = DesignTokens.tourChipPaddingH
         let chipW = label.frame.width + hPad * 2
 
         let chip = NSView(frame: NSRect(x: 0, y: 0, width: chipW, height: chipHeight))
         chip.wantsLayer = true
         chip.layer?.cornerRadius = 999
-        chip.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.04).cgColor
+        chip.layer?.backgroundColor = DesignTokens.tourChipBg.cgColor
         chip.layer?.borderWidth = 1
-        chip.layer?.borderColor = NSColor(white: 1.0, alpha: 0.08).cgColor
+        chip.layer?.borderColor = DesignTokens.tourChipBorder.cgColor
 
         label.frame.origin = NSPoint(
             x: hPad,
@@ -287,7 +287,7 @@ final class TourIllustration5: NSView {
 
     private func drawLetterSpacedLabel(_ field: NSTextField, text: String) {
         let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 10, weight: .bold),
+            .font: DesignTokens.tourModeSectionFont,
             .foregroundColor: DesignTokens.tourTextDim,
             .kern: 1.0,
         ]

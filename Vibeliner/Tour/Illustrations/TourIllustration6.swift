@@ -28,7 +28,7 @@ final class TourIllustration6: NSView {
     private let plusLabel: NSTextField
     private let addLabel: NSTextField
 
-    private let padding: CGFloat = 24
+    private let padding = DesignTokens.tourIllustrationPadding
     private let titleBarH: CGFloat = 28
     private let filmstripGap: CGFloat = 10
     private let toolbarGap: CGFloat = 16
@@ -70,15 +70,15 @@ final class TourIllustration6: NSView {
 
         // Editor frame styling
         editorFrame.wantsLayer = true
-        editorFrame.layer?.cornerRadius = 8
+        editorFrame.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
         editorFrame.layer?.masksToBounds = true
-        editorFrame.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.02).cgColor
+        editorFrame.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         editorFrame.layer?.borderWidth = 1
         editorFrame.layer?.borderColor = DesignTokens.chromeBorder.cgColor
 
         // Title bar
         titleBar.wantsLayer = true
-        titleBar.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+        titleBar.layer?.backgroundColor = DesignTokens.tourOutputCardBg.cgColor
 
         titleLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
         titleLabel.textColor = DesignTokens.tourTextDim
@@ -91,21 +91,21 @@ final class TourIllustration6: NSView {
         // Wireframe cells
         for cell in [cell1, cell2] {
             cell.wantsLayer = true
-            cell.layer?.cornerRadius = 6
-            cell.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+            cell.layer?.cornerRadius = DesignTokens.tourFilmstripCellRadius
+            cell.layer?.backgroundColor = DesignTokens.tourOutputCardBorder.cgColor
         }
 
         // Gray lines inside wireframes
         for line in [wireframe1Line1, wireframe1Line2, wireframe2Line1, wireframe2Line2] {
             line.wantsLayer = true
             line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.10).cgColor
+            line.layer?.backgroundColor = DesignTokens.tooltipDarkBorder.cgColor
         }
 
         // Plus circle
         plusCircle.wantsLayer = true
-        plusCircle.layer?.cornerRadius = 11
-        plusCircle.layer?.backgroundColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14).cgColor
+        plusCircle.layer?.cornerRadius = DesignTokens.tourAddCellPlusSize / 2
+        plusCircle.layer?.backgroundColor = DesignTokens.tourAddCellPlusBg.cgColor
 
         plusLabel.font = NSFont.systemFont(ofSize: 14, weight: .medium)
         plusLabel.textColor = DesignTokens.purpleLight
@@ -115,7 +115,7 @@ final class TourIllustration6: NSView {
         plusLabel.isEditable = false
         plusLabel.sizeToFit()
 
-        addLabel.font = NSFont.systemFont(ofSize: 10, weight: .bold)
+        addLabel.font = DesignTokens.tourOutputLabelFont
         addLabel.textColor = DesignTokens.purpleLight
         addLabel.isBezeled = false
         addLabel.drawsBackground = false
@@ -212,7 +212,7 @@ final class TourIllustration6: NSView {
         cell3Rect = CGRect(x: c3x, y: cellY, width: cellW, height: cellH)
 
         // Plus circle centered in cell3
-        let plusSize: CGFloat = 22
+        let plusSize = DesignTokens.tourAddCellPlusSize
         plusCircle.frame = CGRect(
             x: c3x + (cellW - plusSize) / 2,
             y: cellY + cellH / 2 + 2,
@@ -258,16 +258,17 @@ final class TourIllustration6: NSView {
             height: cell3Rect.height
         )
 
-        let dashPath = CGPath(roundedRect: selfRect, cornerWidth: 6, cornerHeight: 6, transform: nil)
+        let cellRadius = DesignTokens.tourFilmstripCellRadius
+        let dashPath = CGPath(roundedRect: selfRect, cornerWidth: cellRadius, cornerHeight: cellRadius, transform: nil)
         ctx.addPath(dashPath)
-        ctx.setStrokeColor(DesignTokens.purpleLight.withAlphaComponent(0.30).cgColor)
-        ctx.setLineWidth(2)
+        ctx.setStrokeColor(DesignTokens.tourAddCellBorder.cgColor)
+        ctx.setLineWidth(DesignTokens.tourAddCellDashWidth)
         ctx.setLineDash(phase: 0, lengths: [6, 4])
         ctx.strokePath()
 
         // Fill
         ctx.addPath(dashPath)
-        ctx.setFillColor(NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.04).cgColor)
+        ctx.setFillColor(DesignTokens.tourAddCellBg.cgColor)
         ctx.fillPath()
 
         // Reset dash

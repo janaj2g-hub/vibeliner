@@ -402,6 +402,189 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `tourExitFont` | System 11px semibold | Exit tour button | TourWindowController |
 | `tourDoneTitleFont` | System 26px bold | Final step heading | TourWindowController |
 
+### Tour Illustration
+
+#### Illustration Pane
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourIllustrationPadding` | 24px | Internal pane padding | TourIllustration0-7 |
+| `tourIllustrationBgTint` | rgba(0,0,0,0.08) | Pane background tint | TourIllustration0-7 |
+| `tourIllustrationGlow` | rgba(175,169,236,0.06) | Pane purple glow | TourIllustration0-7 |
+
+#### Wireframe App Mock
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourWireframeBgTop` | #F6F8FC | Wireframe gradient top | WireframeAppMock |
+| `tourWireframeBgBottom` | #EEF1F7 | Wireframe gradient bottom | WireframeAppMock |
+| `tourWireframeTopbarBg` | rgba(255,255,255,0.8) | Topbar background | WireframeAppMock |
+| `tourWireframeTopbarBorder` | rgba(0,0,0,0.05) | Topbar border | WireframeAppMock |
+| `tourWireframeSidebarBg` | rgba(245,247,252,0.9) | Sidebar background | WireframeAppMock |
+| `tourWireframeSidebarBorder` | rgba(0,0,0,0.04) | Sidebar border | WireframeAppMock |
+| `tourWireframeSidebarItem` | rgba(15,23,42,0.07) | Sidebar item placeholder | WireframeAppMock |
+| `tourWireframeSidebarActive` | rgba(83,74,183,0.16) | Sidebar active item | WireframeAppMock |
+| `tourWireframeHeading` | rgba(83,74,183,0.14) | Heading placeholder | WireframeAppMock |
+| `tourWireframeCardBg` | rgba(255,255,255,0.85) | Card background | WireframeAppMock |
+| `tourWireframeCardBorder` | rgba(0,0,0,0.04) | Card border | WireframeAppMock |
+| `tourWireframeCardErrorBorder` | rgba(239,68,68,0.2) | Error card border | WireframeAppMock |
+| `tourWireframeCardErrorBg` | rgba(255,245,245,0.9) | Error card background | WireframeAppMock |
+| `tourWireframeLine` | rgba(15,23,42,0.08) | Content line placeholder | WireframeAppMock |
+| `tourWireframeTableBg` | rgba(255,255,255,0.8) | Table background | WireframeAppMock |
+| `tourWireframeTableBorder` | rgba(0,0,0,0.04) | Table border | WireframeAppMock |
+| `tourWireframeTableHeadBg` | rgba(240,242,248,0.9) | Table header background | WireframeAppMock |
+| `tourWireframeTableRowBorder` | rgba(0,0,0,0.04) | Table row border | WireframeAppMock |
+| `tourWireframeTableErrorBg` | rgba(255,235,235,0.6) | Table error row background | WireframeAppMock |
+| `tourWireframeTableCell` | rgba(15,23,42,0.07) | Table cell placeholder | WireframeAppMock |
+| `tourWireframeRadius` | 8px | Wireframe corner radius | WireframeAppMock |
+| `tourWireframeTopbarHeight` | 36px | Topbar height | WireframeAppMock |
+| `tourWireframeSidebarWidth` | 100px | Sidebar width | WireframeAppMock |
+| `tourWireframeCardHeight` | 64px | Card height | WireframeAppMock |
+| `tourWireframeCardRadius` | 6px | Card corner radius | WireframeAppMock |
+| `tourWireframeTableRadius` | 6px | Table corner radius | WireframeAppMock |
+| `tourWireframeBrandIconSize` | 16px | Brand icon size | WireframeAppMock |
+| `tourWireframeBrandFont` | System 11px bold | Brand label font | WireframeAppMock |
+| `tourWireframeBrandColor` | #263041 | Brand label color | WireframeAppMock |
+| `tourWireframeNavPillHeight` | 8px | Nav pill height | WireframeAppMock |
+
+#### Output Card
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourOutputCardBg` | rgba(255,255,255,0.03) | Output card background | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputCardBorder` | rgba(255,255,255,0.06) | Output card border | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputCardRadius` | 6px | Output card corner radius | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputCardPadding` | 10px | Output card padding | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputLabelBg` | rgba(255,255,255,0.05) | Output label background | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputLabelBorder` | rgba(255,255,255,0.06) | Output label border | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputLabelFont` | System 10px bold | Output label font | TourOutputCard, TourIllustration6, TourIllustration7 |
+
+#### Prompt Sheet
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourPromptSheetBg` | rgba(255,255,255,0.04) | Prompt sheet background | TourPromptSheet |
+| `tourPromptSheetBorder` | rgba(255,255,255,0.06) | Prompt sheet border | TourPromptSheet |
+| `tourPromptSheetRadius` | 6px | Prompt sheet corner radius | TourPromptSheet |
+| `tourPromptSheetPaddingH` | 14px | Prompt sheet horizontal padding | TourPromptSheet |
+| `tourPromptSheetPaddingV` | 16px | Prompt sheet vertical padding | TourPromptSheet |
+| `tourPromptSheetFont` | Mono 10.5px regular | Prompt sheet font | TourPromptSheet |
+| `tourPromptSheetColor` | rgba(255,255,255,0.68) | Prompt sheet text color | TourPromptSheet |
+| `tourPromptSheetDim` | rgba(255,255,255,0.3) | Prompt sheet dim text | TourPromptSheet |
+| `tourPromptSheetNumber` | #F87171 | Prompt sheet number color | TourPromptSheet |
+
+#### LLM Chat Panel
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourLLMPanelBg` | rgba(255,255,255,0.025) | LLM panel background | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMPanelBorder` | rgba(255,255,255,0.06) | LLM panel border | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMPanelRadius` | 8px | LLM panel corner radius | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMDotSize` | 7px | LLM status dot size | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMHeaderFont` | System 11px bold | LLM header font | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMBubbleBg` | rgba(255,255,255,0.05) | LLM bubble background | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMBubbleFont` | System 11px regular | LLM bubble font | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMChatFont` | Mono 10.5px regular | LLM chat font | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMChatColor` | rgba(255,255,255,0.55) | LLM chat text color | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMComposerBg` | rgba(255,255,255,0.04) | LLM composer background | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMComposerBorder` | rgba(255,255,255,0.06) | LLM composer border | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMComposerRadius` | 8px | LLM composer corner radius | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMThumbWidth` | 36px | LLM thumbnail width | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMThumbHeight` | 28px | LLM thumbnail height | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMSendSize` | 24px | LLM send button size | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMSendBg` | rgba(175,169,236,0.2) | LLM send button background | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+
+#### Flow Arrow
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourFlowArrowWidth` | 2px | Flow arrow stroke width | AnnotationMarkViews |
+| `tourFlowArrowHeight` | 28px | Flow arrow height | AnnotationMarkViews |
+| `tourFlowArrowColor` | rgba(175,169,236,0.5) | Flow arrow color | AnnotationMarkViews |
+| `tourFlowArrowChevronSize` | 10px | Flow arrow chevron size | AnnotationMarkViews |
+
+#### Mini Screenshot
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourMiniScreenshotRadius` | 4px | Mini screenshot corner radius | Tour Illustrations |
+| `tourMiniScreenshotBarHeight` | 18px | Mini screenshot title bar height | Tour Illustrations |
+| `tourMiniScreenshotBarBg` | rgba(255,255,255,0.7) | Mini screenshot title bar bg | Tour Illustrations |
+| `tourMiniScreenshotDotSize` | 5px | Mini screenshot traffic light dot | Tour Illustrations |
+| `tourMiniScreenshotDotColor` | rgba(15,23,42,0.15) | Mini screenshot dot color | Tour Illustrations |
+| `tourMiniScreenshotBodyHeight` | 80px | Mini screenshot body height | Tour Illustrations |
+| `tourMiniScreenshotRailWidth` | 30px | Mini screenshot sidebar rail width | Tour Illustrations |
+| `tourMiniScreenshotRailBg` | rgba(245,247,252,0.9) | Mini screenshot rail background | Tour Illustrations |
+| `tourMiniScreenshotLineColor` | rgba(15,23,42,0.06) | Mini screenshot content line color | Tour Illustrations |
+| `tourMiniScreenshotAccent` | rgba(83,74,183,0.12) | Mini screenshot accent | Tour Illustrations |
+| `tourMiniBadgeSize` | 14px | Mini annotation badge size | Tour Illustrations |
+| `tourMiniRectStroke` | 1.5px | Mini annotation rect stroke | Tour Illustrations |
+
+#### Mode Card
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourModeCardBg` | rgba(255,255,255,0.025) | Mode card background | TourIllustration5 |
+| `tourModeCardBorder` | rgba(255,255,255,0.06) | Mode card border | TourIllustration5 |
+| `tourModeCardRadius` | 8px | Mode card corner radius | TourIllustration5 |
+| `tourModeCardPadding` | 14px | Mode card padding | TourIllustration5 |
+| `tourModeLabelFont` | System 12px bold | Mode card label font | TourIllustration5 |
+| `tourModeDescFont` | System 11px regular | Mode card description font | TourIllustration5 |
+| `tourModeSectionFont` | System 10px bold | Mode card section font | TourIllustration5 |
+
+#### Example Chip
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourChipBg` | rgba(255,255,255,0.04) | Chip background | TourIllustration5 |
+| `tourChipBorder` | rgba(255,255,255,0.06) | Chip border | TourIllustration5 |
+| `tourChipFont` | System 10px semibold | Chip font | TourIllustration5 |
+| `tourChipPaddingH` | 8px | Chip horizontal padding | TourIllustration5 |
+| `tourChipPaddingV` | 3px | Chip vertical padding | TourIllustration5 |
+
+#### Filmstrip Cell
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourFilmstripCellRadius` | 6px | Filmstrip cell corner radius | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellBarHeight` | 16px | Filmstrip cell title bar height | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellBarBg` | rgba(255,255,255,0.7) | Filmstrip cell title bar bg | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellDotSize` | 4px | Filmstrip cell traffic light dot | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellDotColor` | rgba(15,23,42,0.12) | Filmstrip cell dot color | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellLineColor` | rgba(15,23,42,0.06) | Filmstrip cell content line color | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellAccent` | rgba(83,74,183,0.12) | Filmstrip cell accent | TourIllustration6, TourIllustration7 |
+
+#### Dashed Add-Image Cell
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourAddCellBorder` | rgba(175,169,236,0.3) | Add cell dashed border | TourIllustration6 |
+| `tourAddCellBg` | rgba(175,169,236,0.04) | Add cell background | TourIllustration6 |
+| `tourAddCellDashWidth` | 2px | Add cell dash width | TourIllustration6 |
+| `tourAddCellMinHeight` | 70px | Add cell minimum height | TourIllustration6 |
+| `tourAddCellPlusSize` | 22px | Add cell plus icon size | TourIllustration6 |
+| `tourAddCellPlusBg` | rgba(175,169,236,0.16) | Add cell plus icon background | TourIllustration6 |
+| `tourAddCellLabelFont` | System 10px semibold | Add cell label font | TourIllustration6 |
+
+#### Editor Frame
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourEditorFrameBg` | rgba(20,20,24,0.9) | Editor frame dark background | Tour Illustrations |
+| `tourEditorFrameBgLight` | rgba(248,248,254,0.96) | Editor frame light background | Tour Illustrations |
+
+#### Role Tag
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourRoleTagBg` | rgba(255,255,255,0.2) | Role tag background | TourTitlePill |
+
+#### Hint Text
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourHintFont` | System 10px regular | Hint text font | TourIllustration3 |
+
 ---
 
 ## Appearance Strategy

@@ -14,7 +14,6 @@ final class TourPromptSheet: NSView {
     private let preamble: String?
     private let annotations: [TourPromptLine]
     private let footer: String?
-    private let sheetPadding: CGFloat = 10
     private let lineSpacing: CGFloat = 3
 
     init(preamble: String? = nil, annotations: [TourPromptLine], footer: String? = nil) {
@@ -24,11 +23,11 @@ final class TourPromptSheet: NSView {
         super.init(frame: .zero)
 
         wantsLayer = true
-        layer?.cornerRadius = 6
+        layer?.cornerRadius = DesignTokens.tourPromptSheetRadius
         layer?.masksToBounds = true
-        layer?.backgroundColor = NSColor(white: 1.0, alpha: 0.03).cgColor
+        layer?.backgroundColor = DesignTokens.tourPromptSheetBg.cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = NSColor(white: 1.0, alpha: 0.06).cgColor
+        layer?.borderColor = DesignTokens.tourPromptSheetBorder.cgColor
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -36,14 +35,16 @@ final class TourPromptSheet: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         let h = bounds.height
-        var y = h - sheetPadding
+        let padH = DesignTokens.tourPromptSheetPaddingH
+        let padV = DesignTokens.tourPromptSheetPaddingV
+        var y = h - padV
 
-        let monoFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .regular)
-        let monoBoldFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .bold)
+        let monoFont = DesignTokens.tourPromptSheetFont
+        let monoBoldFont = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .bold)
 
         let dimAttrs: [NSAttributedString.Key: Any] = [
             .font: monoFont,
-            .foregroundColor: DesignTokens.tourTextDim,
+            .foregroundColor: DesignTokens.tourPromptSheetDim,
         ]
 
         // Preamble
@@ -53,7 +54,7 @@ final class TourPromptSheet: NSView {
                 let str = NSAttributedString(string: line, attributes: dimAttrs)
                 let size = str.size()
                 y -= size.height
-                str.draw(at: NSPoint(x: sheetPadding, y: y))
+                str.draw(at: NSPoint(x: padH, y: y))
                 y -= lineSpacing
             }
             y -= lineSpacing * 2
@@ -66,7 +67,7 @@ final class TourPromptSheet: NSView {
             // Red bold index number
             let indexStr = NSAttributedString(string: "\(annotation.index). ", attributes: [
                 .font: monoBoldFont,
-                .foregroundColor: DesignTokens.red,
+                .foregroundColor: DesignTokens.tourPromptSheetNumber,
             ])
             attributed.append(indexStr)
 
@@ -77,13 +78,13 @@ final class TourPromptSheet: NSView {
             // Note text in secondary
             let noteStr = NSAttributedString(string: annotation.note, attributes: [
                 .font: monoFont,
-                .foregroundColor: DesignTokens.tourTextSecondary,
+                .foregroundColor: DesignTokens.tourPromptSheetColor,
             ])
             attributed.append(noteStr)
 
             let size = attributed.size()
             y -= size.height
-            attributed.draw(at: NSPoint(x: sheetPadding, y: y))
+            attributed.draw(at: NSPoint(x: padH, y: y))
             y -= lineSpacing
         }
 
@@ -95,7 +96,7 @@ final class TourPromptSheet: NSView {
                 let str = NSAttributedString(string: line, attributes: dimAttrs)
                 let size = str.size()
                 y -= size.height
-                str.draw(at: NSPoint(x: sheetPadding, y: y))
+                str.draw(at: NSPoint(x: padH, y: y))
                 y -= lineSpacing
             }
         }

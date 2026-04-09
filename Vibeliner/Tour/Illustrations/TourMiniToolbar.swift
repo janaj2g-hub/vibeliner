@@ -48,7 +48,7 @@ final class TourMiniToolbar: NSView {
         wantsLayer = true
         layer?.cornerRadius = 999
         layer?.masksToBounds = true
-        layer?.backgroundColor = NSColor(red: 40/255, green: 40/255, blue: 40/255, alpha: 0.95).cgColor
+        layer?.backgroundColor = DesignTokens.darkChrome.cgColor
         layer?.borderWidth = 1
         layer?.borderColor = DesignTokens.chromeBorder.cgColor
     }
@@ -76,7 +76,7 @@ final class TourMiniToolbar: NSView {
 
             let iconColor = tool == config.activeTool
                 ? DesignTokens.purpleLight.cgColor
-                : DesignTokens.tourTextDim.cgColor
+                : DesignTokens.iconDefault.cgColor
             ctx.setStrokeColor(iconColor)
             ctx.setFillColor(iconColor)
             ctx.setLineWidth(1.5)
@@ -125,7 +125,7 @@ final class TourMiniToolbar: NSView {
                 x += toolSpacing
             }
             if config.showAddImage {
-                x = drawCopyPill(ctx: ctx, text: "+ Add image", x: x, h: h, width: 64)
+                x = drawAddImagePill(ctx: ctx, text: "+ Add image", x: x, h: h, width: 64)
             }
         }
     }
@@ -188,7 +188,7 @@ final class TourMiniToolbar: NSView {
         let toggleRect = CGRect(x: x, y: toggleY, width: toggleWidth, height: toggleHeight)
 
         // Toggle background
-        ctx.setFillColor(NSColor(white: 1.0, alpha: 0.06).cgColor)
+        ctx.setFillColor(DesignTokens.toggleBg.cgColor)
         let togglePath = CGPath(roundedRect: toggleRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(togglePath)
         ctx.fillPath()
@@ -197,7 +197,7 @@ final class TourMiniToolbar: NSView {
         let ideActive = config.mode == .ide
         let activeX = ideActive ? x : x + toggleSegmentWidth
         let segRect = CGRect(x: activeX + 2, y: toggleY + 2, width: toggleSegmentWidth - 4, height: toggleHeight - 4)
-        ctx.setFillColor(DesignTokens.purpleLight.withAlphaComponent(0.3).cgColor)
+        ctx.setFillColor(DesignTokens.toggleActiveBg.cgColor)
         let segPath = CGPath(roundedRect: segRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(segPath)
         ctx.fillPath()
@@ -205,11 +205,11 @@ final class TourMiniToolbar: NSView {
         // Labels
         let ideAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.purpleLight : DesignTokens.tourTextDim,
+            .foregroundColor: ideActive ? DesignTokens.purpleLight : DesignTokens.toggleInactiveText,
         ]
         let appAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.tourTextDim : DesignTokens.purpleLight,
+            .foregroundColor: ideActive ? DesignTokens.toggleInactiveText : DesignTokens.purpleLight,
         ]
         let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
         let appStr = NSAttributedString(string: "App", attributes: appAttrs)
@@ -232,13 +232,13 @@ final class TourMiniToolbar: NSView {
         let pillRect = CGRect(x: x, y: pillY, width: width, height: copyPillHeight)
 
         // Background
-        ctx.setFillColor(NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.2).cgColor)
+        ctx.setFillColor(DesignTokens.purpleButtonBg.cgColor)
         let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(path)
         ctx.fillPath()
 
         // Border
-        ctx.setStrokeColor(NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 0.5).cgColor)
+        ctx.setStrokeColor(DesignTokens.purpleButton.withAlphaComponent(0.5).cgColor)
         ctx.setLineWidth(1)
         ctx.addPath(path)
         ctx.strokePath()
@@ -246,7 +246,39 @@ final class TourMiniToolbar: NSView {
         // Text
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0),
+            .foregroundColor: DesignTokens.purpleLight,
+        ]
+        let str = NSAttributedString(string: text, attributes: attrs)
+        let size = str.size()
+        str.draw(at: NSPoint(
+            x: pillRect.midX - size.width / 2,
+            y: pillRect.midY - size.height / 2
+        ))
+        return x + width
+    }
+
+    // MARK: - Add Image Pill
+
+    private func drawAddImagePill(ctx: CGContext, text: String, x: CGFloat, h: CGFloat, width: CGFloat) -> CGFloat {
+        let pillY = (h - copyPillHeight) / 2
+        let pillRect = CGRect(x: x, y: pillY, width: width, height: copyPillHeight)
+
+        // Background
+        ctx.setFillColor(DesignTokens.addImageBg.cgColor)
+        let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
+        ctx.addPath(path)
+        ctx.fillPath()
+
+        // Border
+        ctx.setStrokeColor(DesignTokens.addImageBorder.cgColor)
+        ctx.setLineWidth(1)
+        ctx.addPath(path)
+        ctx.strokePath()
+
+        // Text
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 8, weight: .bold),
+            .foregroundColor: DesignTokens.purpleLight,
         ]
         let str = NSAttributedString(string: text, attributes: attrs)
         let size = str.size()

@@ -833,6 +833,147 @@ enum DesignTokens {
     static let tourExitFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
     static let tourDoneTitleFont = NSFont.systemFont(ofSize: 26, weight: .bold)
 
+    // MARK: - Tour Illustration
+
+    // -- Illustration pane --
+    static let tourIllustrationPadding: CGFloat = 24
+    static let tourIllustrationBgTint = NSColor(white: 0, alpha: 0.08)
+    static let tourIllustrationGlow = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.06)
+
+    // -- Wireframe app mock --
+    static let tourWireframeBgTop = NSColor(red: 246/255, green: 248/255, blue: 252/255, alpha: 1)
+    static let tourWireframeBgBottom = NSColor(red: 238/255, green: 241/255, blue: 247/255, alpha: 1)
+    static let tourWireframeTopbarBg = NSColor(white: 1, alpha: 0.8)
+    static let tourWireframeTopbarBorder = NSColor(white: 0, alpha: 0.05)
+    static let tourWireframeSidebarBg = NSColor(red: 245/255, green: 247/255, blue: 252/255, alpha: 0.9)
+    static let tourWireframeSidebarBorder = NSColor(white: 0, alpha: 0.04)
+    static let tourWireframeSidebarItem = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.07)
+    static let tourWireframeSidebarActive = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.16)
+    static let tourWireframeHeading = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.14)
+    static let tourWireframeCardBg = NSColor(white: 1, alpha: 0.85)
+    static let tourWireframeCardBorder = NSColor(white: 0, alpha: 0.04)
+    static let tourWireframeCardErrorBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.2)
+    static let tourWireframeCardErrorBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.9)
+    static let tourWireframeLine = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
+    static let tourWireframeTableBg = NSColor(white: 1, alpha: 0.8)
+    static let tourWireframeTableBorder = NSColor(white: 0, alpha: 0.04)
+    static let tourWireframeTableHeadBg = NSColor(red: 240/255, green: 242/255, blue: 248/255, alpha: 0.9)
+    static let tourWireframeTableRowBorder = NSColor(white: 0, alpha: 0.04)
+    static let tourWireframeTableErrorBg = NSColor(red: 255/255, green: 235/255, blue: 235/255, alpha: 0.6)
+    static let tourWireframeTableCell = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.07)
+    static let tourWireframeRadius: CGFloat = 8
+    static let tourWireframeTopbarHeight: CGFloat = 36
+    static let tourWireframeSidebarWidth: CGFloat = 100
+    static let tourWireframeCardHeight: CGFloat = 64
+    static let tourWireframeCardRadius: CGFloat = 6
+    static let tourWireframeTableRadius: CGFloat = 6
+    static let tourWireframeBrandIconSize: CGFloat = 16
+    static let tourWireframeBrandFont = NSFont.systemFont(ofSize: 11, weight: .bold)
+    static let tourWireframeBrandColor = NSColor(red: 38/255, green: 48/255, blue: 65/255, alpha: 1)
+    static let tourWireframeNavPillHeight: CGFloat = 8
+
+    // -- Output card --
+    static let tourOutputCardBg = NSColor(white: 1, alpha: 0.03)
+    static let tourOutputCardBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourOutputCardRadius: CGFloat = 6
+    static let tourOutputCardPadding: CGFloat = 10
+    static let tourOutputLabelBg = NSColor(white: 1, alpha: 0.05)
+    static let tourOutputLabelBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourOutputLabelFont = NSFont.systemFont(ofSize: 10, weight: .bold)
+
+    // -- Prompt sheet --
+    static let tourPromptSheetBg = NSColor(white: 1, alpha: 0.04)
+    static let tourPromptSheetBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourPromptSheetRadius: CGFloat = 6
+    static let tourPromptSheetPaddingH: CGFloat = 14
+    static let tourPromptSheetPaddingV: CGFloat = 16
+    static let tourPromptSheetFont = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular)
+    static let tourPromptSheetColor = NSColor(white: 1, alpha: 0.68)
+    static let tourPromptSheetDim = NSColor(white: 1, alpha: 0.3)
+    static let tourPromptSheetNumber = NSColor(red: 248/255, green: 113/255, blue: 113/255, alpha: 1)
+
+    // -- LLM chat panel --
+    static let tourLLMPanelBg = NSColor(white: 1, alpha: 0.025)
+    static let tourLLMPanelBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourLLMPanelRadius: CGFloat = 8
+    static let tourLLMDotSize: CGFloat = 7
+    static let tourLLMHeaderFont = NSFont.systemFont(ofSize: 11, weight: .bold)
+    static let tourLLMBubbleBg = NSColor(white: 1, alpha: 0.05)
+    static let tourLLMBubbleFont = NSFont.systemFont(ofSize: 11, weight: .regular)
+    static let tourLLMChatFont = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .regular)
+    static let tourLLMChatColor = NSColor(white: 1, alpha: 0.55)
+    static let tourLLMComposerBg = NSColor(white: 1, alpha: 0.04)
+    static let tourLLMComposerBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourLLMComposerRadius: CGFloat = 8
+    static let tourLLMThumbWidth: CGFloat = 36
+    static let tourLLMThumbHeight: CGFloat = 28
+    static let tourLLMSendSize: CGFloat = 24
+    static let tourLLMSendBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
+
+    // -- Flow arrow --
+    static let tourFlowArrowWidth: CGFloat = 2
+    static let tourFlowArrowHeight: CGFloat = 28
+    static let tourFlowArrowColor = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.5)
+    static let tourFlowArrowChevronSize: CGFloat = 10
+
+    // -- Mini screenshot (inside output cards) --
+    static let tourMiniScreenshotRadius: CGFloat = 4
+    static let tourMiniScreenshotBarHeight: CGFloat = 18
+    static let tourMiniScreenshotBarBg = NSColor(white: 1, alpha: 0.7)
+    static let tourMiniScreenshotDotSize: CGFloat = 5
+    static let tourMiniScreenshotDotColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.15)
+    static let tourMiniScreenshotBodyHeight: CGFloat = 80
+    static let tourMiniScreenshotRailWidth: CGFloat = 30
+    static let tourMiniScreenshotRailBg = NSColor(red: 245/255, green: 247/255, blue: 252/255, alpha: 0.9)
+    static let tourMiniScreenshotLineColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.06)
+    static let tourMiniScreenshotAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
+    static let tourMiniBadgeSize: CGFloat = 14
+    static let tourMiniRectStroke: CGFloat = 1.5
+
+    // -- Mode card (step 5) --
+    static let tourModeCardBg = NSColor(white: 1, alpha: 0.025)
+    static let tourModeCardBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourModeCardRadius: CGFloat = 8
+    static let tourModeCardPadding: CGFloat = 14
+    static let tourModeLabelFont = NSFont.systemFont(ofSize: 12, weight: .bold)
+    static let tourModeDescFont = NSFont.systemFont(ofSize: 11, weight: .regular)
+    static let tourModeSectionFont = NSFont.systemFont(ofSize: 10, weight: .bold)
+
+    // -- Example chip --
+    static let tourChipBg = NSColor(white: 1, alpha: 0.04)
+    static let tourChipBorder = NSColor(white: 1, alpha: 0.06)
+    static let tourChipFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
+    static let tourChipPaddingH: CGFloat = 8
+    static let tourChipPaddingV: CGFloat = 3
+
+    // -- Filmstrip cell (steps 6, 7) --
+    static let tourFilmstripCellRadius: CGFloat = 6
+    static let tourFilmstripCellBarHeight: CGFloat = 16
+    static let tourFilmstripCellBarBg = NSColor(white: 1, alpha: 0.7)
+    static let tourFilmstripCellDotSize: CGFloat = 4
+    static let tourFilmstripCellDotColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
+    static let tourFilmstripCellLineColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.06)
+    static let tourFilmstripCellAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
+
+    // -- Dashed add-image cell --
+    static let tourAddCellBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.3)
+    static let tourAddCellBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.04)
+    static let tourAddCellDashWidth: CGFloat = 2
+    static let tourAddCellMinHeight: CGFloat = 70
+    static let tourAddCellPlusSize: CGFloat = 22
+    static let tourAddCellPlusBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
+    static let tourAddCellLabelFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
+
+    // -- Editor frame (steps 2, 6) --
+    static let tourEditorFrameBg = NSColor(red: 20/255, green: 20/255, blue: 24/255, alpha: 0.9)
+    static let tourEditorFrameBgLight = NSColor(red: 248/255, green: 248/255, blue: 254/255, alpha: 0.96)
+
+    // -- Role tag inside title pills --
+    static let tourRoleTagBg = NSColor(white: 1, alpha: 0.2)
+
+    // -- Hint text --
+    static let tourHintFont = NSFont.systemFont(ofSize: 10, weight: .regular)
+
     // MARK: - Vertically Centered Text Field
 
     /// Creates an NSTextField that is vertically centered within a given container height.

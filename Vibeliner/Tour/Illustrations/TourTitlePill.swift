@@ -9,24 +9,35 @@ enum TourRole {
     var backgroundColor: NSColor {
         switch self {
         case .observed:
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.85)
+            return DesignTokens.roleObservedBg
         case .expected:
-            return NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.85)
+            return DesignTokens.roleExpectedBg
         case .reference:
-            return NSColor(red: 59/255, green: 130/255, blue: 246/255, alpha: 0.85)
+            return DesignTokens.roleReferenceBg
+        }
+    }
+
+    var borderColor: NSColor {
+        switch self {
+        case .observed:
+            return DesignTokens.roleObservedBorder
+        case .expected:
+            return DesignTokens.roleExpectedBorder
+        case .reference:
+            return DesignTokens.roleReferenceBorder
         }
     }
 }
 
 /// Small pill label used in tour illustrations to identify and tag elements.
 /// Shows a name and an inner role tag pill.
-/// Height: 22px, fully rounded (999px radius).
+/// Height: matches titlePillHeight token, fully rounded (999px radius).
 final class TourTitlePill: NSView {
 
     private let name: String
     private let role: TourRole
 
-    private let pillHeight: CGFloat = 22
+    private let pillHeight: CGFloat = DesignTokens.titlePillHeight
     private let paddingH: CGFloat = 8
     private let tagPaddingH: CGFloat = 6
     private let tagHeight: CGFloat = 14
@@ -92,7 +103,7 @@ final class TourTitlePill: NSView {
         let tagRect = CGRect(x: tagX, y: tagY, width: tagW, height: tagHeight)
 
         // Tag bg
-        ctx.setFillColor(NSColor(white: 1.0, alpha: 0.2).cgColor)
+        ctx.setFillColor(DesignTokens.tourRoleTagBg.cgColor)
         let tagPath = CGPath(roundedRect: tagRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(tagPath)
         ctx.fillPath()
