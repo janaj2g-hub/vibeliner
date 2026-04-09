@@ -307,6 +307,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let keyMap: [UInt16: AnnotationToolType] = [18: .select, 19: .pin, 20: .arrow, 21: .rectangle, 22: .circle, 23: .freehand]
             if let tool = keyMap[keyCode] {
                 toolbarView.selectTool(tool)
+                // VIB-334: Show cursor when switching to select tool via keyboard
+                if tool == .select {
+                    CursorManager.shared.showCursor()
+                }
                 return true
             }
         } else if flags == .command && event.charactersIgnoringModifiers == "z" {

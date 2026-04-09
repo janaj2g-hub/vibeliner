@@ -68,6 +68,12 @@ final class CanvasView: NSView, NotePillDelegate {
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
         ghostPosition = point
+
+        // VIB-334: Safety net — if no drawing tool active but cursor is hidden, force-show
+        if activeTool?.toolType.isDrawingTool != true && CursorManager.shared.isCursorHidden {
+            CursorManager.shared.forceShow()
+        }
+
         activeTool?.mouseMoved(to: point, in: self)
         marksLayer.ghostPosition = point
         marksLayer.ghostTool = activeTool
