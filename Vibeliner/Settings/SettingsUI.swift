@@ -180,6 +180,10 @@ final class SettingsTextField: NSTextField {
             ? NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
             : DesignTokens.settingsFieldFont
         cell = VerticallyCenteredTextFieldCell()
+        // VIB-338: Replacing the cell resets isEditable to false (NSTextFieldCell default).
+        // Re-enable so role name/description fields are actually editable.
+        isEditable = true
+        isSelectable = true
         font = savedFont
         textColor = .labelColor
         isBordered = false
