@@ -97,19 +97,23 @@ final class CompositeStitcher {
             )
         }
 
-        // VIB-309: Render annotation marks and badges into the composite.
-        // Scale from editor canvas coordinates to composite image coordinates.
+        // VIB-372: Render annotation marks into the composite.
+        // Annotations are in editor canvas coordinates (= filmstrip imageAreaRect).
+        // Map them to the IMAGE CONTENT AREA within the composite, NOT the full
+        // composite size (which includes padding and title pill area).
         if !annotations.isEmpty && canvasSize.width > 0 && canvasSize.height > 0 {
             ctx.saveGState()
-            let scaleX = compositeWidth / canvasSize.width
-            let scaleY = compositeHeight / canvasSize.height
+            // Translate to the image content area origin (skip padding)
+            ctx.translateBy(x: padding, y: padding)
+            // Scale from canvas space to export image content area
+            let scaleX = totalContentWidth / canvasSize.width
+            let scaleY = rowHeight / canvasSize.height
             ctx.scaleBy(x: scaleX, y: scaleY)
-            let scaledCanvasSize = NSSize(width: canvasSize.width, height: canvasSize.height)
-            pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
-            arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
-            rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
-            circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
-            freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: scaledCanvasSize)
+            pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+            arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+            rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+            circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+            freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
             ctx.restoreGState()
         }
 

@@ -5,7 +5,8 @@ final class AutoSaveManager {
     private let store: AnnotationStore
     private let captureFolder: URL
     private let originalImage: NSImage
-    private let canvasSize: CGSize
+    /// VIB-372: Mutable so filmstrip mode can update it to the actual canvas bounds.
+    var canvasSize: CGSize
     /// VIB-297: All images in filmstrip mode; nil for single-image.
     var allImages: [NSImage]?
     private var storeObserver: Any?
