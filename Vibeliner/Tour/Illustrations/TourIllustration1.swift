@@ -35,7 +35,13 @@ final class TourIllustration1: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Add mock to left card's content area
+        // Add mock to left card's content area with subtle shadow
+        leftMock.wantsLayer = true
+        leftMock.layer?.shadowColor = NSColor.black.cgColor
+        leftMock.layer?.shadowOpacity = 0.08
+        leftMock.layer?.shadowOffset = CGSize(width: 0, height: -4)
+        leftMock.layer?.shadowRadius = 8
+
         leftCard.contentArea.addSubview(leftMock)
         leftCard.contentArea.addSubview(badge1)
         leftCard.contentArea.addSubview(badge2)

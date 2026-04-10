@@ -181,26 +181,27 @@ final class SetupWindowController: NSWindowController {
         c.addSubview(step1ActionRow)
 
         // Step 1 done area: "Folder ready" + "Change folder" button
-        step1DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 50))
+        // Aligned to match action row: label at y=54, button at y=10 within 72px container at y=10
+        step1DoneArea = NSView(frame: NSRect(x: pad, y: 10, width: contentW, height: 72))
         step1DoneArea.isHidden = true
 
         let readyLabel = makeLabel("Folder ready", font: DesignTokens.setupStatusFont, color: DesignTokens.setupGreenText)
         readyLabel.alignment = .center
-        readyLabel.frame = NSRect(x: 0, y: 30, width: contentW, height: 18)
+        readyLabel.frame = NSRect(x: 0, y: 54, width: contentW, height: 18)
         step1DoneArea.addSubview(readyLabel)
 
         let changeBtn = makeSmallPillButton("Change folder", green: true)
         changeBtn.target = self
         changeBtn.action = #selector(chooseFolder)
         let cbW = changeBtn.frame.width
-        changeBtn.frame.origin = NSPoint(x: (contentW - cbW) / 2, y: 0)
+        changeBtn.frame.origin = NSPoint(x: (contentW - cbW) / 2, y: 10)
         step1DoneArea.addSubview(changeBtn)
 
         c.addSubview(step1DoneArea)
 
-        // Status label (hidden — action row starts visible)
+        // Status label (hidden — action row starts visible) — aligned with action row label
         status1 = makeStatusLabel("", style: .gray)
-        status1.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        status1.frame = NSRect(x: pad, y: 64, width: contentW, height: 20)
         status1.isHidden = true
         c.addSubview(status1)
 
@@ -241,9 +242,9 @@ final class SetupWindowController: NSWindowController {
         step2ActionRow.isHidden = true
         c.addSubview(step2ActionRow)
 
-        // Status label
+        // Status label — aligned with action row label (y=64 from panel bottom)
         status2 = makeStatusLabel("Complete step 1 first", style: .gray)
-        status2.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        status2.frame = NSRect(x: pad, y: 64, width: contentW, height: 20)
         c.addSubview(status2)
     }
 
@@ -278,9 +279,9 @@ final class SetupWindowController: NSWindowController {
         step3ActionRow.isHidden = true
         c.addSubview(step3ActionRow)
 
-        // Status label
+        // Status label — aligned with action row label (y=64 from panel bottom)
         status3 = makeStatusLabel("Complete step 2 first", style: .gray)
-        status3.frame = NSRect(x: pad, y: 10, width: contentW, height: 20)
+        status3.frame = NSRect(x: pad, y: 64, width: contentW, height: 20)
         c.addSubview(status3)
     }
 

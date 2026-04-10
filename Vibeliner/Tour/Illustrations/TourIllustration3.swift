@@ -2,6 +2,7 @@ import AppKit
 
 /// Tour step 3: "Marks become instructions"
 /// Three vertical sections: top mock with overlays, flow arrows, bottom two-column output cards.
+/// Left card uses TourMiniScreenshot (not a full WireframeAppMock).
 final class TourIllustration3: NSView {
 
     // Top section: wireframe with annotations
@@ -19,9 +20,7 @@ final class TourIllustration3: NSView {
     // Bottom section
     private let leftCard: TourOutputCard
     private let rightCard: TourOutputCard
-    private let leftMock: WireframeAppMock
-    private let leftBadge1: TourAnnotationBadge
-    private let leftBadge2: TourAnnotationBadge
+    private let miniScreenshot: TourMiniScreenshot
     private let promptSheet: TourPromptSheet
 
     // Hint labels
@@ -47,9 +46,12 @@ final class TourIllustration3: NSView {
         leftCard = TourOutputCard(label: "screenshot.png")
         rightCard = TourOutputCard(label: "prompt.txt")
 
-        leftMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
-        leftBadge1 = TourAnnotationBadge(number: 1)
-        leftBadge2 = TourAnnotationBadge(number: 2)
+        // Mini screenshot with 2 badges + rect mark (not a full WireframeAppMock)
+        miniScreenshot = TourMiniScreenshot(
+            badges: [(1, 8, 26), (2, 8, 52)],
+            showRect: true,
+            rectFrame: NSRect(x: 0, y: 2, width: 60, height: 30)
+        )
 
         promptSheet = TourPromptSheet(
             annotations: [
@@ -85,9 +87,7 @@ final class TourIllustration3: NSView {
         addSubview(flowArrow1)
         addSubview(flowArrow2)
 
-        leftCard.contentArea.addSubview(leftMock)
-        leftCard.contentArea.addSubview(leftBadge1)
-        leftCard.contentArea.addSubview(leftBadge2)
+        leftCard.contentArea.addSubview(miniScreenshot)
         rightCard.contentArea.addSubview(promptSheet)
         addSubview(leftCard)
         addSubview(rightCard)
@@ -114,12 +114,11 @@ final class TourIllustration3: NSView {
         let rhSize = rightHint.sizeThatFits(NSSize(width: colW, height: .greatestFiniteMagnitude))
         let hintH = max(lhSize.height, rhSize.height)
 
-        // Vertical distribution — give more space to bottom cards so content is visible
+        // Vertical distribution
         let arrowH: CGFloat = 28
         let totalGaps = sectionGap * 3
         let availableH = contentH - arrowH - totalGaps - hintH
 
-        // Top wireframe: proportional to width, compact
         let mockBodyH = max(CGFloat(130), contentW * 0.32)
         let topH = min(floor(availableH * 0.45), DesignTokens.tourWireframeTopbarHeight + 1 + mockBodyH)
         let bottomH = availableH - topH
@@ -140,16 +139,8 @@ final class TourIllustration3: NSView {
         leftCard.layoutSubtreeIfNeeded()
         rightCard.layoutSubtreeIfNeeded()
 
-        // Left card: mock fills content area + badges
-        let lca = leftCard.contentArea
-        leftMock.frame = lca.bounds
-        let lMockH = lca.bounds.height
-        let mainXL = DesignTokens.tourWireframeSidebarWidth + 1
-        let mainTopYL = lMockH - DesignTokens.tourWireframeTopbarHeight - 1
-        let badgeD = DesignTokens.badgeDiameter
-
-        leftBadge1.frame.origin = NSPoint(x: mainXL + 4, y: mainTopYL - 14 - badgeD)
-        leftBadge2.frame.origin = NSPoint(x: mainXL + 4, y: mainTopYL - 64 - badgeD)
+        // Left card: mini screenshot fills content area
+        miniScreenshot.frame = leftCard.contentArea.bounds
 
         // Right card: prompt sheet fills content area
         promptSheet.frame = rightCard.contentArea.bounds
@@ -170,6 +161,7 @@ final class TourIllustration3: NSView {
         // Top annotations (positions relative to wireframe main area)
         let mainX = padding + DesignTokens.tourWireframeSidebarWidth + 1
         let mainTopY = y + topH - DesignTokens.tourWireframeTopbarHeight - 1
+        let badgeD = DesignTokens.badgeDiameter
 
         topBadge1.frame.origin = NSPoint(x: mainX + 4, y: mainTopY - 14 - badgeD)
         topNote1.frame.origin = NSPoint(x: mainX + 28, y: mainTopY - 8 - topNote1.frame.height)
