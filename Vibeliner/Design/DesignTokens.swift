@@ -1040,6 +1040,8 @@ enum DesignTokens {
     )
     static let tourLLMPanelRadius: CGFloat = 8
     static let tourLLMDotSize: CGFloat = 7
+    static let tourLLMDotGlowSize: CGFloat = 4
+    static let tourLLMBubbleTailSize: CGFloat = 6
     static let tourLLMHeaderFont = NSFont.systemFont(ofSize: 11, weight: .bold)
     static let tourLLMBubbleBg = dynamicColor(
         dark: NSColor(white: 1, alpha: 0.05),

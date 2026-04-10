@@ -1,17 +1,15 @@
 import AppKit
 
 /// Tour step 4: "Give your AI the full picture"
-/// Top ~30%: Two TourOutputCards side by side (screenshot.png + prompt.txt).
-/// Middle: TourFlowArrow pointing down.
-/// Bottom ~50%: LLM chat panel with chat bubble and composer bar.
+/// Top ~30%: Two compact TourOutputCards (TourMiniScreenshot + TourPromptSheet).
+/// Middle: Single TourFlowArrow pointing down.
+/// Bottom ~50%: LLM panel with gradient dot + glow, bubble with tail, composer bar.
 final class TourIllustration4: NSView {
 
     // Top section
     private let screenshotCard: TourOutputCard
     private let promptCard: TourOutputCard
-    private let miniWireframe: WireframeAppMock
-    private let badge1: TourAnnotationBadge
-    private let badge2: TourAnnotationBadge
+    private let miniScreenshot: TourMiniScreenshot
     private let promptSheet: TourPromptSheet
 
     // Middle
@@ -39,9 +37,10 @@ final class TourIllustration4: NSView {
         screenshotCard = TourOutputCard(label: "screenshot.png")
         promptCard = TourOutputCard(label: "prompt.txt")
 
-        miniWireframe = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
-        badge1 = TourAnnotationBadge(number: 1)
-        badge2 = TourAnnotationBadge(number: 2)
+        // Mini screenshot with 2 badges (compact, no full wireframe)
+        miniScreenshot = TourMiniScreenshot(
+            badges: [(1, 8, 26), (2, 8, 52)]
+        )
 
         promptSheet = TourPromptSheet(annotations: [
             TourPromptLine(index: 1, tool: "pin", note: "padding too tight"),
@@ -73,9 +72,7 @@ final class TourIllustration4: NSView {
         wantsLayer = true
 
         // Configure screenshot card content
-        screenshotCard.contentArea.addSubview(miniWireframe)
-        screenshotCard.contentArea.addSubview(badge1)
-        screenshotCard.contentArea.addSubview(badge2)
+        screenshotCard.contentArea.addSubview(miniScreenshot)
 
         // Configure prompt card content
         promptCard.contentArea.addSubview(promptSheet)
@@ -89,7 +86,6 @@ final class TourIllustration4: NSView {
 
         llmDot.wantsLayer = true
         llmDot.layer?.cornerRadius = DesignTokens.tourLLMDotSize / 2
-        llmDot.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
 
         llmLabel.font = DesignTokens.tourLLMHeaderFont
         llmLabel.textColor = DesignTokens.tourTextPrimary
@@ -178,17 +174,15 @@ final class TourIllustration4: NSView {
         screenshotCard.frame = CGRect(x: padding, y: topY, width: cardW, height: topH)
         promptCard.frame = CGRect(x: padding + cardW + cardGap, y: topY, width: cardW, height: topH)
 
-        // Screenshot card content: wireframe fills content area
-        let scContentBounds = screenshotCard.contentArea.bounds
-        miniWireframe.frame = scContentBounds
+        // Force child layout so contentArea bounds are correct
+        screenshotCard.layoutSubtreeIfNeeded()
+        promptCard.layoutSubtreeIfNeeded()
 
-        // Badges on wireframe
-        badge1.frame.origin = NSPoint(x: scContentBounds.width * 0.25 - 9, y: scContentBounds.height * 0.55)
-        badge2.frame.origin = NSPoint(x: scContentBounds.width * 0.65 - 9, y: scContentBounds.height * 0.25)
+        // Screenshot card: mini screenshot fills content area
+        miniScreenshot.frame = screenshotCard.contentArea.bounds
 
-        // Prompt card content: prompt sheet fills content area
-        let pcContentBounds = promptCard.contentArea.bounds
-        promptSheet.frame = pcContentBounds
+        // Prompt card: prompt sheet fills content area
+        promptSheet.frame = promptCard.contentArea.bounds
 
         // -- Middle: flow arrow --
         flowArrow.frame = CGRect(
@@ -260,13 +254,55 @@ final class TourIllustration4: NSView {
         super.draw(dirtyRect)
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
+        // Draw purple gradient dot glow ring
+        let dotFrame = llmDot.convert(llmDot.bounds, to: self)
+        let dotCenter = CGPoint(x: dotFrame.midX, y: dotFrame.midY)
+        let glowInset = DesignTokens.tourLLMDotGlowSize
+        let glowRect = dotFrame.insetBy(dx: -glowInset, dy: -glowInset)
+        ctx.setStrokeColor(DesignTokens.purpleLight.withAlphaComponent(0.25).cgColor)
+        ctx.setLineWidth(1.5)
+        ctx.strokeEllipse(in: glowRect)
+
+        // Draw purple gradient fill on the dot
+        ctx.saveGState()
+        ctx.addEllipse(in: dotFrame)
+        ctx.clip()
+        if let grad = CGGradient(
+            colorsSpace: CGColorSpaceCreateDeviceRGB(),
+            colors: [
+                DesignTokens.purpleLight.cgColor,
+                DesignTokens.purpleLight.blended(withFraction: 0.3, of: .white)?.cgColor ?? DesignTokens.purpleLight.cgColor,
+            ] as CFArray,
+            locations: [0, 1]
+        ) {
+            ctx.drawLinearGradient(
+                grad,
+                start: CGPoint(x: dotCenter.x, y: dotFrame.maxY),
+                end: CGPoint(x: dotCenter.x, y: dotFrame.minY),
+                options: []
+            )
+        }
+        ctx.restoreGState()
+
+        // Draw bubble tail at bottom-left of chat bubble
+        let bubbleFrame = chatBubble.convert(chatBubble.bounds, to: self)
+        let tailSize = DesignTokens.tourLLMBubbleTailSize
+        let tailX = bubbleFrame.minX + 16
+        let tailY = bubbleFrame.minY
+
+        ctx.setFillColor(DesignTokens.tourLLMBubbleBg.cgColor)
+        ctx.move(to: CGPoint(x: tailX, y: tailY))
+        ctx.addLine(to: CGPoint(x: tailX + tailSize, y: tailY))
+        ctx.addLine(to: CGPoint(x: tailX, y: tailY - tailSize))
+        ctx.closePath()
+        ctx.fillPath()
+
         // Draw send arrow icon in the send circle
         let sendFrame = sendCircle.convert(sendCircle.bounds, to: self)
         let cx = sendFrame.midX
         let cy = sendFrame.midY
 
         ctx.setFillColor(NSColor.white.cgColor)
-        // Small upward triangle
         ctx.move(to: CGPoint(x: cx, y: cy + 5))
         ctx.addLine(to: CGPoint(x: cx + 4, y: cy - 3))
         ctx.addLine(to: CGPoint(x: cx - 4, y: cy - 3))
