@@ -458,6 +458,9 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `tourOutputLabelBg` | rgba(255,255,255,0.05) | Output label background | TourOutputCard, TourIllustration6, TourIllustration7 |
 | `tourOutputLabelBorder` | rgba(255,255,255,0.06) | Output label border | TourOutputCard, TourIllustration6, TourIllustration7 |
 | `tourOutputLabelFont` | System 10px bold | Output label font | TourOutputCard, TourIllustration6, TourIllustration7 |
+| `tourOutputLabelPaddingH` | 8px | Output label horizontal padding | TourOutputCard |
+| `tourOutputLabelPaddingV` | 3px | Output label vertical padding | TourOutputCard |
+| `tourOutputLabelGap` | 8px | Gap between output label and content | TourOutputCard |
 
 #### Prompt Sheet
 
@@ -469,9 +472,27 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `tourPromptSheetPaddingH` | 14px | Prompt sheet horizontal padding | TourPromptSheet |
 | `tourPromptSheetPaddingV` | 16px | Prompt sheet vertical padding | TourPromptSheet |
 | `tourPromptSheetFont` | Mono 10.5px regular | Prompt sheet font | TourPromptSheet |
+| `tourPromptSheetLineHeight` | 17.85px | Prompt sheet line height (1.7x) | TourPromptSheet |
 | `tourPromptSheetColor` | rgba(255,255,255,0.68) | Prompt sheet text color | TourPromptSheet |
 | `tourPromptSheetDim` | rgba(255,255,255,0.3) | Prompt sheet dim text | TourPromptSheet |
 | `tourPromptSheetNumber` | #F87171 | Prompt sheet number color | TourPromptSheet |
+
+#### Tour Title Pill
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `tourTitlePillHeight` | 22px | Tour title pill height | TourTitlePill |
+| `tourTitlePillPaddingLeading` | 8px | Tour title pill left padding | TourTitlePill |
+| `tourTitlePillPaddingTrailing` | 4px | Tour title pill right padding | TourTitlePill |
+| `tourTitlePillGap` | 5px | Gap between title text and role tag | TourTitlePill |
+| `tourTitlePillFont` | System 9px semibold | Tour title pill font | TourTitlePill |
+| `tourTitlePillText` | #FFFFFF | Tour title pill text color | TourTitlePill |
+| `tourTitlePillTagFont` | System 8px bold | Tour title pill role-tag font | TourTitlePill |
+| `tourTitlePillTagPaddingH` | 6px | Role-tag horizontal padding | TourTitlePill |
+| `tourTitlePillTagPaddingV` | 2px | Role-tag vertical padding | TourTitlePill |
+| `tourTitlePillShadowColor` | rgba(0,0,0,0.15) | Tour title pill shadow color | TourTitlePill |
+| `tourTitlePillShadowBlur` | 8px | Tour title pill shadow blur | TourTitlePill |
+| `tourTitlePillShadowYOffset` | 2px | Tour title pill shadow offset | TourTitlePill |
 
 #### LLM Chat Panel
 
@@ -508,16 +529,38 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `tourMiniScreenshotRadius` | 4px | Mini screenshot corner radius | Tour Illustrations |
+| `tourMiniScreenshotBgTop` | #F6F8FC | Mini screenshot gradient top | TourMiniScreenshot |
+| `tourMiniScreenshotBgBottom` | #EEF1F7 | Mini screenshot gradient bottom | TourMiniScreenshot |
+| `tourMiniScreenshotShadowColor` | rgba(0,0,0,0.12) | Mini screenshot shadow color | TourMiniScreenshot |
+| `tourMiniScreenshotShadowBlur` | 16px | Mini screenshot shadow blur | TourMiniScreenshot |
+| `tourMiniScreenshotShadowYOffset` | 4px | Mini screenshot shadow offset | TourMiniScreenshot |
 | `tourMiniScreenshotBarHeight` | 18px | Mini screenshot title bar height | Tour Illustrations |
 | `tourMiniScreenshotBarBg` | rgba(255,255,255,0.7) | Mini screenshot title bar bg | Tour Illustrations |
+| `tourMiniScreenshotBarPaddingH` | 6px | Mini screenshot title bar padding | TourMiniScreenshot |
 | `tourMiniScreenshotDotSize` | 5px | Mini screenshot traffic light dot | Tour Illustrations |
+| `tourMiniScreenshotDotGap` | 4px | Mini screenshot traffic light gap | TourMiniScreenshot |
 | `tourMiniScreenshotDotColor` | rgba(15,23,42,0.15) | Mini screenshot dot color | Tour Illustrations |
 | `tourMiniScreenshotBodyHeight` | 80px | Mini screenshot body height | Tour Illustrations |
 | `tourMiniScreenshotRailWidth` | 30px | Mini screenshot sidebar rail width | Tour Illustrations |
 | `tourMiniScreenshotRailBg` | rgba(245,247,252,0.9) | Mini screenshot rail background | Tour Illustrations |
+| `tourMiniScreenshotRailPaddingV` | 6px | Mini screenshot rail vertical padding | TourMiniScreenshot |
+| `tourMiniScreenshotRailPaddingH` | 4px | Mini screenshot rail horizontal padding | TourMiniScreenshot |
+| `tourMiniScreenshotRailGap` | 4px | Mini screenshot rail pill gap | TourMiniScreenshot |
+| `tourMiniScreenshotRailPillHeight` | 6px | Mini screenshot rail pill height | TourMiniScreenshot |
+| `tourMiniScreenshotRailPillColor` | rgba(15,23,42,0.07) | Mini screenshot rail pill color | TourMiniScreenshot |
+| `tourMiniScreenshotContentPadding` | 8px | Mini screenshot content padding | TourMiniScreenshot |
+| `tourMiniScreenshotContentGap` | 4px | Mini screenshot content line gap | TourMiniScreenshot |
+| `tourMiniScreenshotLineHeight` | 6px | Mini screenshot content line height | TourMiniScreenshot |
 | `tourMiniScreenshotLineColor` | rgba(15,23,42,0.06) | Mini screenshot content line color | Tour Illustrations |
 | `tourMiniScreenshotAccent` | rgba(83,74,183,0.12) | Mini screenshot accent | Tour Illustrations |
+| `tourMiniScreenshotAccentWidthRatio` | 0.5 | Mini screenshot accent width ratio | TourMiniScreenshot |
+| `tourMiniScreenshotBadgeBg` | #EF4444 | Mini screenshot badge fill | TourMiniScreenshot |
+| `tourMiniScreenshotBadgeText` | #FFFFFF | Mini screenshot badge text | TourMiniScreenshot |
+| `tourMiniScreenshotMarkColor` | #EF4444 | Mini screenshot annotation mark stroke | TourMiniScreenshot |
+| `tourMiniScreenshotRectFill` | rgba(239,68,68,0.06) | Mini screenshot annotation rect fill | TourMiniScreenshot |
+| `tourMiniScreenshotRectRadius` | 2px | Mini screenshot annotation rect radius | TourMiniScreenshot |
 | `tourMiniBadgeSize` | 14px | Mini annotation badge size | Tour Illustrations |
+| `tourMiniBadgeFont` | System 7px bold | Mini annotation badge font | TourMiniScreenshot, TourFilmstripCell |
 | `tourMiniRectStroke` | 1.5px | Mini annotation rect stroke | Tour Illustrations |
 
 #### Mode Card
@@ -547,12 +590,26 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `tourFilmstripCellRadius` | 6px | Filmstrip cell corner radius | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellBgTop` | #F6F8FC | Filmstrip cell gradient top | TourFilmstripCell |
+| `tourFilmstripCellBgBottom` | #EEF1F7 | Filmstrip cell gradient bottom | TourFilmstripCell |
+| `tourFilmstripCellShadowColor` | rgba(0,0,0,0.12) | Filmstrip cell shadow color | TourFilmstripCell |
+| `tourFilmstripCellShadowBlur` | 16px | Filmstrip cell shadow blur | TourFilmstripCell |
+| `tourFilmstripCellShadowYOffset` | 4px | Filmstrip cell shadow offset | TourFilmstripCell |
 | `tourFilmstripCellBarHeight` | 16px | Filmstrip cell title bar height | TourIllustration6, TourIllustration7 |
 | `tourFilmstripCellBarBg` | rgba(255,255,255,0.7) | Filmstrip cell title bar bg | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellBarPaddingH` | 5px | Filmstrip cell title bar padding | TourFilmstripCell |
 | `tourFilmstripCellDotSize` | 4px | Filmstrip cell traffic light dot | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellDotGap` | 3px | Filmstrip cell traffic light gap | TourFilmstripCell |
 | `tourFilmstripCellDotColor` | rgba(15,23,42,0.12) | Filmstrip cell dot color | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellBodyHeight` | 50px | Filmstrip cell default body height | TourFilmstripCell |
+| `tourFilmstripCellBodyPadding` | 6px | Filmstrip cell body padding | TourFilmstripCell |
+| `tourFilmstripCellBodyGap` | 3px | Filmstrip cell line gap | TourFilmstripCell |
+| `tourFilmstripCellLineHeight` | 4px | Filmstrip cell line height | TourFilmstripCell |
 | `tourFilmstripCellLineColor` | rgba(15,23,42,0.06) | Filmstrip cell content line color | TourIllustration6, TourIllustration7 |
 | `tourFilmstripCellAccent` | rgba(83,74,183,0.12) | Filmstrip cell accent | TourIllustration6, TourIllustration7 |
+| `tourFilmstripCellAccentWidthRatio` | 0.45 | Filmstrip cell accent width ratio | TourFilmstripCell |
+| `tourFilmstripCellBadgeBg` | #EF4444 | Filmstrip cell badge fill | TourFilmstripCell |
+| `tourFilmstripCellBadgeText` | #FFFFFF | Filmstrip cell badge text | TourFilmstripCell |
 
 #### Dashed Add-Image Cell
 

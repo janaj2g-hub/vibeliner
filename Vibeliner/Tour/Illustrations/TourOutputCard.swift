@@ -8,8 +8,9 @@ final class TourOutputCard: NSView {
     /// Public content area for callers to add child views.
     let contentArea: NSView
 
-    private let labelHeight: CGFloat = 20
-    private let labelSpacing: CGFloat = 8
+    private var labelHeight: CGFloat {
+        ceil(DesignTokens.tourOutputLabelFont.pointSize) + DesignTokens.tourOutputLabelPaddingV * 2
+    }
 
     init(label: String) {
         self.labelText = label
@@ -19,15 +20,20 @@ final class TourOutputCard: NSView {
         wantsLayer = true
         layer?.cornerRadius = DesignTokens.tourOutputCardRadius
         layer?.masksToBounds = true
-        layer?.backgroundColor = DesignTokens.tourOutputCardBg.cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
+        updateAppearance()
 
         contentArea.wantsLayer = true
         addSubview(contentArea)
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+        needsDisplay = true
+    }
 
     override func layout() {
         super.layout()
@@ -37,7 +43,7 @@ final class TourOutputCard: NSView {
 
         // Content area fills below the label pill
         let contentY: CGFloat = pad
-        let contentH = h - pad - labelHeight - labelSpacing - pad
+        let contentH = h - pad - labelHeight - DesignTokens.tourOutputLabelGap - pad
         contentArea.frame = CGRect(
             x: pad,
             y: contentY,
@@ -49,7 +55,6 @@ final class TourOutputCard: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-        let w = bounds.width
         let h = bounds.height
         let pad = DesignTokens.tourOutputCardPadding
 
@@ -60,7 +65,7 @@ final class TourOutputCard: NSView {
         ]
         let str = NSAttributedString(string: labelText, attributes: attrs)
         let textSize = str.size()
-        let pillW = textSize.width + 16
+        let pillW = textSize.width + DesignTokens.tourOutputLabelPaddingH * 2
         let pillX = pad
         let pillY = h - pad - labelHeight
 
@@ -83,5 +88,10 @@ final class TourOutputCard: NSView {
             x: pillRect.midX - textSize.width / 2,
             y: pillRect.midY - textSize.height / 2
         ))
+    }
+
+    private func updateAppearance() {
+        layer?.backgroundColor = DesignTokens.tourOutputCardBg.cgColor
+        layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
     }
 }
