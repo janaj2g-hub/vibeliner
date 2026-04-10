@@ -141,6 +141,16 @@ final class TourIllustration5: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        for card in [ideCard, appCard] {
+            card.layer?.backgroundColor = DesignTokens.tourModeCardBg.cgColor
+            card.layer?.borderColor = DesignTokens.tourModeCardBorder.cgColor
+        }
+        divider.layer?.backgroundColor = DesignTokens.tourModeCardBorder.cgColor
+        needsDisplay = true
+    }
+
     override func layout() {
         super.layout()
         let w = bounds.width

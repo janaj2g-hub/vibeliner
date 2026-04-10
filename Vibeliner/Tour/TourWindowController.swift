@@ -616,10 +616,23 @@ final class TourWindowController: NSWindowController {
             kbdRow.addArrangedSubview(pill)
         }
 
+        // "to capture anytime" helper label
+        let helperLabel = NSTextField(labelWithString: "to capture anytime")
+        helperLabel.translatesAutoresizingMaskIntoConstraints = false
+        helperLabel.font = DesignTokens.tourBodyFont
+        helperLabel.textColor = DesignTokens.tourTextDim
+        helperLabel.alignment = .center
+        helperLabel.isBezeled = false
+        helperLabel.drawsBackground = false
+        helperLabel.isEditable = false
+        doneContainer.addSubview(helperLabel)
+
         NSLayoutConstraint.activate([
             kbdRow.topAnchor.constraint(equalTo: body.bottomAnchor, constant: 20),
             kbdRow.centerXAnchor.constraint(equalTo: doneContainer.centerXAnchor),
-            kbdRow.bottomAnchor.constraint(equalTo: doneContainer.bottomAnchor),
+            helperLabel.topAnchor.constraint(equalTo: kbdRow.bottomAnchor, constant: 8),
+            helperLabel.centerXAnchor.constraint(equalTo: doneContainer.centerXAnchor),
+            helperLabel.bottomAnchor.constraint(equalTo: doneContainer.bottomAnchor),
         ])
     }
 

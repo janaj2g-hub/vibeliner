@@ -36,7 +36,7 @@ final class TourIllustration0: NSView {
         // Shadow on container; mock keeps masksToBounds for corner clipping
         shadowContainer.wantsLayer = true
         shadowContainer.layer?.shadowColor = NSColor.black.cgColor
-        shadowContainer.layer?.shadowOpacity = 0.25
+        shadowContainer.layer?.shadowOpacity = Float(effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua ? 0.25 : 0.15)
         shadowContainer.layer?.shadowOffset = CGSize(width: 0, height: -20)
         shadowContainer.layer?.shadowRadius = 30
 
@@ -74,6 +74,12 @@ final class TourIllustration0: NSView {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        let isDark = effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
+        shadowContainer.layer?.shadowOpacity = Float(isDark ? 0.25 : 0.15)
+    }
 
     override func layout() {
         super.layout()
