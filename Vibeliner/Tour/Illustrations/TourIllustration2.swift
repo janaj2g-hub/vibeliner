@@ -6,79 +6,75 @@ final class TourIllustration2: NSView {
 
     private let editorFrame: NSView
     private let titleLabel: NSTextField
+    private let titleDivider: NSView
     private let toolbar: TourMiniToolbar
     private let canvasMock: WireframeAppMock
 
-    // Annotation group 1: badge + stake + note
+    // Annotation group 1: badge + stake + note (pin tool)
     private let badge1: TourAnnotationBadge
     private let stake1: TourAnnotationStake
     private let note1: TourAnnotationNote
 
-    // Annotation group 2: badge + arrow + note
+    // Annotation group 2: badge + arrow + note (arrow tool)
     private let badge2: TourAnnotationBadge
     private let arrow2: TourAnnotationArrow
     private let note2: TourAnnotationNote
 
-    // Annotation group 3: badge + rect + note
+    // Annotation group 3: badge + rect + note (rect tool)
     private let badge3: TourAnnotationBadge
     private let rect3: TourAnnotationRect
     private let note3: TourAnnotationNote
 
-    // Annotation group 4: badge + circle + note
+    // Annotation group 4: badge + circle + note (circle tool)
     private let badge4: TourAnnotationBadge
     private let circle4: TourAnnotationCircle
     private let note4: TourAnnotationNote
 
     private let padding = DesignTokens.tourIllustrationPadding
-    private let titleBarHeight: CGFloat = 28
-    private let canvasPadding: CGFloat = 8
+    private let titleBarH: CGFloat = 36
 
     override init(frame frameRect: NSRect) {
-        // Editor frame
         editorFrame = NSView()
-
-        // Title bar label
         titleLabel = NSTextField(labelWithString: "Vibeliner")
+        titleDivider = NSView()
 
-        // Toolbar
         toolbar = TourMiniToolbar(config: TourMiniToolbarConfig(
             activeTool: .pin,
             mode: .app,
             showCopyPrompt: true,
-            showCopyImage: true
+            showCopyImage: true,
+            showCloseButton: true
         ))
 
-        // Canvas wireframe
         canvasMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
 
-        // Annotation groups
         badge1 = TourAnnotationBadge(number: 1)
         stake1 = TourAnnotationStake()
         note1 = TourAnnotationNote(text: "Padding too tight")
 
         badge2 = TourAnnotationBadge(number: 2)
-        arrow2 = TourAnnotationArrow(length: 50, angle: .pi / 4)
+        arrow2 = TourAnnotationArrow(length: 70, angle: 12 * .pi / 180)
         note2 = TourAnnotationNote(text: "Wrong border radius")
 
         badge3 = TourAnnotationBadge(number: 3)
-        rect3 = TourAnnotationRect(size: CGSize(width: 80, height: 50))
+        rect3 = TourAnnotationRect(size: CGSize(width: 92, height: 58))
         note3 = TourAnnotationNote(text: "Needs more height")
 
         badge4 = TourAnnotationBadge(number: 4)
-        circle4 = TourAnnotationCircle(diameter: 30)
+        circle4 = TourAnnotationCircle(diameter: 36)
         note4 = TourAnnotationNote(text: "Spacing cramped")
 
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Configure editor frame
+        // Editor frame: dark bg, subtle border, 8px radius
         editorFrame.wantsLayer = true
-        editorFrame.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
-        editorFrame.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
+        editorFrame.layer?.cornerRadius = 8
+        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
         editorFrame.layer?.borderWidth = 1
-        editorFrame.layer?.borderColor = DesignTokens.chromeBorder.cgColor
+        editorFrame.layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
 
-        // Configure title label
+        // Title label: centered, 12px semibold
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = DesignTokens.tourTextSecondary
         titleLabel.isBezeled = false
@@ -87,11 +83,17 @@ final class TourIllustration2: NSView {
         titleLabel.alignment = .center
         titleLabel.sizeToFit()
 
-        // Build view hierarchy
+        // Title bar bottom divider
+        titleDivider.wantsLayer = true
+        titleDivider.layer?.backgroundColor = DesignTokens.tourLLMComposerBg.cgColor
+
+        // Build view hierarchy — all inside editor frame
+        editorFrame.addSubview(titleLabel)
+        editorFrame.addSubview(titleDivider)
         editorFrame.addSubview(canvasMock)
         editorFrame.addSubview(toolbar)
 
-        // Annotations go on top of the canvas mock
+        // Annotations on top of canvas
         editorFrame.addSubview(rect3)
         editorFrame.addSubview(circle4)
         editorFrame.addSubview(arrow2)
@@ -106,7 +108,6 @@ final class TourIllustration2: NSView {
         editorFrame.addSubview(note4)
 
         addSubview(editorFrame)
-        addSubview(titleLabel)
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -116,68 +117,57 @@ final class TourIllustration2: NSView {
         let w = bounds.width
         let h = bounds.height
 
-        // Editor frame fills the view with padding
-        let frameX = padding
-        let frameY = padding
         let frameW = w - padding * 2
         let frameH = h - padding * 2
-        editorFrame.frame = CGRect(x: frameX, y: frameY, width: frameW, height: frameH)
+        editorFrame.frame = CGRect(x: padding, y: padding, width: frameW, height: frameH)
 
-        // Title bar label centered at top of editor frame
+        // Title bar: centered label, bottom divider
         titleLabel.sizeToFit()
         titleLabel.frame.origin = NSPoint(
             x: (frameW - titleLabel.frame.width) / 2,
-            y: frameH - titleBarHeight + (titleBarHeight - titleLabel.frame.height) / 2
+            y: frameH - titleBarH + (titleBarH - titleLabel.frame.height) / 2
         )
+        titleDivider.frame = CGRect(x: 0, y: frameH - titleBarH, width: frameW, height: 1)
 
-        // Toolbar centered horizontally below title bar
-        let toolbarY = frameH - titleBarHeight - 6 - toolbar.frame.height
+        // Toolbar: 14px below title divider, centered
+        let toolbarY = frameH - titleBarH - 14 - toolbar.frame.height
         toolbar.frame.origin = NSPoint(
             x: (frameW - toolbar.frame.width) / 2,
             y: toolbarY
         )
 
-        // Canvas area below toolbar
-        let canvasTop = toolbarY - 6
-        let canvasX = canvasPadding
-        let canvasY = canvasPadding
-        let canvasW = frameW - canvasPadding * 2
-        let canvasH = canvasTop - canvasPadding
-        canvasMock.frame = CGRect(x: canvasX, y: canvasY, width: canvasW, height: max(0, canvasH))
+        // Canvas area: padding 8px top, 16px sides, 16px bottom
+        let canvasPadH: CGFloat = 16
+        let canvasPadBottom: CGFloat = 16
+        let canvasTopEdge = toolbarY - 4 - 8
+        let canvasH = canvasTopEdge - canvasPadBottom
+        let canvasW = frameW - canvasPadH * 2
+        canvasMock.frame = CGRect(x: canvasPadH, y: canvasPadBottom, width: canvasW, height: max(0, canvasH))
 
-        // Position annotations relative to editor frame
-        // Use canvas coordinates as reference
-        let cX = canvasX
-        let cY = canvasY
-        let cW = canvasW
-        let cH = canvasH
+        // Annotation positions: convert HTML CSS (top/left in .app-mock-main) to AppKit
+        let sideW = DesignTokens.tourWireframeSidebarWidth + 1
+        let mainX = canvasPadH + sideW
+        let mainTopY = canvasPadBottom + canvasH - DesignTokens.tourWireframeTopbarHeight - 1
+        let badgeD = DesignTokens.badgeDiameter
 
-        // Group 1: badge + stake + note near error card area (top-left of content)
-        let g1X = cX + cW * 0.28
-        let g1Y = cY + cH * 0.62
-        badge1.frame.origin = NSPoint(x: g1X, y: g1Y + 10 + 2)
-        stake1.frame.origin = NSPoint(x: g1X + 8, y: g1Y)
-        note1.frame.origin = NSPoint(x: g1X + 20, y: g1Y + 14)
+        // Group 1: pin + stake + note
+        badge1.frame.origin = NSPoint(x: mainX + 4, y: mainTopY - 10 - badgeD)
+        stake1.frame.origin = NSPoint(x: mainX + 12, y: mainTopY - 28 - stake1.frame.height)
+        note1.frame.origin = NSPoint(x: mainX + 28, y: mainTopY - 4 - note1.frame.height)
 
-        // Group 2: badge + arrow + note (middle area, near cards)
-        let g2X = cX + cW * 0.55
-        let g2Y = cY + cH * 0.55
-        badge2.frame.origin = NSPoint(x: g2X, y: g2Y + arrow2.frame.height - 4)
-        arrow2.frame.origin = NSPoint(x: g2X - 4, y: g2Y - 10)
-        note2.frame.origin = NSPoint(x: g2X + 20, y: g2Y + arrow2.frame.height + 2)
+        // Group 2: arrow + badge + note
+        arrow2.frame.origin = NSPoint(x: mainX + 100, y: mainTopY - 46 - arrow2.frame.height)
+        badge2.frame.origin = NSPoint(x: mainX + 96, y: mainTopY - 38 - badgeD)
+        note2.frame.origin = NSPoint(x: mainX + 120, y: mainTopY - 32 - note2.frame.height)
 
-        // Group 3: badge + rect + note (table header area)
-        let g3X = cX + cW * 0.35
-        let g3Y = cY + cH * 0.22
-        rect3.frame.origin = NSPoint(x: g3X, y: g3Y)
-        badge3.frame.origin = NSPoint(x: g3X - 6, y: g3Y + rect3.frame.height - 6)
-        note3.frame.origin = NSPoint(x: g3X + rect3.frame.width + 4, y: g3Y + (rect3.frame.height - 26) / 2)
+        // Group 3: rect + badge + note
+        rect3.frame.origin = NSPoint(x: mainX, y: mainTopY - 58)
+        badge3.frame.origin = NSPoint(x: mainX + 88, y: mainTopY - 56 - badgeD)
+        note3.frame.origin = NSPoint(x: mainX + 108, y: mainTopY - 56 - note3.frame.height)
 
-        // Group 4: badge + circle + note near table bottom
-        let g4X = cX + cW * 0.5
-        let g4Y = cY + cH * 0.06
-        circle4.frame.origin = NSPoint(x: g4X, y: g4Y)
-        badge4.frame.origin = NSPoint(x: g4X - 6, y: g4Y + circle4.frame.height - 6)
-        note4.frame.origin = NSPoint(x: g4X + circle4.frame.width + 4, y: g4Y + (circle4.frame.height - 26) / 2)
+        // Group 4: circle + badge + note
+        circle4.frame.origin = NSPoint(x: mainX + 8, y: mainTopY - 72 - 36)
+        badge4.frame.origin = NSPoint(x: mainX + 42, y: mainTopY - 78 - badgeD)
+        note4.frame.origin = NSPoint(x: mainX + 62, y: mainTopY - 78 - note4.frame.height)
     }
 }
