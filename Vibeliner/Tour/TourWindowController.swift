@@ -152,9 +152,9 @@ final class TourWindowController: NSWindowController {
         exitButton.wantsLayer = true
         exitButton.layer?.cornerRadius = 999
         exitButton.layer?.borderWidth = 1
-        exitButton.layer?.borderColor = NSColor.tertiaryLabelColor.cgColor
-        exitButton.font = DesignTokens.tourExitFont
-        exitButton.contentTintColor = .tertiaryLabelColor
+        exitButton.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
+        exitButton.font = NSFont.systemFont(ofSize: 12, weight: .regular)
+        exitButton.contentTintColor = .secondaryLabelColor
         let exitCell = exitButton.cell as? NSButtonCell
         exitCell?.bezelStyle = .inline
         headerView.addSubview(exitButton)
@@ -173,11 +173,11 @@ final class TourWindowController: NSWindowController {
 
     private func setExitButtonHover(_ hovered: Bool) {
         exitButton.layer?.borderColor = hovered
-            ? NSColor.secondaryLabelColor.cgColor
-            : NSColor.tertiaryLabelColor.cgColor
+            ? NSColor.labelColor.cgColor
+            : NSColor.secondaryLabelColor.cgColor
         exitButton.contentTintColor = hovered
-            ? .secondaryLabelColor
-            : .tertiaryLabelColor
+            ? .labelColor
+            : .secondaryLabelColor
     }
 
     // MARK: - Footer
