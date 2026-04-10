@@ -1,15 +1,17 @@
 import AppKit
 
 /// Tour step 0: "Visual bugs are hard to describe"
-/// Top ~65%: WireframeAppMock with both errors and shadow.
-/// Bottom ~35%: LLM strip with purple dot, label, and monospace text.
+/// Top ~63%: WireframeAppMock with errors and shadow.
+/// Below: compact LLM strip with purple dot, label, and monospace text.
+/// Empty space at the bottom of the pane.
 final class TourIllustration0: NSView {
 
+    private let shadowContainer: NSView
     private let appMock: WireframeAppMock
     private let llmStrip: NSView
 
     // LLM strip children
-    private let purpleDot: NSView
+    private let dotView: LLMDotView
     private let llmLabel: NSTextField
     private let promptText: NSTextField
 
@@ -17,57 +19,45 @@ final class TourIllustration0: NSView {
     private let gap: CGFloat = 16
 
     override init(frame frameRect: NSRect) {
-        // App mock with both errors visible
+        // Shadow container wraps the mock so shadow + corner clipping both work
+        shadowContainer = NSView()
         appMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
 
-        // LLM strip container
         llmStrip = NSView()
-
-        // Purple dot
-        purpleDot = NSView(frame: NSRect(x: 0, y: 0, width: DesignTokens.tourLLMDotSize, height: DesignTokens.tourLLMDotSize))
-
-        // "LLM" label
+        dotView = LLMDotView()
         llmLabel = NSTextField(labelWithString: "LLM")
-
-        // Monospace prompt text
         promptText = NSTextField(wrappingLabelWithString:
-            "Can you fix this layout? The padding feels off on the first card and the table row below feels cramped. It's hard to point to the exact spots that need work..."
+            "Can you fix this layout? The padding feels off on the first card and the table row below feels cramped. It\u{2019}s hard to point to the exact spots that need work\u{2026}"
         )
 
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Configure app mock shadow
-        appMock.wantsLayer = true
-        appMock.layer?.masksToBounds = false
-        appMock.layer?.shadowColor = NSColor.black.cgColor
-        appMock.layer?.shadowOpacity = 0.3
-        appMock.layer?.shadowOffset = CGSize(width: 0, height: -4)
-        appMock.layer?.shadowRadius = 16
+        // Shadow on container; mock keeps masksToBounds for corner clipping
+        shadowContainer.wantsLayer = true
+        shadowContainer.layer?.shadowColor = NSColor.black.cgColor
+        shadowContainer.layer?.shadowOpacity = 0.25
+        shadowContainer.layer?.shadowOffset = CGSize(width: 0, height: -20)
+        shadowContainer.layer?.shadowRadius = 30
 
-        // Configure LLM strip
+        // LLM strip
         llmStrip.wantsLayer = true
         llmStrip.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
         llmStrip.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         llmStrip.layer?.borderWidth = 1
-        llmStrip.layer?.borderColor = DesignTokens.chromeBorder.cgColor
-
-        // Purple dot
-        purpleDot.wantsLayer = true
-        purpleDot.layer?.cornerRadius = DesignTokens.tourLLMDotSize / 2
-        purpleDot.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
+        llmStrip.layer?.borderColor = DesignTokens.tourLLMPanelBorder.cgColor
 
         // LLM label
         llmLabel.font = DesignTokens.tourLLMHeaderFont
-        llmLabel.textColor = DesignTokens.tourTextSecondary
+        llmLabel.textColor = DesignTokens.tourTextPrimary
         llmLabel.isBezeled = false
         llmLabel.drawsBackground = false
         llmLabel.isEditable = false
         llmLabel.sizeToFit()
 
-        // Prompt text
+        // Prompt text (monospace, dim)
         promptText.font = DesignTokens.tourLLMChatFont
-        promptText.textColor = DesignTokens.tourTextDim
+        promptText.textColor = DesignTokens.tourLLMChatColor
         promptText.isBezeled = false
         promptText.drawsBackground = false
         promptText.isEditable = false
@@ -75,8 +65,9 @@ final class TourIllustration0: NSView {
         promptText.maximumNumberOfLines = 0
         promptText.usesSingleLineMode = false
 
-        addSubview(appMock)
-        llmStrip.addSubview(purpleDot)
+        shadowContainer.addSubview(appMock)
+        addSubview(shadowContainer)
+        llmStrip.addSubview(dotView)
         llmStrip.addSubview(llmLabel)
         llmStrip.addSubview(promptText)
         addSubview(llmStrip)
@@ -92,42 +83,93 @@ final class TourIllustration0: NSView {
         let contentW = w - padding * 2
         let contentH = h - padding * 2
 
-        // Top ~65% for app mock
-        let mockH = floor(contentH * 0.65) - gap / 2
-        let mockY = padding + (contentH - mockH) + gap / 2  // top-aligned in flipped coords... AppKit is bottom-up
+        // Mock at top, ~63% of content height
+        let mockH = floor(contentH * 0.63)
+        let mockY = h - padding - mockH
+        shadowContainer.frame = CGRect(x: padding, y: mockY, width: contentW, height: mockH)
+        appMock.frame = shadowContainer.bounds
+        shadowContainer.layer?.shadowPath = CGPath(
+            roundedRect: shadowContainer.bounds,
+            cornerWidth: DesignTokens.tourWireframeRadius,
+            cornerHeight: DesignTokens.tourWireframeRadius,
+            transform: nil
+        )
 
-        // Bottom ~35% for LLM strip
-        let stripH = floor(contentH * 0.35) - gap / 2
-        let stripY = padding
-
-        // In AppKit coordinate system (origin at bottom-left):
-        // LLM strip at bottom, app mock at top
-        llmStrip.frame = CGRect(x: padding, y: stripY, width: contentW, height: stripH)
-        appMock.frame = CGRect(x: padding, y: stripY + stripH + gap, width: contentW, height: mockH)
-
-        // Position LLM strip children
-        let stripPad: CGFloat = 12
-
-        // Purple dot + LLM label on top-left of strip
+        // LLM strip: sized to content, not filling remaining space
+        let stripPad: CGFloat = 14
         let dotSize = DesignTokens.tourLLMDotSize
-        let dotY = stripH - stripPad - dotSize
-        purpleDot.frame = CGRect(x: stripPad, y: dotY, width: dotSize, height: dotSize)
+        let glowPad: CGFloat = 4
+        let dotViewSize = dotSize + glowPad * 2
 
         llmLabel.sizeToFit()
-        llmLabel.frame.origin = NSPoint(
-            x: stripPad + dotSize + 6,
-            y: dotY + (dotSize - llmLabel.frame.height) / 2
-        )
+        let headerH = max(dotViewSize, llmLabel.frame.height)
 
-        // Prompt text below dot/label
-        let textTop = dotY - 8
         let textW = contentW - stripPad * 2
         promptText.preferredMaxLayoutWidth = textW
-        promptText.frame = CGRect(
-            x: stripPad,
-            y: stripPad,
-            width: textW,
-            height: max(0, textTop - stripPad)
+        let textSize = promptText.sizeThatFits(NSSize(width: textW, height: .greatestFiniteMagnitude))
+
+        // padding + header + 6px margin-bottom + 8px text padding-top + text + padding
+        let stripH = stripPad + headerH + 6 + 8 + textSize.height + stripPad
+        let stripY = mockY - gap - stripH
+
+        llmStrip.frame = CGRect(x: padding, y: max(padding, stripY), width: contentW, height: stripH)
+
+        // Text at bottom of strip
+        promptText.frame = CGRect(x: stripPad, y: stripPad, width: textW, height: textSize.height)
+
+        // Header at top of strip
+        let headerBaseY = stripH - stripPad - headerH
+
+        // Dot view (glow extends 4px beyond the 7px dot)
+        dotView.frame = CGRect(
+            x: stripPad - glowPad,
+            y: headerBaseY + (headerH - dotViewSize) / 2,
+            width: dotViewSize,
+            height: dotViewSize
         )
+
+        // LLM label (7px gap from dot visual edge)
+        llmLabel.frame.origin = NSPoint(
+            x: stripPad + dotSize + 7,
+            y: headerBaseY + (headerH - llmLabel.frame.height) / 2
+        )
+    }
+}
+
+// MARK: - Purple gradient dot with glow ring
+
+private final class LLMDotView: NSView {
+
+    override init(frame: NSRect) {
+        super.init(frame: frame)
+        wantsLayer = true
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override func draw(_ dirtyRect: NSRect) {
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        let dotSize = DesignTokens.tourLLMDotSize
+        let cx = bounds.midX
+        let cy = bounds.midY
+
+        // Glow ring: 4px spread, purpleLight at 12%
+        let glowR = (dotSize + 8) / 2
+        ctx.setFillColor(DesignTokens.purpleLight.withAlphaComponent(0.12).cgColor)
+        ctx.fillEllipse(in: CGRect(x: cx - glowR, y: cy - glowR, width: glowR * 2, height: glowR * 2))
+
+        // Gradient dot (135deg: purpleLight -> purpleDark)
+        let dotR = dotSize / 2
+        let dotRect = CGRect(x: cx - dotR, y: cy - dotR, width: dotSize, height: dotSize)
+        if let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                     colors: [DesignTokens.purpleLight.cgColor, DesignTokens.purpleDark.cgColor] as CFArray,
+                                     locations: [0, 1]) {
+            ctx.saveGState()
+            ctx.addEllipse(in: dotRect)
+            ctx.clip()
+            ctx.drawLinearGradient(gradient, start: dotRect.origin,
+                                   end: CGPoint(x: dotRect.maxX, y: dotRect.maxY), options: [])
+            ctx.restoreGState()
+        }
     }
 }
