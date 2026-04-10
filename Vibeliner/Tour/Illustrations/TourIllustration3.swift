@@ -4,12 +4,13 @@ import AppKit
 /// Three vertical sections: top mock with overlays, flow arrows, bottom two-column output cards.
 final class TourIllustration3: NSView {
 
-    // Top section
+    // Top section: wireframe with annotations
     private let topMock: WireframeAppMock
     private let topBadge1: TourAnnotationBadge
     private let topNote1: TourAnnotationNote
+    private let topRect: TourAnnotationRect
     private let topBadge2: TourAnnotationBadge
-    private let topRect2: TourAnnotationRect
+    private let topNote2: TourAnnotationNote
 
     // Middle section: flow arrows
     private let flowArrow1: TourFlowArrow
@@ -28,21 +29,22 @@ final class TourIllustration3: NSView {
     private let rightHint: NSTextField
 
     private let padding = DesignTokens.tourIllustrationPadding
-    private let sectionGap: CGFloat = 10
-    private let columnGap: CGFloat = 14
-    private let arrowGap: CGFloat = 80
+    private let sectionGap: CGFloat = 12
+    private let columnGap: CGFloat = 12
+    private let arrowGap: CGFloat = 100
 
     override init(frame frameRect: NSRect) {
-        // Top mock
+        // Top mock with annotations
         topMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
         topBadge1 = TourAnnotationBadge(number: 1)
         topNote1 = TourAnnotationNote(text: "Padding too tight")
+        topRect = TourAnnotationRect(size: CGSize(width: 92, height: 58))
         topBadge2 = TourAnnotationBadge(number: 2)
-        topRect2 = TourAnnotationRect(size: CGSize(width: 70, height: 30))
+        topNote2 = TourAnnotationNote(text: "Row spacing cramped")
 
-        // Flow arrows
-        flowArrow1 = TourFlowArrow(height: 24)
-        flowArrow2 = TourFlowArrow(height: 24)
+        // Flow arrows (28px tall)
+        flowArrow1 = TourFlowArrow(height: 28)
+        flowArrow2 = TourFlowArrow(height: 28)
 
         // Bottom cards
         leftCard = TourOutputCard(label: "screenshot.png")
@@ -56,12 +58,13 @@ final class TourIllustration3: NSView {
             annotations: [
                 TourPromptLine(index: 1, tool: "pin", note: "padding too tight"),
                 TourPromptLine(index: 2, tool: "rect", note: "row spacing cramped"),
-            ]
+            ],
+            footer: "Fix each issue."
         )
 
-        // Hint labels
-        leftHint = NSTextField(labelWithString: "Badges baked in. Notes removed.")
-        rightHint = NSTextField(labelWithString: "Notes become prompt lines.")
+        // Hint labels (multiline)
+        leftHint = NSTextField(wrappingLabelWithString: "Badges and marks baked in.\nNotes are not in the image.")
+        rightHint = NSTextField(wrappingLabelWithString: "Notes become numbered\nprompt lines automatically.")
 
         super.init(frame: frameRect)
         wantsLayer = true
@@ -74,15 +77,16 @@ final class TourIllustration3: NSView {
             hint.drawsBackground = false
             hint.isEditable = false
             hint.alignment = .center
-            hint.sizeToFit()
+            hint.maximumNumberOfLines = 0
         }
 
         // Build view hierarchy
         addSubview(topMock)
-        addSubview(topRect2)
+        addSubview(topRect)
         addSubview(topBadge1)
         addSubview(topNote1)
         addSubview(topBadge2)
+        addSubview(topNote2)
 
         addSubview(flowArrow1)
         addSubview(flowArrow2)
@@ -109,62 +113,48 @@ final class TourIllustration3: NSView {
         let contentH = h - padding * 2
 
         // Hint labels height
-        leftHint.sizeToFit()
-        rightHint.sizeToFit()
-        let hintH = max(leftHint.frame.height, rightHint.frame.height)
+        let colW = (contentW - columnGap) / 2
+        leftHint.preferredMaxLayoutWidth = colW
+        rightHint.preferredMaxLayoutWidth = colW
+        let lhSize = leftHint.sizeThatFits(NSSize(width: colW, height: .greatestFiniteMagnitude))
+        let rhSize = rightHint.sizeThatFits(NSSize(width: colW, height: .greatestFiniteMagnitude))
+        let hintH = max(lhSize.height, rhSize.height)
 
-        // Vertical distribution:
-        // bottom: hints, then cards (~40%), then gap, then arrows, then gap, then top mock (~45%)
-        let arrowH: CGFloat = 24
-        let totalGaps = sectionGap * 2 + sectionGap  // gap between mock-arrows, arrows-cards, cards-hints
+        // Vertical distribution
+        let arrowH: CGFloat = 28
+        let totalGaps = sectionGap * 3
         let availableH = contentH - arrowH - totalGaps - hintH
-
         let topH = floor(availableH * 0.53)
         let bottomH = floor(availableH * 0.47)
 
-        // Layout from bottom (AppKit y-axis origin is bottom-left)
+        // Layout from bottom
         var y = padding
 
-        // Hint labels at very bottom
-        let colW = (contentW - columnGap) / 2
-        leftHint.frame = CGRect(
-            x: padding + (colW - leftHint.frame.width) / 2,
-            y: y,
-            width: leftHint.frame.width,
-            height: hintH
-        )
-        rightHint.frame = CGRect(
-            x: padding + colW + columnGap + (colW - rightHint.frame.width) / 2,
-            y: y,
-            width: rightHint.frame.width,
-            height: hintH
-        )
+        // Hint labels
+        leftHint.frame = CGRect(x: padding, y: y, width: colW, height: hintH)
+        rightHint.frame = CGRect(x: padding + colW + columnGap, y: y, width: colW, height: hintH)
         y += hintH + sectionGap
 
         // Bottom cards
         leftCard.frame = CGRect(x: padding, y: y, width: colW, height: bottomH)
         rightCard.frame = CGRect(x: padding + colW + columnGap, y: y, width: colW, height: bottomH)
 
-        // Left card: mini mock + badges
+        // Left card: mock + badges
         leftMock.frame = leftCard.contentArea.bounds
-        let lContentW = leftCard.contentArea.bounds.width
-        let lContentH = leftCard.contentArea.bounds.height
+        let lMockH = leftCard.contentArea.bounds.height
+        let mainXL = DesignTokens.tourWireframeSidebarWidth + 1
+        let mainTopYL = lMockH - DesignTokens.tourWireframeTopbarHeight - 1
+        let badgeD = DesignTokens.badgeDiameter
 
-        leftBadge1.frame.origin = NSPoint(
-            x: lContentW * 0.30,
-            y: lContentH * 0.58
-        )
-        leftBadge2.frame.origin = NSPoint(
-            x: lContentW * 0.45,
-            y: lContentH * 0.20
-        )
+        leftBadge1.frame.origin = NSPoint(x: mainXL + 4, y: mainTopYL - 14 - badgeD)
+        leftBadge2.frame.origin = NSPoint(x: mainXL + 4, y: mainTopYL - 64 - badgeD)
 
         // Right card: prompt sheet
         promptSheet.frame = rightCard.contentArea.bounds
 
         y += bottomH + sectionGap
 
-        // Flow arrows centered horizontally with gap between them
+        // Flow arrows centered with 100px gap
         let arrowsTotalW = flowArrow1.frame.width + arrowGap + flowArrow2.frame.width
         let arrowsStartX = padding + (contentW - arrowsTotalW) / 2
         flowArrow1.frame.origin = NSPoint(x: arrowsStartX, y: y)
@@ -175,20 +165,19 @@ final class TourIllustration3: NSView {
         // Top mock
         topMock.frame = CGRect(x: padding, y: y, width: contentW, height: topH)
 
-        // Position annotations on the top mock
-        // Badge #1 + note near error card (upper-left area of content)
-        let tMockW = contentW
-        let tMockH = topH
+        // Top annotations (positions relative to wireframe main area)
+        let mainX = padding + DesignTokens.tourWireframeSidebarWidth + 1
+        let mainTopY = y + topH - DesignTokens.tourWireframeTopbarHeight - 1
 
-        let b1X = padding + tMockW * 0.28
-        let b1Y = y + tMockH * 0.60
-        topBadge1.frame.origin = NSPoint(x: b1X, y: b1Y)
-        topNote1.frame.origin = NSPoint(x: b1X + 20, y: b1Y + 2)
-
-        // Badge #2 + rect near table area
-        let b2X = padding + tMockW * 0.35
-        let b2Y = y + tMockH * 0.18
-        topRect2.frame.origin = NSPoint(x: b2X, y: b2Y)
-        topBadge2.frame.origin = NSPoint(x: b2X - 6, y: b2Y + topRect2.frame.height - 6)
+        // Badge 1: top:14, left:4
+        topBadge1.frame.origin = NSPoint(x: mainX + 4, y: mainTopY - 14 - badgeD)
+        // Note 1: top:8, left:28
+        topNote1.frame.origin = NSPoint(x: mainX + 28, y: mainTopY - 8 - topNote1.frame.height)
+        // Rect: top:2, left:0, 92x58
+        topRect.frame.origin = NSPoint(x: mainX, y: mainTopY - 2 - 58)
+        // Badge 2: top:64, left:4
+        topBadge2.frame.origin = NSPoint(x: mainX + 4, y: mainTopY - 64 - badgeD)
+        // Note 2: top:58, left:28
+        topNote2.frame.origin = NSPoint(x: mainX + 28, y: mainTopY - 58 - topNote2.frame.height)
     }
 }
