@@ -14,7 +14,8 @@ final class TourWindowController: NSWindowController {
     // MARK: - UI refs — header
 
     private var headerView: NSView!
-    private var exitButton: NSButton!
+    private var headerBorderView: NSView!
+    private var exitButton: HoverButton!
 
     // MARK: - UI refs — body
 
@@ -29,10 +30,11 @@ final class TourWindowController: NSWindowController {
     // MARK: - UI refs — footer
 
     private var footerView: NSView!
+    private var footerBorderView: NSView!
     private var progressLabel: NSTextField!
     private var progressBars: [NSView] = []
-    private var backButton: NSButton!
-    private var nextButton: NSButton!
+    private var backButton: HoverButton!
+    private var nextButton: HoverButton!
 
     // MARK: - UI refs — step 9 full-width done view
 
@@ -60,7 +62,7 @@ final class TourWindowController: NSWindowController {
         panel.isMovableByWindowBackground = true
         panel.hasShadow = true
         panel.isReleasedWhenClosed = false
-        panel.backgroundColor = .windowBackgroundColor
+        panel.backgroundColor = .clear
         panel.isOpaque = false  // Keep false for rounded corners to show through
 
         super.init(window: panel)
@@ -74,7 +76,7 @@ final class TourWindowController: NSWindowController {
 
     func showTour() {
         currentStep = 0
-        renderStep(currentStep)
+        refreshAppearanceColors()
         window?.center()
         window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -88,18 +90,18 @@ final class TourWindowController: NSWindowController {
         let contentView = TourContentView(frame: panel.contentView!.bounds)
         contentView.onAppearanceChange = { [weak self] in self?.refreshAppearanceColors() }
         contentView.wantsLayer = true
-        contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        contentView.layer?.backgroundColor = DesignTokens.tourWindowBg.cgColor
         contentView.layer?.cornerRadius = DesignTokens.tourWindowRadius
         contentView.layer?.masksToBounds = true
         contentView.layer?.borderWidth = 1
-        contentView.layer?.borderColor = NSColor.separatorColor.cgColor
+        contentView.layer?.borderColor = DesignTokens.tourWindowBorder.cgColor
         panel.contentView = contentView
 
         buildHeader(in: contentView)
         buildFooter(in: contentView)
         buildBody(in: contentView)
 
-        renderStep(0)
+        refreshAppearanceColors()
     }
 
     // MARK: - Header
@@ -108,7 +110,7 @@ final class TourWindowController: NSWindowController {
         headerView = NSView()
         headerView.translatesAutoresizingMaskIntoConstraints = false
         headerView.wantsLayer = true
-        headerView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        headerView.layer?.backgroundColor = DesignTokens.tourBarOverlay.cgColor
         parent.addSubview(headerView)
 
         NSLayoutConstraint.activate([
@@ -119,23 +121,23 @@ final class TourWindowController: NSWindowController {
         ])
 
         // Header border bottom
-        let headerBorder = NSView()
-        headerBorder.translatesAutoresizingMaskIntoConstraints = false
-        headerBorder.wantsLayer = true
-        headerBorder.layer?.backgroundColor = NSColor.separatorColor.cgColor
-        headerView.addSubview(headerBorder)
+        headerBorderView = NSView()
+        headerBorderView.translatesAutoresizingMaskIntoConstraints = false
+        headerBorderView.wantsLayer = true
+        headerBorderView.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
+        headerView.addSubview(headerBorderView)
         NSLayoutConstraint.activate([
-            headerBorder.bottomAnchor.constraint(equalTo: headerView.bottomAnchor),
-            headerBorder.leadingAnchor.constraint(equalTo: headerView.leadingAnchor),
-            headerBorder.trailingAnchor.constraint(equalTo: headerView.trailingAnchor),
-            headerBorder.heightAnchor.constraint(equalToConstant: 1),
+            headerBorderView.bottomAnchor.constraint(equalTo: headerView.bottomAnchor),
+            headerBorderView.leadingAnchor.constraint(equalTo: headerView.leadingAnchor),
+            headerBorderView.trailingAnchor.constraint(equalTo: headerView.trailingAnchor),
+            headerBorderView.heightAnchor.constraint(equalToConstant: 1),
         ])
 
         // Title label
         let titleLabel = NSTextField(labelWithString: "Vibeliner Overview")
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = DesignTokens.tourHeaderFont
-        titleLabel.textColor = .labelColor
+        titleLabel.textColor = DesignTokens.tourTextPrimary
         titleLabel.isBezeled = false
         titleLabel.drawsBackground = false
         titleLabel.isEditable = false
@@ -146,38 +148,26 @@ final class TourWindowController: NSWindowController {
         ])
 
         // Exit tour button — ghost pill with explicit attributed title for visibility
-        exitButton = NSButton(title: "", target: self, action: #selector(exitTour))
+        exitButton = HoverButton(title: "", target: self, action: #selector(exitTour))
         exitButton.translatesAutoresizingMaskIntoConstraints = false
         exitButton.isBordered = false
         exitButton.wantsLayer = true
         exitButton.layer?.cornerRadius = 999
         exitButton.layer?.borderWidth = 1
-        exitButton.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
-        exitButton.attributedTitle = NSAttributedString(string: "Exit tour", attributes: [
-            .font: NSFont.systemFont(ofSize: 12, weight: .regular),
-            .foregroundColor: NSColor.secondaryLabelColor,
-        ])
         headerView.addSubview(exitButton)
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
             exitButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
             exitButton.heightAnchor.constraint(equalToConstant: 26),
+            exitButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 72),
         ])
-
-        // Add tracking area for hover
-        let exitTracking = HoverTrackingArea(view: exitButton,
-                                             onEnter: { [weak self] in self?.setExitButtonHover(true) },
-                                             onExit: { [weak self] in self?.setExitButtonHover(false) })
-        exitButton.addTrackingArea(exitTracking)
+        exitButton.onMouseEntered = { [weak self] in self?.setExitButtonHover(true) }
+        exitButton.onMouseExited = { [weak self] in self?.setExitButtonHover(false) }
+        updateExitButtonAppearance(hovered: false)
     }
 
     private func setExitButtonHover(_ hovered: Bool) {
-        let color: NSColor = hovered ? .labelColor : .secondaryLabelColor
-        exitButton.layer?.borderColor = color.cgColor
-        exitButton.attributedTitle = NSAttributedString(string: "Exit tour", attributes: [
-            .font: NSFont.systemFont(ofSize: 12, weight: .regular),
-            .foregroundColor: color,
-        ])
+        updateExitButtonAppearance(hovered: hovered)
     }
 
     // MARK: - Footer
@@ -186,7 +176,7 @@ final class TourWindowController: NSWindowController {
         footerView = NSView()
         footerView.translatesAutoresizingMaskIntoConstraints = false
         footerView.wantsLayer = true
-        footerView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+        footerView.layer?.backgroundColor = DesignTokens.tourBarOverlay.cgColor
         parent.addSubview(footerView)
 
         NSLayoutConstraint.activate([
@@ -197,23 +187,23 @@ final class TourWindowController: NSWindowController {
         ])
 
         // Footer border top
-        let footerBorder = NSView()
-        footerBorder.translatesAutoresizingMaskIntoConstraints = false
-        footerBorder.wantsLayer = true
-        footerBorder.layer?.backgroundColor = NSColor.separatorColor.cgColor
-        footerView.addSubview(footerBorder)
+        footerBorderView = NSView()
+        footerBorderView.translatesAutoresizingMaskIntoConstraints = false
+        footerBorderView.wantsLayer = true
+        footerBorderView.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
+        footerView.addSubview(footerBorderView)
         NSLayoutConstraint.activate([
-            footerBorder.topAnchor.constraint(equalTo: footerView.topAnchor),
-            footerBorder.leadingAnchor.constraint(equalTo: footerView.leadingAnchor),
-            footerBorder.trailingAnchor.constraint(equalTo: footerView.trailingAnchor),
-            footerBorder.heightAnchor.constraint(equalToConstant: 1),
+            footerBorderView.topAnchor.constraint(equalTo: footerView.topAnchor),
+            footerBorderView.leadingAnchor.constraint(equalTo: footerView.leadingAnchor),
+            footerBorderView.trailingAnchor.constraint(equalTo: footerView.trailingAnchor),
+            footerBorderView.heightAnchor.constraint(equalToConstant: 1),
         ])
 
         // Progress label: "N / 9"
         progressLabel = NSTextField(labelWithString: "1 / 9")
         progressLabel.translatesAutoresizingMaskIntoConstraints = false
         progressLabel.font = DesignTokens.tourProgressFont
-        progressLabel.textColor = .tertiaryLabelColor
+        progressLabel.textColor = DesignTokens.tourTextDim
         progressLabel.isBezeled = false
         progressLabel.drawsBackground = false
         progressLabel.isEditable = false
@@ -265,6 +255,8 @@ final class TourWindowController: NSWindowController {
         nextButton = makePillButton(title: "Next", isPrimary: true)
         nextButton.target = self
         nextButton.action = #selector(nextStep)
+        nextButton.onMouseEntered = { [weak self] in self?.setNextButtonHover(true) }
+        nextButton.onMouseExited = { [weak self] in self?.setNextButtonHover(false) }
         footerView.addSubview(nextButton)
         NSLayoutConstraint.activate([
             nextButton.centerYAnchor.constraint(equalTo: footerView.centerYAnchor),
@@ -276,6 +268,8 @@ final class TourWindowController: NSWindowController {
         backButton = makePillButton(title: "Back", isPrimary: false)
         backButton.target = self
         backButton.action = #selector(prevStep)
+        backButton.onMouseEntered = { [weak self] in self?.setBackButtonHover(true) }
+        backButton.onMouseExited = { [weak self] in self?.setBackButtonHover(false) }
         footerView.addSubview(backButton)
         NSLayoutConstraint.activate([
             backButton.centerYAnchor.constraint(equalTo: footerView.centerYAnchor),
@@ -283,16 +277,7 @@ final class TourWindowController: NSWindowController {
             backButton.heightAnchor.constraint(equalToConstant: DesignTokens.tourNextButtonHeight),
         ])
 
-        // Add hover tracking for buttons
-        let nextTracking = HoverTrackingArea(view: nextButton,
-                                             onEnter: { [weak self] in self?.setNextButtonHover(true) },
-                                             onExit: { [weak self] in self?.setNextButtonHover(false) })
-        nextButton.addTrackingArea(nextTracking)
-
-        let backTracking = HoverTrackingArea(view: backButton,
-                                             onEnter: { [weak self] in self?.setBackButtonHover(true) },
-                                             onExit: { [weak self] in self?.setBackButtonHover(false) })
-        backButton.addTrackingArea(backTracking)
+        updateBackButtonAppearance(hovered: false)
     }
 
     // MARK: - Body
@@ -313,8 +298,7 @@ final class TourWindowController: NSWindowController {
         illustrationPane = NSView()
         illustrationPane.translatesAutoresizingMaskIntoConstraints = false
         illustrationPane.wantsLayer = true
-        // Illustrations are always dark-themed — use a dark opaque bg in both light and dark mode
-        illustrationPane.layer?.backgroundColor = NSColor(white: 0.12, alpha: 1).cgColor
+        illustrationPane.layer?.backgroundColor = DesignTokens.tourIllustrationPaneBg.cgColor
         bodyView.addSubview(illustrationPane)
 
         illustrationWidthConstraint = illustrationPane.widthAnchor.constraint(
@@ -331,7 +315,7 @@ final class TourWindowController: NSWindowController {
         dividerView = NSView()
         dividerView.translatesAutoresizingMaskIntoConstraints = false
         dividerView.wantsLayer = true
-        dividerView.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        dividerView.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
         bodyView.addSubview(dividerView)
 
         NSLayoutConstraint.activate([
@@ -382,7 +366,7 @@ final class TourWindowController: NSWindowController {
         titleLabel = NSTextField(labelWithString: "")
         titleLabel.translatesAutoresizingMaskIntoConstraints = false
         titleLabel.font = DesignTokens.tourTitleFont
-        titleLabel.textColor = .labelColor
+        titleLabel.textColor = DesignTokens.tourTextPrimary
         titleLabel.isBezeled = false
         titleLabel.drawsBackground = false
         titleLabel.isEditable = false
@@ -396,7 +380,7 @@ final class TourWindowController: NSWindowController {
         bodyLabel = NSTextField(labelWithString: "")
         bodyLabel.translatesAutoresizingMaskIntoConstraints = false
         bodyLabel.font = DesignTokens.tourBodyFont
-        bodyLabel.textColor = .secondaryLabelColor
+        bodyLabel.textColor = DesignTokens.tourTextSecondary
         bodyLabel.isBezeled = false
         bodyLabel.drawsBackground = false
         bodyLabel.isEditable = false
@@ -440,6 +424,7 @@ final class TourWindowController: NSWindowController {
 
         // Back button visibility
         backButton.isHidden = (index == 0)
+        updateBackButtonAppearance(hovered: false)
 
         // Next button styling
         updateNextButton(for: step)
@@ -454,7 +439,7 @@ final class TourWindowController: NSWindowController {
     private func updateTitle(_ text: String) {
         let attrStr = NSMutableAttributedString(string: text, attributes: [
             .font: DesignTokens.tourTitleFont,
-            .foregroundColor: NSColor.labelColor,
+            .foregroundColor: DesignTokens.tourTextPrimary,
             .kern: -0.55,  // -0.025em at 22px
         ])
         titleLabel.attributedStringValue = attrStr
@@ -465,7 +450,7 @@ final class TourWindowController: NSWindowController {
         paragraphStyle.lineHeightMultiple = 1.65
         let attrStr = NSMutableAttributedString(string: text, attributes: [
             .font: DesignTokens.tourBodyFont,
-            .foregroundColor: NSColor.secondaryLabelColor,
+            .foregroundColor: DesignTokens.tourTextSecondary,
             .paragraphStyle: paragraphStyle,
         ])
         bodyLabel.attributedStringValue = attrStr
@@ -473,17 +458,7 @@ final class TourWindowController: NSWindowController {
 
     private func updateNextButton(for step: TourStep) {
         nextButton.title = step.buttonLabel
-        if step.buttonLabel == "Got it" {
-            // Green styling
-            nextButton.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
-            nextButton.layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
-            nextButton.contentTintColor = DesignTokens.copiedGreenText
-        } else {
-            // Purple styling
-            nextButton.layer?.backgroundColor = DesignTokens.purpleButtonBg.cgColor
-            nextButton.layer?.borderColor = DesignTokens.purpleButton.cgColor
-            nextButton.contentTintColor = DesignTokens.purpleButton
-        }
+        updateNextButtonAppearance(hovered: false, isDone: step.buttonLabel == "Got it")
     }
 
     private func updateLayout(for step: TourStep) {
@@ -514,12 +489,14 @@ final class TourWindowController: NSWindowController {
         // Clear existing illustration content
         illustrationPane.subviews.forEach { $0.removeFromSuperview() }
 
-        if step.isFullWidth {
-            // Step 9: full-width "You're all set" content
-            buildDoneContent(in: illustrationPane)
-        } else {
-            // Real illustrations for steps 0–7
-            buildIllustration(for: index, in: illustrationPane)
+        illustrationPane.effectiveAppearance.performAsCurrentDrawingAppearance {
+            if step.isFullWidth {
+                // Step 9: full-width "You're all set" content
+                buildDoneContent(in: illustrationPane)
+            } else {
+                // Real illustrations for steps 0–7
+                buildIllustration(for: index, in: illustrationPane)
+            }
         }
     }
 
@@ -595,7 +572,7 @@ final class TourWindowController: NSWindowController {
         let heading = NSTextField(labelWithString: steps[8].title)
         heading.translatesAutoresizingMaskIntoConstraints = false
         heading.font = DesignTokens.tourDoneTitleFont
-        heading.textColor = .labelColor
+        heading.textColor = DesignTokens.tourTextPrimary
         heading.alignment = .center
         heading.isBezeled = false
         heading.drawsBackground = false
@@ -611,7 +588,7 @@ final class TourWindowController: NSWindowController {
         let body = NSTextField(labelWithString: steps[8].body)
         body.translatesAutoresizingMaskIntoConstraints = false
         body.font = DesignTokens.tourBodyFont
-        body.textColor = .secondaryLabelColor
+        body.textColor = DesignTokens.tourTextSecondary
         body.alignment = .center
         body.isBezeled = false
         body.drawsBackground = false
@@ -677,24 +654,21 @@ final class TourWindowController: NSWindowController {
 
     // MARK: - Button Factories
 
-    private func makePillButton(title: String, isPrimary: Bool) -> NSButton {
-        let button = NSButton(title: title, target: nil, action: nil)
+    private func makePillButton(title: String, isPrimary: Bool) -> HoverButton {
+        let button = HoverButton(title: title, target: nil, action: nil)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.isBordered = false
         button.wantsLayer = true
         button.layer?.cornerRadius = DesignTokens.tourNextButtonHeight / 2
-        button.font = DesignTokens.tourButtonFont
-
+        button.layer?.borderWidth = 1
         if isPrimary {
-            button.layer?.backgroundColor = DesignTokens.purpleButtonBg.cgColor
-            button.layer?.borderWidth = 1
-            button.layer?.borderColor = DesignTokens.purpleButton.cgColor
-            button.contentTintColor = DesignTokens.purpleButton
+            updateButtonTitle(button, title: title, color: DesignTokens.tourPrimaryButtonText)
+            button.layer?.backgroundColor = DesignTokens.tourPrimaryButtonBg.cgColor
+            button.layer?.borderColor = DesignTokens.tourPrimaryButtonBorder.cgColor
         } else {
+            updateButtonTitle(button, title: title, color: DesignTokens.tourGhostButtonText)
             button.layer?.backgroundColor = NSColor.clear.cgColor
-            button.layer?.borderWidth = 1
-            button.layer?.borderColor = NSColor.tertiaryLabelColor.cgColor
-            button.contentTintColor = .tertiaryLabelColor
+            button.layer?.borderColor = DesignTokens.tourGhostButtonBorder.cgColor
         }
 
         // Horizontal padding
@@ -704,31 +678,49 @@ final class TourWindowController: NSWindowController {
     }
 
     private func setNextButtonHover(_ hovered: Bool) {
-        let step = steps[currentStep]
-        if step.buttonLabel == "Got it" {
-            nextButton.layer?.backgroundColor = hovered
-                ? DesignTokens.copiedGreenBg.withAlphaComponent(0.2).cgColor
-                : DesignTokens.copiedGreenBg.cgColor
-        } else {
-            nextButton.layer?.backgroundColor = hovered
-                ? DesignTokens.purpleButtonBgHover.cgColor
-                : DesignTokens.purpleButtonBg.cgColor
-            nextButton.layer?.borderColor = hovered
-                ? DesignTokens.purpleButtonHover.cgColor
-                : DesignTokens.purpleButton.cgColor
-            nextButton.contentTintColor = hovered
-                ? DesignTokens.purpleButtonHover
-                : DesignTokens.purpleButton
-        }
+        updateNextButtonAppearance(hovered: hovered, isDone: steps[currentStep].buttonLabel == "Got it")
     }
 
     private func setBackButtonHover(_ hovered: Bool) {
-        backButton.layer?.borderColor = hovered
-            ? NSColor.secondaryLabelColor.cgColor
-            : NSColor.tertiaryLabelColor.cgColor
-        backButton.contentTintColor = hovered
-            ? .secondaryLabelColor
-            : .tertiaryLabelColor
+        updateBackButtonAppearance(hovered: hovered)
+    }
+
+    private func updateExitButtonAppearance(hovered: Bool) {
+        let border = hovered ? DesignTokens.tourGhostButtonHoverBorder : DesignTokens.tourGhostButtonBorder
+        let text = hovered ? DesignTokens.tourGhostButtonHoverText : DesignTokens.tourGhostButtonText
+        exitButton.layer?.borderColor = border.cgColor
+        updateButtonTitle(exitButton, title: "Exit tour", color: text, font: DesignTokens.tourExitFont)
+    }
+
+    private func updateBackButtonAppearance(hovered: Bool) {
+        let border = hovered ? DesignTokens.tourGhostButtonHoverBorder : DesignTokens.tourGhostButtonBorder
+        let text = hovered ? DesignTokens.tourGhostButtonHoverText : DesignTokens.tourGhostButtonText
+        backButton.layer?.borderColor = border.cgColor
+        updateButtonTitle(backButton, title: "Back", color: text)
+    }
+
+    private func updateNextButtonAppearance(hovered: Bool, isDone: Bool) {
+        let title = nextButton.title
+        if isDone {
+            nextButton.layer?.backgroundColor = (hovered ? DesignTokens.tourDoneButtonHoverBg : DesignTokens.tourDoneButtonBg).cgColor
+            nextButton.layer?.borderColor = DesignTokens.tourDoneButtonBorder.cgColor
+            updateButtonTitle(nextButton, title: title, color: DesignTokens.tourDoneButtonText)
+            return
+        }
+
+        let bg = hovered ? DesignTokens.tourPrimaryButtonHoverBg : DesignTokens.tourPrimaryButtonBg
+        let border = hovered ? DesignTokens.tourPrimaryButtonHoverBorder : DesignTokens.tourPrimaryButtonBorder
+        nextButton.layer?.backgroundColor = bg.cgColor
+        nextButton.layer?.borderColor = border.cgColor
+        updateButtonTitle(nextButton, title: title, color: DesignTokens.tourPrimaryButtonText)
+    }
+
+    private func updateButtonTitle(_ button: NSButton, title: String, color: NSColor, font: NSFont = DesignTokens.tourButtonFont) {
+        button.title = title
+        button.attributedTitle = NSAttributedString(string: title, attributes: [
+            .font: font,
+            .foregroundColor: color,
+        ])
     }
 
     // MARK: - Actions
@@ -770,19 +762,18 @@ final class TourWindowController: NSWindowController {
         guard let contentView = window?.contentView else { return }
         let appearance = contentView.effectiveAppearance
         appearance.performAsCurrentDrawingAppearance {
-            contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-            contentView.layer?.borderColor = NSColor.separatorColor.cgColor
-            headerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-            footerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-            // Illustrations are always dark-themed — keep a dark bg in both modes
-            illustrationPane?.layer?.backgroundColor = NSColor(white: 0.12, alpha: 1).cgColor
-            dividerView?.layer?.backgroundColor = NSColor.separatorColor.cgColor
-            exitButton?.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
+            window?.backgroundColor = .clear
+            contentView.layer?.backgroundColor = DesignTokens.tourWindowBg.cgColor
+            contentView.layer?.borderColor = DesignTokens.tourWindowBorder.cgColor
+            headerView?.layer?.backgroundColor = DesignTokens.tourBarOverlay.cgColor
+            headerBorderView?.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
+            footerView?.layer?.backgroundColor = DesignTokens.tourBarOverlay.cgColor
+            footerBorderView?.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
+            illustrationPane?.layer?.backgroundColor = DesignTokens.tourIllustrationPaneBg.cgColor
+            dividerView?.layer?.backgroundColor = DesignTokens.tourBarDivider.cgColor
+            guard bodyLabel != nil else { return }
+            renderStep(currentStep)
         }
-        // Re-render to update text colors in attributed strings
-        // Guard: skip if buildUI() hasn't finished setting up views yet
-        guard bodyLabel != nil else { return }
-        renderStep(currentStep)
     }
 }
 
@@ -796,42 +787,26 @@ private class TourContentView: NSView {
     }
 }
 
-// MARK: - Hover Tracking Area
-
-private class HoverTrackingArea: NSTrackingArea {
-    private let onEnter: () -> Void
-    private let onExit: () -> Void
-    private weak var trackedView: NSView?
-
-    init(view: NSView, onEnter: @escaping () -> Void, onExit: @escaping () -> Void) {
-        self.onEnter = onEnter
-        self.onExit = onExit
-        self.trackedView = view
-        super.init(rect: view.bounds, options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
-                   owner: view, userInfo: nil)
-    }
-
-    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
-}
-
-/// NSView subclass that forwards mouse enter/exit to closures for hover tracking.
-private class HoverableView: NSView {
-    var onMouseEntered: (() -> Void)?
-    var onMouseExited: (() -> Void)?
-
-    override func mouseEntered(with event: NSEvent) {
-        onMouseEntered?()
-    }
-
-    override func mouseExited(with event: NSEvent) {
-        onMouseExited?()
-    }
-}
-
 /// NSButton subclass that forwards mouse enter/exit for hover tracking.
 private class HoverButton: NSButton {
     var onMouseEntered: (() -> Void)?
     var onMouseExited: (() -> Void)?
+    private var hoverTrackingArea: NSTrackingArea?
+
+    override func updateTrackingAreas() {
+        if let hoverTrackingArea {
+            removeTrackingArea(hoverTrackingArea)
+        }
+        let trackingArea = NSTrackingArea(
+            rect: bounds,
+            options: [.mouseEnteredAndExited, .activeAlways, .inVisibleRect],
+            owner: self,
+            userInfo: nil
+        )
+        addTrackingArea(trackingArea)
+        hoverTrackingArea = trackingArea
+        super.updateTrackingAreas()
+    }
 
     override func mouseEntered(with event: NSEvent) {
         onMouseEntered?()
