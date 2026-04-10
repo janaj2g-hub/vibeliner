@@ -43,7 +43,7 @@ final class TourIllustration5: NSView {
         ))
         ideCard = NSView()
         ideTitleLabel = NSTextField(labelWithString: "IDE mode")
-        ideDescLabel = NSTextField(wrappingLabelWithString: "One paste. The prompt includes the file path.")
+        ideDescLabel = NSTextField(wrappingLabelWithString: "One paste. The prompt includes the file path so the AI reads the screenshot from your disk.")
 
         ideChip1 = TourIllustration5.makeChip("Claude Code")
         ideChip2 = TourIllustration5.makeChip("Codex")
@@ -63,7 +63,7 @@ final class TourIllustration5: NSView {
         ))
         appCard = NSView()
         appTitleLabel = NSTextField(labelWithString: "App mode")
-        appDescLabel = NSTextField(wrappingLabelWithString: "Two pastes. Prompt and image go in separately.")
+        appDescLabel = NSTextField(wrappingLabelWithString: "Two pastes. Copy the prompt and the image separately into the chat window.")
 
         appChip1 = TourIllustration5.makeChip("Claude.ai")
         appChip2 = TourIllustration5.makeChip("ChatGPT")
@@ -88,7 +88,7 @@ final class TourIllustration5: NSView {
             card.layer?.cornerRadius = DesignTokens.tourModeCardRadius
             card.layer?.backgroundColor = DesignTokens.tourModeCardBg.cgColor
             card.layer?.borderWidth = 1
-            card.layer?.borderColor = DesignTokens.chromeBorder.cgColor
+            card.layer?.borderColor = DesignTokens.tourModeCardBorder.cgColor
         }
 
         // Title labels
@@ -115,7 +115,7 @@ final class TourIllustration5: NSView {
 
         // Divider
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
+        divider.layer?.backgroundColor = DesignTokens.tourModeCardBorder.cgColor
 
         // Build hierarchy
         ideCard.addSubview(ideTitleLabel)
@@ -208,13 +208,13 @@ final class TourIllustration5: NSView {
         toolbar.frame = CGRect(x: padding, y: tbY, width: tbSize.width, height: tbSize.height)
 
         // Card on right, filling remaining space
-        let cardGap: CGFloat = 12
+        let cardGap: CGFloat = 14
         let cardX = padding + tbSize.width + cardGap
         let cardW = contentW - tbSize.width - cardGap
         card.frame = CGRect(x: cardX, y: belowLabelY, width: cardW, height: belowLabelH)
 
         // Card internals
-        let cardPad: CGFloat = 10
+        let cardPad = DesignTokens.tourModeCardPadding
 
         // Title at top of card
         titleLabel.sizeToFit()

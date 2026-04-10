@@ -32,7 +32,7 @@ final class TourIllustration4: NSView {
     private let sendCircle: NSView
 
     private let padding = DesignTokens.tourIllustrationPadding
-    private let sectionGap: CGFloat = 10
+    private let sectionGap: CGFloat = 12
 
     override init(frame frameRect: NSRect) {
         // -- Top: output cards --
@@ -49,7 +49,7 @@ final class TourIllustration4: NSView {
         ])
 
         // -- Middle: arrow --
-        flowArrow = TourFlowArrow(height: 24)
+        flowArrow = TourFlowArrow(height: 28)
 
         // -- Bottom: LLM panel --
         llmPanel = NSView()
@@ -58,7 +58,7 @@ final class TourIllustration4: NSView {
 
         chatBubble = NSView()
         chatText = NSTextField(wrappingLabelWithString:
-            "The model sees each numbered badge on the image and reads the matching note. No guessing required."
+            "The model sees each numbered badge on the image and reads the matching note in the prompt. No guessing required."
         )
 
         composerBar = NSView()
@@ -85,14 +85,14 @@ final class TourIllustration4: NSView {
         llmPanel.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
         llmPanel.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
         llmPanel.layer?.borderWidth = 1
-        llmPanel.layer?.borderColor = DesignTokens.chromeBorder.cgColor
+        llmPanel.layer?.borderColor = DesignTokens.tourLLMPanelBorder.cgColor
 
         llmDot.wantsLayer = true
         llmDot.layer?.cornerRadius = DesignTokens.tourLLMDotSize / 2
         llmDot.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
 
         llmLabel.font = DesignTokens.tourLLMHeaderFont
-        llmLabel.textColor = DesignTokens.tourTextSecondary
+        llmLabel.textColor = DesignTokens.tourTextPrimary
         llmLabel.isBezeled = false
         llmLabel.drawsBackground = false
         llmLabel.isEditable = false
@@ -119,7 +119,7 @@ final class TourIllustration4: NSView {
 
         thumbnailPlaceholder.wantsLayer = true
         thumbnailPlaceholder.layer?.cornerRadius = DesignTokens.tourMiniScreenshotRadius
-        thumbnailPlaceholder.layer?.backgroundColor = NSColor(white: 0.3, alpha: 1.0).cgColor
+        thumbnailPlaceholder.layer?.backgroundColor = DesignTokens.tourWireframeBgBottom.cgColor
 
         for line in [composerLine1, composerLine2, composerLine3] {
             line.wantsLayer = true
@@ -129,7 +129,7 @@ final class TourIllustration4: NSView {
 
         sendCircle.wantsLayer = true
         sendCircle.layer?.cornerRadius = DesignTokens.tourLLMSendSize / 2
-        sendCircle.layer?.backgroundColor = DesignTokens.purpleLight.cgColor
+        sendCircle.layer?.backgroundColor = DesignTokens.tourLLMSendBg.cgColor
 
         // Build hierarchy
         chatBubble.addSubview(chatText)
@@ -164,7 +164,7 @@ final class TourIllustration4: NSView {
 
         // Section heights
         let topH = floor(contentH * 0.30) - sectionGap / 2
-        let arrowH: CGFloat = 24
+        let arrowH: CGFloat = 28
         let bottomH = contentH - topH - arrowH - sectionGap * 2
 
         // AppKit: origin bottom-left
@@ -173,7 +173,7 @@ final class TourIllustration4: NSView {
         let topY = arrowY + arrowH + sectionGap
 
         // -- Top: two cards side by side --
-        let cardGap: CGFloat = 12
+        let cardGap: CGFloat = 10
         let cardW = (contentW - cardGap) / 2
         screenshotCard.frame = CGRect(x: padding, y: topY, width: cardW, height: topH)
         promptCard.frame = CGRect(x: padding + cardW + cardGap, y: topY, width: cardW, height: topH)
@@ -201,7 +201,7 @@ final class TourIllustration4: NSView {
         // -- Bottom: LLM panel --
         llmPanel.frame = CGRect(x: padding, y: bottomY, width: contentW, height: bottomH)
 
-        let panelPad: CGFloat = 12
+        let panelPad: CGFloat = 14
         let panelW = contentW
 
         // Purple dot + label at top-left

@@ -29,7 +29,7 @@ final class TourIllustration6: NSView {
     private let addLabel: NSTextField
 
     private let padding = DesignTokens.tourIllustrationPadding
-    private let titleBarH: CGFloat = 28
+    private let titleBarH: CGFloat = 36
     private let filmstripGap: CGFloat = 10
     private let toolbarGap: CGFloat = 16
 
@@ -70,18 +70,16 @@ final class TourIllustration6: NSView {
 
         // Editor frame styling
         editorFrame.wantsLayer = true
-        editorFrame.layer?.cornerRadius = DesignTokens.tourLLMPanelRadius
+        editorFrame.layer?.cornerRadius = 8
         editorFrame.layer?.masksToBounds = true
-        editorFrame.layer?.backgroundColor = DesignTokens.tourLLMPanelBg.cgColor
+        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
         editorFrame.layer?.borderWidth = 1
-        editorFrame.layer?.borderColor = DesignTokens.chromeBorder.cgColor
+        editorFrame.layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
 
         // Title bar
         titleBar.wantsLayer = true
-        titleBar.layer?.backgroundColor = DesignTokens.tourOutputCardBg.cgColor
-
-        titleLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        titleLabel.textColor = DesignTokens.tourTextDim
+        titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
+        titleLabel.textColor = DesignTokens.tourTextSecondary
         titleLabel.alignment = .center
         titleLabel.isBezeled = false
         titleLabel.drawsBackground = false
@@ -92,14 +90,14 @@ final class TourIllustration6: NSView {
         for cell in [cell1, cell2] {
             cell.wantsLayer = true
             cell.layer?.cornerRadius = DesignTokens.tourFilmstripCellRadius
-            cell.layer?.backgroundColor = DesignTokens.tourOutputCardBorder.cgColor
+            cell.layer?.backgroundColor = DesignTokens.tourWireframeBgTop.cgColor
         }
 
         // Gray lines inside wireframes
         for line in [wireframe1Line1, wireframe1Line2, wireframe2Line1, wireframe2Line2] {
             line.wantsLayer = true
             line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = DesignTokens.tooltipDarkBorder.cgColor
+            line.layer?.backgroundColor = DesignTokens.tourFilmstripCellLineColor.cgColor
         }
 
         // Plus circle
@@ -276,7 +274,7 @@ final class TourIllustration6: NSView {
 
         // Title bar bottom border
         let tbBorderY = editorFrame.frame.origin.y + editorFrame.frame.height - titleBarH
-        ctx.setFillColor(DesignTokens.chromeBorder.cgColor)
+        ctx.setFillColor(DesignTokens.tourLLMComposerBg.cgColor)
         ctx.fill(CGRect(x: editorFrame.frame.origin.x, y: tbBorderY, width: editorFrame.frame.width, height: 1))
     }
 }
