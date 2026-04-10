@@ -1,7 +1,8 @@
 import AppKit
 
 /// Tour step 1: "Screenshots become LLM ready prompts"
-/// Two-column layout: left = screenshot output card with badges, right = prompt output card.
+/// Two-column layout (align-items: start): left = screenshot card, right = prompt card.
+/// Cards are sized to their content, NOT stretched to fill the pane.
 final class TourIllustration1: NSView {
 
     private let leftCard: TourOutputCard
@@ -54,38 +55,54 @@ final class TourIllustration1: NSView {
         let h = bounds.height
 
         let contentW = w - padding * 2
-        let contentH = h - padding * 2
 
-        // Two equal columns, vertically centered
+        // Two equal-width columns
         let colW = (contentW - columnGap) / 2
-        let cardH = contentH
 
-        let leftX = padding
-        let rightX = padding + colW + columnGap
-        let cardY = padding
+        // Card internal metrics (must match TourOutputCard layout)
+        let cardPad = DesignTokens.tourOutputCardPadding  // 10
+        let labelH: CGFloat = 20
+        let labelGap: CGFloat = 8
+        let cardOverhead = cardPad + labelH + labelGap + cardPad  // 48
 
-        leftCard.frame = CGRect(x: leftX, y: cardY, width: colW, height: cardH)
-        rightCard.frame = CGRect(x: rightX, y: cardY, width: colW, height: cardH)
+        // Left card: wireframe with min body height 140px (HTML: .s1-screenshot-card .app-mock-body { min-height: 140px })
+        let mockContentW = colW - cardPad * 2
+        let mockBodyH = max(CGFloat(140), mockContentW * 0.55)
+        let mockH = DesignTokens.tourWireframeTopbarHeight + 1 + mockBodyH
+        let leftCardH = cardOverhead + mockH
 
-        // Left card content: mock fills the content area
-        let contentArea = leftCard.contentArea
-        leftMock.frame = contentArea.bounds
+        // Right card: match left card height so layout is balanced
+        let rightCardH = leftCardH
 
-        // Position badges relative to wireframe layout (sidebar + topbar offsets)
-        let mockH = contentArea.bounds.height
-        let mainX = DesignTokens.tourWireframeSidebarWidth + 1
-        let mainTopY = mockH - DesignTokens.tourWireframeTopbarHeight - 1
+        // Top-align (align-items: start) — position from top of content area
+        let topEdge = h - padding
+        leftCard.frame = CGRect(x: padding, y: topEdge - leftCardH, width: colW, height: leftCardH)
+        rightCard.frame = CGRect(x: padding + colW + columnGap, y: topEdge - rightCardH, width: colW, height: rightCardH)
+
+        // Force child layout so contentArea bounds are updated for new frame size
+        leftCard.layoutSubtreeIfNeeded()
+        rightCard.layoutSubtreeIfNeeded()
+
+        // Left card content: wireframe fills the content area
+        let lca = leftCard.contentArea
+        leftMock.frame = lca.bounds
+
+        // Badge positions (relative to contentArea = wireframe coordinate space)
+        // HTML positions are relative to .app-mock-main (after sidebar + topbar)
+        let mockViewH = lca.bounds.height
+        let sideW = DesignTokens.tourWireframeSidebarWidth + 1
+        let mainTopY = mockViewH - DesignTokens.tourWireframeTopbarHeight - 1
         let badgeD = DesignTokens.badgeDiameter
 
-        // Badge #1: near error card (HTML top:18px, left:8px in main area)
+        // Badge #1: near error card (HTML: top:18px, left:8px in .app-mock-main)
         badge1.frame.origin = NSPoint(
-            x: mainX + 8,
+            x: sideW + 8,
             y: mainTopY - 18 - badgeD
         )
 
-        // Badge #2: near table area (HTML top:82px, left:30px in main area)
+        // Badge #2: near table area (HTML: top:82px, left:30px in .app-mock-main)
         badge2.frame.origin = NSPoint(
-            x: mainX + 30,
+            x: sideW + 30,
             y: mainTopY - 82 - badgeD
         )
 
