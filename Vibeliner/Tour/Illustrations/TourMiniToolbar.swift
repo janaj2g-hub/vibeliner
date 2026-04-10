@@ -13,8 +13,8 @@ struct TourMiniToolbarConfig {
 }
 
 /// Miniature toolbar pill used in tour illustrations.
-/// Dark chrome background with purple-tinted border, pill shape.
-/// Lays out: tool buttons | divider | IDE/App toggle | divider | copy buttons
+/// Uses appearance-aware `toolbar*` tokens so it responds to light/dark mode.
+/// Lays out: [close] | tool buttons | divider | IDE/App toggle | divider | copy buttons
 final class TourMiniToolbar: NSView {
 
     private let config: TourMiniToolbarConfig
@@ -26,7 +26,6 @@ final class TourMiniToolbar: NSView {
     private let sectionPadding: CGFloat = 8
     private let dividerWidth: CGFloat = 1
     private let copyPillHeight: CGFloat = 20
-    private let copyPillPaddingH: CGFloat = 8
     private let toggleWidth: CGFloat = 72
     private let toggleHeight: CGFloat = 20
     private let toggleSegmentWidth: CGFloat = 36
@@ -34,8 +33,12 @@ final class TourMiniToolbar: NSView {
     init(config: TourMiniToolbarConfig = TourMiniToolbarConfig()) {
         self.config = config
         // Calculate total width
+        var totalWidth: CGFloat = sectionPadding
+        if config.showCloseButton {
+            totalWidth += toolSize + toolSpacing + dividerWidth + sectionPadding
+        }
         let toolsSectionWidth = CGFloat(5) * toolSize + CGFloat(4) * toolSpacing
-        var totalWidth = sectionPadding + toolsSectionWidth + sectionPadding
+        totalWidth += toolsSectionWidth + sectionPadding
         totalWidth += dividerWidth + sectionPadding + toggleWidth + sectionPadding
         if config.showCopyPrompt || config.showCopyImage || config.showAddImage {
             totalWidth += dividerWidth + sectionPadding
@@ -48,20 +51,48 @@ final class TourMiniToolbar: NSView {
         wantsLayer = true
         layer?.cornerRadius = 999
         layer?.masksToBounds = true
-        layer?.backgroundColor = DesignTokens.darkChrome.cgColor
+        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.chromeBorder.cgColor
+        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     override var intrinsicContentSize: NSSize { bounds.size }
 
+    override func updateLayer() {
+        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
+        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
         let h = bounds.height
         var x: CGFloat = sectionPadding
+
+        // -- Close button (if shown) --
+        if config.showCloseButton {
+            let toolY = (h - toolSize) / 2
+            let cx = x + toolSize / 2
+            let cy = toolY + toolSize / 2
+            ctx.setStrokeColor(DesignTokens.toolbarIconDefault.cgColor)
+            ctx.setLineWidth(1.5)
+            ctx.setLineCap(.round)
+            let s: CGFloat = 3.5
+            ctx.move(to: CGPoint(x: cx - s, y: cy - s))
+            ctx.addLine(to: CGPoint(x: cx + s, y: cy + s))
+            ctx.strokePath()
+            ctx.move(to: CGPoint(x: cx + s, y: cy - s))
+            ctx.addLine(to: CGPoint(x: cx - s, y: cy + s))
+            ctx.strokePath()
+            x += toolSize + toolSpacing
+
+            // Divider after close
+            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+            ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
+            x += dividerWidth + sectionPadding
+        }
 
         // -- Tool buttons --
         let tools: [TourToolType] = [.pin, .arrow, .rect, .circle, .freehand]
@@ -70,31 +101,27 @@ final class TourMiniToolbar: NSView {
             let toolRect = CGRect(x: x, y: toolY, width: toolSize, height: toolSize)
 
             if tool == config.activeTool {
-                ctx.setFillColor(DesignTokens.toolActiveBg.cgColor)
+                ctx.setFillColor(DesignTokens.toolbarToolActiveBg.cgColor)
                 ctx.fillEllipse(in: toolRect)
             }
 
             let iconColor = tool == config.activeTool
-                ? DesignTokens.purpleLight.cgColor
-                : DesignTokens.iconDefault.cgColor
+                ? DesignTokens.toolbarPurpleActive.cgColor
+                : DesignTokens.toolbarIconDefault.cgColor
             ctx.setStrokeColor(iconColor)
             ctx.setFillColor(iconColor)
             ctx.setLineWidth(1.5)
+            ctx.setLineCap(.round)
 
             let cx = toolRect.midX
             let cy = toolRect.midY
 
             switch tool {
-            case .pin:
-                drawPinIcon(ctx: ctx, cx: cx, cy: cy)
-            case .arrow:
-                drawArrowIcon(ctx: ctx, cx: cx, cy: cy)
-            case .rect:
-                drawRectIcon(ctx: ctx, cx: cx, cy: cy)
-            case .circle:
-                drawCircleIcon(ctx: ctx, cx: cx, cy: cy)
-            case .freehand:
-                drawFreehandIcon(ctx: ctx, cx: cx, cy: cy)
+            case .pin:    drawPinIcon(ctx: ctx, cx: cx, cy: cy)
+            case .arrow:  drawArrowIcon(ctx: ctx, cx: cx, cy: cy)
+            case .rect:   drawRectIcon(ctx: ctx, cx: cx, cy: cy)
+            case .circle: drawCircleIcon(ctx: ctx, cx: cx, cy: cy)
+            case .freehand: drawFreehandIcon(ctx: ctx, cx: cx, cy: cy)
             }
 
             x += toolSize + toolSpacing
@@ -102,7 +129,7 @@ final class TourMiniToolbar: NSView {
         x += sectionPadding - toolSpacing
 
         // -- Divider --
-        ctx.setFillColor(DesignTokens.dividerColor.cgColor)
+        ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
         ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
         x += dividerWidth + sectionPadding
 
@@ -110,9 +137,9 @@ final class TourMiniToolbar: NSView {
         drawModeToggle(ctx: ctx, x: x, h: h)
         x += toggleWidth + sectionPadding
 
-        // -- Copy buttons --
+        // -- Copy / Add Image buttons --
         if config.showCopyPrompt || config.showCopyImage || config.showAddImage {
-            ctx.setFillColor(DesignTokens.dividerColor.cgColor)
+            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
             ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
             x += dividerWidth + sectionPadding
 
@@ -133,22 +160,18 @@ final class TourMiniToolbar: NSView {
     // MARK: - Tool Icons
 
     private func drawPinIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        // Circle on top
         let circleR: CGFloat = 3
         ctx.strokeEllipse(in: CGRect(x: cx - circleR, y: cy, width: circleR * 2, height: circleR * 2))
-        // Vertical line below
         ctx.move(to: CGPoint(x: cx, y: cy))
         ctx.addLine(to: CGPoint(x: cx, y: cy - 4))
         ctx.strokePath()
     }
 
     private func drawArrowIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        // Diagonal line
         let len: CGFloat = 5
         ctx.move(to: CGPoint(x: cx - len, y: cy - len))
         ctx.addLine(to: CGPoint(x: cx + len, y: cy + len))
         ctx.strokePath()
-        // Chevron at tip
         let chev: CGFloat = 3
         ctx.move(to: CGPoint(x: cx + len - chev, y: cy + len))
         ctx.addLine(to: CGPoint(x: cx + len, y: cy + len))
@@ -170,7 +193,6 @@ final class TourMiniToolbar: NSView {
     }
 
     private func drawFreehandIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        // Wavy line (~)
         ctx.move(to: CGPoint(x: cx - 6, y: cy))
         ctx.addCurve(to: CGPoint(x: cx, y: cy),
                      control1: CGPoint(x: cx - 4, y: cy + 4),
@@ -187,8 +209,8 @@ final class TourMiniToolbar: NSView {
         let toggleY = (h - toggleHeight) / 2
         let toggleRect = CGRect(x: x, y: toggleY, width: toggleWidth, height: toggleHeight)
 
-        // Toggle background
-        ctx.setFillColor(DesignTokens.toggleBg.cgColor)
+        // Track background
+        ctx.setFillColor(DesignTokens.toolbarToggleBg.cgColor)
         let togglePath = CGPath(roundedRect: toggleRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(togglePath)
         ctx.fillPath()
@@ -197,7 +219,7 @@ final class TourMiniToolbar: NSView {
         let ideActive = config.mode == .ide
         let activeX = ideActive ? x : x + toggleSegmentWidth
         let segRect = CGRect(x: activeX + 2, y: toggleY + 2, width: toggleSegmentWidth - 4, height: toggleHeight - 4)
-        ctx.setFillColor(DesignTokens.toggleActiveBg.cgColor)
+        ctx.setFillColor(DesignTokens.toolbarToggleActiveBg.cgColor)
         let segPath = CGPath(roundedRect: segRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(segPath)
         ctx.fillPath()
@@ -205,11 +227,11 @@ final class TourMiniToolbar: NSView {
         // Labels
         let ideAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.purpleLight : DesignTokens.toggleInactiveText,
+            .foregroundColor: ideActive ? DesignTokens.toolbarPurpleActive : DesignTokens.toolbarToggleInactiveText,
         ]
         let appAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.toggleInactiveText : DesignTokens.purpleLight,
+            .foregroundColor: ideActive ? DesignTokens.toolbarToggleInactiveText : DesignTokens.toolbarPurpleActive,
         ]
         let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
         let appStr = NSAttributedString(string: "App", attributes: appAttrs)
@@ -228,64 +250,52 @@ final class TourMiniToolbar: NSView {
     // MARK: - Copy Pills
 
     private func drawCopyPill(ctx: CGContext, text: String, x: CGFloat, h: CGFloat, width: CGFloat) -> CGFloat {
-        let pillY = (h - copyPillHeight) / 2
-        let pillRect = CGRect(x: x, y: pillY, width: width, height: copyPillHeight)
+        let pillY = (h - 20) / 2
+        let pillRect = CGRect(x: x, y: pillY, width: width, height: 20)
 
-        // Background
-        ctx.setFillColor(DesignTokens.purpleButtonBg.cgColor)
+        ctx.setFillColor(DesignTokens.toolbarPurpleButtonBg.cgColor)
         let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(path)
         ctx.fillPath()
 
-        // Border
-        ctx.setStrokeColor(DesignTokens.purpleButton.withAlphaComponent(0.5).cgColor)
+        ctx.setStrokeColor(DesignTokens.toolbarPurpleButtonBorder.cgColor)
         ctx.setLineWidth(1)
         ctx.addPath(path)
         ctx.strokePath()
 
-        // Text
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: DesignTokens.purpleLight,
+            .foregroundColor: DesignTokens.toolbarPurpleButtonText,
         ]
         let str = NSAttributedString(string: text, attributes: attrs)
         let size = str.size()
-        str.draw(at: NSPoint(
-            x: pillRect.midX - size.width / 2,
-            y: pillRect.midY - size.height / 2
-        ))
+        str.draw(at: NSPoint(x: pillRect.midX - size.width / 2, y: pillRect.midY - size.height / 2))
         return x + width
     }
 
     // MARK: - Add Image Pill
 
     private func drawAddImagePill(ctx: CGContext, text: String, x: CGFloat, h: CGFloat, width: CGFloat) -> CGFloat {
-        let pillY = (h - copyPillHeight) / 2
-        let pillRect = CGRect(x: x, y: pillY, width: width, height: copyPillHeight)
+        let pillY = (h - 20) / 2
+        let pillRect = CGRect(x: x, y: pillY, width: width, height: 20)
 
-        // Background
         ctx.setFillColor(DesignTokens.addImageBg.cgColor)
         let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(path)
         ctx.fillPath()
 
-        // Border
         ctx.setStrokeColor(DesignTokens.addImageBorder.cgColor)
         ctx.setLineWidth(1)
         ctx.addPath(path)
         ctx.strokePath()
 
-        // Text
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: DesignTokens.purpleLight,
+            .foregroundColor: DesignTokens.toolbarPurpleButtonText,
         ]
         let str = NSAttributedString(string: text, attributes: attrs)
         let size = str.size()
-        str.draw(at: NSPoint(
-            x: pillRect.midX - size.width / 2,
-            y: pillRect.midY - size.height / 2
-        ))
+        str.draw(at: NSPoint(x: pillRect.midX - size.width / 2, y: pillRect.midY - size.height / 2))
         return x + width
     }
 }
