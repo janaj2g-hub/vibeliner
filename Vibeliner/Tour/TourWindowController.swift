@@ -780,6 +780,8 @@ final class TourWindowController: NSWindowController {
             exitButton?.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
         }
         // Re-render to update text colors in attributed strings
+        // Guard: skip if buildUI() hasn't finished setting up views yet
+        guard bodyLabel != nil else { return }
         renderStep(currentStep)
     }
 }
