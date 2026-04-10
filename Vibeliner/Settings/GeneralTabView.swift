@@ -21,7 +21,9 @@ final class GeneralTabView: NSView {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
+        // Re-resolve dynamic colors for the new appearance
         SettingsUI.styleFieldSurface(folderFieldContainer)
+        folderFieldContainer.needsDisplay = true
     }
 
     private func setupView() {
