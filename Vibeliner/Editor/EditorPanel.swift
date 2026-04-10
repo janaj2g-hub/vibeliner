@@ -410,7 +410,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     func toolbarDidRequestCopyImage() {
-        let canvasSize = CGSize(width: displayWidth, height: displayHeight)
+        // VIB-372: Use actual canvas bounds — in filmstrip mode this is the imageAreaRect
+        // (wider than the primary image), not displayWidth × displayHeight.
+        let canvasSize = canvasOverlay?.bounds.size ?? CGSize(width: displayWidth, height: displayHeight)
         // VIB-297: Pass all images for composite stitching when in filmstrip mode
         let allImages = isFilmstripMode ? images : nil
         ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, allImages: allImages)
@@ -609,6 +611,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.frame = filmstrip.imageAreaRect
         filmstrip.scrollableContentView.addSubview(canvasOverlay ?? NSView())
         canvasOverlay?.updateTrackingAreas()
+
+        // VIB-372: Update auto-save canvas size to match the actual filmstrip canvas bounds
+        autoSaveManager?.canvasSize = filmstrip.imageAreaRect.size
 
         // VIB-339: Recalculate annotation positions after layout change
         recalculateAnnotationPositions()
