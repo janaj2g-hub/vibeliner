@@ -1,27 +1,19 @@
 import AppKit
 
 /// Tour step 7: "Label what each image shows"
-/// Top ~50%: 3-column filmstrip grid with TourTitlePills above each cell.
-/// Bottom ~50%: TourPromptSheet with preamble listing images, annotations, and footer.
+/// Top ~55%: 3-column filmstrip grid with TourTitlePills above each TourFilmstripCell.
+/// Bottom ~45%: TourPromptSheet with preamble listing images, annotations, and footer.
 final class TourIllustration7: NSView {
 
-    // Top: filmstrip grid
+    // Top: filmstrip grid (real helpers)
     private let pill1: TourTitlePill
-    private let cell1: NSView
-    private let cell1Line1: NSView
-    private let cell1Line2: NSView
-    private let badge1: TourAnnotationBadge
-    private let badge2: TourAnnotationBadge
+    private let cell1: TourFilmstripCell
 
     private let pill2: TourTitlePill
-    private let cell2: NSView
-    private let cell2Line1: NSView
-    private let cell2Line2: NSView
+    private let cell2: TourFilmstripCell
 
     private let pill3: TourTitlePill
-    private let cell3: NSView
-    private let cell3Line1: NSView
-    private let cell3Line2: NSView
+    private let cell3: TourFilmstripCell
 
     // Bottom: prompt sheet
     private let promptSheet: TourPromptSheet
@@ -31,25 +23,17 @@ final class TourIllustration7: NSView {
     private let filmstripGap: CGFloat = 12
 
     override init(frame frameRect: NSRect) {
-        // Cell 1: observed
+        // Cell 1: observed, 2 badges
         pill1 = TourTitlePill(name: "Image 1", role: .observed)
-        cell1 = NSView()
-        cell1Line1 = NSView()
-        cell1Line2 = NSView()
-        badge1 = TourAnnotationBadge(number: 1)
-        badge2 = TourAnnotationBadge(number: 2)
+        cell1 = TourFilmstripCell(bodyHeight: 70, badges: [(1, 10, 24), (2, 40, 42)])
 
-        // Cell 2: expected
+        // Cell 2: expected, no badges
         pill2 = TourTitlePill(name: "Image 2", role: .expected)
-        cell2 = NSView()
-        cell2Line1 = NSView()
-        cell2Line2 = NSView()
+        cell2 = TourFilmstripCell(bodyHeight: 70)
 
-        // Cell 3: reference
+        // Cell 3: reference, no badges
         pill3 = TourTitlePill(name: "Mockup", role: .reference)
-        cell3 = NSView()
-        cell3Line1 = NSView()
-        cell3Line2 = NSView()
+        cell3 = TourFilmstripCell(bodyHeight: 70)
 
         // Prompt sheet
         promptSheet = TourPromptSheet(
@@ -64,32 +48,7 @@ final class TourIllustration7: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Cell styling
-        for cell in [cell1, cell2, cell3] {
-            cell.wantsLayer = true
-            cell.layer?.cornerRadius = DesignTokens.tourFilmstripCellRadius
-            cell.layer?.backgroundColor = DesignTokens.tourWireframeBgTop.cgColor
-        }
-
-        // Lines
-        for line in [cell1Line1, cell1Line2, cell2Line1, cell2Line2, cell3Line1, cell3Line2] {
-            line.wantsLayer = true
-            line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = DesignTokens.tourFilmstripCellLineColor.cgColor
-        }
-
         // Build hierarchy
-        cell1.addSubview(cell1Line1)
-        cell1.addSubview(cell1Line2)
-        cell1.addSubview(badge1)
-        cell1.addSubview(badge2)
-
-        cell2.addSubview(cell2Line1)
-        cell2.addSubview(cell2Line2)
-
-        cell3.addSubview(cell3Line1)
-        cell3.addSubview(cell3Line2)
-
         addSubview(pill1)
         addSubview(cell1)
         addSubview(pill2)
@@ -124,7 +83,7 @@ final class TourIllustration7: NSView {
         let cellW = (contentW - filmstripGap * 2) / 3
         let pillH: CGFloat = 22
         let pillGap: CGFloat = 6
-        let cellBodyH: CGFloat = 70
+        let cellBodyH = cell1.intrinsicContentSize.height
         let cellsH = pillH + pillGap + cellBodyH
 
         // Vertically center the cells+pills in the top section
@@ -136,28 +95,15 @@ final class TourIllustration7: NSView {
         let c1x = padding
         pill1.frame.origin = NSPoint(x: c1x + (cellW - pill1.frame.width) / 2, y: pillY)
         cell1.frame = CGRect(x: c1x, y: cellY, width: cellW, height: cellBodyH)
-        layoutLines(cell1, cell1Line1, cell1Line2)
-        badge1.frame = CGRect(x: cellW * 0.25 - 9, y: cellBodyH * 0.55, width: 18, height: 18)
-        badge2.frame = CGRect(x: cellW * 0.65 - 9, y: cellBodyH * 0.25, width: 18, height: 18)
 
         // Cell 2
         let c2x = padding + cellW + filmstripGap
         pill2.frame.origin = NSPoint(x: c2x + (cellW - pill2.frame.width) / 2, y: pillY)
         cell2.frame = CGRect(x: c2x, y: cellY, width: cellW, height: cellBodyH)
-        layoutLines(cell2, cell2Line1, cell2Line2)
 
         // Cell 3
         let c3x = padding + (cellW + filmstripGap) * 2
         pill3.frame.origin = NSPoint(x: c3x + (cellW - pill3.frame.width) / 2, y: pillY)
         cell3.frame = CGRect(x: c3x, y: cellY, width: cellW, height: cellBodyH)
-        layoutLines(cell3, cell3Line1, cell3Line2)
-    }
-
-    private func layoutLines(_ cell: NSView, _ line1: NSView, _ line2: NSView) {
-        let cw = cell.bounds.width
-        let ch = cell.bounds.height
-        let linePad: CGFloat = 10
-        line1.frame = CGRect(x: linePad, y: ch * 0.55, width: cw * 0.6, height: 4)
-        line2.frame = CGRect(x: linePad, y: ch * 0.55 - 10, width: cw * 0.4, height: 4)
     }
 }
