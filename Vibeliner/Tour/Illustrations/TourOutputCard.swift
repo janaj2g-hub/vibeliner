@@ -9,7 +9,7 @@ final class TourOutputCard: NSView {
     let contentArea: NSView
 
     private let labelHeight: CGFloat = 20
-    private let labelSpacing: CGFloat = 6
+    private let labelSpacing: CGFloat = 8
 
     init(label: String) {
         self.labelText = label

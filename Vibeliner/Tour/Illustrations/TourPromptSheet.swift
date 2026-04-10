@@ -65,22 +65,18 @@ final class TourPromptSheet: NSView {
             let attributed = NSMutableAttributedString()
 
             // Red bold index number
-            let indexStr = NSAttributedString(string: "\(annotation.index). ", attributes: [
+            let indexStr = NSAttributedString(string: "\(annotation.index)", attributes: [
                 .font: monoBoldFont,
                 .foregroundColor: DesignTokens.tourPromptSheetNumber,
             ])
             attributed.append(indexStr)
 
-            // Tool name in dim
-            let toolStr = NSAttributedString(string: "[\(annotation.tool)] ", attributes: dimAttrs)
-            attributed.append(toolStr)
-
-            // Note text in secondary
-            let noteStr = NSAttributedString(string: annotation.note, attributes: [
+            // Tool + note in default color (HTML: "1  [pin] padding too tight")
+            let restStr = NSAttributedString(string: "  [\(annotation.tool)] \(annotation.note)", attributes: [
                 .font: monoFont,
                 .foregroundColor: DesignTokens.tourPromptSheetColor,
             ])
-            attributed.append(noteStr)
+            attributed.append(restStr)
 
             let size = attributed.size()
             y -= size.height

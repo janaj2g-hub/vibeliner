@@ -71,19 +71,22 @@ final class TourIllustration1: NSView {
         let contentArea = leftCard.contentArea
         leftMock.frame = contentArea.bounds
 
-        // Position badges on top of mock
-        // Badge #1 near top-left of the mock (near error card)
-        let mockW = contentArea.bounds.width
+        // Position badges relative to wireframe layout (sidebar + topbar offsets)
         let mockH = contentArea.bounds.height
+        let mainX = DesignTokens.tourWireframeSidebarWidth + 1
+        let mainTopY = mockH - DesignTokens.tourWireframeTopbarHeight - 1
+        let badgeD = DesignTokens.badgeDiameter
+
+        // Badge #1: near error card (HTML top:18px, left:8px in main area)
         badge1.frame.origin = NSPoint(
-            x: mockW * 0.32,
-            y: mockH * 0.58
+            x: mainX + 8,
+            y: mainTopY - 18 - badgeD
         )
 
-        // Badge #2 near middle (near table area)
+        // Badge #2: near table area (HTML top:82px, left:30px in main area)
         badge2.frame.origin = NSPoint(
-            x: mockW * 0.45,
-            y: mockH * 0.25
+            x: mainX + 30,
+            y: mainTopY - 82 - badgeD
         )
 
         // Right card content: prompt sheet fills the content area
