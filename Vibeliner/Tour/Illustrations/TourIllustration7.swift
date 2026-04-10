@@ -27,8 +27,8 @@ final class TourIllustration7: NSView {
     private let promptSheet: TourPromptSheet
 
     private let padding = DesignTokens.tourIllustrationPadding
-    private let sectionGap: CGFloat = 16
-    private let filmstripGap: CGFloat = 10
+    private let sectionGap: CGFloat = 14
+    private let filmstripGap: CGFloat = 12
 
     override init(frame frameRect: NSRect) {
         // Cell 1: observed
@@ -68,14 +68,14 @@ final class TourIllustration7: NSView {
         for cell in [cell1, cell2, cell3] {
             cell.wantsLayer = true
             cell.layer?.cornerRadius = DesignTokens.tourFilmstripCellRadius
-            cell.layer?.backgroundColor = DesignTokens.tourOutputCardBorder.cgColor
+            cell.layer?.backgroundColor = DesignTokens.tourWireframeBgTop.cgColor
         }
 
         // Lines
         for line in [cell1Line1, cell1Line2, cell2Line1, cell2Line2, cell3Line1, cell3Line2] {
             line.wantsLayer = true
             line.layer?.cornerRadius = 2
-            line.layer?.backgroundColor = DesignTokens.tooltipDarkBorder.cgColor
+            line.layer?.backgroundColor = DesignTokens.tourFilmstripCellLineColor.cgColor
         }
 
         // Build hierarchy
@@ -110,7 +110,7 @@ final class TourIllustration7: NSView {
         let contentH = h - padding * 2
 
         // Two vertical sections
-        let topH = floor(contentH * 0.50) - sectionGap / 2
+        let topH = floor(contentH * 0.55) - sectionGap / 2
         let bottomH = contentH - topH - sectionGap
 
         // AppKit: origin bottom-left
@@ -124,7 +124,7 @@ final class TourIllustration7: NSView {
         let cellW = (contentW - filmstripGap * 2) / 3
         let pillH: CGFloat = 22
         let pillGap: CGFloat = 6
-        let cellBodyH: CGFloat = 60
+        let cellBodyH: CGFloat = 70
         let cellsH = pillH + pillGap + cellBodyH
 
         // Vertically center the cells+pills in the top section
