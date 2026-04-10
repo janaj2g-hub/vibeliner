@@ -145,18 +145,18 @@ final class TourWindowController: NSWindowController {
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
         ])
 
-        // Exit tour button — ghost pill
-        exitButton = NSButton(title: "Exit tour", target: self, action: #selector(exitTour))
+        // Exit tour button — ghost pill with explicit attributed title for visibility
+        exitButton = NSButton(title: "", target: self, action: #selector(exitTour))
         exitButton.translatesAutoresizingMaskIntoConstraints = false
         exitButton.isBordered = false
         exitButton.wantsLayer = true
         exitButton.layer?.cornerRadius = 999
         exitButton.layer?.borderWidth = 1
         exitButton.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
-        exitButton.font = NSFont.systemFont(ofSize: 12, weight: .regular)
-        exitButton.contentTintColor = .secondaryLabelColor
-        let exitCell = exitButton.cell as? NSButtonCell
-        exitCell?.bezelStyle = .inline
+        exitButton.attributedTitle = NSAttributedString(string: "Exit tour", attributes: [
+            .font: NSFont.systemFont(ofSize: 12, weight: .regular),
+            .foregroundColor: NSColor.secondaryLabelColor,
+        ])
         headerView.addSubview(exitButton)
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
@@ -172,12 +172,12 @@ final class TourWindowController: NSWindowController {
     }
 
     private func setExitButtonHover(_ hovered: Bool) {
-        exitButton.layer?.borderColor = hovered
-            ? NSColor.labelColor.cgColor
-            : NSColor.secondaryLabelColor.cgColor
-        exitButton.contentTintColor = hovered
-            ? .labelColor
-            : .secondaryLabelColor
+        let color: NSColor = hovered ? .labelColor : .secondaryLabelColor
+        exitButton.layer?.borderColor = color.cgColor
+        exitButton.attributedTitle = NSAttributedString(string: "Exit tour", attributes: [
+            .font: NSFont.systemFont(ofSize: 12, weight: .regular),
+            .foregroundColor: color,
+        ])
     }
 
     // MARK: - Footer
@@ -313,7 +313,8 @@ final class TourWindowController: NSWindowController {
         illustrationPane = NSView()
         illustrationPane.translatesAutoresizingMaskIntoConstraints = false
         illustrationPane.wantsLayer = true
-        illustrationPane.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
+        // Illustrations are always dark-themed — use a dark opaque bg in both light and dark mode
+        illustrationPane.layer?.backgroundColor = NSColor(white: 0.12, alpha: 1).cgColor
         bodyView.addSubview(illustrationPane)
 
         illustrationWidthConstraint = illustrationPane.widthAnchor.constraint(
@@ -767,12 +768,19 @@ final class TourWindowController: NSWindowController {
     /// VIB-373: Refresh all appearance-sensitive layer colors when system appearance changes.
     private func refreshAppearanceColors() {
         guard let contentView = window?.contentView else { return }
-        contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-        contentView.layer?.borderColor = NSColor.separatorColor.cgColor
-        headerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-        footerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
-        illustrationPane?.layer?.backgroundColor = NSColor.controlBackgroundColor.cgColor
-        dividerView?.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        let appearance = contentView.effectiveAppearance
+        appearance.performAsCurrentDrawingAppearance {
+            contentView.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+            contentView.layer?.borderColor = NSColor.separatorColor.cgColor
+            headerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+            footerView?.layer?.backgroundColor = NSColor.windowBackgroundColor.cgColor
+            // Illustrations are always dark-themed — keep a dark bg in both modes
+            illustrationPane?.layer?.backgroundColor = NSColor(white: 0.12, alpha: 1).cgColor
+            dividerView?.layer?.backgroundColor = NSColor.separatorColor.cgColor
+            exitButton?.layer?.borderColor = NSColor.secondaryLabelColor.cgColor
+        }
+        // Re-render to update text colors in attributed strings
+        renderStep(currentStep)
     }
 }
 
