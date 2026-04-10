@@ -73,9 +73,10 @@ final class TourIllustration2: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Editor frame: dark bg, subtle border, 8px radius
+        // Editor frame: dark bg, subtle border, 8px radius, clips children to rounded rect
         editorFrame.wantsLayer = true
         editorFrame.layer?.cornerRadius = 8
+        editorFrame.layer?.masksToBounds = true
         editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
         editorFrame.layer?.borderWidth = 1
         editorFrame.layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
@@ -180,22 +181,28 @@ final class TourIllustration2: NSView {
 
         // ================================================================
         // GROUP 1: PIN — top-left, near heading placeholder
-        // Pin: badge above stake, stake tip points at the heading
+        // Pin: badge circle on top, stake extends down, tip at target pixel.
+        // Badge has no extra border — just red fill + shadow per spec.
         // ================================================================
-        let pin1X = mainX + mainPad + 12  // slightly right of heading start
-        let pin1TargetY = mainTopY - headingTop - 7  // stake tip points at middle of heading
+        let pin1X = mainX + mainPad + 12
+        let pin1TargetY = mainTopY - headingTop - 7  // stake tip at middle of heading
 
-        // Stake tip at target, extends upward
         let stakeH = stake1.frame.height  // 10
-        stake1.frame.origin = NSPoint(x: pin1X + badgeD / 2 - 1, y: pin1TargetY)
+        let stakeW = stake1.frame.width   // 2
 
-        // Badge sits above the stake
-        badge1.frame.origin = NSPoint(x: pin1X, y: pin1TargetY + stakeH + 2)
+        // Stake: tip at target, extends upward
+        stake1.frame.origin = NSPoint(
+            x: pin1X + (badgeD - stakeW) / 2,
+            y: pin1TargetY
+        )
 
-        // Note to the right of the badge
+        // Badge: centered above stake, touching the stake top
+        badge1.frame.origin = NSPoint(x: pin1X, y: pin1TargetY + stakeH)
+
+        // Note: to the right of the badge, vertically centered
         note1.frame.origin = NSPoint(
             x: pin1X + badgeD + 6,
-            y: pin1TargetY + stakeH + 2 + (badgeD - note1.frame.height) / 2
+            y: pin1TargetY + stakeH + (badgeD - note1.frame.height) / 2
         )
 
         // ================================================================
@@ -236,10 +243,10 @@ final class TourIllustration2: NSView {
             y: rect3Y + rect3.frame.height - badgeD / 2 - 2
         )
 
-        // Note to the right of the rectangle
+        // Note on the LEFT side, below the badge (avoids overlap with arrow #2)
         note3.frame.origin = NSPoint(
-            x: rect3X + rect3.frame.width + 6,
-            y: rect3Y + rect3.frame.height / 2 - note3.frame.height / 2
+            x: rect3X,
+            y: badge3.frame.minY - note3.frame.height - 2
         )
 
         // ================================================================
