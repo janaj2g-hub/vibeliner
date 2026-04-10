@@ -31,76 +31,88 @@ enum TourRole {
 
 /// Small pill label used in tour illustrations to identify and tag elements.
 /// Shows a name and an inner role tag pill.
-/// Height: matches titlePillHeight token, fully rounded (999px radius).
 final class TourTitlePill: NSView {
 
     private let name: String
     private let role: TourRole
 
-    private let pillHeight: CGFloat = DesignTokens.titlePillHeight
-    private let paddingH: CGFloat = 8
-    private let tagPaddingH: CGFloat = 6
-    private let tagHeight: CGFloat = 14
-    private let gapBetween: CGFloat = 4
+    private let pillHeight: CGFloat = DesignTokens.tourTitlePillHeight
 
     init(name: String, role: TourRole) {
         self.name = name
         self.role = role
 
         // Calculate width
-        let nameFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
-        let tagFont = NSFont.systemFont(ofSize: 8, weight: .bold)
+        let nameFont = DesignTokens.tourTitlePillFont
+        let tagFont = DesignTokens.tourTitlePillTagFont
         let nameSize = (name as NSString).size(withAttributes: [.font: nameFont])
         let tagText = TourTitlePill.tagText(for: role)
         let tagSize = (tagText as NSString).size(withAttributes: [.font: tagFont])
-        let totalWidth = paddingH + nameSize.width + gapBetween + tagPaddingH + tagSize.width + tagPaddingH + paddingH
+        let tagWidth = tagSize.width + DesignTokens.tourTitlePillTagPaddingH * 2
+        let totalWidth = DesignTokens.tourTitlePillPaddingLeading
+            + nameSize.width
+            + DesignTokens.tourTitlePillGap
+            + tagWidth
+            + DesignTokens.tourTitlePillPaddingTrailing
 
         super.init(frame: NSRect(x: 0, y: 0, width: ceil(totalWidth), height: pillHeight))
         wantsLayer = true
+        layer?.cornerRadius = pillHeight / 2
+        layer?.masksToBounds = false
+        updateAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
     override var intrinsicContentSize: NSSize { bounds.size }
 
+    override func layout() {
+        super.layout()
+        let cornerRadius = bounds.height / 2
+        layer?.cornerRadius = cornerRadius
+        layer?.shadowPath = CGPath(
+            roundedRect: bounds,
+            cornerWidth: cornerRadius,
+            cornerHeight: cornerRadius,
+            transform: nil
+        )
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+        needsDisplay = true
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-        let w = bounds.width
         let h = bounds.height
 
-        // Main pill background
-        let pillRect = CGRect(x: 0, y: 0, width: w, height: h)
-        ctx.setFillColor(role.backgroundColor.cgColor)
-        let pillPath = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
-        ctx.addPath(pillPath)
-        ctx.fillPath()
-
         // Name text
-        let nameFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
         let nameAttrs: [NSAttributedString.Key: Any] = [
-            .font: nameFont,
-            .foregroundColor: NSColor.white,
+            .font: DesignTokens.tourTitlePillFont,
+            .foregroundColor: DesignTokens.tourTitlePillText,
         ]
         let nameStr = NSAttributedString(string: name, attributes: nameAttrs)
         let nameSize = nameStr.size()
-        let nameX = paddingH
+        let nameX = DesignTokens.tourTitlePillPaddingLeading
         let nameY = (h - nameSize.height) / 2
         nameStr.draw(at: NSPoint(x: nameX, y: nameY))
 
         // Role tag inner pill
-        let tagFont = NSFont.systemFont(ofSize: 8, weight: .bold)
         let tagText = TourTitlePill.tagText(for: role)
         let tagAttrs: [NSAttributedString.Key: Any] = [
-            .font: tagFont,
-            .foregroundColor: NSColor.white,
+            .font: DesignTokens.tourTitlePillTagFont,
+            .foregroundColor: DesignTokens.tourTitlePillText,
         ]
         let tagStr = NSAttributedString(string: tagText, attributes: tagAttrs)
         let tagSize = tagStr.size()
-        let tagW = tagSize.width + tagPaddingH * 2
-        let tagX = nameX + nameSize.width + gapBetween
-        let tagY = (h - tagHeight) / 2
-        let tagRect = CGRect(x: tagX, y: tagY, width: tagW, height: tagHeight)
+        let tagW = tagSize.width + DesignTokens.tourTitlePillTagPaddingH * 2
+        let tagH = tagSize.height + DesignTokens.tourTitlePillTagPaddingV * 2
+        let tagX = nameX + nameSize.width + DesignTokens.tourTitlePillGap
+        let tagY = (h - tagH) / 2
+        let tagRect = CGRect(x: tagX, y: tagY, width: tagW, height: tagH)
 
         // Tag bg
         ctx.setFillColor(DesignTokens.tourRoleTagBg.cgColor)
@@ -117,9 +129,17 @@ final class TourTitlePill: NSView {
 
     private static func tagText(for role: TourRole) -> String {
         switch role {
-        case .observed: return "observed"
-        case .expected: return "expected"
-        case .reference: return "reference"
+        case .observed: return "Observed"
+        case .expected: return "Expected"
+        case .reference: return "Reference"
         }
+    }
+
+    private func updateAppearance() {
+        layer?.backgroundColor = role.backgroundColor.cgColor
+        layer?.shadowColor = DesignTokens.tourTitlePillShadowColor.cgColor
+        layer?.shadowOffset = CGSize(width: 0, height: DesignTokens.tourTitlePillShadowYOffset)
+        layer?.shadowRadius = DesignTokens.tourTitlePillShadowBlur
+        layer?.shadowOpacity = 1
     }
 }

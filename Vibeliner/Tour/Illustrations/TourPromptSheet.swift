@@ -14,7 +14,8 @@ final class TourPromptSheet: NSView {
     private let preamble: String?
     private let annotations: [TourPromptLine]
     private let footer: String?
-    private let lineSpacing: CGFloat = 3
+
+    override var isFlipped: Bool { true }
 
     init(preamble: String? = nil, annotations: [TourPromptLine], footer: String? = nil) {
         self.preamble = preamble
@@ -25,76 +26,113 @@ final class TourPromptSheet: NSView {
         wantsLayer = true
         layer?.cornerRadius = DesignTokens.tourPromptSheetRadius
         layer?.masksToBounds = true
-        layer?.backgroundColor = DesignTokens.tourPromptSheetBg.cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.tourPromptSheetBorder.cgColor
+        updateAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+        needsDisplay = true
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let h = bounds.height
         let padH = DesignTokens.tourPromptSheetPaddingH
         let padV = DesignTokens.tourPromptSheetPaddingV
-        var y = h - padV
+        let textRect = bounds.insetBy(dx: padH, dy: padV)
+        makeAttributedText().draw(
+            with: textRect,
+            options: [.usesLineFragmentOrigin, .usesFontLeading]
+        )
+    }
 
+    private func makeAttributedText() -> NSAttributedString {
+        let output = NSMutableAttributedString()
         let monoFont = DesignTokens.tourPromptSheetFont
-        let monoBoldFont = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .bold)
+        let monoBoldFont = NSFont.monospacedSystemFont(
+            ofSize: monoFont.pointSize,
+            weight: .bold
+        )
+        let paragraphStyle = NSMutableParagraphStyle()
+        paragraphStyle.minimumLineHeight = DesignTokens.tourPromptSheetLineHeight
+        paragraphStyle.maximumLineHeight = DesignTokens.tourPromptSheetLineHeight
+        paragraphStyle.lineBreakMode = .byWordWrapping
 
         let dimAttrs: [NSAttributedString.Key: Any] = [
             .font: monoFont,
             .foregroundColor: DesignTokens.tourPromptSheetDim,
+            .paragraphStyle: paragraphStyle,
+        ]
+        let regularAttrs: [NSAttributedString.Key: Any] = [
+            .font: monoFont,
+            .foregroundColor: DesignTokens.tourPromptSheetColor,
+            .paragraphStyle: paragraphStyle,
+        ]
+        let numberAttrs: [NSAttributedString.Key: Any] = [
+            .font: monoBoldFont,
+            .foregroundColor: DesignTokens.tourPromptSheetNumber,
+            .paragraphStyle: paragraphStyle,
         ]
 
-        // Preamble
         if let preamble, !preamble.isEmpty {
-            let lines = preamble.components(separatedBy: "\n")
-            for line in lines {
-                let str = NSAttributedString(string: line, attributes: dimAttrs)
-                let size = str.size()
-                y -= size.height
-                str.draw(at: NSPoint(x: padH, y: y))
-                y -= lineSpacing
+            appendLines(
+                preamble.components(separatedBy: "\n"),
+                attributes: dimAttrs,
+                to: output
+            )
+        }
+
+        if !annotations.isEmpty {
+            if output.length > 0 {
+                output.append(NSAttributedString(string: "\n", attributes: regularAttrs))
             }
-            y -= lineSpacing * 2
+
+            for (index, annotation) in annotations.enumerated() {
+                output.append(NSAttributedString(string: "\(annotation.index)", attributes: numberAttrs))
+                output.append(NSAttributedString(
+                    string: "  [\(annotation.tool)] \(annotation.note)",
+                    attributes: regularAttrs
+                ))
+
+                if index < annotations.count - 1 {
+                    output.append(NSAttributedString(string: "\n", attributes: regularAttrs))
+                }
+            }
         }
 
-        // Annotation lines
-        for annotation in annotations {
-            let attributed = NSMutableAttributedString()
-
-            // Red bold index number
-            let indexStr = NSAttributedString(string: "\(annotation.index)", attributes: [
-                .font: monoBoldFont,
-                .foregroundColor: DesignTokens.tourPromptSheetNumber,
-            ])
-            attributed.append(indexStr)
-
-            // Tool + note in default color (HTML: "1  [pin] padding too tight")
-            let restStr = NSAttributedString(string: "  [\(annotation.tool)] \(annotation.note)", attributes: [
-                .font: monoFont,
-                .foregroundColor: DesignTokens.tourPromptSheetColor,
-            ])
-            attributed.append(restStr)
-
-            let size = attributed.size()
-            y -= size.height
-            attributed.draw(at: NSPoint(x: padH, y: y))
-            y -= lineSpacing
-        }
-
-        // Footer
         if let footer, !footer.isEmpty {
-            y -= lineSpacing * 2
-            let lines = footer.components(separatedBy: "\n")
-            for line in lines {
-                let str = NSAttributedString(string: line, attributes: dimAttrs)
-                let size = str.size()
-                y -= size.height
-                str.draw(at: NSPoint(x: padH, y: y))
-                y -= lineSpacing
+            if output.length > 0 {
+                output.append(NSAttributedString(string: "\n\n", attributes: dimAttrs))
+            }
+
+            appendLines(
+                footer.components(separatedBy: "\n"),
+                attributes: dimAttrs,
+                to: output
+            )
+        }
+
+        return output
+    }
+
+    private func appendLines(
+        _ lines: [String],
+        attributes: [NSAttributedString.Key: Any],
+        to output: NSMutableAttributedString
+    ) {
+        for (index, line) in lines.enumerated() {
+            output.append(NSAttributedString(string: line, attributes: attributes))
+            if index < lines.count - 1 {
+                output.append(NSAttributedString(string: "\n", attributes: attributes))
             }
         }
+    }
+
+    private func updateAppearance() {
+        layer?.backgroundColor = DesignTokens.tourPromptSheetBg.cgColor
+        layer?.borderColor = DesignTokens.tourPromptSheetBorder.cgColor
     }
 }
