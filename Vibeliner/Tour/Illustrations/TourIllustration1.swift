@@ -1,118 +1,109 @@
 import AppKit
 
-/// Tour step 1: "Screenshots become LLM ready prompts"
-/// Two-column layout (align-items: start): left = screenshot card, right = prompt card.
-/// Cards are sized to their content, NOT stretched to fill the pane.
+/// Tour step 1 (step 2 in UI): "Start by taking a screenshot"
+/// Shows a wireframe app with dark dim overlay, bright selection cutout,
+/// purple crosshair tick marks, and a dimension label pill.
 final class TourIllustration1: NSView {
 
-    private let leftCard: TourOutputCard
-    private let rightCard: TourOutputCard
-    private let leftMock: WireframeAppMock
-    private let badge1: TourAnnotationBadge
-    private let badge2: TourAnnotationBadge
-    private let promptSheet: TourPromptSheet
-
+    private let wireframe: WireframeAppMock
     private let padding = DesignTokens.tourIllustrationPadding
-    private let columnGap: CGFloat = 14
 
     override init(frame frameRect: NSRect) {
-        leftCard = TourOutputCard(label: "screenshot.png")
-        rightCard = TourOutputCard(label: "prompt.txt")
-
-        leftMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
-        badge1 = TourAnnotationBadge(number: 1)
-        badge2 = TourAnnotationBadge(number: 2)
-
-        promptSheet = TourPromptSheet(
-            preamble: "This is a screenshot of my app.\nView it at ./screenshot.png\n\nNumbered pins point to issues.\nFix each issue:",
-            annotations: [
-                TourPromptLine(index: 1, tool: "pin", note: "padding too tight"),
-                TourPromptLine(index: 2, tool: "arrow", note: "row spacing cramped"),
-            ],
-            footer: "Make the changes and verify."
-        )
-
+        wireframe = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
         super.init(frame: frameRect)
         wantsLayer = true
-
-        // Add mock to left card's content area with subtle shadow
-        leftMock.wantsLayer = true
-        leftMock.layer?.shadowColor = NSColor.black.cgColor
-        leftMock.layer?.shadowOpacity = 0.08
-        leftMock.layer?.shadowOffset = CGSize(width: 0, height: -4)
-        leftMock.layer?.shadowRadius = 8
-
-        leftCard.contentArea.addSubview(leftMock)
-        leftCard.contentArea.addSubview(badge1)
-        leftCard.contentArea.addSubview(badge2)
-
-        // Add prompt sheet to right card's content area
-        rightCard.contentArea.addSubview(promptSheet)
-
-        addSubview(leftCard)
-        addSubview(rightCard)
+        addSubview(wireframe)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func layout() {
-        super.layout()
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+
         let w = bounds.width
         let h = bounds.height
-
         let contentW = w - padding * 2
+        let contentH = h - padding * 2
 
-        // Two equal-width columns
-        let colW = (contentW - columnGap) / 2
+        // Wireframe occupies the full content area
+        let mockRect = CGRect(x: padding, y: padding, width: contentW, height: contentH)
 
-        // Card internal metrics (must match TourOutputCard layout)
-        let cardPad = DesignTokens.tourOutputCardPadding  // 10
-        let labelH: CGFloat = 20
-        let labelGap: CGFloat = 8
-        let cardOverhead = cardPad + labelH + labelGap + cardPad  // 48
+        // -- Selection cutout: centered, ~65% width, ~45% height --
+        let selW = floor(contentW * 0.65)
+        let selH = floor(contentH * 0.45)
+        let selX = mockRect.minX + floor((contentW - selW) / 2)
+        let selY = mockRect.minY + floor((contentH - selH) / 2) + 8  // nudge up slightly
 
-        // Left card: wireframe with min body height 140px (HTML: .s1-screenshot-card .app-mock-body { min-height: 140px })
-        let mockContentW = colW - cardPad * 2
-        let mockBodyH = max(CGFloat(140), mockContentW * 0.55)
-        let mockH = DesignTokens.tourWireframeTopbarHeight + 1 + mockBodyH
-        let leftCardH = cardOverhead + mockH
+        let selRect = CGRect(x: selX, y: selY, width: selW, height: selH)
 
-        // Right card: match left card height so layout is balanced
-        let rightCardH = leftCardH
+        // -- Dim overlay: 4 rectangles around the cutout --
+        ctx.setFillColor(DesignTokens.dimOverlay.cgColor)
 
-        // Top-align (align-items: start) — position from top of content area
-        let topEdge = h - padding
-        leftCard.frame = CGRect(x: padding, y: topEdge - leftCardH, width: colW, height: leftCardH)
-        rightCard.frame = CGRect(x: padding + colW + columnGap, y: topEdge - rightCardH, width: colW, height: rightCardH)
+        // Bottom strip (below selection)
+        ctx.fill(CGRect(x: mockRect.minX, y: mockRect.minY, width: contentW, height: selRect.minY - mockRect.minY))
+        // Top strip (above selection)
+        ctx.fill(CGRect(x: mockRect.minX, y: selRect.maxY, width: contentW, height: mockRect.maxY - selRect.maxY))
+        // Left strip (between selection top/bottom)
+        ctx.fill(CGRect(x: mockRect.minX, y: selRect.minY, width: selRect.minX - mockRect.minX, height: selH))
+        // Right strip
+        ctx.fill(CGRect(x: selRect.maxX, y: selRect.minY, width: mockRect.maxX - selRect.maxX, height: selH))
 
-        // Force child layout so contentArea bounds are updated for new frame size
-        leftCard.layoutSubtreeIfNeeded()
-        rightCard.layoutSubtreeIfNeeded()
+        // -- Selection border: 1.5px purple --
+        let borderColor = DesignTokens.purpleLight.withAlphaComponent(DesignTokens.crosshairOpacity)
+        ctx.setStrokeColor(borderColor.cgColor)
+        ctx.setLineWidth(1.5)
+        ctx.stroke(selRect.insetBy(dx: 0.75, dy: 0.75))
 
-        // Left card content: wireframe fills the content area
-        let lca = leftCard.contentArea
-        leftMock.frame = lca.bounds
+        // -- Crosshair tick marks at bottom-right corner --
+        let tickLen = DesignTokens.crosshairTickLength
+        let tickW = DesignTokens.crosshairThickness
+        let cornerX = selRect.maxX
+        let cornerY = selRect.minY
 
-        // Badge positions (relative to contentArea = wireframe coordinate space)
-        // HTML positions are relative to .app-mock-main (after sidebar + topbar)
-        let mockViewH = lca.bounds.height
-        let sideW = DesignTokens.tourWireframeSidebarWidth + 1
-        let mainTopY = mockViewH - DesignTokens.tourWireframeTopbarHeight - 1
-        let badgeD = DesignTokens.badgeDiameter
+        ctx.setFillColor(borderColor.cgColor)
 
-        // Badge #1: near error card (HTML: top:18px, left:8px in .app-mock-main)
-        badge1.frame.origin = NSPoint(
-            x: sideW + 8,
-            y: mainTopY - 18 - badgeD
-        )
+        // Horizontal tick (extending right from corner)
+        ctx.fill(CGRect(x: cornerX, y: cornerY - tickW / 2, width: tickLen, height: tickW))
+        // Vertical tick (extending down from corner)
+        ctx.fill(CGRect(x: cornerX - tickW / 2, y: cornerY - tickLen, width: tickW, height: tickLen))
 
-        // Badge #2: near table area (HTML: top:82px, left:30px in .app-mock-main)
-        badge2.frame.origin = NSPoint(
-            x: sideW + 30,
-            y: mainTopY - 82 - badgeD
-        )
+        // -- Dimension label pill below selection --
+        let dimGap = DesignTokens.dimensionLabelGap
+        let dimH = DesignTokens.dimensionLabelHeight
+        let dimRadius = DesignTokens.dimensionLabelCornerRadius
+        let dimPadH = DesignTokens.dimensionLabelPaddingH
 
-        // Right card content: prompt sheet fills the content area
-        promptSheet.frame = rightCard.contentArea.bounds
+        let dimText = "420 × 270"
+        let dimAttrs: [NSAttributedString.Key: Any] = [
+            .font: DesignTokens.dimensionLabelFont,
+            .foregroundColor: NSColor.white,
+        ]
+        let dimStr = NSAttributedString(string: dimText, attributes: dimAttrs)
+        let dimTextSize = dimStr.size()
+        let dimW = ceil(dimTextSize.width) + dimPadH * 2
+
+        let dimX = selRect.midX - dimW / 2
+        let dimY = selRect.minY - dimGap - dimH
+
+        let dimRect = CGRect(x: dimX, y: dimY, width: dimW, height: dimH)
+        let dimPath = CGPath(roundedRect: dimRect, cornerWidth: dimRadius, cornerHeight: dimRadius, transform: nil)
+
+        ctx.setFillColor(DesignTokens.purpleDark.cgColor)
+        ctx.addPath(dimPath)
+        ctx.fillPath()
+
+        // Dimension text centered in pill
+        dimStr.draw(at: NSPoint(
+            x: dimRect.midX - dimTextSize.width / 2,
+            y: dimRect.midY - dimTextSize.height / 2
+        ))
+    }
+
+    override func layout() {
+        super.layout()
+        let contentW = bounds.width - padding * 2
+        let contentH = bounds.height - padding * 2
+        wireframe.frame = CGRect(x: padding, y: padding, width: contentW, height: contentH)
     }
 }

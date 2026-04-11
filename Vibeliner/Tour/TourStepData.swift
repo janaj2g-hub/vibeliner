@@ -16,8 +16,8 @@ extension TourStep {
             isFullWidth: false
         ),
         TourStep(
-            title: "Screenshots become LLM ready prompts",
-            body: "Every capture produces two files. A screenshot with numbered badges burned into the image, and a prompt.txt built from your notes. Together they give the AI everything it needs to understand and act.",
+            title: "Start by taking a screenshot",
+            body: "Show exactly what you\u{2019}re working on by screenshotting it directly for an LLM.",
             buttonLabel: "Next",
             isFullWidth: false
         ),
