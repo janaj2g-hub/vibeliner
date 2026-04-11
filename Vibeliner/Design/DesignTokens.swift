@@ -72,6 +72,22 @@ enum DesignTokens {
     /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
     static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
 
+    // MARK: - Popover copy-button tokens (VIB-394)
+
+    /// Copy-button text — dark: #AFA9EC, light: #6B5CC5
+    static let popoverCopyButtonText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
+            : NSColor(red: 107/255, green: 92/255, blue: 197/255, alpha: 1.0)
+    }
+
+    /// Copy-button background — dark: rgba(175,169,236,0.10), light: rgba(107,92,197,0.10)
+    static let popoverCopyButtonBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.10)
+            : NSColor(red: 107/255, green: 92/255, blue: 197/255, alpha: 0.10)
+    }
+
     // MARK: - Appearance-aware toolbar tokens (VIB-235)
 
     /// Toolbar background — dark: rgba(30,30,30,0.92), light: rgba(255,255,255,0.88)
