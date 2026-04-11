@@ -19,7 +19,7 @@ final class CircleTool: AnnotationTool {
         guard let c = center else { return }
         currentRadius = hypot(point.x - c.x, point.y - c.y)
         releasePoint = point
-        canvas.marksLayer.needsDisplay = true
+        // VIB-354: Removed needsDisplay — drag timer in CanvasView handles it
     }
 
     func mouseUp(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {

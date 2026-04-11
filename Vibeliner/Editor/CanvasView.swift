@@ -15,6 +15,10 @@ final class CanvasView: NSView, NotePillDelegate {
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
 
+    // VIB-354: Display-link-synchronized rendering — coalesce mouseDragged redraws
+    private var needsRedraw = false
+    private var dragTimer: Timer?
+
     init(frame: NSRect, store: AnnotationStore) {
         self.store = store
         marksLayer = MarksLayerView(frame: NSRect(origin: .zero, size: frame.size), store: store)
@@ -44,6 +48,7 @@ final class CanvasView: NSView, NotePillDelegate {
     required init?(coder: NSCoder) { fatalError() }
 
     deinit {
+        dragTimer?.invalidate()
         if let observer = storeObserver {
             NotificationCenter.default.removeObserver(observer)
         }
@@ -110,7 +115,11 @@ final class CanvasView: NSView, NotePillDelegate {
     // Hit testing matching prototype ht() function
     // Priority: badge(12px) → arrow endpoint(10px) → rect corners(10px) → circle resize(10px) → body containment → freehand CPs(8px)
     private func hitTestAnnotation(at point: CGPoint) -> UUID? {
+        let bbMargin: CGFloat = 20
         for annotation in store.annotations.reversed() {
+            // VIB-355: Bounding-box quick-reject — skip expensive distance math
+            guard annotation.position.boundingRect.insetBy(dx: -bbMargin, dy: -bbMargin).contains(point) else { continue }
+
             // Badge proximity (12px)
             if hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12 {
                 return annotation.id
@@ -211,6 +220,8 @@ final class CanvasView: NSView, NotePillDelegate {
 
         activeTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
         marksLayer.needsDisplay = true
+        // VIB-354: Start drag timer for frame-synchronized redraws
+        startDragTimer()
     }
 
     private func handleEditHit(id: UUID, at point: CGPoint) {
@@ -228,6 +239,7 @@ final class CanvasView: NSView, NotePillDelegate {
         window?.makeKey()
         selectTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
         marksLayer.needsDisplay = true
+        startDragTimer()
         refreshNotePills()
     }
 
@@ -242,7 +254,8 @@ final class CanvasView: NSView, NotePillDelegate {
         } else {
             activeTool?.mouseDragged(to: point, in: self, store: store, undoManager: undoMgr)
         }
-        marksLayer.needsDisplay = true
+        // VIB-354: Set dirty flag — the drag timer will coalesce into one draw per frame
+        needsRedraw = true
     }
 
     override func mouseUp(with event: NSEvent) {
@@ -256,7 +269,26 @@ final class CanvasView: NSView, NotePillDelegate {
         } else {
             activeTool?.mouseUp(at: point, in: self, store: store, undoManager: undoMgr)
         }
+        // VIB-354: Stop drag timer and do final redraw
+        stopDragTimer()
         marksLayer.needsDisplay = true
+    }
+
+    // MARK: - VIB-354: Drag timer for frame-synchronized rendering
+
+    private func startDragTimer() {
+        guard dragTimer == nil else { return }
+        dragTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
+            guard let self, self.needsRedraw else { return }
+            self.needsRedraw = false
+            self.marksLayer.needsDisplay = true
+        }
+    }
+
+    private func stopDragTimer() {
+        dragTimer?.invalidate()
+        dragTimer = nil
+        needsRedraw = false
     }
 
     override func mouseExited(with event: NSEvent) {

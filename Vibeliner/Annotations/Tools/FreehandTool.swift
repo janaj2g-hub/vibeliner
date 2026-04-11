@@ -18,7 +18,7 @@ final class FreehandTool: AnnotationTool {
         let dist = hypot(point.x - last.x, point.y - last.y)
         if dist >= DesignTokens.freehandSampleInterval {
             points.append(point)
-            canvas.marksLayer.needsDisplay = true
+            // VIB-354: Removed needsDisplay — drag timer in CanvasView handles it
         }
     }
 

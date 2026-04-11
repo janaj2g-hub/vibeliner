@@ -25,6 +25,34 @@ enum AnnotationPosition {
     case rectangle(origin: CGPoint, size: CGSize)
     case circle(center: CGPoint, radius: CGFloat)
     case freehand(points: [CGPoint])
+
+    /// VIB-355: Bounding rect for hit-test quick-reject pre-filter.
+    var boundingRect: NSRect {
+        let pad: CGFloat = 15
+        switch self {
+        case .pin(let tip):
+            return NSRect(x: tip.x - pad, y: tip.y - pad, width: pad * 2, height: pad * 2)
+        case .arrow(let start, let end):
+            let minX = min(start.x, end.x) - pad
+            let minY = min(start.y, end.y) - pad
+            let maxX = max(start.x, end.x) + pad
+            let maxY = max(start.y, end.y) + pad
+            return NSRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
+        case .rectangle(let origin, let size):
+            return NSRect(x: origin.x - pad, y: origin.y - pad, width: size.width + pad * 2, height: size.height + pad * 2)
+        case .circle(let center, let radius):
+            let r = radius + pad
+            return NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2)
+        case .freehand(let points):
+            guard let first = points.first else { return .zero }
+            var minX = first.x, minY = first.y, maxX = first.x, maxY = first.y
+            for p in points {
+                minX = min(minX, p.x); minY = min(minY, p.y)
+                maxX = max(maxX, p.x); maxY = max(maxY, p.y)
+            }
+            return NSRect(x: minX - pad, y: minY - pad, width: maxX - minX + pad * 2, height: maxY - minY + pad * 2)
+        }
+    }
 }
 
 struct Annotation: Identifiable {

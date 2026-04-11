@@ -37,8 +37,11 @@ final class CaptureRowView: NSView {
         thumbView.layer?.borderColor = NSColor.separatorColor.cgColor
         thumbView.imageScaling = .scaleProportionallyUpOrDown
 
+        // VIB-356: Load downsampled thumbnail (88px = 44pt × 2x) instead of full-res
         DispatchQueue.global(qos: .utility).async { [weak thumbView] in
-            if let image = NSImage(contentsOf: self.capture.screenshotURL) {
+            let image = ImageUtils.downsampledImage(at: self.capture.screenshotURL, maxPixelSize: 88)
+                ?? NSImage(contentsOf: self.capture.screenshotURL)
+            if let image {
                 DispatchQueue.main.async {
                     thumbView?.image = image
                 }

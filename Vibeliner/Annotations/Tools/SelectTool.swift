@@ -179,7 +179,7 @@ final class SelectTool: AnnotationTool {
             }
         }
 
-        canvas.marksLayer.needsDisplay = true
+        // VIB-354: Removed needsDisplay — drag timer in CanvasView handles it
         canvas.refreshNotePills()
     }
 

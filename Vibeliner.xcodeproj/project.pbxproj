@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		IC0000020000000000000001 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000001 /* AppIcon.icns */; };
 		IC0000020000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000002 /* Assets.xcassets */; };
+		IC0000020000000000000003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000004 /* PrivacyInfo.xcprivacy */; };
+		IC0000020000000000000004 /* ImageUtils.swift in Sources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000005 /* ImageUtils.swift */; };
 		4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A4FBC164B13DB84291343D /* CursorManager.swift */; };
 		A10000010000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* AppDelegate.swift */; };
 		A10000010000000000000002 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* DesignTokens.swift */; };
@@ -172,6 +174,9 @@
 		R10000010000000000000009 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
 		IC0000010000000000000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		IC0000010000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		IC0000010000000000000003 /* Vibeliner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vibeliner.entitlements; sourceTree = "<group>"; };
+		IC0000010000000000000004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		IC0000010000000000000005 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -191,6 +196,7 @@
 			files = (
 				IC0000020000000000000001 /* AppIcon.icns in Resources */,
 				IC0000020000000000000002 /* Assets.xcassets in Resources */,
+				IC0000020000000000000003 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -202,6 +208,7 @@
 			children = (
 				D2A4FBC164B13DB84291343D /* CursorManager.swift */,
 				R10000010000000000000007 /* KeyEventGuard.swift */,
+				IC0000010000000000000005 /* ImageUtils.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -265,6 +272,8 @@
 				A20000010000000000000003 /* Info.plist */,
 				IC0000010000000000000001 /* AppIcon.icns */,
 				IC0000010000000000000002 /* Assets.xcassets */,
+				IC0000010000000000000003 /* Vibeliner.entitlements */,
+				IC0000010000000000000004 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Vibeliner;
 			sourceTree = "<group>";
@@ -607,6 +616,7 @@
 				T10000010000000000000025 /* TourIllustration5.swift in Sources */,
 				T10000010000000000000026 /* TourIllustration6.swift in Sources */,
 				T10000010000000000000027 /* TourIllustration7.swift in Sources */,
+				IC0000020000000000000004 /* ImageUtils.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -732,7 +742,8 @@
 		A80000010000000000000021 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = "Vibeliner/Vibeliner.entitlements";
+				ENABLE_HARDENED_RUNTIME = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -754,7 +765,8 @@
 		A80000010000000000000022 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = "Vibeliner/Vibeliner.entitlements";
+				ENABLE_HARDENED_RUNTIME = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;

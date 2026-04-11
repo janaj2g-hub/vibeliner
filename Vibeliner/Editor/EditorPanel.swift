@@ -415,9 +415,11 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let canvasSize = canvasOverlay?.bounds.size ?? CGSize(width: displayWidth, height: displayHeight)
         // VIB-383: Pass CaptureImage array with actual roles for composite stitching
         let captureImgs: [CaptureImage]? = isFilmstripMode ? buildCaptureStore().images : nil
-        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureImages: captureImgs)
-        statusPill.showCopied(message: "Image copied")
-        toolbarView.markCopyState(.image)
+        // VIB-357: Completion handler fires after async stitching finishes
+        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureImages: captureImgs) { [weak self] in
+            self?.statusPill.showCopied(message: "Image copied")
+            self?.toolbarView.markCopyState(.image)
+        }
     }
 
     // MARK: - VIB-262/329: Add image
