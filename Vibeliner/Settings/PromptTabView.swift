@@ -697,6 +697,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             } else if textView === footerEditor {
                 drafts.footer = textView.string
             }
+            textView.breakUndoCoalescing()
             refreshPreview()
         }
     }
@@ -713,6 +714,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         } else {
             drafts.toolDescriptions[key] = field.stringValue
         }
+        (field.currentEditor() as? NSTextView)?.breakUndoCoalescing()
         refreshPreview()
     }
 
