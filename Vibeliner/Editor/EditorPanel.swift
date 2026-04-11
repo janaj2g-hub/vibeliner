@@ -164,6 +164,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             guard let self, self.isVisible else { return event }
 
+            // VIB-392: If a DIFFERENT window's text field is editing (e.g. Settings),
+            // pass through so Cmd+Z/Shift+Z reach that window's field editor.
+            let keyWindow = NSApp.keyWindow
+            if keyWindow !== self && !KeyEventGuard.shouldHandleShortcut(in: keyWindow) {
+                return event
+            }
+
             // VIB-326: Broad guard — if ANY text field/editor is first responder, pass through.
             // Only intercept Escape for note editing cancellation.
             if !KeyEventGuard.shouldHandleShortcut(in: self) {
