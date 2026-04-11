@@ -1,24 +1,23 @@
 import AppKit
 
-/// Tour step 6: "Add more screenshots"
-/// Mini editor frame with title bar, TourMiniToolbar, and 3-column filmstrip grid.
-/// Columns 1–2 use real TourFilmstripCell; column 3 is a dashed add-image placeholder.
+/// Tour step 6 (index 6): "Add more screenshots"
+/// A mini editor frame (appearance-aware) containing a title bar, toolbar, and
+/// 3-column filmstrip: two TourFilmstripCells + a dashed add-image placeholder.
 final class TourIllustration6: NSView {
 
     // Editor frame
     private let editorFrame: NSView
-    private let titleBar: NSView
     private let titleLabel: NSTextField
     private let toolbar: TourMiniToolbar
 
-    // Filmstrip cells (real helpers)
+    // Filmstrip cells
     private let pill1: TourTitlePill
     private let cell1: TourFilmstripCell
 
     private let pill2: TourTitlePill
     private let cell2: TourFilmstripCell
 
-    // Cell 3: dashed placeholder (drawn in draw(_:))
+    // Cell 3: dashed placeholder
     private let plusCircle: NSView
     private let plusLabel: NSTextField
     private let addLabel: NSTextField
@@ -26,20 +25,18 @@ final class TourIllustration6: NSView {
     private let padding = DesignTokens.tourIllustrationPadding
     private let titleBarH: CGFloat = 36
     private let filmstripGap: CGFloat = 10
-    private let toolbarGap: CGFloat = 16
 
     override init(frame frameRect: NSRect) {
-        // Editor frame
         editorFrame = NSView()
-        titleBar = NSView()
         titleLabel = NSTextField(labelWithString: "Vibeliner")
 
         toolbar = TourMiniToolbar(config: TourMiniToolbarConfig(
             activeTool: .pin,
             mode: .app,
-            showCopyPrompt: true,
-            showCopyImage: true,
-            showAddImage: true
+            showCopyPrompt: false,
+            showCopyImage: false,
+            showAddImage: true,
+            showCloseButton: true
         ))
 
         // Cell 1: observed with one badge
@@ -50,7 +47,7 @@ final class TourIllustration6: NSView {
         pill2 = TourTitlePill(name: "Image 2", role: .expected)
         cell2 = TourFilmstripCell(bodyHeight: 50)
 
-        // Cell 3: dashed add-image placeholder
+        // Dashed add-image placeholder
         plusCircle = NSView()
         plusLabel = NSTextField(labelWithString: "+")
         addLabel = NSTextField(labelWithString: "Add image")
@@ -58,16 +55,13 @@ final class TourIllustration6: NSView {
         super.init(frame: frameRect)
         wantsLayer = true
 
-        // Editor frame styling
+        // Editor frame — appearance-aware
         editorFrame.wantsLayer = true
         editorFrame.layer?.cornerRadius = 8
-        editorFrame.layer?.masksToBounds = true
-        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
-        editorFrame.layer?.borderWidth = 1
-        editorFrame.layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
+        editorFrame.layer?.masksToBounds = false
+        updateEditorFrameAppearance()
 
-        // Title bar
-        titleBar.wantsLayer = true
+        // Title bar label
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = DesignTokens.tourTextSecondary
         titleLabel.alignment = .center
@@ -96,11 +90,11 @@ final class TourIllustration6: NSView {
         addLabel.isEditable = false
         addLabel.sizeToFit()
 
-        // Build hierarchy
-        titleBar.addSubview(titleLabel)
-        editorFrame.addSubview(titleBar)
+        // Build hierarchy — title and toolbar inside editor frame
+        editorFrame.addSubview(titleLabel)
         editorFrame.addSubview(toolbar)
 
+        // Filmstrip content inside editor frame
         editorFrame.addSubview(pill1)
         editorFrame.addSubview(cell1)
         editorFrame.addSubview(pill2)
@@ -114,6 +108,21 @@ final class TourIllustration6: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateEditorFrameAppearance()
+    }
+
+    private func updateEditorFrameAppearance() {
+        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
+        editorFrame.layer?.borderWidth = 1
+        editorFrame.layer?.borderColor = DesignTokens.tourEditorFrameBorder.cgColor
+        editorFrame.layer?.shadowColor = DesignTokens.tourEditorFrameShadowColor.cgColor
+        editorFrame.layer?.shadowOffset = CGSize(width: 0, height: -8)
+        editorFrame.layer?.shadowRadius = 24
+        editorFrame.layer?.shadowOpacity = 1
+    }
+
     override func layout() {
         super.layout()
         let w = bounds.width
@@ -122,23 +131,25 @@ final class TourIllustration6: NSView {
         let contentW = w - padding * 2
         let contentH = h - padding * 2
 
-        editorFrame.frame = CGRect(x: padding, y: padding, width: contentW, height: contentH)
+        // Editor frame: ~60% of pane height, vertically centered
+        let frameH = floor(contentH * 0.60)
+        let frameY = padding + (contentH - frameH) / 2
+        editorFrame.frame = CGRect(x: padding, y: frameY, width: contentW, height: frameH)
 
         let frameW = contentW
-        let frameH = contentH
 
         // Title bar at top
-        titleBar.frame = CGRect(x: 0, y: frameH - titleBarH, width: frameW, height: titleBarH)
         titleLabel.sizeToFit()
         titleLabel.frame = CGRect(
             x: (frameW - titleLabel.frame.width) / 2,
-            y: (titleBarH - titleLabel.frame.height) / 2,
+            y: frameH - titleBarH + (titleBarH - titleLabel.frame.height) / 2,
             width: titleLabel.frame.width,
             height: titleLabel.frame.height
         )
 
         // Toolbar below title bar, centered
         let tbSize = toolbar.frame.size
+        let toolbarGap: CGFloat = 10
         let toolbarY = frameH - titleBarH - toolbarGap - tbSize.height
         toolbar.frame = CGRect(
             x: (frameW - tbSize.width) / 2,
@@ -148,8 +159,9 @@ final class TourIllustration6: NSView {
         )
 
         // Filmstrip grid below toolbar
-        let gridTop = toolbarY - toolbarGap
-        let gridPad: CGFloat = 16
+        let filmstripTopGap: CGFloat = 22
+        let gridTop = toolbarY - filmstripTopGap
+        let gridPad: CGFloat = 14
         let gridW = frameW - gridPad * 2
         let cellW = (gridW - filmstripGap * 2) / 3
 
@@ -171,7 +183,7 @@ final class TourIllustration6: NSView {
         pill2.frame.origin = NSPoint(x: c2x + (cellW - pill2.frame.width) / 2, y: pillY)
         cell2.frame = CGRect(x: c2x, y: cellY, width: cellW, height: cellH)
 
-        // Cell 3: dashed placeholder (drawn in draw())
+        // Cell 3: dashed placeholder — stored for draw()
         let c3x = gridPad + (cellW + filmstripGap) * 2
         cell3Rect = CGRect(x: c3x, y: cellY, width: cellW, height: cellH)
 
@@ -216,7 +228,7 @@ final class TourIllustration6: NSView {
         let cellRadius = DesignTokens.tourFilmstripCellRadius
         let dashPath = CGPath(roundedRect: selfRect, cornerWidth: cellRadius, cornerHeight: cellRadius, transform: nil)
 
-        // Fill first so border draws on top
+        // Fill
         ctx.addPath(dashPath)
         ctx.setFillColor(DesignTokens.tourAddCellBg.cgColor)
         ctx.fillPath()
@@ -233,7 +245,7 @@ final class TourIllustration6: NSView {
 
         // Title bar bottom border
         let tbBorderY = editorFrame.frame.origin.y + editorFrame.frame.height - titleBarH
-        ctx.setFillColor(DesignTokens.tourLLMComposerBg.cgColor)
+        ctx.setFillColor(DesignTokens.tourEditorFrameBorder.cgColor)
         ctx.fill(CGRect(x: editorFrame.frame.origin.x, y: tbBorderY, width: editorFrame.frame.width, height: 1))
     }
 }

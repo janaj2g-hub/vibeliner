@@ -72,9 +72,8 @@ final class TourIllustration2: NSView {
 
         editorFrame.wantsLayer = true
         editorFrame.layer?.cornerRadius = 8
-        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
-        editorFrame.layer?.borderWidth = 1
-        editorFrame.layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
+        editorFrame.layer?.masksToBounds = false
+        updateEditorFrameAppearance()
 
         titleLabel.font = NSFont.systemFont(ofSize: 12, weight: .semibold)
         titleLabel.textColor = DesignTokens.tourTextSecondary
@@ -116,6 +115,21 @@ final class TourIllustration2: NSView {
     }
 
     required init?(coder: NSCoder) { fatalError() }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateEditorFrameAppearance()
+    }
+
+    private func updateEditorFrameAppearance() {
+        editorFrame.layer?.backgroundColor = DesignTokens.tourEditorFrameBg.cgColor
+        editorFrame.layer?.borderWidth = 1
+        editorFrame.layer?.borderColor = DesignTokens.tourEditorFrameBorder.cgColor
+        editorFrame.layer?.shadowColor = DesignTokens.tourEditorFrameShadowColor.cgColor
+        editorFrame.layer?.shadowOffset = CGSize(width: 0, height: -8)
+        editorFrame.layer?.shadowRadius = 24
+        editorFrame.layer?.shadowOpacity = 1
+    }
 
     override func layout() {
         super.layout()

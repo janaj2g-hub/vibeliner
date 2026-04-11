@@ -1169,12 +1169,22 @@ enum DesignTokens {
     static let tourAddCellPlusBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
     static let tourAddCellLabelFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
 
-    // -- Editor frame (steps 2, 6) --
-    static let tourEditorFrameBg = dynamicColor(
-        dark: NSColor(red: 20/255, green: 20/255, blue: 24/255, alpha: 0.9),
-        light: NSColor(red: 248/255, green: 248/255, blue: 254/255, alpha: 0.96)
-    )
-    static let tourEditorFrameBgLight = NSColor(red: 248/255, green: 248/255, blue: 254/255, alpha: 0.96)
+    // -- Editor frame (steps 3, 7, 8) --
+    static let tourEditorFrameBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(red: 20/255, green: 20/255, blue: 24/255, alpha: 0.95)
+            : NSColor(red: 248/255, green: 248/255, blue: 254/255, alpha: 0.98)
+    }
+    static let tourEditorFrameBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 1, alpha: 0.08)
+            : NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.10)
+    }
+    static let tourEditorFrameShadowColor = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance)
+            ? NSColor(white: 0, alpha: 0.3)
+            : NSColor(white: 0, alpha: 0.08)
+    }
 
     // -- Role tag inside title pills --
     static let tourRoleTagBg = NSColor(white: 1, alpha: 0.2)
