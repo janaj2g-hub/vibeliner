@@ -7,12 +7,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var settingsWindowController: SettingsWindowController?
     private var popoverWindow: PopoverWindow?
 
+    #if DEBUG
     private var visualTestHarness: VisualTestHarness?
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
         NSLog("AppDelegate launched")
+        #endif
 
         // Visual test mode — open test harness instead of normal flow
+        #if DEBUG
         if CommandLine.arguments.contains("--visual-test") {
             NSLog("Visual test mode — opening test harness")
             let harness = VisualTestHarness()
@@ -20,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.visualTestHarness = harness
             return
         }
+        #endif
 
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()

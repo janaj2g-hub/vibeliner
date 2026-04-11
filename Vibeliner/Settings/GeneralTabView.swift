@@ -200,7 +200,9 @@ final class GeneralTabView: NSView {
                 if enabled { try SMAppService.mainApp.register() }
                 else { try SMAppService.mainApp.unregister() }
             } catch {
+                #if DEBUG
                 print("Vibeliner: Login item registration failed: \(error)")
+                #endif
             }
         }
     }

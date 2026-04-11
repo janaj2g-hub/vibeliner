@@ -1,5 +1,6 @@
 import AppKit
 
+#if DEBUG
 /// Debug facility that opens a test window with sample annotations, toolbar, and note pill states.
 /// Launch with: open Vibeliner.app --args --visual-test
 final class VisualTestHarness {
@@ -266,3 +267,4 @@ final class VisualTestHarness {
         _ = store.add(freehand)
     }
 }
+#endif
