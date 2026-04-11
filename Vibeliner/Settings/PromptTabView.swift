@@ -612,14 +612,15 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         savedResetTimer?.invalidate()
         saveButton.title = "Saved"
         saveButton.contentTintColor = DesignTokens.copiedGreenText
-        saveButton.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
-        saveButton.layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
+        // VIB-388: Use appearance-safe helpers so colors resolve correctly on theme change
+        saveButton.setLayerBackground(DesignTokens.copiedGreenBg)
+        saveButton.setLayerBorder(DesignTokens.copiedGreenBorder)
 
         savedResetTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
             self?.saveButton.title = "Save"
             self?.saveButton.contentTintColor = DesignTokens.settingsPillText
-            self?.saveButton.layer?.backgroundColor = DesignTokens.settingsPillFill.cgColor
-            self?.saveButton.layer?.borderColor = DesignTokens.settingsPillBorder.cgColor
+            self?.saveButton.setLayerBackground(DesignTokens.settingsPillFill)
+            self?.saveButton.setLayerBorder(DesignTokens.settingsPillBorder)
         }
     }
 

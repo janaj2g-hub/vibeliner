@@ -47,10 +47,11 @@ enum SettingsUI {
     }
 
     static func divider() -> NSView {
-        let view = NSView()
+        // VIB-388: Use appearance-aware subclass so divider updates on theme change
+        let view = AppearanceSafeDivider()
         view.translatesAutoresizingMaskIntoConstraints = false
         view.wantsLayer = true
-        view.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        view.setLayerBackground(NSColor.separatorColor)
 
         let scale = NSScreen.main?.backingScaleFactor ?? 2
         NSLayoutConstraint.activate([
@@ -377,5 +378,14 @@ final class AppearanceAwareFieldView: NSView {
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         SettingsUI.styleFieldSurface(self, cornerRadius: fieldCornerRadius)
+    }
+}
+
+// MARK: - Appearance-safe divider (VIB-388: re-resolves separatorColor on theme change)
+
+final class AppearanceSafeDivider: NSView {
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        setLayerBackground(NSColor.separatorColor)
     }
 }
