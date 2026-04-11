@@ -413,9 +413,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // VIB-372: Use actual canvas bounds — in filmstrip mode this is the imageAreaRect
         // (wider than the primary image), not displayWidth × displayHeight.
         let canvasSize = canvasOverlay?.bounds.size ?? CGSize(width: displayWidth, height: displayHeight)
-        // VIB-297: Pass all images for composite stitching when in filmstrip mode
-        let allImages = isFilmstripMode ? images : nil
-        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, allImages: allImages)
+        // VIB-383: Pass CaptureImage array with actual roles for composite stitching
+        let captureImgs: [CaptureImage]? = isFilmstripMode ? buildCaptureStore().images : nil
+        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureImages: captureImgs)
         statusPill.showCopied(message: "Image copied")
         toolbarView.markCopyState(.image)
     }
@@ -454,8 +454,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                     }
                 }
 
-                // VIB-297: Keep auto-save manager in sync for composite export
+                // VIB-297/VIB-383: Keep auto-save manager in sync for composite export
                 self.autoSaveManager?.allImages = self.images
+                self.autoSaveManager?.imageRoles = self.imageRoles
+                self.autoSaveManager?.imageTitles = self.imageTitles
 
                 // Update add image button state
                 self.toolbarView.updateAddImageState(imageCount: self.images.count)
@@ -574,10 +576,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             filmstrip.onRoleChanged = { [weak self] index, newRole in
                 guard let self, index < self.imageRoles.count else { return }
                 self.imageRoles[index] = newRole.name.lowercased()
+                // VIB-383: Sync role change to auto-save manager
+                self.autoSaveManager?.imageRoles = self.imageRoles
             }
             filmstrip.onTitleChanged = { [weak self] index, newTitle in
                 guard let self, index < self.imageTitles.count else { return }
                 self.imageTitles[index] = newTitle
+                // VIB-383: Sync title change to auto-save manager
+                self.autoSaveManager?.imageTitles = self.imageTitles
             }
             filmstrip.onDeleteImage = { [weak self] index in
                 self?.removeImageAtIndex(index)
@@ -639,6 +645,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.marksLayer.needsDisplay = true
         canvasOverlay?.refreshNotePills()
         autoSaveManager?.allImages = images.count > 1 ? images : nil
+        autoSaveManager?.imageRoles = imageRoles
+        autoSaveManager?.imageTitles = imageTitles
         toolbarView.updateAddImageState(imageCount: images.count)
     }
 

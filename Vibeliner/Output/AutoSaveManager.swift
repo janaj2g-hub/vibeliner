@@ -9,6 +9,10 @@ final class AutoSaveManager {
     var canvasSize: CGSize
     /// VIB-297: All images in filmstrip mode; nil for single-image.
     var allImages: [NSImage]?
+    /// VIB-383: Role names (lowercase) for each image, indexed by position.
+    var imageRoles: [String] = []
+    /// VIB-383: Titles for each image, indexed by position.
+    var imageTitles: [String] = []
     private var storeObserver: Any?
     private var debounceTimer: Timer?
     private var isDirty = false
@@ -54,12 +58,16 @@ private func scheduleSave() {
         let image = originalImage
         let size = canvasSize
         let currentAllImages = allImages
+        let currentRoles = imageRoles
+        let currentTitles = imageTitles
         isDirty = false
         DispatchQueue.global(qos: .userInitiated).async {
-            // VIB-297: Multi-image composite when 2+ images
+            // VIB-297/VIB-383: Multi-image composite with actual roles
             if let allImages = currentAllImages, allImages.count >= 2 {
                 let captureImages = allImages.enumerated().map { i, img in
-                    CaptureImage(sourceImage: img, title: "Image \(i + 1)", role: .observed, originalSize: img.size, index: i)
+                    let title = i < currentTitles.count ? currentTitles[i] : "Image \(i + 1)"
+                    let roleStr = i < currentRoles.count ? currentRoles[i] : "observed"
+                    return CaptureImage(sourceImage: img, title: title, role: ImageRole.from(string: roleStr), originalSize: img.size, index: i)
                 }
                 if let composite = CompositeStitcher.stitch(images: captureImages, annotations: annotations, canvasSize: size) {
                     let fileURL = folder.appendingPathComponent("screenshot.png")
