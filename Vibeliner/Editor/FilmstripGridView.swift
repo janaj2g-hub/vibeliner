@@ -264,6 +264,7 @@ private final class FilmstripCellView: NSView {
     private let deleteIndicator = NSView(frame: NSRect(x: 0, y: 0, width: 22, height: 22))
     private let trashImageView = NSImageView()
     private var isHovered = false
+    private var isTrashHovered = false
 
     init(image: NSImage, index: Int, role: ImageRole, isSelected: Bool) {
         self.index = index
@@ -358,26 +359,39 @@ private final class FilmstripCellView: NSView {
         if isSelected {
             clipView.layer?.borderColor = borderColor.cgColor
             clipView.layer?.borderWidth = 2
-            layer?.opacity = 1.0
+            titlePill.alphaValue = 1.0
         } else {
             clipView.layer?.borderColor = borderColor.withAlphaComponent(0.4).cgColor
             clipView.layer?.borderWidth = 1.5
-            layer?.opacity = 0.7
+            titlePill.alphaValue = 0.7
         }
-        // VIB-271: Show trash when selected, red tint on hover
+        // VIB-385: Screenshot content always fully opaque — never set layer.opacity
+        // VIB-271: Show trash when selected, red tint only when hovering the trash circle
         deleteIndicator.isHidden = !isSelected
-        trashImageView.contentTintColor = (isSelected && isHovered)
-            ? NSColor.systemRed
-            : NSColor(white: 1.0, alpha: 0.85)
+        updateTrashAppearance()
     }
 
-    // VIB-271: Hover tracking for trash icon color
+    private func updateTrashAppearance() {
+        if isSelected && isTrashHovered {
+            trashImageView.contentTintColor = NSColor.systemRed
+            deleteIndicator.layer?.borderWidth = 1.5
+            deleteIndicator.layer?.borderColor = NSColor.systemRed.cgColor
+        } else {
+            trashImageView.contentTintColor = NSColor(white: 1.0, alpha: 0.85)
+            deleteIndicator.layer?.borderWidth = 0
+            deleteIndicator.layer?.borderColor = nil
+        }
+    }
+
+    // VIB-385: Separate tracking areas — cell-wide for general hover, trash-only for red state
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         for area in trackingAreas { removeTrackingArea(area) }
+
+        // Cell-wide tracking for general hover (show/hide trash)
         addTrackingArea(NSTrackingArea(
             rect: bounds,
-            options: [.mouseEnteredAndExited, .activeAlways],
+            options: [.mouseEnteredAndExited, .activeAlways, .mouseMoved],
             owner: self
         ))
     }
@@ -385,14 +399,21 @@ private final class FilmstripCellView: NSView {
     override func mouseEntered(with event: NSEvent) {
         isHovered = true
         deleteIndicator.isHidden = !isSelected
-        trashImageView.contentTintColor = isSelected
-            ? NSColor.systemRed
-            : NSColor(white: 1.0, alpha: 0.85)
     }
 
     override func mouseExited(with event: NSEvent) {
         isHovered = false
-        trashImageView.contentTintColor = NSColor(white: 1.0, alpha: 0.85)
+        isTrashHovered = false
+        updateTrashAppearance()
+    }
+
+    override func mouseMoved(with event: NSEvent) {
+        let localPoint = convert(event.locationInWindow, from: nil)
+        let overTrash = isSelected && deleteIndicator.frame.contains(localPoint)
+        if overTrash != isTrashHovered {
+            isTrashHovered = overTrash
+            updateTrashAppearance()
+        }
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {

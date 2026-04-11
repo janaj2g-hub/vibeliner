@@ -133,11 +133,11 @@ enum DesignTokens {
             : NSColor(white: 1.0, alpha: 0.88)
     }
 
-    /// Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.06)
+    /// Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
     static let toolbarBorder = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
             ? NSColor(white: 1.0, alpha: 0.12)
-            : NSColor(white: 0.0, alpha: 0.06)
+            : NSColor(white: 0.0, alpha: 0.10)
     }
 
     /// Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)
@@ -169,9 +169,9 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.70) : NSColor(white: 0.0, alpha: 0.70)
     }
 
-    /// Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)
+    /// Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)
     static let toolbarDivider = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.08)
+        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.12)
     }
 
     /// Toolbar purple active — dark: #AFA9EC, light: #534AB7
@@ -237,7 +237,7 @@ enum DesignTokens {
     static let toolbarSecondaryText = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
             ? NSColor(white: 1.0, alpha: 0.60)
-            : NSColor(white: 0.0, alpha: 0.55)
+            : NSColor(white: 0.0, alpha: 0.65)
     }
 
     /// Secondary button bg — transparent
