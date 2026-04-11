@@ -14,9 +14,7 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, FirstUseTooltipView, PromptTabView, SettingsWindowController |
 | `purpleDark` | #534AB7 | Dimension label bg, settings accents | DimensionLabelView, SetupWindowController |
 | `purpleButton` | #A796EB | Copy button outline and text (legacy) | SetupWindowController |
-| `purpleButtonHover` | #C4B8F5 | Copy button hover (legacy) | — |
 | `purpleButtonBg` | rgba(116, 97, 194, 0.25) | Copy button fill (legacy) | SetupWindowController |
-| `purpleButtonBgHover` | rgba(116, 97, 194, 0.35) | Copy button hover fill (legacy) | — |
 
 ### Red — Annotations
 
@@ -31,12 +29,6 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 |-------|-------|-------|-----------------|
 | `redNoteBg` | rgba(255, 248, 248, 0.82) | Note pill default background | NotePillRenderer |
 | `redNoteBorder` | rgba(239, 68, 68, 0.18) | Note pill default border | NotePillRenderer |
-| `noteHoverBg` | rgba(255, 245, 245, 0.88) | Note pill hover background | NotePillRenderer |
-| `noteHoverBorder` | rgba(239, 68, 68, 0.4) | Note pill hover border | NotePillRenderer |
-| `noteSelectedBg` | rgba(255, 245, 245, 0.9) | Note pill selected background | NotePillRenderer |
-| `noteSelectedBorder` | rgba(239, 68, 68, 0.5) | Note pill selected border | NotePillRenderer |
-| `noteEditingBg` | rgba(255, 245, 245, 0.92) | Note pill editing background | CanvasView |
-| `notePrefixColor` | rgba(153, 27, 27, 0.4) | Note number prefix color | NotePillRenderer |
 | `noteTextColor` | #7F1D1D | Note body text color | NotePillRenderer |
 
 ### Green — Success States
@@ -52,24 +44,9 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `darkChrome` | rgba(30, 30, 30, 0.92) | Toolbar (legacy) | — |
-| `darkChromeStatus` | rgba(30, 30, 30, 0.88) | Status pill (legacy) | — |
-| `darkChromePopover` | rgba(30, 30, 30, 0.95) | Popover (legacy) | — |
 | `dimOverlay` | rgba(0, 0, 0, 0.5) | Capture overlay dim | CrosshairView |
 | `dividerColor` | rgba(255, 255, 255, 0.08) | Divider (legacy) | — |
 | `chromeBorder` | rgba(175, 169, 236, 0.12) | Toolbar/canvas border | ScreenshotCanvasView, CaptureRowView |
-
-### Chrome — Icons & Buttons (Legacy Static Dark)
-
-| Token | Value | Usage | Consuming files |
-|-------|-------|-------|-----------------|
-| `iconDefault` | rgba(255, 255, 255, 0.4) | Default icon stroke (legacy) | — |
-| `iconHover` | rgba(255, 255, 255, 0.8) | Hover icon stroke (legacy) | — |
-| `buttonHoverBg` | rgba(255, 255, 255, 0.08) | Button hover bg (legacy) | — |
-| `toolActiveBg` | rgba(175, 169, 236, 0.2) | Active tool bg (legacy) | — |
-| `closeHoverBg` | rgba(255, 87, 87, 0.2) | Close button hover (legacy) | — |
-| `trashHoverBg` | rgba(255, 87, 87, 0.15) | Trash button hover (legacy) | — |
-| `closeIconHover` | #FF5F57 | Close icon hover color (legacy) | — |
 
 ### Tooltip
 
@@ -113,15 +90,12 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `toolbarSecondaryHoverText` | rgba(255,255,255,0.80) | rgba(0,0,0,0.75) | Secondary hover text | ToolbarView (SecondaryPillButton) |
 | `toolbarSecondaryHoverBg` | rgba(255,255,255,0.05) | rgba(0,0,0,0.04) | Secondary hover bg | ToolbarView (SecondaryPillButton) |
 
-### Add Image Button — Deprecated (VIB-262/320)
-
-Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibility.
+### Add Image Button
 
 | Token | Dark value | Light value | Usage | Consuming files |
 |-------|-----------|-------------|-------|-----------------|
-| `addImageBg` | rgba(175,169,236,0.14) | rgba(83,74,183,0.08) | Add image button bg (deprecated) | — |
-| `addImageBorder` | rgba(175,169,236,0.22) | rgba(83,74,183,0.15) | Add image button border (deprecated) | — |
-| `addImageHoverBorder` | rgba(175,169,236,0.34) | rgba(83,74,183,0.25) | Add image hover border (deprecated) | — |
+| `addImageBg` | rgba(175,169,236,0.14) | rgba(83,74,183,0.08) | Add image button bg | TourMiniToolbar |
+| `addImageBorder` | rgba(175,169,236,0.22) | rgba(83,74,183,0.15) | Add image button border | TourMiniToolbar |
 
 ### Toggle — Appearance-Aware
 
@@ -130,14 +104,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `toolbarToggleBg` | rgba(255,255,255,0.06) | rgba(0,0,0,0.08) | Toggle container bg | ToolbarView |
 | `toolbarToggleActiveBg` | rgba(175,169,236,0.25) | rgba(83,74,183,0.22) | Active segment bg | ToolbarView |
 | `toolbarToggleInactiveText` | rgba(255,255,255,0.3) | rgba(0,0,0,0.40) | Inactive segment text | ToolbarView |
-
-### Toggle — Legacy Static Dark
-
-| Token | Value | Usage | Consuming files |
-|-------|-------|-------|-----------------|
-| `toggleActiveBg` | rgba(175, 169, 236, 0.25) | Toggle active bg (legacy) | — |
-| `toggleBg` | rgba(255, 255, 255, 0.06) | Toggle bg (legacy) | — |
-| `toggleInactiveText` | rgba(255, 255, 255, 0.3) | Toggle inactive text (legacy) | — |
 
 ### Status Pill — Appearance-Aware
 
@@ -178,7 +144,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 |-------|-------|-------|-----------------|
 | `filmstripGap` | 14px | Gap between filmstrip cells | FilmstripGridView, CompositeStitcher |
 | `filmstripPadding` | 14px | Composite export padding | CompositeStitcher |
-| `filmstripBg` | rgba(15,23,42,0.85) | Composite export background | CompositeStitcher |
 | `titlePillHeight` | 30px | Height of title pill in filmstrip | TitlePillView, FilmstripGridView |
 | `titlePillGap` | 6px | Gap between title pill and image | FilmstripGridView |
 | `titlePillExportShadow` | rgba(0,0,0,0.3) | Export title pill shadow | CompositeStitcher |
@@ -201,10 +166,8 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupGreenText` | #16A34A | Status text, green button text | SetupWindowController |
 | `setupGreenBg` | rgba(34,197,94,0.08) | Green button fill | SetupWindowController |
 | `setupGreenBorder` | rgba(34,197,94,0.5) | Green button border | SetupWindowController |
-| `setupAmberBg` | rgba(234,179,8,0.08) | Amber status background | — |
 | `setupAmberText` | #B45309 | Amber status text | SetupWindowController |
 | `setupWindowBg` | #1E1E1E | Window background | SetupWindowController |
-| `setupTitleBarBg` | #2A2A2A | Title bar background | — |
 | `setupFooterBg` | #222222 | Footer background | SetupWindowController |
 | `setupBorder` | #333333 | Dividers and borders | SetupWindowController |
 | `setupFieldBg` | rgba(255,255,255,0.05) | Field background | SetupWindowController |
@@ -217,7 +180,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupButtonFill` | rgba(175,169,236,0.08) | Action button fill | SetupWindowController |
 | `setupButtonBorder` | rgba(175,169,236,0.55) | Action button border | SetupWindowController |
 | `setupButtonText` | #6F69DF | Action button/label text | SetupWindowController |
-| `setupButtonHoverBg` | rgba(175,169,236,0.16) | Arrow hover bg | — |
 | `setupKbdBorder` | rgba(255,255,255,0.12) | Kbd pill border | SetupWindowController |
 | `setupKbdBg` | rgba(255,255,255,0.08) | Kbd pill bg | SetupWindowController |
 | `setupKbdText` | rgba(255,255,255,0.55) | Kbd pill text | SetupWindowController |
@@ -274,7 +236,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 |-------|-------|-------|-----------------|
 | `toolbarHeight` | 40px | Toolbar height | ToolbarView, EditorPanel |
 | `toolbarCornerRadius` | 20px | Toolbar corner radius | ToolbarView |
-| `toolbarBlur` | 12px | Toolbar blur radius | ToolbarView |
 | `toolButtonSize` | 30px | Tool button size | ToolbarView, ToolButton |
 | `iconButtonSize` | 28px | Icon button size | ToolbarView, ToolButton |
 | `closeButtonSize` | 24px | Close button size | ToolbarView, ToolButton |
@@ -284,7 +245,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `statusPillCornerRadius` | 12px | Corner radius | StatusPillView |
-| `statusPillBlur` | 8px | Blur radius | StatusPillView |
 
 ### Arrow Tool
 
@@ -314,7 +274,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 |-------|-------|-------|-----------------|
 | `settingsContentPadding` | 28px | Content horizontal padding | PromptTabView, GeneralTabView, AboutTabView |
 | `settingsSectionLabelWidth` | 128px | Section title width | SettingsUI |
-| `settingsSectionPadding` | 24px | Section vertical spacing | — |
 | `settingsSectionGap` | 14px | Section inner gap | GeneralTabView |
 | `settingsFrameRadius` | 18px | Framed section radius | SettingsUI |
 | `settingsFramePadding` | 18px | Framed section padding | PromptTabView |
@@ -334,7 +293,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | `setupBadgeSize` | 32px | Badge size | SetupWindowController |
 | `setupArrowSize` | 36px | Arrow button size | SetupWindowController |
 | `setupSmallPillHeight` | 22px | Small pill height | SetupWindowController |
-| `setupWindowRadius` | 18px | Window corner radius | — |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
 
 ### Tour Window
@@ -360,13 +318,9 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 | Token | Spec | Usage | Consuming files |
 |-------|------|-------|-----------------|
 | `badgeFont` | System 9px semibold | Badge numbers | BadgeRenderer |
-| `noteNumberFont` | System 8px semibold | Note number prefix | NotePillRenderer |
 | `noteTextFont` | System 12px regular | Note body text | CanvasView, NotePillRenderer |
 | `dimensionLabelFont` | Mono 11px medium | Dimension label | DimensionLabelView |
 | `statusPillFont` | Mono 10px medium | Status pill text | StatusPillView |
-| `toolbarButtonFont` | System 11px medium | Toolbar button labels | — |
-| `tooltipBodyFont` | System 12px regular | Tooltip body | — |
-| `tooltipLabelFont` | System 13px semibold | Tooltip labels | — |
 | `settingsSectionFont` | System 13px medium | Section labels | SettingsUI |
 | `settingsBodyFont` | System 12px regular | Body copy | SettingsUI |
 | `settingsFieldFont` | Mono 12px regular | Field text | SettingsUI |
@@ -376,7 +330,6 @@ Replaced by `toolbarSecondary*` tokens in VIB-330. Kept for backward compatibili
 
 | Token | Spec | Usage | Consuming files |
 |-------|------|-------|-----------------|
-| `setupWindowTitleFont` | System 18px semibold | Window title | — |
 | `setupPanelTitleFont` | System 16px semibold | Panel titles | SetupWindowController |
 | `setupDescFont` | System 13px regular | Description text | SetupWindowController |
 | `setupActionLabelFont` | System 13px semibold | Action labels | SetupWindowController |
