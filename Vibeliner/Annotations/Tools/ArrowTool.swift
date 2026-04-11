@@ -16,7 +16,7 @@ final class ArrowTool: AnnotationTool {
 
     func mouseDragged(to point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
         dragEnd = point
-        canvas.marksLayer.needsDisplay = true
+        // VIB-354: Removed needsDisplay — drag timer in CanvasView handles it
     }
 
     func mouseUp(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
