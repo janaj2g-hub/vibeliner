@@ -4,7 +4,6 @@ import AppKit
 /// Reuses LayoutCalculator for layout computation. Title pills baked in for 2+ images.
 final class CompositeStitcher {
 
-    private static let maxExportWidth: CGFloat = 4800  // Wider limit for horizontal strips
     private static let exportRowHeight: CGFloat = 400   // Fixed row height for export
     private static let exportScale: CGFloat = 2         // Retina
 

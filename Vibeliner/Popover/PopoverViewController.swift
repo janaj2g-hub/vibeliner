@@ -257,10 +257,6 @@ final class PopoverContentView: NSView {
     private var submenuPanel: NSPanel?
     private var submenuHideTimer: Timer?
 
-    @objc private func recentCaptures() {
-        showRecentSubmenu()
-    }
-
     func showRecentSubmenu() {
         submenuHideTimer?.invalidate()
         guard submenuPanel == nil, let popWin = popoverWindow else { return }
