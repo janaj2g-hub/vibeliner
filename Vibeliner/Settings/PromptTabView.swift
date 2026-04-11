@@ -74,6 +74,17 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
+        refreshTabAppearance()
+    }
+
+    // VIB-388: Re-style when re-attached to window after tab switching.
+    // Cached tab views miss appearance notifications while detached.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil { refreshTabAppearance() }
+    }
+
+    private func refreshTabAppearance() {
         SettingsUI.styleFrameSurface(editFrame)
         // Rebuild the active sub-tab so NSTextView colors and editor container
         // layer colors re-resolve for the new appearance

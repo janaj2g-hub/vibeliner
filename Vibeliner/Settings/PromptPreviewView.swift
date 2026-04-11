@@ -16,6 +16,18 @@ final class PromptPreviewView: NSView {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
+        refreshPreviewAppearance()
+    }
+
+    // VIB-388: Re-style when re-attached to the window after tab switching.
+    // PromptTabView is cached and detached when user switches tabs — it misses
+    // appearance change notifications while detached, leaving stale CGColors.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil { refreshPreviewAppearance() }
+    }
+
+    private func refreshPreviewAppearance() {
         SettingsUI.stylePreviewSurface(previewContainer)
     }
 
