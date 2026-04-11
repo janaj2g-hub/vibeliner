@@ -64,15 +64,18 @@ final class CaptureRowView: NSView {
         noteCountLabel.frame = NSRect(x: textX, y: h / 2 - 14, width: 60, height: 14)
         addSubview(noteCountLabel)
 
+        // VIB-394: Vertically center buttons in row
+        let buttonY = (h - 20) / 2
+
         // Copy Prompt button (hidden until hover)
         let promptBtn = HoverButton(title: "Prompt", target: self, action: #selector(copyPrompt))
         promptBtn.isBordered = false
         promptBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         promptBtn.wantsLayer = true
-        promptBtn.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
+        promptBtn.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
         promptBtn.layer?.cornerRadius = 6
-        promptBtn.contentTintColor = DesignTokens.purpleLight
-        promptBtn.frame = NSRect(x: 150, y: 8, width: 52, height: 20)
+        promptBtn.contentTintColor = DesignTokens.popoverCopyButtonText
+        promptBtn.frame = NSRect(x: 150, y: buttonY, width: 52, height: 20)
         promptBtn.isHidden = true
         addSubview(promptBtn)
         self.promptButton = promptBtn
@@ -82,10 +85,10 @@ final class CaptureRowView: NSView {
         imgBtn.isBordered = false
         imgBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
         imgBtn.wantsLayer = true
-        imgBtn.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
+        imgBtn.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
         imgBtn.layer?.cornerRadius = 6
-        imgBtn.contentTintColor = DesignTokens.purpleLight
-        imgBtn.frame = NSRect(x: 155, y: 8, width: 48, height: 20)
+        imgBtn.contentTintColor = DesignTokens.popoverCopyButtonText
+        imgBtn.frame = NSRect(x: 155, y: buttonY, width: 48, height: 20)
         imgBtn.isHidden = true
         addSubview(imgBtn)
         self.imageButton = imgBtn
@@ -124,8 +127,8 @@ final class CaptureRowView: NSView {
         button.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak button] in
             button?.title = originalTitle
-            button?.contentTintColor = DesignTokens.purpleLight
-            button?.layer?.backgroundColor = DesignTokens.chromeBorder.cgColor
+            button?.contentTintColor = DesignTokens.popoverCopyButtonText
+            button?.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
         }
     }
 
