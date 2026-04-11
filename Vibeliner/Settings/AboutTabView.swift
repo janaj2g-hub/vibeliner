@@ -27,37 +27,16 @@ final class AboutTabView: NSView {
             contentStack.bottomAnchor.constraint(lessThanOrEqualTo: bottomAnchor, constant: -DesignTokens.settingsContentPadding)
         ])
 
-        let iconView = NSView()
-        iconView.translatesAutoresizingMaskIntoConstraints = false
-        iconView.wantsLayer = true
-        iconView.layer?.backgroundColor = DesignTokens.red.cgColor
-        iconView.layer?.cornerRadius = 16
-        NSLayoutConstraint.activate([
-            iconView.widthAnchor.constraint(equalToConstant: 64),
-            iconView.heightAnchor.constraint(equalToConstant: 64)
-        ])
-        contentStack.addArrangedSubview(iconView)
-
-        let crosshairImage = NSImage(size: NSSize(width: 32, height: 32))
-        crosshairImage.lockFocus()
-        NSColor.white.setStroke()
-        let path = NSBezierPath()
-        path.move(to: NSPoint(x: 16, y: 6)); path.line(to: NSPoint(x: 16, y: 26))
-        path.move(to: NSPoint(x: 6, y: 16)); path.line(to: NSPoint(x: 26, y: 16))
-        path.lineWidth = 2; path.stroke()
-        let circle = NSBezierPath(ovalIn: NSRect(x: 8, y: 8, width: 16, height: 16))
-        circle.lineWidth = 2; circle.stroke()
-        crosshairImage.unlockFocus()
+        // VIB-342: Use real app icon instead of red placeholder
         let iconImage = NSImageView()
         iconImage.translatesAutoresizingMaskIntoConstraints = false
-        iconImage.image = crosshairImage
-        iconView.addSubview(iconImage)
+        iconImage.image = NSApp.applicationIconImage
+        iconImage.imageScaling = .scaleProportionallyUpOrDown
         NSLayoutConstraint.activate([
-            iconImage.centerXAnchor.constraint(equalTo: iconView.centerXAnchor),
-            iconImage.centerYAnchor.constraint(equalTo: iconView.centerYAnchor),
-            iconImage.widthAnchor.constraint(equalToConstant: 32),
-            iconImage.heightAnchor.constraint(equalToConstant: 32)
+            iconImage.widthAnchor.constraint(equalToConstant: 64),
+            iconImage.heightAnchor.constraint(equalToConstant: 64)
         ])
+        contentStack.addArrangedSubview(iconImage)
 
         let name = NSTextField(labelWithString: "Vibeliner")
         name.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
