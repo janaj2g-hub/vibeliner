@@ -408,12 +408,13 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         let popover = NSPopover()
         popover.behavior = .transient
-        popover.animates = true
+        // VIB-389: Fast popover — no animation delay
+        popover.animates = false
 
-        // Build content: 8 color circles in a single row
+        // Build content: color circles in a single row
         let contentView = NSView()
         contentView.wantsLayer = true
-        let dotSize: CGFloat = 20
+        let dotSize: CGFloat = 22
         let gap: CGFloat = 6
         let padding: CGFloat = 10
         let totalWidth = CGFloat(DesignTokens.rolePresetColors.count) * dotSize + CGFloat(DesignTokens.rolePresetColors.count - 1) * gap + padding * 2
@@ -427,13 +428,18 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
                 width: dotSize,
                 height: dotSize
             ))
+            // VIB-389: Clear title to prevent "Bu" text from NSButton default
+            dot.title = ""
             dot.isBordered = false
             dot.wantsLayer = true
             dot.layer?.cornerRadius = dotSize / 2
             dot.layer?.backgroundColor = preset.color.cgColor
             let isSelected = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased()
-            dot.layer?.borderWidth = isSelected ? 2 : 0
-            dot.layer?.borderColor = NSColor.labelColor.cgColor
+            // VIB-389: Visible selection indicator — thick white border + subtle unselected border
+            dot.layer?.borderWidth = isSelected ? 2.5 : 0.5
+            dot.layer?.borderColor = isSelected
+                ? NSColor.white.cgColor
+                : NSColor(white: 0, alpha: 0.1).cgColor
             dot.target = self
             dot.action = #selector(colorPopoverDotClicked(_:))
             dot.tag = roleIndex * 100 + colorIdx
