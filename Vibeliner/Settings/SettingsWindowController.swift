@@ -57,12 +57,12 @@ final class SettingsWindowController: NSWindowController {
             self?.selectTab(index)
         }
 
-        // ── Divider ──
+        // ── Divider ── (VIB-388: appearance-safe divider)
 
-        let divider = NSView()
+        let divider = AppearanceSafeDivider()
         divider.translatesAutoresizingMaskIntoConstraints = false
         divider.wantsLayer = true
-        divider.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        divider.setLayerBackground(NSColor.separatorColor)
         contentView.addSubview(divider)
 
         // ── Scroll view wrapping the content area ──
