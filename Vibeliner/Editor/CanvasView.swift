@@ -110,7 +110,11 @@ final class CanvasView: NSView, NotePillDelegate {
     // Hit testing matching prototype ht() function
     // Priority: badge(12px) → arrow endpoint(10px) → rect corners(10px) → circle resize(10px) → body containment → freehand CPs(8px)
     private func hitTestAnnotation(at point: CGPoint) -> UUID? {
+        let bbMargin: CGFloat = 20
         for annotation in store.annotations.reversed() {
+            // VIB-355: Bounding-box quick-reject — skip expensive distance math
+            guard annotation.position.boundingRect.insetBy(dx: -bbMargin, dy: -bbMargin).contains(point) else { continue }
+
             // Badge proximity (12px)
             if hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12 {
                 return annotation.id
