@@ -373,12 +373,13 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             swatch.widthAnchor.constraint(equalToConstant: 14),
             swatch.heightAnchor.constraint(equalToConstant: 14),
 
-            nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 8),
+            // VIB-391: Increased spacing for better visual separation
+            nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 12),
             nameField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
             nameField.widthAnchor.constraint(equalToConstant: 120),
             nameField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
-            descField.leadingAnchor.constraint(equalTo: nameField.trailingAnchor, constant: 8),
+            descField.leadingAnchor.constraint(equalTo: nameField.trailingAnchor, constant: 10),
             descField.centerYAnchor.constraint(equalTo: row.centerYAnchor),
             descField.heightAnchor.constraint(equalToConstant: Self.toolRowHeight),
 
@@ -471,8 +472,23 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         let colorIndex = sender.tag % 100
         guard roleIndex < drafts.roles.count, colorIndex < DesignTokens.rolePresetColors.count else { return }
         drafts.roles[roleIndex].colorHex = DesignTokens.rolePresetColors[colorIndex].hex
-        activeColorPopover?.close()
-        activeColorPopover = nil
+
+        // VIB-391: Update selection indicators in the popover WITHOUT closing it.
+        // The popover stays open so the user can try different colors.
+        // It closes on outside click because behavior = .transient.
+        if let contentView = activeColorPopover?.contentViewController?.view {
+            let dotSize: CGFloat = 22
+            for subview in contentView.subviews {
+                guard let dot = subview as? NSButton else { continue }
+                let ci = dot.tag % 100
+                let isNowSelected = ci == colorIndex && dot.tag / 100 == roleIndex
+                dot.layer?.borderWidth = isNowSelected ? 2.5 : 0.5
+                dot.layer?.borderColor = isNowSelected
+                    ? NSColor.white.cgColor
+                    : NSColor(white: 0, alpha: 0.1).cgColor
+            }
+        }
+
         selectSubTab(.multiImage)
         refreshPreview()
     }
