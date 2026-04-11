@@ -1,14 +1,15 @@
 import AppKit
 
 /// Tour step 5: "One paste or two"
-/// Two rows separated by a 1px divider.
-/// Row 1: TERMINAL TOOLS — IDE mode toolbar + mode card with chip pills.
-/// Row 2: CHAT TOOLS — App mode toolbar + mode card with chip pills.
+/// Two rows separated by a 1px divider, vertically centered.
+/// Each row: section label → mini toolbar pill LEFT of mode card.
+/// Row 1: TERMINAL TOOLS — IDE toggle active, 1 copy button.
+/// Row 2: CHAT TOOLS — App toggle active, 2 copy buttons.
 final class TourIllustration5: NSView {
 
     // Row 1
     private let terminalLabel: NSTextField
-    private let ideToolbar: TourMiniToolbar
+    private let ideToolbarPill: ModeToolbarPill
     private let ideCard: NSView
     private let ideTitleLabel: NSTextField
     private let ideDescLabel: NSTextField
@@ -21,7 +22,7 @@ final class TourIllustration5: NSView {
 
     // Row 2
     private let chatLabel: NSTextField
-    private let appToolbar: TourMiniToolbar
+    private let appToolbarPill: ModeToolbarPill
     private let appCard: NSView
     private let appTitleLabel: NSTextField
     private let appDescLabel: NSTextField
@@ -34,13 +35,8 @@ final class TourIllustration5: NSView {
     override init(frame frameRect: NSRect) {
         // -- Row 1: Terminal Tools --
         terminalLabel = NSTextField(labelWithString: "TERMINAL TOOLS")
-        ideToolbar = TourMiniToolbar(config: TourMiniToolbarConfig(
-            activeTool: .pin,
-            mode: .ide,
-            showCopyPrompt: true,
-            showCopyImage: false,
-            showAddImage: false
-        ))
+        ideToolbarPill = ModeToolbarPill(activeMode: .ide, showCopyImage: false)
+
         ideCard = NSView()
         ideTitleLabel = NSTextField(labelWithString: "IDE mode")
         ideDescLabel = NSTextField(wrappingLabelWithString: "One paste. The prompt includes the file path so the AI reads the screenshot from your disk.")
@@ -54,13 +50,8 @@ final class TourIllustration5: NSView {
 
         // -- Row 2: Chat Tools --
         chatLabel = NSTextField(labelWithString: "CHAT TOOLS")
-        appToolbar = TourMiniToolbar(config: TourMiniToolbarConfig(
-            activeTool: .pin,
-            mode: .app,
-            showCopyPrompt: true,
-            showCopyImage: true,
-            showAddImage: false
-        ))
+        appToolbarPill = ModeToolbarPill(activeMode: .app, showCopyImage: true)
+
         appCard = NSView()
         appTitleLabel = NSTextField(labelWithString: "App mode")
         appDescLabel = NSTextField(wrappingLabelWithString: "Two pastes. Copy the prompt and the image separately into the chat window.")
@@ -75,7 +66,7 @@ final class TourIllustration5: NSView {
         // Section labels
         for label in [terminalLabel, chatLabel] {
             label.font = DesignTokens.tourModeSectionFont
-            label.textColor = DesignTokens.tourTextDim
+            label.textColor = .clear // drawn manually for letter-spacing
             label.isBezeled = false
             label.drawsBackground = false
             label.isEditable = false
@@ -131,11 +122,11 @@ final class TourIllustration5: NSView {
         appCard.addSubview(appChip3)
 
         addSubview(terminalLabel)
-        addSubview(ideToolbar)
+        addSubview(ideToolbarPill)
         addSubview(ideCard)
         addSubview(divider)
         addSubview(chatLabel)
-        addSubview(appToolbar)
+        addSubview(appToolbarPill)
         addSubview(appCard)
     }
 
@@ -148,6 +139,8 @@ final class TourIllustration5: NSView {
             card.layer?.borderColor = DesignTokens.tourModeCardBorder.cgColor
         }
         divider.layer?.backgroundColor = DesignTokens.tourModeCardBorder.cgColor
+        ideToolbarPill.needsDisplay = true
+        appToolbarPill.needsDisplay = true
         needsDisplay = true
     }
 
@@ -159,69 +152,77 @@ final class TourIllustration5: NSView {
         let contentW = w - padding * 2
         let contentH = h - padding * 2
 
-        // Two equal rows with 1px divider in between
+        // Measure content to center vertically
+        let sectionLabelH: CGFloat = 14
+        let labelGap: CGFloat = 8
         let dividerH: CGFloat = 1
-        let rowH = (contentH - dividerH) / 2
+        let rowGap: CGFloat = 18
 
-        // AppKit: origin bottom-left
-        // Row 2 (bottom) = chat tools
-        let row2Y = padding
-        let dividerY = row2Y + rowH
-        let row1Y = dividerY + dividerH
+        // Row content height = label + gap + toolbar/card area
+        let tbH: CGFloat = 36
+        let cardMinH: CGFloat = 100
+        let rowContentH = max(tbH, cardMinH)
+        let rowH = sectionLabelH + labelGap + rowContentH
+
+        let totalH = rowH * 2 + rowGap + dividerH
+        let startY = padding + (contentH - totalH) / 2
+
+        // AppKit: bottom-up
+        // Row 2 at bottom
+        let row2Y = startY
+        let dividerY = row2Y + rowH + rowGap / 2
+        let row1Y = dividerY + dividerH + rowGap / 2
 
         divider.frame = CGRect(x: padding, y: dividerY, width: contentW, height: dividerH)
 
-        // Layout a row: label on top, toolbar left, card right
         layoutRow(
-            y: row1Y, rowH: rowH, contentW: contentW,
-            sectionLabel: terminalLabel,
-            toolbar: ideToolbar,
-            card: ideCard,
-            titleLabel: ideTitleLabel,
-            descLabel: ideDescLabel,
+            y: row1Y, rowContentH: rowContentH, contentW: contentW,
+            sectionLabel: terminalLabel, sectionLabelH: sectionLabelH, labelGap: labelGap,
+            toolbar: ideToolbarPill,
+            card: ideCard, titleLabel: ideTitleLabel, descLabel: ideDescLabel,
             chips: [ideChip1, ideChip2, ideChip3]
         )
 
         layoutRow(
-            y: row2Y, rowH: rowH, contentW: contentW,
-            sectionLabel: chatLabel,
-            toolbar: appToolbar,
-            card: appCard,
-            titleLabel: appTitleLabel,
-            descLabel: appDescLabel,
+            y: row2Y, rowContentH: rowContentH, contentW: contentW,
+            sectionLabel: chatLabel, sectionLabelH: sectionLabelH, labelGap: labelGap,
+            toolbar: appToolbarPill,
+            card: appCard, titleLabel: appTitleLabel, descLabel: appDescLabel,
             chips: [appChip1, appChip2, appChip3]
         )
     }
 
     private func layoutRow(
-        y: CGFloat, rowH: CGFloat, contentW: CGFloat,
-        sectionLabel: NSTextField, toolbar: TourMiniToolbar,
+        y: CGFloat, rowContentH: CGFloat, contentW: CGFloat,
+        sectionLabel: NSTextField, sectionLabelH: CGFloat, labelGap: CGFloat,
+        toolbar: ModeToolbarPill,
         card: NSView, titleLabel: NSTextField, descLabel: NSTextField,
         chips: [NSView]
     ) {
-        // Section label at top of row
-        let labelH = sectionLabel.frame.height
+        let rowTopY = y + rowContentH + labelGap + sectionLabelH
+
+        // Section label at top
         sectionLabel.frame = CGRect(
             x: padding,
-            y: y + rowH - labelH - 4,
+            y: rowTopY - sectionLabelH,
             width: contentW,
-            height: labelH
+            height: sectionLabelH
         )
 
-        // Toolbar and card below label
-        let belowLabelY = y
-        let belowLabelH = rowH - labelH - 12
+        // Content area below label
+        let contentY = y
 
         // Toolbar on left, vertically centered
-        let tbSize = toolbar.frame.size
-        let tbY = belowLabelY + (belowLabelH - tbSize.height) / 2
-        toolbar.frame = CGRect(x: padding, y: tbY, width: tbSize.width, height: tbSize.height)
+        let tbW = toolbar.intrinsicContentSize.width
+        let tbH = toolbar.intrinsicContentSize.height
+        let tbY = contentY + (rowContentH - tbH) / 2
+        toolbar.frame = CGRect(x: padding, y: tbY, width: tbW, height: tbH)
 
-        // Card on right, filling remaining space
+        // Card on right, fills remaining width, full height
         let cardGap: CGFloat = 14
-        let cardX = padding + tbSize.width + cardGap
-        let cardW = contentW - tbSize.width - cardGap
-        card.frame = CGRect(x: cardX, y: belowLabelY, width: cardW, height: belowLabelH)
+        let cardX = padding + tbW + cardGap
+        let cardW = contentW - tbW - cardGap
+        card.frame = CGRect(x: cardX, y: contentY, width: cardW, height: rowContentH)
 
         // Card internals
         let cardPad = DesignTokens.tourModeCardPadding
@@ -230,7 +231,7 @@ final class TourIllustration5: NSView {
         titleLabel.sizeToFit()
         titleLabel.frame.origin = NSPoint(
             x: cardPad,
-            y: belowLabelH - cardPad - titleLabel.frame.height
+            y: rowContentH - cardPad - titleLabel.frame.height
         )
 
         // Description below title
@@ -247,7 +248,7 @@ final class TourIllustration5: NSView {
         // Chips at bottom
         let chipY: CGFloat = cardPad
         var chipX: CGFloat = cardPad
-        let chipGap: CGFloat = 6
+        let chipGap: CGFloat = 4
         for chip in chips {
             let cw = chip.frame.width
             let ch = chip.frame.height
@@ -259,7 +260,7 @@ final class TourIllustration5: NSView {
     // MARK: - Chip factory
 
     private static func makeChip(_ text: String) -> NSView {
-        let chipHeight: CGFloat = 16
+        let chipHeight: CGFloat = 22
 
         let label = NSTextField(labelWithString: text)
         label.font = DesignTokens.tourChipFont
@@ -290,7 +291,6 @@ final class TourIllustration5: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        // Section labels need letter-spacing; draw manually
         drawLetterSpacedLabel(terminalLabel, text: "TERMINAL TOOLS")
         drawLetterSpacedLabel(chatLabel, text: "CHAT TOOLS")
     }
@@ -304,8 +304,146 @@ final class TourIllustration5: NSView {
         let str = NSAttributedString(string: text, attributes: attrs)
         let origin = field.convert(NSPoint.zero, to: self)
         str.draw(at: origin)
+    }
+}
 
-        // Hide the text field's own text since we draw custom
-        field.textColor = .clear
+// MARK: - Compact mode toolbar pill (custom-drawn, no annotation tools)
+
+/// A compact mini toolbar showing only: IDE/App toggle + divider + copy pill(s).
+/// Drawn entirely in draw(_:) to avoid NSButton rendering issues.
+private final class ModeToolbarPill: NSView {
+
+    enum Mode { case ide, app }
+
+    private let activeMode: Mode
+    private let showCopyImage: Bool
+
+    private let barHeight: CGFloat = 36
+    private let toggleW: CGFloat = 62
+    private let toggleH: CGFloat = 20
+    private let segW: CGFloat = 31
+    private let pillH: CGFloat = 20
+    private let sectionPad: CGFloat = 8
+    private let divW: CGFloat = 1
+
+    init(activeMode: Mode, showCopyImage: Bool) {
+        self.activeMode = activeMode
+        self.showCopyImage = showCopyImage
+
+        // Calculate width
+        var totalW: CGFloat = sectionPad + 62 + sectionPad + 1 + sectionPad
+        totalW += 70 // "Copy Prompt" pill
+        if showCopyImage {
+            totalW += 4 + 66 // gap + "Copy Image" pill
+        }
+        totalW += sectionPad
+
+        super.init(frame: NSRect(x: 0, y: 0, width: totalW, height: barHeight))
+        wantsLayer = true
+        layer?.cornerRadius = barHeight / 2
+        layer?.masksToBounds = true
+        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
+        layer?.borderWidth = 1
+        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var intrinsicContentSize: NSSize { bounds.size }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
+        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+        needsDisplay = true
+    }
+
+    override func draw(_ dirtyRect: NSRect) {
+        super.draw(dirtyRect)
+        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
+        let h = bounds.height
+        var x: CGFloat = sectionPad
+
+        // -- IDE / App toggle --
+        let toggleY = (h - toggleH) / 2
+        let toggleRect = CGRect(x: x, y: toggleY, width: toggleW, height: toggleH)
+        let togglePath = CGPath(roundedRect: toggleRect, cornerWidth: toggleH / 2, cornerHeight: toggleH / 2, transform: nil)
+        ctx.setFillColor(DesignTokens.toolbarToggleBg.cgColor)
+        ctx.addPath(togglePath)
+        ctx.fillPath()
+
+        // Active segment highlight
+        let activeX = activeMode == .ide ? x : x + segW
+        let segRect = CGRect(x: activeX + 2, y: toggleY + 2, width: segW - 4, height: toggleH - 4)
+        let segPath = CGPath(roundedRect: segRect, cornerWidth: (toggleH - 4) / 2, cornerHeight: (toggleH - 4) / 2, transform: nil)
+        ctx.setFillColor(DesignTokens.toolbarToggleActiveBg.cgColor)
+        ctx.addPath(segPath)
+        ctx.fillPath()
+
+        // Toggle labels
+        let ideAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
+            .foregroundColor: activeMode == .ide ? DesignTokens.purpleLight : DesignTokens.toolbarToggleInactiveText,
+        ]
+        let appAttrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
+            .foregroundColor: activeMode == .app ? DesignTokens.purpleLight : DesignTokens.toolbarToggleInactiveText,
+        ]
+        let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
+        let appStr = NSAttributedString(string: "App", attributes: appAttrs)
+        let ideSize = ideStr.size()
+        let appSize = appStr.size()
+        ideStr.draw(at: NSPoint(
+            x: x + (segW - ideSize.width) / 2,
+            y: toggleY + (toggleH - ideSize.height) / 2
+        ))
+        appStr.draw(at: NSPoint(
+            x: x + segW + (segW - appSize.width) / 2,
+            y: toggleY + (toggleH - appSize.height) / 2
+        ))
+
+        x += toggleW + sectionPad
+
+        // -- Divider --
+        ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+        ctx.fill(CGRect(x: x, y: h * 0.2, width: divW, height: h * 0.6))
+        x += divW + sectionPad
+
+        // -- Copy Prompt pill --
+        x = drawCopyPill(ctx: ctx, text: "Copy Prompt", x: x, h: h, width: 70)
+
+        // -- Copy Image pill (only in app mode) --
+        if showCopyImage {
+            x += 4
+            x = drawCopyPill(ctx: ctx, text: "Copy Image", x: x, h: h, width: 66)
+        }
+    }
+
+    private func drawCopyPill(ctx: CGContext, text: String, x: CGFloat, h: CGFloat, width: CGFloat) -> CGFloat {
+        let pillY = (h - pillH) / 2
+        let pillRect = CGRect(x: x, y: pillY, width: width, height: pillH)
+        let pillPath = CGPath(roundedRect: pillRect, cornerWidth: pillH / 2, cornerHeight: pillH / 2, transform: nil)
+
+        ctx.setFillColor(DesignTokens.toolbarPurpleButtonBg.cgColor)
+        ctx.addPath(pillPath)
+        ctx.fillPath()
+
+        ctx.setStrokeColor(DesignTokens.toolbarPurpleButtonBorder.cgColor)
+        ctx.setLineWidth(1)
+        ctx.addPath(pillPath)
+        ctx.strokePath()
+
+        let attrs: [NSAttributedString.Key: Any] = [
+            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
+            .foregroundColor: DesignTokens.toolbarPurpleButtonText,
+        ]
+        let str = NSAttributedString(string: text, attributes: attrs)
+        let size = str.size()
+        str.draw(at: NSPoint(
+            x: pillRect.midX - size.width / 2,
+            y: pillRect.midY - size.height / 2
+        ))
+
+        return x + width
     }
 }
