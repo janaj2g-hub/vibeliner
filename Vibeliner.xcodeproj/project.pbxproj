@@ -172,6 +172,7 @@
 		R10000010000000000000009 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
 		IC0000010000000000000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		IC0000010000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		IC0000010000000000000003 /* Vibeliner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vibeliner.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -265,6 +266,7 @@
 				A20000010000000000000003 /* Info.plist */,
 				IC0000010000000000000001 /* AppIcon.icns */,
 				IC0000010000000000000002 /* Assets.xcassets */,
+				IC0000010000000000000003 /* Vibeliner.entitlements */,
 			);
 			path = Vibeliner;
 			sourceTree = "<group>";
@@ -732,7 +734,8 @@
 		A80000010000000000000021 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = "Vibeliner/Vibeliner.entitlements";
+				ENABLE_HARDENED_RUNTIME = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
@@ -754,7 +757,8 @@
 		A80000010000000000000022 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CODE_SIGN_ENTITLEMENTS = "";
+				CODE_SIGN_ENTITLEMENTS = "Vibeliner/Vibeliner.entitlements";
+				ENABLE_HARDENED_RUNTIME = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
