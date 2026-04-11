@@ -56,68 +56,64 @@ final class CompositeStitcher {
         let compositeHeight = rowHeight + pillH + padding * 2
         let compositeSize = NSSize(width: compositeWidth, height: compositeHeight)
 
-        let image = NSImage(size: compositeSize)
-        image.lockFocus()
+        let image = NSImage(size: compositeSize, flipped: false) { _ in
+            guard let ctx = NSGraphicsContext.current?.cgContext else { return false }
 
-        guard let ctx = NSGraphicsContext.current?.cgContext else {
-            image.unlockFocus()
-            return nil
+            // Clear background (transparent)
+            ctx.clear(CGRect(origin: .zero, size: compositeSize))
+
+            // Draw each cell — horizontal strip layout
+            for (i, layoutFrame) in frames.enumerated() where i < images.count {
+                let captureImage = images[i]
+                let cellX = padding + layoutFrame.origin.x
+                // NSImage coordinate system: Y=0 at bottom
+                let cellY = padding
+
+                // Image area is below the title pill area
+                let imageRect = NSRect(
+                    x: cellX,
+                    y: cellY,
+                    width: layoutFrame.size.width,
+                    height: rowHeight
+                )
+
+                // Draw screenshot
+                captureImage.sourceImage.draw(in: imageRect)
+
+                // Draw title pill (baked in above the image)
+                drawExportPill(
+                    ctx: ctx,
+                    title: captureImage.title,
+                    role: captureImage.role,
+                    cellX: cellX,
+                    cellWidth: layoutFrame.size.width,
+                    pillY: cellY + rowHeight,
+                    pillHeight: DesignTokens.titlePillHeight
+                )
+            }
+
+            // VIB-372: Render annotation marks into the composite.
+            // Annotations are in editor canvas coordinates (= filmstrip imageAreaRect).
+            // Map them to the IMAGE CONTENT AREA within the composite, NOT the full
+            // composite size (which includes padding and title pill area).
+            if !annotations.isEmpty && canvasSize.width > 0 && canvasSize.height > 0 {
+                ctx.saveGState()
+                // Translate to the image content area origin (skip padding)
+                ctx.translateBy(x: padding, y: padding)
+                // Scale from canvas space to export image content area
+                let scaleX = totalContentWidth / canvasSize.width
+                let scaleY = rowHeight / canvasSize.height
+                ctx.scaleBy(x: scaleX, y: scaleY)
+                pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                ctx.restoreGState()
+            }
+
+            return true
         }
-
-        // Clear background (transparent)
-        ctx.clear(CGRect(origin: .zero, size: compositeSize))
-
-        // Draw each cell — horizontal strip layout
-        for (i, layoutFrame) in frames.enumerated() where i < images.count {
-            let captureImage = images[i]
-            let cellX = padding + layoutFrame.origin.x
-            // NSImage coordinate system: Y=0 at bottom
-            let cellY = padding
-
-            // Image area is below the title pill area
-            let imageRect = NSRect(
-                x: cellX,
-                y: cellY,
-                width: layoutFrame.size.width,
-                height: rowHeight
-            )
-
-            // Draw screenshot
-            captureImage.sourceImage.draw(in: imageRect)
-
-            // Draw title pill (baked in above the image)
-            drawExportPill(
-                ctx: ctx,
-                title: captureImage.title,
-                role: captureImage.role,
-                cellX: cellX,
-                cellWidth: layoutFrame.size.width,
-                pillY: cellY + rowHeight,
-                pillHeight: DesignTokens.titlePillHeight
-            )
-        }
-
-        // VIB-372: Render annotation marks into the composite.
-        // Annotations are in editor canvas coordinates (= filmstrip imageAreaRect).
-        // Map them to the IMAGE CONTENT AREA within the composite, NOT the full
-        // composite size (which includes padding and title pill area).
-        if !annotations.isEmpty && canvasSize.width > 0 && canvasSize.height > 0 {
-            ctx.saveGState()
-            // Translate to the image content area origin (skip padding)
-            ctx.translateBy(x: padding, y: padding)
-            // Scale from canvas space to export image content area
-            let scaleX = totalContentWidth / canvasSize.width
-            let scaleY = rowHeight / canvasSize.height
-            ctx.scaleBy(x: scaleX, y: scaleY)
-            pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
-            arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
-            rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
-            circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
-            freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
-            ctx.restoreGState()
-        }
-
-        image.unlockFocus()
         return image
     }
 

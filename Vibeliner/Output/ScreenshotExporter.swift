@@ -10,31 +10,54 @@ final class ScreenshotExporter {
 
     static func exportAnnotatedScreenshot(original: NSImage, annotations: [Annotation], canvasSize: CGSize) -> NSImage {
         let imageSize = NSSize(width: original.size.width, height: original.size.height)
-        let image = NSImage(size: imageSize)
 
-        image.lockFocus()
-        guard let context = NSGraphicsContext.current?.cgContext else {
-            image.unlockFocus()
+        // Get pixel dimensions for Retina support
+        guard let cgOriginal = original.cgImage(forProposedRect: nil, context: nil, hints: nil) else {
+            return original
+        }
+        let pixelWidth = cgOriginal.width
+        let pixelHeight = cgOriginal.height
+
+        // Create CGBitmapContext (thread-safe, works off main thread)
+        guard let bitmapContext = CGContext(
+            data: nil,
+            width: pixelWidth,
+            height: pixelHeight,
+            bitsPerComponent: 8,
+            bytesPerRow: 0,
+            space: CGColorSpaceCreateDeviceRGB(),
+            bitmapInfo: CGImageAlphaInfo.premultipliedFirst.rawValue | CGBitmapInfo.byteOrder32Little.rawValue
+        ) else {
             return original
         }
 
-        // Draw original screenshot
-        original.draw(in: NSRect(origin: .zero, size: imageSize))
+        // Draw original screenshot into bitmap context
+        bitmapContext.draw(cgOriginal, in: CGRect(x: 0, y: 0, width: pixelWidth, height: pixelHeight))
 
-        // Scale context if canvas size differs from image size (Retina)
-        let scaleX = imageSize.width / canvasSize.width
-        let scaleY = imageSize.height / canvasSize.height
-        context.scaleBy(x: scaleX, y: scaleY)
+        // Scale context for annotation rendering (canvas → pixel coordinates)
+        let scaleX = CGFloat(pixelWidth) / canvasSize.width
+        let scaleY = CGFloat(pixelHeight) / canvasSize.height
+        bitmapContext.scaleBy(x: scaleX, y: scaleY)
+
+        // Push NSGraphicsContext for any AppKit drawing in renderers
+        let nsContext = NSGraphicsContext(cgContext: bitmapContext, flipped: false)
+        NSGraphicsContext.saveGraphicsState()
+        NSGraphicsContext.current = nsContext
 
         // Draw marks only (no notes, no handles, no hover states)
-        pinRenderer.drawMarks(in: context, annotations: annotations, canvasSize: canvasSize)
-        arrowRenderer.drawMarks(in: context, annotations: annotations, canvasSize: canvasSize)
-        rectangleRenderer.drawMarks(in: context, annotations: annotations, canvasSize: canvasSize)
-        circleRenderer.drawMarks(in: context, annotations: annotations, canvasSize: canvasSize)
-        freehandRenderer.drawMarks(in: context, annotations: annotations, canvasSize: canvasSize)
+        pinRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
+        arrowRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
+        rectangleRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
+        circleRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
+        freehandRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
 
-        image.unlockFocus()
-        return image
+        NSGraphicsContext.restoreGraphicsState()
+
+        guard let finalCGImage = bitmapContext.makeImage() else {
+            return original
+        }
+
+        return NSImage(cgImage: finalCGImage, size: imageSize)
     }
 
     static func saveExportedScreenshot(to folderURL: URL, original: NSImage, annotations: [Annotation], canvasSize: CGSize) {
