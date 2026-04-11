@@ -72,6 +72,10 @@ final class GeneralTabView: NSView {
 
         let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeHotkey))
         changeButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
+        changeButton.setAccessibilityLabel("Change hotkey")
+        changeButton.setAccessibilityRole(.button)
+        hotkeyRow.setAccessibilityLabel("Hotkey shortcut")
+        hotkeyRow.setAccessibilityRole(.group)
 
         let content = NSStackView(views: [hotkeyRow, changeButton])
         content.orientation = .vertical
@@ -91,6 +95,8 @@ final class GeneralTabView: NSView {
         folderPathLabel.lineBreakMode = .byTruncatingMiddle
         folderPathLabel.maximumNumberOfLines = 1
         folderPathLabel.stringValue = savedPath
+        folderPathLabel.setAccessibilityLabel("Captures folder path")
+        folderPathLabel.setAccessibilityRole(.staticText)
 
         folderFieldContainer.translatesAutoresizingMaskIntoConstraints = false
         SettingsUI.styleFieldSurface(folderFieldContainer)
@@ -109,6 +115,8 @@ final class GeneralTabView: NSView {
 
         let changeButton = SettingsPillButton(title: "Change", target: self, action: #selector(changeFolderClicked))
         changeButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
+        changeButton.setAccessibilityLabel("Change captures folder")
+        changeButton.setAccessibilityRole(.button)
 
         let content = NSStackView(views: [folderFieldContainer, helper, changeButton])
         content.orientation = .vertical
@@ -125,6 +133,8 @@ final class GeneralTabView: NSView {
         loginCheckbox.target = self
         loginCheckbox.action = #selector(loginToggled)
         loginCheckbox.translatesAutoresizingMaskIntoConstraints = false
+        loginCheckbox.setAccessibilityLabel("Launch at login")
+        loginCheckbox.setAccessibilityRole(.checkBox)
         loginLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
 
         let loginRow = NSStackView(views: [loginCheckbox, loginLabel])
@@ -146,6 +156,9 @@ final class GeneralTabView: NSView {
         appearanceControl.onSelectionChanged = { [weak self] index in
             self?.appearanceChanged(index)
         }
+
+        appearanceControl.setAccessibilityLabel("Appearance mode")
+        appearanceControl.setAccessibilityRole(.radioGroup)
 
         NSLayoutConstraint.activate([
             appearanceControl.widthAnchor.constraint(equalToConstant: 240),

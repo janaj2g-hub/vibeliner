@@ -167,6 +167,8 @@ final class PopoverContentView: NSView {
         // Quit row
         y -= rowH
         let quitRow = makeRow(label: "Quit Vibeliner", keys: nil, onAction: { [weak self] in self?.quitApp() }, hasArrow: false, y: y, rowH: rowH, hPad: hPad)
+        quitRow.setAccessibilityLabel("Quit Vibeliner")
+        quitRow.setAccessibilityRole(.menuItem)
         addSubview(quitRow)
     }
 
@@ -174,6 +176,8 @@ final class PopoverContentView: NSView {
         let rowW = popWidth - hPad * 2
         let row = PopoverRowView(frame: NSRect(x: hPad, y: y, width: rowW, height: rowH))
         row.onAction = onAction  // VIB-219: closure-based action for first-click support
+        row.setAccessibilityLabel(label)
+        row.setAccessibilityRole(.menuItem)
 
         let textLabel = NSTextField(labelWithString: label)
         textLabel.font = NSFont.systemFont(ofSize: 13, weight: .regular)
