@@ -147,19 +147,21 @@ final class TourWindowController: NSWindowController {
             titleLabel.leadingAnchor.constraint(equalTo: headerView.leadingAnchor, constant: 20),
         ])
 
-        // Exit tour button — ghost pill with explicit attributed title for visibility
-        exitButton = HoverButton(title: "", target: self, action: #selector(exitTour))
+        // Exit tour button — ghost pill, right-aligned in header
+        exitButton = HoverButton(title: "Exit tour", target: self, action: #selector(exitTour))
         exitButton.translatesAutoresizingMaskIntoConstraints = false
         exitButton.isBordered = false
+        exitButton.bezelStyle = .inline
         exitButton.wantsLayer = true
         exitButton.layer?.cornerRadius = 999
         exitButton.layer?.borderWidth = 1
+        exitButton.layer?.backgroundColor = NSColor.clear.cgColor
+        exitButton.contentTintColor = DesignTokens.tourGhostButtonText
+        exitButton.font = DesignTokens.tourExitFont
         headerView.addSubview(exitButton)
         NSLayoutConstraint.activate([
             exitButton.centerYAnchor.constraint(equalTo: headerView.centerYAnchor),
             exitButton.trailingAnchor.constraint(equalTo: headerView.trailingAnchor, constant: -16),
-            exitButton.heightAnchor.constraint(equalToConstant: 26),
-            exitButton.widthAnchor.constraint(greaterThanOrEqualToConstant: 72),
         ])
         exitButton.onMouseEntered = { [weak self] in self?.setExitButtonHover(true) }
         exitButton.onMouseExited = { [weak self] in self?.setExitButtonHover(false) }
