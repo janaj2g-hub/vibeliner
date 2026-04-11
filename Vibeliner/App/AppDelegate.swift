@@ -32,6 +32,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         applyAppearanceSetting()
         setupMenuBarIcon()
 
+        // VIB-392: LSUIElement apps have no menu bar, so text fields lack the
+        // Edit menu that provides Cmd+C/V/X/A/Z. Add one programmatically.
+        installEditMenu()
+
         HotkeyManager.shared.onHotkeyPressed = {
             CaptureCoordinator.shared.startCapture()
         }
@@ -70,6 +74,34 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         setup.window?.center()
         NSApp.activate(ignoringOtherApps: true)
         setupWindowController = setup
+    }
+
+    /// VIB-392: Create a minimal main menu with an Edit submenu so that standard
+    /// text-editing shortcuts (Cmd+C/V/X/A/Z) work in Settings and other windows.
+    /// The EditorPanel has its own performKeyEquivalent that fires before the menu,
+    /// so its Cmd+C (copy prompt) and Cmd+Z (undo annotation) behavior is unchanged.
+    private func installEditMenu() {
+        let mainMenu = NSMenu()
+
+        // App menu (required first item)
+        let appMenuItem = NSMenuItem()
+        mainMenu.addItem(appMenuItem)
+
+        // Edit menu
+        let editMenuItem = NSMenuItem()
+        let editMenu = NSMenu(title: "Edit")
+        editMenu.addItem(withTitle: "Undo", action: Selector(("undo:")), keyEquivalent: "z")
+        let redoItem = editMenu.addItem(withTitle: "Redo", action: Selector(("redo:")), keyEquivalent: "z")
+        redoItem.keyEquivalentModifierMask = [.command, .shift]
+        editMenu.addItem(.separator())
+        editMenu.addItem(withTitle: "Cut", action: #selector(NSText.cut(_:)), keyEquivalent: "x")
+        editMenu.addItem(withTitle: "Copy", action: #selector(NSText.copy(_:)), keyEquivalent: "c")
+        editMenu.addItem(withTitle: "Paste", action: #selector(NSText.paste(_:)), keyEquivalent: "v")
+        editMenu.addItem(withTitle: "Select All", action: #selector(NSText.selectAll(_:)), keyEquivalent: "a")
+        editMenuItem.submenu = editMenu
+        mainMenu.addItem(editMenuItem)
+
+        NSApp.mainMenu = mainMenu
     }
 
     private func applyAppearanceSetting() {
