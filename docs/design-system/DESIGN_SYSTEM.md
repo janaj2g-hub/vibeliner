@@ -83,10 +83,10 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | Token | Dark value | Light value | Usage | Consuming files |
 |-------|-----------|-------------|-------|-----------------|
 | `toolbarBg` | rgba(30,30,30,0.92) | rgba(255,255,255,0.88) | Toolbar background | ToolbarView |
-| `toolbarBorder` | rgba(255,255,255,0.12) | rgba(0,0,0,0.06) | Toolbar border | ToolbarView |
+| `toolbarBorder` | rgba(255,255,255,0.12) | rgba(0,0,0,0.10) | Toolbar border | ToolbarView |
 | `toolbarIconDefault` | rgba(255,255,255,0.40) | rgba(0,0,0,0.45) | Icon default stroke | ToolButton |
 | `toolbarIconHover` | rgba(255,255,255,0.70) | rgba(0,0,0,0.70) | Icon hover stroke | ToolButton |
-| `toolbarDivider` | rgba(255,255,255,0.08) | rgba(0,0,0,0.08) | Toolbar dividers | ToolbarView |
+| `toolbarDivider` | rgba(255,255,255,0.08) | rgba(0,0,0,0.12) | Toolbar dividers | ToolbarView |
 | `toolbarPurpleActive` | #AFA9EC | #534AB7 | Active tool/toggle label | ToolbarView, ToolButton |
 | `toolbarPurpleButtonBorder` | #A796EB | #534AB7 | Purple pill button border | ToolbarView |
 | `toolbarPurpleButtonText` | #A796EB | #534AB7 | Purple pill button text | ToolbarView |
@@ -107,7 +107,7 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | Token | Dark value | Light value | Usage | Consuming files |
 |-------|-----------|-------------|-------|-----------------|
 | `toolbarSecondaryBorder` | rgba(255,255,255,0.20) | rgba(0,0,0,0.15) | Secondary button border | ToolbarView (SecondaryPillButton) |
-| `toolbarSecondaryText` | rgba(255,255,255,0.60) | rgba(0,0,0,0.55) | Secondary button text | ToolbarView (SecondaryPillButton) |
+| `toolbarSecondaryText` | rgba(255,255,255,0.60) | rgba(0,0,0,0.65) | Secondary button text | ToolbarView (SecondaryPillButton) |
 | `toolbarSecondaryBg` | transparent | transparent | Secondary button bg | ToolbarView (SecondaryPillButton) |
 | `toolbarSecondaryHoverBorder` | rgba(255,255,255,0.35) | rgba(0,0,0,0.25) | Secondary hover border | ToolbarView (SecondaryPillButton) |
 | `toolbarSecondaryHoverText` | rgba(255,255,255,0.80) | rgba(0,0,0,0.75) | Secondary hover text | ToolbarView (SecondaryPillButton) |
