@@ -280,6 +280,7 @@ final class ConfigManager {
         }
         return s.replacingOccurrences(of: "\\n", with: "\n")
               .replacingOccurrences(of: "\\\"", with: "\"")
+              .replacingOccurrences(of: "\\\\", with: "\\")
     }
 
     private func unquoteMultilineString(_ value: String) -> String {
@@ -287,7 +288,8 @@ final class ConfigManager {
     }
 
     private func escapeString(_ value: String) -> String {
-        return value.replacingOccurrences(of: "\"", with: "\\\"")
+        return value.replacingOccurrences(of: "\\", with: "\\\\")
+                    .replacingOccurrences(of: "\"", with: "\\\"")
                     .replacingOccurrences(of: "\n", with: "\\n")
     }
 }
