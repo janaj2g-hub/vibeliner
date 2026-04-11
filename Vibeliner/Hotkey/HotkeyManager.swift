@@ -54,15 +54,19 @@ final class HotkeyManager {
     func register() {
         registeredHotkey = hotkeySpec(from: ConfigManager.shared.hotkey) ?? Self.defaultHotkey
 
+        #if DEBUG
         NSLog(
             "Vibeliner: Registering hotkey %@ (keyCode %d)",
             registeredHotkey.displayParts.joined(),
             registeredHotkey.keyCode
         )
+        #endif
 
         globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if self?.isHotkeyMatch(event) == true {
+                #if DEBUG
                 NSLog("Vibeliner: Global hotkey %@ triggered", self?.registeredHotkey.displayParts.joined() ?? "")
+                #endif
                 DispatchQueue.main.async {
                     self?.onHotkeyPressed?()
                 }
@@ -71,7 +75,9 @@ final class HotkeyManager {
 
         localMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
             if self?.isHotkeyMatch(event) == true {
+                #if DEBUG
                 NSLog("Vibeliner: Local hotkey %@ triggered", self?.registeredHotkey.displayParts.joined() ?? "")
+                #endif
                 DispatchQueue.main.async {
                     self?.onHotkeyPressed?()
                 }
@@ -82,7 +88,9 @@ final class HotkeyManager {
 
         // Note: do NOT prompt for accessibility here — the setup window handles that.
         // Prompting here triggers a macOS system dialog that interrupts the setup flow.
+        #if DEBUG
         NSLog("Vibeliner: Accessibility trusted = %@", isTrusted() ? "YES" : "NO")
+        #endif
     }
 
     /// Check if the event matches ⌘⇧6. Uses .contains instead of == to tolerate

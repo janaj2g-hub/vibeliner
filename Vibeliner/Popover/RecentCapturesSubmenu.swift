@@ -2,7 +2,6 @@ import AppKit
 
 final class RecentCapturesSubmenu: NSView {
 
-    private var hideTimer: Timer?
     var onMouseEntered: (() -> Void)?
     var onMouseExited: (() -> Void)?
 
@@ -93,17 +92,6 @@ final class RecentCapturesSubmenu: NSView {
     private func addOpenFolderRow(at y: CGFloat, width: CGFloat) {
         let row = OpenFolderRowView(frame: NSRect(x: 6, y: y, width: width - 12, height: 30))
         addSubview(row)
-    }
-
-    func scheduleHide(after delay: TimeInterval = 0.2, action: @escaping () -> Void) {
-        hideTimer?.invalidate()
-        hideTimer = Timer.scheduledTimer(withTimeInterval: delay, repeats: false) { _ in
-            action()
-        }
-    }
-
-    func cancelHide() {
-        hideTimer?.invalidate()
     }
 
     override func updateTrackingAreas() {

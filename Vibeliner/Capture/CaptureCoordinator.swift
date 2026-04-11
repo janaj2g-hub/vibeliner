@@ -71,7 +71,9 @@ final class CaptureCoordinator {
         // Wait one frame for overlays to fully disappear, then capture
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) { [self] in
             guard let image = ScreenCapture.captureRegion(rect: rect, on: screen) else {
+                #if DEBUG
                 print("Vibeliner: Capture failed")
+                #endif
                 self.addImageCompletion = nil
                 dismissOverlays()
                 return
@@ -90,9 +92,13 @@ final class CaptureCoordinator {
             let screenshotURL = folderURL.appendingPathComponent("screenshot.png")
 
             if image.savePNG(to: screenshotURL) {
+                #if DEBUG
                 print("Captured to \(screenshotURL.path)")
+                #endif
             } else {
+                #if DEBUG
                 print("Vibeliner: Failed to save screenshot")
+                #endif
             }
 
             cleanupAfterCapture()

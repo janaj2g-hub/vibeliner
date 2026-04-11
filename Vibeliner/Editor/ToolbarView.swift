@@ -78,6 +78,8 @@ final class ToolbarView: NSView {
             path.stroke()
         }
         closeBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestClose() }
+        closeBtn.setAccessibilityLabel("Close editor")
+        closeBtn.setAccessibilityRole(.button)
         let closeY = (DesignTokens.toolbarHeight - DesignTokens.closeButtonSize) / 2
         closeBtn.setFrameOrigin(NSPoint(x: x, y: closeY))
         addSubview(closeBtn)
@@ -112,6 +114,8 @@ final class ToolbarView: NSView {
         }
         selectBtn.isActive = (selectedTool == .select)
         selectBtn.onClick = { [weak self] in self?.selectTool(.select) }
+        selectBtn.setAccessibilityLabel("Select tool")
+        selectBtn.setAccessibilityRole(.radioButton)
         selectBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(selectBtn)
         toolButtons[.select] = selectBtn
@@ -121,6 +125,8 @@ final class ToolbarView: NSView {
         let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)", iconDrawer: ToolbarView.drawPinIcon)
         pinBtn.isActive = (selectedTool == .pin)
         pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
+        pinBtn.setAccessibilityLabel("Pin tool")
+        pinBtn.setAccessibilityRole(.radioButton)
         pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(pinBtn)
         toolButtons[.pin] = pinBtn
@@ -138,6 +144,8 @@ final class ToolbarView: NSView {
             let btn = ToolButton(style: .tool, tooltip: name, iconDrawer: drawer)
             btn.isActive = (tool == selectedTool)
             btn.onClick = { [weak self] in self?.selectTool(tool) }
+            btn.setAccessibilityLabel("\(name.components(separatedBy: " (").first ?? name) tool")
+            btn.setAccessibilityRole(.radioButton)
             btn.setFrameOrigin(NSPoint(x: x, y: centerY))
             addSubview(btn)
             toolButtons[tool] = btn
@@ -168,6 +176,8 @@ final class ToolbarView: NSView {
         }
         trashBtn.isEnabled = false  // grayed by default — no selection
         trashBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestDelete() }
+        trashBtn.setAccessibilityLabel("Delete selected annotation")
+        trashBtn.setAccessibilityRole(.button)
         trashBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(trashBtn)
         self.trashButton = trashBtn
@@ -205,6 +215,8 @@ final class ToolbarView: NSView {
             chevron.stroke()
         }
         undoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestUndo() }
+        undoBtn.setAccessibilityLabel("Undo")
+        undoBtn.setAccessibilityRole(.button)
         undoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(undoBtn)
         x += DesignTokens.iconButtonSize + 1
@@ -236,6 +248,8 @@ final class ToolbarView: NSView {
             chevron.stroke()
         }
         redoBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestRedo() }
+        redoBtn.setAccessibilityLabel("Redo")
+        redoBtn.setAccessibilityRole(.button)
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(redoBtn)
         x += DesignTokens.iconButtonSize + 10
@@ -248,6 +262,8 @@ final class ToolbarView: NSView {
         let addImgBtn = makeAddImageButton()
         addImgBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - addImgBtn.frame.height) / 2))
         addSubview(addImgBtn)
+        addImgBtn.setAccessibilityLabel("Add another screenshot")
+        addImgBtn.setAccessibilityRole(.button)
         self.addImageButton = addImgBtn
         x += addImgBtn.frame.width + 4
 
@@ -255,6 +271,8 @@ final class ToolbarView: NSView {
         let captureBtn = makeNewCaptureButton()
         captureBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - captureBtn.frame.height) / 2))
         addSubview(captureBtn)
+        captureBtn.setAccessibilityLabel("Start new capture")
+        captureBtn.setAccessibilityRole(.button)
         x += captureBtn.frame.width + 10
 
         x = addDivider(at: x)
@@ -271,6 +289,8 @@ final class ToolbarView: NSView {
             self?.resetCopyState()
         }
         addSubview(toggle)
+        toggle.setAccessibilityLabel("Copy mode")
+        toggle.setAccessibilityRole(.radioGroup)
         x += toggle.frame.width + 10
 
         x = addDivider(at: x)
@@ -281,6 +301,8 @@ final class ToolbarView: NSView {
         copyPromptBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestCopyPrompt() }
         copyPromptBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - copyPromptBtn.frame.height) / 2))
         addSubview(copyPromptBtn)
+        copyPromptBtn.setAccessibilityLabel("Copy prompt to clipboard")
+        copyPromptBtn.setAccessibilityRole(.button)
         self.copyPromptButton = copyPromptBtn
         x += copyPromptBtn.frame.width + 4
 
@@ -289,6 +311,8 @@ final class ToolbarView: NSView {
         copyImageBtn.onClick = { [weak self] in self?.delegate?.toolbarDidRequestCopyImage() }
         copyImageBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - copyImageBtn.frame.height) / 2))
         addSubview(copyImageBtn)
+        copyImageBtn.setAccessibilityLabel("Copy image to clipboard")
+        copyImageBtn.setAccessibilityRole(.button)
         self.copyImageButton = copyImageBtn
         self.copyImagePillButton = copyImageBtn
         x += copyImageBtn.frame.width + 6  // 6px right padding (matches 6px left padding)
@@ -338,7 +362,12 @@ final class ToolbarView: NSView {
 
     func selectTool(_ tool: AnnotationToolType) {
         selectedTool = tool
-        for (t, btn) in toolButtons { btn.isActive = (t == tool) }
+        for (t, btn) in toolButtons {
+            btn.isActive = (t == tool)
+            let toolName = btn.toolTip ?? "Tool"
+            let baseName = toolName.components(separatedBy: " (").first ?? toolName
+            btn.setAccessibilityLabel(t == tool ? "\(baseName) tool, selected" : "\(baseName) tool")
+        }
         delegate?.toolbarDidSelectTool(tool)
     }
 
@@ -358,14 +387,20 @@ final class ToolbarView: NSView {
 
     func markCopyState(_ target: CopyTarget) {
         switch target {
-        case .prompt: copyPromptButton?.showCopied()
-        case .image: copyImagePillButton?.showCopied()
+        case .prompt:
+            copyPromptButton?.showCopied()
+            copyPromptButton?.setAccessibilityLabel("Prompt copied")
+        case .image:
+            copyImagePillButton?.showCopied()
+            copyImagePillButton?.setAccessibilityLabel("Image copied")
         }
     }
 
     func resetCopyState() {
         copyPromptButton?.resetState()
+        copyPromptButton?.setAccessibilityLabel("Copy prompt to clipboard")
         copyImagePillButton?.resetState()
+        copyImagePillButton?.setAccessibilityLabel("Copy image to clipboard")
     }
 
     private func updateShadowPath() {

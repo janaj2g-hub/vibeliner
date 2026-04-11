@@ -148,6 +148,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         saveButton.target = self
         saveButton.action = #selector(saveAllPromptSections)
         saveButton.widthAnchor.constraint(equalToConstant: 108).isActive = true
+        saveButton.setAccessibilityLabel("Save prompt sections")
+        saveButton.setAccessibilityRole(.button)
 
         let headerRow = NSStackView()
         headerRow.orientation = .horizontal
@@ -181,6 +183,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             segmentedControl.widthAnchor.constraint(equalTo: segmentedRow.widthAnchor, multiplier: 0.75),
         ])
 
+        segmentedControl.setAccessibilityLabel("Prompt section selector")
+        segmentedControl.setAccessibilityRole(.radioGroup)
         segmentedControl.onSelectionChanged = { [weak self] index in
             guard let tab = PromptSubTab(rawValue: index) else { return }
             self?.selectSubTab(tab)
@@ -201,6 +205,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         resetButton.target = self
         resetButton.action = #selector(resetCurrentPromptSection)
         resetButton.translatesAutoresizingMaskIntoConstraints = false
+        resetButton.setAccessibilityLabel("Reset to default")
+        resetButton.setAccessibilityRole(.button)
 
         let resetRow = NSStackView()
         resetRow.orientation = .horizontal
@@ -254,6 +260,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         let editor = makeEditor(text: drafts.preamble)
         preambleEditor = findTextView(in: editor)
         preambleEditor?.delegate = self
+        preambleEditor?.setAccessibilityLabel("Preamble text editor")
+        preambleEditor?.setAccessibilityRole(.textArea)
 
         activeContentStack.addArrangedSubview(description)
         activeContentStack.addArrangedSubview(editor)
@@ -291,6 +299,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         let editor = makeEditor(text: drafts.footer)
         footerEditor = findTextView(in: editor)
         footerEditor?.delegate = self
+        footerEditor?.setAccessibilityLabel("Footer text editor")
+        footerEditor?.setAccessibilityRole(.textArea)
 
         activeContentStack.addArrangedSubview(description)
         activeContentStack.addArrangedSubview(editor)

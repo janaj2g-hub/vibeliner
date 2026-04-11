@@ -98,6 +98,8 @@ final class StatusPillView: NSView {
 
     private func updateText(_ text: String) {
         label.stringValue = text
+        setAccessibilityLabel(text)
+        setAccessibilityRole(.staticText)
         sizeToFitContent()
     }
 

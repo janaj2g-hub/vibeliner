@@ -24,14 +24,8 @@ enum DesignTokens {
     /// #a796eb — copy button outline and text
     static let purpleButton = NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
 
-    /// #c4b8f5 — copy button hover
-    static let purpleButtonHover = NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1.0)
-
     /// rgba(116, 97, 194, 0.25) — copy button fill
     static let purpleButtonBg = NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.25)
-
-    /// rgba(116, 97, 194, 0.35) — copy button hover fill
-    static let purpleButtonBgHover = NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.35)
 
     /// #EF4444 — all annotation marks
     static let red = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0)
@@ -44,24 +38,6 @@ enum DesignTokens {
 
     /// Note pill default border: rgba(239, 68, 68, 0.18)
     static let redNoteBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.18)
-
-    /// Note pill hover: rgba(255, 245, 245, 0.88)
-    static let noteHoverBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.88)
-
-    /// Note pill hover border: rgba(239, 68, 68, 0.4)
-    static let noteHoverBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.4)
-
-    /// Note pill selected: rgba(255, 245, 245, 0.9)
-    static let noteSelectedBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.9)
-
-    /// Note pill selected border: rgba(239, 68, 68, 0.5)
-    static let noteSelectedBorder = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.5)
-
-    /// Note pill editing: rgba(255, 245, 245, 0.92)
-    static let noteEditingBg = NSColor(red: 255/255, green: 245/255, blue: 245/255, alpha: 0.92)
-
-    /// Note prefix color: rgba(153, 27, 27, 0.4)
-    static let notePrefixColor = NSColor(red: 153/255, green: 27/255, blue: 27/255, alpha: 0.4)
 
     /// Note text color: #7f1d1d
     static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
@@ -81,16 +57,6 @@ enum DesignTokens {
     /// Copy success bg: rgba(22, 163, 74, 0.12)
     static let copiedGreenBg = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
 
-    /// rgba(30, 30, 30, 0.92) — toolbar
-    static let darkChrome = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
-
-    /// rgba(30, 30, 30, 0.88) — status pill
-    static let darkChromeStatus = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.88)
-
-    /// rgba(30, 30, 30, 0.95) — popover
-    static let darkChromePopover = NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.95)
-
-
     /// rgba(22, 163, 74, 0.9) — copied state green
     static let copiedGreen = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.9)
 
@@ -103,26 +69,8 @@ enum DesignTokens {
         light: NSColor(red: 0, green: 0, blue: 0, alpha: 0.08)
     )
 
-    /// rgba(255, 87, 87, 0.2) — close button hover
-    static let closeHoverBg = NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.2)
-
-    /// rgba(255, 87, 87, 0.15) — trash button hover
-    static let trashHoverBg = NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.15)
-
     /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
     static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
-
-    /// rgba(255, 255, 255, 0.4) — default icon stroke
-    static let iconDefault = NSColor(white: 1.0, alpha: 0.4)
-
-    /// rgba(255, 255, 255, 0.8) — hover icon stroke
-    static let iconHover = NSColor(white: 1.0, alpha: 0.8)
-
-    /// rgba(255, 255, 255, 0.08) — button hover bg
-    static let buttonHoverBg = NSColor(white: 1.0, alpha: 0.08)
-
-    /// rgba(175, 169, 236, 0.2) — active tool bg
-    static let toolActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
 
     // MARK: - Appearance-aware toolbar tokens (VIB-235)
 
@@ -264,8 +212,6 @@ enum DesignTokens {
             : NSColor(white: 0.0, alpha: 0.04)
     }
 
-    // MARK: - Add Image Button (deprecated — use toolbarSecondary* tokens)
-
     /// Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
     static let addImageBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
@@ -278,13 +224,6 @@ enum DesignTokens {
         isDarkAppearance(appearance)
             ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.15)
-    }
-
-    /// Add image button hover border — dark: rgba(175,169,236,0.34), light: rgba(83,74,183,0.25)
-    static let addImageHoverBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.34)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.25)
     }
 
     /// Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)
@@ -333,18 +272,6 @@ enum DesignTokens {
     static let toolbarToggleInactiveText = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.3) : NSColor(white: 0.0, alpha: 0.40)
     }
-
-    /// rgba(175, 169, 236, 0.25) — toggle active bg
-    static let toggleActiveBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.25)
-
-    /// rgba(255, 255, 255, 0.06) — toggle bg
-    static let toggleBg = NSColor(white: 1.0, alpha: 0.06)
-
-    /// rgba(255, 255, 255, 0.3) — toggle inactive text
-    static let toggleInactiveText = NSColor(white: 1.0, alpha: 0.3)
-
-    /// #FF5F57 — close icon hover color
-    static let closeIconHover = NSColor(red: 255/255, green: 95/255, blue: 87/255, alpha: 1.0)
 
     /// Settings field surface — prototype: --surface-field
     static let settingsFieldSurface = NSColor(name: nil) { appearance in
@@ -520,14 +447,8 @@ enum DesignTokens {
     /// 20px toolbar corner radius
     static let toolbarCornerRadius: CGFloat = 20
 
-    /// 12px toolbar blur radius
-    static let toolbarBlur: CGFloat = 12
-
     /// 12px status pill corner radius
     static let statusPillCornerRadius: CGFloat = 12
-
-    /// 8px status pill blur radius
-    static let statusPillBlur: CGFloat = 8
 
     /// 30px tool button size
     static let toolButtonSize: CGFloat = 30
@@ -543,9 +464,6 @@ enum DesignTokens {
 
     /// Settings section title width
     static let settingsSectionLabelWidth: CGFloat = 128
-
-    /// Settings section vertical spacing
-    static let settingsSectionPadding: CGFloat = 24
 
     /// Settings section inner gap
     static let settingsSectionGap: CGFloat = 14
@@ -606,9 +524,6 @@ enum DesignTokens {
     /// Filmstrip container padding: 14px
     static let filmstripPadding: CGFloat = 14
 
-    /// Filmstrip container background — dark, ~65% opacity
-    static let filmstripBg = NSColor(red: 15/255, green: 15/255, blue: 20/255, alpha: 0.65)
-
     /// Title pill height: 30px
     static let titlePillHeight: CGFloat = 30
 
@@ -646,12 +561,6 @@ enum DesignTokens {
     /// Badge number: system 9px weight 600
     static let badgeFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
 
-    /// Note number prefix: system 8px weight 600 (from prototype)
-    static let noteNumberFont = NSFont.systemFont(ofSize: 8, weight: .semibold)
-
-
-
-
     /// Note text: system 12px weight regular
     static let noteTextFont = NSFont.systemFont(ofSize: 12, weight: .regular)
 
@@ -660,15 +569,6 @@ enum DesignTokens {
 
     /// Status pill: monospace 10px weight 500
     static let statusPillFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
-
-    /// Toolbar button label: system 11px weight 500
-    static let toolbarButtonFont = NSFont.systemFont(ofSize: 11, weight: .medium)
-
-    /// Tooltip body: system 12px weight regular
-    static let tooltipBodyFont = NSFont.systemFont(ofSize: 12, weight: .regular)
-
-    /// Tooltip label: system 13px weight 600
-    static let tooltipLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
 
     /// Settings section label: system 13px weight 500
     static let settingsSectionFont = NSFont.systemFont(ofSize: 13, weight: .medium)
@@ -695,18 +595,12 @@ enum DesignTokens {
     static let setupGreenBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08)
     /// rgba(34, 197, 94, 0.5) — green button border
     static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
-    /// rgba(234, 179, 8, 0.08) — amber status background
-    static let setupAmberBg = NSColor(red: 234/255, green: 179/255, blue: 8/255, alpha: 0.08)
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
     // Window/container backgrounds — appearance-aware
     /// Setup window background — follows system
     static let setupWindowBg = NSColor.windowBackgroundColor
-    /// Setup title bar background — slightly offset from window bg
-    static let setupTitleBarBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 0.165, alpha: 1) : NSColor(white: 0.96, alpha: 1)
-    }
     /// Setup footer background — slightly different from window bg
     static let setupFooterBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 0.133, alpha: 1) : NSColor(white: 0.94, alpha: 1)
@@ -753,13 +647,6 @@ enum DesignTokens {
             ? NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
             : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
     }
-    /// Setup arrow hover bg
-    static let setupButtonHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
-    }
-
     // Kbd pills — appearance-aware
     /// Setup kbd pill border
     static let setupKbdBorder = NSColor(name: nil) { appearance in
@@ -783,12 +670,10 @@ enum DesignTokens {
     static let setupBadgeSize: CGFloat = 32
     static let setupArrowSize: CGFloat = 36
     static let setupSmallPillHeight: CGFloat = 22
-    static let setupWindowRadius: CGFloat = 18
     static let setupPathBoxRadius: CGFloat = 8
 
     // MARK: - Setup Window Fonts
 
-    static let setupWindowTitleFont = NSFont.systemFont(ofSize: 18, weight: .semibold)
     static let setupPanelTitleFont = NSFont.systemFont(ofSize: 16, weight: .semibold)
     static let setupDescFont = NSFont.systemFont(ofSize: 13, weight: .regular)
     static let setupActionLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)

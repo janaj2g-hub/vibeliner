@@ -7,12 +7,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var settingsWindowController: SettingsWindowController?
     private var popoverWindow: PopoverWindow?
 
+    #if DEBUG
     private var visualTestHarness: VisualTestHarness?
+    #endif
 
     func applicationDidFinishLaunching(_ notification: Notification) {
+        #if DEBUG
         NSLog("AppDelegate launched")
+        #endif
 
         // Visual test mode — open test harness instead of normal flow
+        #if DEBUG
         if CommandLine.arguments.contains("--visual-test") {
             NSLog("Visual test mode — opening test harness")
             let harness = VisualTestHarness()
@@ -20,6 +25,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             self.visualTestHarness = harness
             return
         }
+        #endif
 
         ConfigManager.shared.load()
         CapturesManager.shared.ensureBaseFolder()
@@ -116,57 +122,55 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     private func createCrosshairImage(color: NSColor? = nil) -> NSImage {
         let size: CGFloat = 18
-        let image = NSImage(size: NSSize(width: size, height: size))
-        image.lockFocus()
+        return NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
+            let center = NSPoint(x: size / 2, y: size / 2)
+            let radius: CGFloat = 6
+            let tickLength: CGFloat = 4
+            let lineWidth: CGFloat = 1.5
 
-        let center = NSPoint(x: size / 2, y: size / 2)
-        let radius: CGFloat = 6
-        let tickLength: CGFloat = 4
-        let lineWidth: CGFloat = 1.5
+            (color ?? .black).setStroke()
 
-        (color ?? .black).setStroke()
-
-        // Circle
-        let circlePath = NSBezierPath(
-            ovalIn: NSRect(
-                x: center.x - radius,
-                y: center.y - radius,
-                width: radius * 2,
-                height: radius * 2
+            // Circle
+            let circlePath = NSBezierPath(
+                ovalIn: NSRect(
+                    x: center.x - radius,
+                    y: center.y - radius,
+                    width: radius * 2,
+                    height: radius * 2
+                )
             )
-        )
-        circlePath.lineWidth = lineWidth
-        circlePath.stroke()
+            circlePath.lineWidth = lineWidth
+            circlePath.stroke()
 
-        // Top tick
-        let top = NSBezierPath()
-        top.move(to: NSPoint(x: center.x, y: center.y + radius))
-        top.line(to: NSPoint(x: center.x, y: center.y + radius + tickLength))
-        top.lineWidth = lineWidth
-        top.stroke()
+            // Top tick
+            let top = NSBezierPath()
+            top.move(to: NSPoint(x: center.x, y: center.y + radius))
+            top.line(to: NSPoint(x: center.x, y: center.y + radius + tickLength))
+            top.lineWidth = lineWidth
+            top.stroke()
 
-        // Bottom tick
-        let bottom = NSBezierPath()
-        bottom.move(to: NSPoint(x: center.x, y: center.y - radius))
-        bottom.line(to: NSPoint(x: center.x, y: center.y - radius - tickLength))
-        bottom.lineWidth = lineWidth
-        bottom.stroke()
+            // Bottom tick
+            let bottom = NSBezierPath()
+            bottom.move(to: NSPoint(x: center.x, y: center.y - radius))
+            bottom.line(to: NSPoint(x: center.x, y: center.y - radius - tickLength))
+            bottom.lineWidth = lineWidth
+            bottom.stroke()
 
-        // Right tick
-        let right = NSBezierPath()
-        right.move(to: NSPoint(x: center.x + radius, y: center.y))
-        right.line(to: NSPoint(x: center.x + radius + tickLength, y: center.y))
-        right.lineWidth = lineWidth
-        right.stroke()
+            // Right tick
+            let right = NSBezierPath()
+            right.move(to: NSPoint(x: center.x + radius, y: center.y))
+            right.line(to: NSPoint(x: center.x + radius + tickLength, y: center.y))
+            right.lineWidth = lineWidth
+            right.stroke()
 
-        // Left tick
-        let left = NSBezierPath()
-        left.move(to: NSPoint(x: center.x - radius, y: center.y))
-        left.line(to: NSPoint(x: center.x - radius - tickLength, y: center.y))
-        left.lineWidth = lineWidth
-        left.stroke()
+            // Left tick
+            let left = NSBezierPath()
+            left.move(to: NSPoint(x: center.x - radius, y: center.y))
+            left.line(to: NSPoint(x: center.x - radius - tickLength, y: center.y))
+            left.lineWidth = lineWidth
+            left.stroke()
 
-        image.unlockFocus()
-        return image
+            return true
+        }
     }
 }

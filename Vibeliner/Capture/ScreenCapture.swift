@@ -8,7 +8,9 @@ final class ScreenCapture {
         // Check screen recording permission
         if !CGPreflightScreenCaptureAccess() {
             CGRequestScreenCaptureAccess()
+            #if DEBUG
             print("Vibeliner: Screen recording permission required.")
+            #endif
             return nil
         }
 
@@ -33,7 +35,9 @@ final class ScreenCapture {
             kCGNullWindowID,
             [.bestResolution]
         ) else {
+            #if DEBUG
             print("Vibeliner: CGWindowListCreateImage failed, attempting fallback")
+            #endif
             return captureWithFallback(rect: rect)
         }
 
@@ -60,7 +64,9 @@ final class ScreenCapture {
             try process.run()
             process.waitUntilExit()
         } catch {
+            #if DEBUG
             print("Vibeliner: screencapture fallback failed: \(error)")
+            #endif
             return nil
         }
 
@@ -86,7 +92,9 @@ extension NSImage {
             try pngData.write(to: url)
             return true
         } catch {
+            #if DEBUG
             print("Vibeliner: Failed to save PNG: \(error)")
+            #endif
             return false
         }
     }
