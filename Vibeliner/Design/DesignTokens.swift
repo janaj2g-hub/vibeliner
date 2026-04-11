@@ -470,7 +470,8 @@ enum DesignTokens {
     /// Generate a semi-transparent background color for a role pill from its hex (VIB-335: 0.85 alpha)
     static func roleBgColor(forHex hex: String) -> NSColor {
         let border = roleColor(forHex: hex)
-        return (border.blended(withFraction: 0.55, of: .black) ?? border).withAlphaComponent(0.85)
+        // VIB-387: Fully opaque so filmstrip title bars don't show screenshot bleed-through
+        return border.blended(withFraction: 0.55, of: .black) ?? border
     }
 
     /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)

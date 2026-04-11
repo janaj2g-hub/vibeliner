@@ -240,6 +240,10 @@ final class ToolbarView: NSView {
         addSubview(redoBtn)
         x += DesignTokens.iconButtonSize + 10
 
+        // VIB-387: Divider between redo and "+ Add image"
+        x = addDivider(at: x)
+        x += 10
+
         // VIB-262: + Add image button
         let addImgBtn = makeAddImageButton()
         addImgBtn.setFrameOrigin(NSPoint(x: x, y: (DesignTokens.toolbarHeight - addImgBtn.frame.height) / 2))
