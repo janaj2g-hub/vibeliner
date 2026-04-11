@@ -9,13 +9,10 @@ final class ClipboardManager {
         pasteboard.setString(prompt, forType: .string)
     }
 
-    static func copyImageToClipboard(original: NSImage, annotations: [Annotation], canvasSize: CGSize, allImages: [NSImage]? = nil) {
+    static func copyImageToClipboard(original: NSImage, annotations: [Annotation], canvasSize: CGSize, captureImages: [CaptureImage]? = nil) {
         let image: NSImage
-        // VIB-297: Multi-image composite when 2+ images
-        if let allImages = allImages, allImages.count >= 2 {
-            let captureImages = allImages.enumerated().map { i, img in
-                CaptureImage(sourceImage: img, title: "Image \(i + 1)", role: .observed, originalSize: img.size, index: i)
-            }
+        // VIB-297/VIB-383: Multi-image composite using CaptureImage with actual roles
+        if let captureImages = captureImages, captureImages.count >= 2 {
             image = CompositeStitcher.stitch(images: captureImages, annotations: annotations, canvasSize: canvasSize) ?? original
         } else {
             image = ScreenshotExporter.exportAnnotatedScreenshot(original: original, annotations: annotations, canvasSize: canvasSize)
