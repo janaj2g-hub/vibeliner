@@ -548,6 +548,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         textView.isRichText = false
         textView.isEditable = true
         textView.isSelectable = true
+        textView.allowsUndo = true
         textView.drawsBackground = false
         textView.string = text
         textView.textContainerInset = NSSize(width: 8, height: 8)
