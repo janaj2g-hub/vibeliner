@@ -1,9 +1,8 @@
 import AppKit
 
 /// Tour step 0: "Visual bugs are hard to describe"
-/// Top ~63%: WireframeAppMock with errors and shadow.
-/// Below: compact LLM strip with purple dot, label, and monospace text.
-/// Empty space at the bottom of the pane.
+/// Clean wireframe (no error highlights) with shadow, plus LLM strip below.
+/// Content block is vertically centered in the pane.
 final class TourIllustration0: NSView {
 
     private let shadowContainer: NSView
@@ -21,7 +20,7 @@ final class TourIllustration0: NSView {
     override init(frame frameRect: NSRect) {
         // Shadow container wraps the mock so shadow + corner clipping both work
         shadowContainer = NSView()
-        appMock = WireframeAppMock(config: WireframeConfig(showErrorCard: true, showErrorRow: true))
+        appMock = WireframeAppMock(config: WireframeConfig(showErrorCard: false, showErrorRow: false))
 
         llmStrip = NSView()
         dotView = LLMDotView()
@@ -87,21 +86,12 @@ final class TourIllustration0: NSView {
         let h = bounds.height
 
         let contentW = w - padding * 2
+
+        // Compute mock height (~63% of available content)
         let contentH = h - padding * 2
-
-        // Mock at top, ~63% of content height
         let mockH = floor(contentH * 0.63)
-        let mockY = h - padding - mockH
-        shadowContainer.frame = CGRect(x: padding, y: mockY, width: contentW, height: mockH)
-        appMock.frame = shadowContainer.bounds
-        shadowContainer.layer?.shadowPath = CGPath(
-            roundedRect: shadowContainer.bounds,
-            cornerWidth: DesignTokens.tourWireframeRadius,
-            cornerHeight: DesignTokens.tourWireframeRadius,
-            transform: nil
-        )
 
-        // LLM strip: sized to content, not filling remaining space
+        // Compute LLM strip height from content
         let stripPad: CGFloat = 14
         let dotSize = DesignTokens.tourLLMDotSize
         let glowPad: CGFloat = 4
@@ -114,9 +104,24 @@ final class TourIllustration0: NSView {
         promptText.preferredMaxLayoutWidth = textW
         let textSize = promptText.sizeThatFits(NSSize(width: textW, height: .greatestFiniteMagnitude))
 
-        // padding + header + 6px margin-bottom + 8px text padding-top + text + padding
         let stripH = stripPad + headerH + 6 + 8 + textSize.height + stripPad
-        let stripY = mockY - gap - stripH
+
+        // Total content block height and vertical centering
+        let totalBlockH = mockH + gap + stripH
+        let blockOriginY = padding + (contentH - totalBlockH) / 2
+
+        // Position strip at bottom of centered block, mock above
+        let stripY = blockOriginY
+        let mockY = stripY + stripH + gap
+
+        shadowContainer.frame = CGRect(x: padding, y: mockY, width: contentW, height: mockH)
+        appMock.frame = shadowContainer.bounds
+        shadowContainer.layer?.shadowPath = CGPath(
+            roundedRect: shadowContainer.bounds,
+            cornerWidth: DesignTokens.tourWireframeRadius,
+            cornerHeight: DesignTokens.tourWireframeRadius,
+            transform: nil
+        )
 
         llmStrip.frame = CGRect(x: padding, y: max(padding, stripY), width: contentW, height: stripH)
 
