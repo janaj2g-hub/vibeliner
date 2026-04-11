@@ -6,7 +6,9 @@ final class GeneralTabView: NSView {
     private let contentStack = NSStackView()
     private let hotkeyRow = SettingsKeyPillRow()
     private let folderPathLabel = SettingsUI.fieldLabel("", monospaced: true)
-    private let folderFieldContainer = NSView()
+    // VIB-388: Use AppearanceAwareFieldView so the field re-styles itself
+    // when re-attached to the hierarchy after tab switching
+    private let folderFieldContainer = AppearanceAwareFieldView()
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
     private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"])
@@ -21,7 +23,18 @@ final class GeneralTabView: NSView {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
-        // Re-resolve dynamic colors for the new appearance
+        refreshFieldAppearance()
+    }
+
+    // VIB-388: Re-style when re-attached to the window after tab switching.
+    // Cached tab views get removeFromSuperview() and miss appearance change
+    // notifications while detached. When re-added, CGColors may be stale.
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        if window != nil { refreshFieldAppearance() }
+    }
+
+    private func refreshFieldAppearance() {
         SettingsUI.styleFieldSurface(folderFieldContainer)
         folderFieldContainer.needsDisplay = true
     }
