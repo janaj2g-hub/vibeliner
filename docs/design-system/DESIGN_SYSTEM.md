@@ -158,6 +158,9 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `roleExpectedBg` | rgba(22,100,52,0.85) | Expected role pill fill | TitlePillView, CompositeStitcher |
 | `roleReferenceBorder` | #3B82F6 (blue) | Reference role border | PromptTabView, FilmstripGridView, TitlePillView |
 | `roleReferenceBg` | rgba(30,70,140,0.85) | Reference role pill fill | TitlePillView, CompositeStitcher |
+| `roleSwatchOutline` | rgba(255,255,255,0.16) | rgba(15,23,42,0.16) | Role swatch outer outline for visibility | PromptTabView |
+| `roleSwatchInnerBorder` | rgba(0,0,0,0.22) | rgba(255,255,255,0.82) | Role swatch inner contrast ring | PromptTabView |
+| `roleSwatchSelectedRing` | rgba(255,255,255,0.92) | rgba(83,74,183,0.78) | Selected role swatch ring | PromptTabView |
 
 ### Filmstrip & Title Pill
 

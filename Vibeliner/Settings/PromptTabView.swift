@@ -375,8 +375,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
             swatch.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 8),
             swatch.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            swatch.widthAnchor.constraint(equalToConstant: 14),
-            swatch.heightAnchor.constraint(equalToConstant: 14),
+            swatch.widthAnchor.constraint(equalToConstant: 16),
+            swatch.heightAnchor.constraint(equalToConstant: 16),
 
             // VIB-391: Increased spacing for better visual separation
             nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 12),
@@ -450,13 +450,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             dot.isBordered = false
             dot.wantsLayer = true
             dot.layer?.cornerRadius = dotSize / 2
-            dot.layer?.backgroundColor = preset.color.cgColor
             let isSelected = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased()
-            // VIB-389: Visible selection indicator — thick white border + subtle unselected border
-            dot.layer?.borderWidth = isSelected ? 2.5 : 0.5
-            dot.layer?.borderColor = isSelected
-                ? NSColor.white.cgColor
-                : NSColor(white: 0, alpha: 0.1).cgColor
+            applyColorDotStyle(dot, color: preset.color, isSelected: isSelected, in: contentView)
             dot.target = self
             dot.action = #selector(colorPopoverDotClicked(_:))
             dot.tag = roleIndex * 100 + colorIdx
@@ -482,15 +477,16 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         // The popover stays open so the user can try different colors.
         // It closes on outside click because behavior = .transient.
         if let contentView = activeColorPopover?.contentViewController?.view {
-            let dotSize: CGFloat = 22
             for subview in contentView.subviews {
                 guard let dot = subview as? NSButton else { continue }
                 let ci = dot.tag % 100
                 let isNowSelected = ci == colorIndex && dot.tag / 100 == roleIndex
-                dot.layer?.borderWidth = isNowSelected ? 2.5 : 0.5
-                dot.layer?.borderColor = isNowSelected
-                    ? NSColor.white.cgColor
-                    : NSColor(white: 0, alpha: 0.1).cgColor
+                applyColorDotStyle(
+                    dot,
+                    color: DesignTokens.rolePresetColors[ci].color,
+                    isSelected: isNowSelected,
+                    in: contentView
+                )
             }
         }
 
@@ -508,6 +504,18 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             }
         }
         return nil
+    }
+
+    private func applyColorDotStyle(_ dot: NSButton, color: NSColor, isSelected: Bool, in view: NSView) {
+        dot.layer?.backgroundColor = color.cgColor
+        dot.layer?.borderWidth = isSelected ? 2.5 : 1.0
+        view.effectiveAppearance.performAsCurrentDrawingAppearance {
+            dot.layer?.borderColor = (isSelected ? DesignTokens.roleSwatchSelectedRing : DesignTokens.roleSwatchOutline).cgColor
+            dot.layer?.shadowColor = DesignTokens.roleSwatchSelectedRing.withAlphaComponent(0.26).cgColor
+        }
+        dot.layer?.shadowOpacity = isSelected ? 1.0 : 0.0
+        dot.layer?.shadowRadius = isSelected ? 4 : 0
+        dot.layer?.shadowOffset = .zero
     }
 
     /// Creates an editable text box with visible field surface styling.
@@ -805,15 +813,23 @@ private final class RoleSwatchView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let path = NSBezierPath(ovalIn: bounds)
+        let outerRect = bounds.insetBy(dx: 0.5, dy: 0.5)
+        let outerPath = NSBezierPath(ovalIn: outerRect)
+        let colorRect = bounds.insetBy(dx: 2.5, dy: 2.5)
+        let colorPath = NSBezierPath(ovalIn: colorRect)
+
+        NSColor.windowBackgroundColor.setFill()
+        outerPath.fill()
         swatchColor.setFill()
-        path.fill()
-        // VIB-338: Hover border indicates clickability
-        if isHovered {
-            NSColor.separatorColor.setStroke()
-            path.lineWidth = 1
-            path.stroke()
-        }
+        colorPath.fill()
+
+        DesignTokens.roleSwatchInnerBorder.setStroke()
+        colorPath.lineWidth = 1
+        colorPath.stroke()
+
+        (isHovered ? DesignTokens.roleSwatchSelectedRing : DesignTokens.roleSwatchOutline).setStroke()
+        outerPath.lineWidth = isHovered ? 1.5 : 1
+        outerPath.stroke()
     }
 
     override func mouseDown(with event: NSEvent) {

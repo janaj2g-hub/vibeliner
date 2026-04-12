@@ -381,6 +381,30 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.58)
     }
 
+    /// Role swatch outer outline for light and dark mode visibility
+    static let roleSwatchOutline = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.16)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.16)
+    }
+
+    /// Role swatch inner contrast border
+    static let roleSwatchInnerBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 0.0, alpha: 0.22)
+        }
+        return NSColor(white: 1.0, alpha: 0.82)
+    }
+
+    /// Role swatch selected ring
+    static let roleSwatchSelectedRing = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.92)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.78)
+    }
+
     /// Role observed border: #AFA9EC (purple)
     static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
 

@@ -139,9 +139,11 @@
   .setup-green-btn:hover { filter: brightness(1.1); }
 
   /* Role Swatches */
-  .role-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border: 2px solid transparent; }
-  .role-swatch:hover { transform: scale(1.15); }
-  .role-swatch.selected { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor; }
+  .role-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s; border: 2px solid rgba(15,23,42,0.16); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.82); }
+  body:not(.light) .role-swatch { border-color: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22); }
+  .role-swatch:hover { transform: scale(1.08); border-color: var(--settings-seg-active-text); }
+  .role-swatch.selected { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.82), 0 0 0 2px currentColor; }
+  body:not(.light) .role-swatch.selected { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22), 0 0 0 2px rgba(255,255,255,0.92); }
 
   /* Badge */
   .badge { width: 18px; height: 18px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
