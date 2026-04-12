@@ -21,24 +21,6 @@ final class GeneralTabView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        refreshFieldAppearance()
-    }
-
-    // VIB-388: Re-style when re-attached to the window after tab switching.
-    // Cached tab views get removeFromSuperview() and miss appearance change
-    // notifications while detached. When re-added, CGColors may be stale.
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        if window != nil { refreshFieldAppearance() }
-    }
-
-    private func refreshFieldAppearance() {
-        SettingsUI.styleFieldSurface(folderFieldContainer)
-        folderFieldContainer.needsDisplay = true
-    }
-
     private func setupView() {
         contentStack.orientation = .vertical
         contentStack.alignment = .leading
@@ -99,7 +81,6 @@ final class GeneralTabView: NSView {
         folderPathLabel.setAccessibilityRole(.staticText)
 
         folderFieldContainer.translatesAutoresizingMaskIntoConstraints = false
-        SettingsUI.styleFieldSurface(folderFieldContainer)
         folderFieldContainer.addSubview(folderPathLabel)
 
         folderPathLabel.translatesAutoresizingMaskIntoConstraints = false
