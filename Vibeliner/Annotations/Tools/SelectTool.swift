@@ -189,14 +189,37 @@ final class SelectTool: AnnotationTool {
            let resolver = canvas.imageIndexAtPoint,
            let annotation = store.annotation(for: id) {
             let newIndex = resolver(annotation.badgePosition)
-            if newIndex != annotation.parentImageIndex {
-                store.updateParentImageIndex(id: id, index: newIndex)
+            let newID = canvas.imageIDAtPoint?(annotation.badgePosition)
+            if newIndex != annotation.parentImageIndex || newID != annotation.parentImageID {
+                store.updateParentImageOwnership(id: id, imageID: newID, index: newIndex)
+            }
+
+            if case .arrow(_, let end) = annotation.position, let endResolver = canvas.imageIndexAtPoint {
+                let newEndIndex = endResolver(end)
+                let newEndID = canvas.imageIDAtPoint?(end)
+                if newEndIndex != annotation.endImageIndex || newEndID != annotation.endImageID {
+                    if newEndIndex == newIndex {
+                        store.updateEndImageOwnership(id: id, imageID: nil, index: nil)
+                    } else {
+                        store.updateEndImageOwnership(id: id, imageID: newEndID, index: newEndIndex)
+                    }
+                }
             }
             // VIB-339: Recalculate relative coords from new absolute position
             editorPanel?.setRelativeCoords(for: id)
         }
         // VIB-339: Also update relative coords after handle resize
         if case .resizingHandle(let id, _) = dragState {
+            if let annotation = store.annotation(for: id), case .arrow(_, let end) = annotation.position,
+               let endResolver = canvas.imageIndexAtPoint {
+                let newEndIndex = endResolver(end)
+                let newEndID = canvas.imageIDAtPoint?(end)
+                if newEndIndex == annotation.parentImageIndex {
+                    store.updateEndImageOwnership(id: id, imageID: nil, index: nil)
+                } else if newEndIndex != annotation.endImageIndex || newEndID != annotation.endImageID {
+                    store.updateEndImageOwnership(id: id, imageID: newEndID, index: newEndIndex)
+                }
+            }
             editorPanel?.setRelativeCoords(for: id)
         }
         dragState = nil

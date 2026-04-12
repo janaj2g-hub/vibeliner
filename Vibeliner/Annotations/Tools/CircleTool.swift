@@ -37,6 +37,7 @@ final class CircleTool: AnnotationTool {
             badgePosition: point
         )
         annotation.parentImageIndex = store.currentImageIndex
+        annotation.parentImageID = store.currentImageID
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         // VIB-339: Store relative coords for layout-safe positioning

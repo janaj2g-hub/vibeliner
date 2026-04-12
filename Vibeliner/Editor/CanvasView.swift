@@ -10,6 +10,8 @@ final class CanvasView: NSView, NotePillDelegate {
     var onBackgroundClick: ((CGPoint) -> Void)?
     /// VIB-333: Resolve a canvas point to the image index it's over. Set by EditorPanel in filmstrip mode.
     var imageIndexAtPoint: ((CGPoint) -> Int)?
+    /// Stable image identity resolver for filmstrip ownership updates.
+    var imageIDAtPoint: ((CGPoint) -> UUID?)?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
@@ -190,6 +192,9 @@ final class CanvasView: NSView, NotePillDelegate {
         // VIB-333: Set currentImageIndex based on where the click landed, not which cell is selected
         if let resolver = imageIndexAtPoint {
             store.currentImageIndex = resolver(point)
+        }
+        if let resolver = imageIDAtPoint {
+            store.currentImageID = resolver(point)
         }
 
         // VIB-193: Click outside editing pill = commit text

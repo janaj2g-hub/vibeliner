@@ -69,12 +69,16 @@ struct Annotation: Identifiable {
     // Positions stored as 0.0–1.0 fractions within the parent image's frame.
     // Prevents annotation drift when the filmstrip layout changes.
     var parentImageIndex: Int = 0
+    /// Stable image ownership used across deletes and reindex operations.
+    var parentImageID: UUID?
     /// Relative position (0.0–1.0) within parent image.
     var relativePosition: AnnotationPosition?
     /// Badge position as 0.0–1.0 fractions within the parent image's frame.
     var relativeBadgePosition: CGPoint?
     /// For cross-image arrows only: the image index of the arrow's end point.
     var endImageIndex: Int?
+    /// Stable end-image ownership for cross-image arrows.
+    var endImageID: UUID?
 
     init(id: UUID = UUID(), type: AnnotationToolType, number: Int, noteText: String = "", position: AnnotationPosition, badgePosition: CGPoint) {
         self.id = id
