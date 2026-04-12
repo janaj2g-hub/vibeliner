@@ -17,7 +17,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         }
     }
 
-    private struct PromptDrafts {
+    private struct PromptDrafts: Equatable {
         var preamble: String
         var footer: String
         var toolDescriptions: [String: String]
@@ -40,7 +40,9 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private let editFrame = AppearanceAwareFrameSurfaceView()
     private let editStack = NSStackView()
     private let editHeaderLabel = SettingsUI.sectionTitle("Edit Prompt Sections")
-    private let saveButton = SettingsPillButton(title: "Save", target: nil, action: nil)
+    private let saveButton = SettingsPillButton(title: "Save changes", target: nil, action: nil)
+    private let draftStateView = PromptDraftStateView()
+    private let draftHelperLabel = SettingsUI.bodyCopy("")
     private let segmentedControl = SettingsSegmentedControl(items: PromptSubTab.allCases.map(\.title), style: .secondary)
     private let activeContentStack = NSStackView()
     private let resetButton = NSButton(title: "Reset to default", target: nil, action: nil)
@@ -54,7 +56,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private var toolFields: [String: SettingsTextField] = [:]
     private var roleFields: [String: SettingsTextField] = [:]
     private var contentLoaded = false
-    private var savedResetTimer: Timer?
 
     // MARK: - Init
 
@@ -98,6 +99,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         contentLoaded = true
         refreshPreview()
         selectSubTab(.preamble, syncDrafts: false)
+        updateDraftStateUI()
     }
 
     // MARK: - Layout
@@ -159,9 +161,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         headerRow.addArrangedSubview(editHeaderLabel)
         headerRow.addArrangedSubview(spacer)
+        headerRow.addArrangedSubview(draftStateView)
         headerRow.addArrangedSubview(saveButton)
         editStack.addArrangedSubview(headerRow)
         headerRow.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
+
+        draftHelperLabel.translatesAutoresizingMaskIntoConstraints = false
+        editStack.addArrangedSubview(draftHelperLabel)
+        draftHelperLabel.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
 
         // Segmented control
         let segmentedRow = NSView()
@@ -635,12 +642,15 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     private func refreshPreview() {
+        let isDirty = hasUnsavedChanges
         previewView.refresh(
             preamble: drafts.preamble,
             footer: drafts.footer,
             toolDescriptions: drafts.toolDescriptions,
-            roles: drafts.roles
+            roles: drafts.roles,
+            isDirty: isDirty
         )
+        updateDraftStateUI(isDirty: isDirty)
     }
 
     @objc private func saveAllPromptSections() {
@@ -651,21 +661,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ConfigManager.shared.roles = drafts.roles
         ConfigManager.shared.save()
         refreshPreview()
-
-        // Flash "Saved" green confirmation (matches editor toolbar copy buttons)
-        savedResetTimer?.invalidate()
-        saveButton.title = "Saved"
-        saveButton.contentTintColor = DesignTokens.copiedGreenText
-        // VIB-388: Use appearance-safe helpers so colors resolve correctly on theme change
-        saveButton.setLayerBackground(DesignTokens.copiedGreenBg)
-        saveButton.setLayerBorder(DesignTokens.copiedGreenBorder)
-
-        savedResetTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            self?.saveButton.title = "Save"
-            self?.saveButton.contentTintColor = DesignTokens.settingsPillText
-            self?.saveButton.setLayerBackground(DesignTokens.settingsPillFill)
-            self?.saveButton.setLayerBorder(DesignTokens.settingsPillBorder)
-        }
     }
 
     @objc private func resetCurrentPromptSection() {
@@ -732,6 +727,20 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         "freehand": "marks an irregular area",
     ]
 
+    private var hasUnsavedChanges: Bool {
+        drafts != PromptDrafts.current()
+    }
+
+    private func updateDraftStateUI(isDirty: Bool? = nil) {
+        let dirty = isDirty ?? hasUnsavedChanges
+        draftStateView.setState(dirty ? .unsaved : .saved)
+        draftHelperLabel.stringValue = dirty
+            ? "Changes below stay in a draft until you click Save. The preview already reflects the draft values."
+            : "These prompt settings are saved and currently used for copy, export, and prompt.txt."
+        saveButton.isEnabled = dirty
+        saveButton.alphaValue = dirty ? 1.0 : 0.7
+    }
+
 }
 
 // MARK: - Tool icon view
@@ -772,6 +781,70 @@ private final class ToolIconView: AppearanceAwareFieldView {
 private final class AppearanceAwareFrameSurfaceView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
         SettingsUI.styleFrameSurface(self)
+    }
+}
+
+private final class PromptDraftStateView: AppearanceAwareSurfaceView {
+
+    enum State {
+        case saved
+        case unsaved
+    }
+
+    private let label = NSTextField(labelWithString: "")
+    private var state: State = .saved
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        translatesAutoresizingMaskIntoConstraints = false
+
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: topAnchor, constant: 6),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+        ])
+
+        setState(.saved)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func setState(_ state: State) {
+        self.state = state
+        label.stringValue = state == .saved ? "Saved settings" : "Unsaved draft"
+        invalidateIntrinsicContentSize()
+        refreshSurfaceAppearance()
+    }
+
+    override var intrinsicContentSize: NSSize {
+        let labelSize = label.intrinsicContentSize
+        return NSSize(width: labelSize.width + 20, height: max(24, labelSize.height + 12))
+    }
+
+    override func refreshSurfaceAppearance() {
+        switch state {
+        case .saved:
+            label.textColor = .secondaryLabelColor
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.settingsFieldSurface,
+                border: DesignTokens.settingsFieldBorder,
+                cornerRadius: 12
+            )
+        case .unsaved:
+            label.textColor = DesignTokens.settingsPillText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.settingsPillFill,
+                border: DesignTokens.settingsPillBorder,
+                cornerRadius: 12
+            )
+        }
     }
 }
 

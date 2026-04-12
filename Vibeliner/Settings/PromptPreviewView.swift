@@ -67,8 +67,12 @@ final class PromptPreviewView: NSView {
         preamble: String? = nil,
         footer: String? = nil,
         toolDescriptions: [String: String]? = nil,
-        roles: [RoleConfig]? = nil
+        roles: [RoleConfig]? = nil,
+        isDirty: Bool = false
     ) {
+        subtitleLabel.stringValue = isDirty
+            ? "Previewing your unsaved draft. Save to use these prompt settings for copy, export, and prompt.txt."
+            : "Previewing the saved prompt settings currently used for copy, export, and prompt.txt."
         let previewRoles = normalizedPreviewRoles(from: roles)
         singleSampleView.update(text: singleImagePrompt(
             preamble: preamble,
@@ -162,7 +166,7 @@ final class PromptPreviewView: NSView {
     }
 
     private func normalizedPreviewRoles(from roles: [RoleConfig]?) -> [RoleConfig] {
-        var normalized = roles?.isEmpty == false ? roles ?? [] : RoleConfig.defaultRoles
+        var normalized = (roles?.isEmpty == false ? roles : nil) ?? RoleConfig.defaultRoles
         while normalized.count < 2 {
             normalized.append(RoleConfig.defaultRoles[normalized.count])
         }

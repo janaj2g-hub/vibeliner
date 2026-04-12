@@ -1,7 +1,7 @@
 import Foundation
 
 /// VIB-322: Dynamic role configuration
-struct RoleConfig {
+struct RoleConfig: Equatable {
     var name: String
     var description: String
     var colorHex: String
