@@ -1,6 +1,6 @@
 import AppKit
 
-final class SettingsWindowController: NSWindowController {
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - State
 
@@ -11,6 +11,8 @@ final class SettingsWindowController: NSWindowController {
     /// Cached tab views — created lazily on first display.
     private var cachedTabViews: [Int: NSView] = [:]
     private var measuredTabSizes: [Int: NSSize] = [:]
+    private var preferredContentWidth: CGFloat = SettingsWindowController.defaultContentSize.width
+    private var preferredContentHeight: CGFloat = SettingsWindowController.defaultContentSize.height
     private var isApplyingShellSizing = false
 
     private static let tabBarHeight: CGFloat = 44
@@ -32,6 +34,7 @@ final class SettingsWindowController: NSWindowController {
         window.level = .floating
         window.minSize = Self.minimumContentSize
         self.init(window: window)
+        window.delegate = self
         buildWindowLayout()
     }
 
@@ -191,7 +194,10 @@ final class SettingsWindowController: NSWindowController {
         measuredTabSizes[index] = tabView.fittingSize
 
         let currentContentSize = window.contentRect(forFrameRect: window.frame).size
-        let targetSize = Self.defaultContentSize
+        let targetSize = NSSize(
+            width: max(preferredContentWidth, Self.minimumContentSize.width),
+            height: max(preferredContentHeight, Self.minimumContentSize.height)
+        )
 
         guard abs(currentContentSize.width - targetSize.width) > 0.5 ||
                 abs(currentContentSize.height - targetSize.height) > 0.5 else {
@@ -201,6 +207,13 @@ final class SettingsWindowController: NSWindowController {
         isApplyingShellSizing = true
         window.setContentSize(targetSize)
         isApplyingShellSizing = false
+    }
+
+    func windowDidResize(_ notification: Notification) {
+        guard !isApplyingShellSizing, let window else { return }
+        let contentSize = window.contentRect(forFrameRect: window.frame).size
+        preferredContentWidth = max(Self.minimumContentSize.width, contentSize.width)
+        preferredContentHeight = max(Self.minimumContentSize.height, contentSize.height)
     }
 }
 
