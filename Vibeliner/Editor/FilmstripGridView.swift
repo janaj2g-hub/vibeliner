@@ -41,7 +41,7 @@ final class FilmstripGridView: NSView {
 
     /// Rebuild the filmstrip with the given images. Each image gets a TitlePillView
     /// with editable title and role dropdown.
-    func setImages(_ images: [NSImage], roles: [String], selectedIndex: Int) {
+    func setImages(_ images: [CaptureImage], selectedIndex: Int) {
         self.selectedIndex = selectedIndex
 
         // Clean up old views
@@ -58,7 +58,7 @@ final class FilmstripGridView: NSView {
 
         let gap = DesignTokens.filmstripGap
         let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
-        let imageSizes = images.map { $0.size }
+        let imageSizes = images.map { $0.sourceImage.size }
 
         // Compute row height respecting 250px min cell width
         let rowHeight = Self.computeFittingRowHeight(
@@ -108,15 +108,7 @@ final class FilmstripGridView: NSView {
             guard i < frames.count else { break }
             let f = frames[i]
 
-            let roleStr = i < roles.count ? roles[i] : "observed"
-            let imageRole = ImageRole.from(string: roleStr)
-
-            let cell = FilmstripCellView(
-                image: image,
-                index: i,
-                role: imageRole,
-                isSelected: i == selectedIndex
-            )
+            let cell = FilmstripCellView(image: image, isSelected: i == selectedIndex)
 
             let cellY: CGFloat = needsScroll ? 0 : yOffset
             cell.frame = NSRect(
@@ -255,6 +247,7 @@ private final class FilmstripCellView: NSView {
         didSet { updateSelectionAppearance() }
     }
 
+    private let imageID: UUID
     private let index: Int
     private var role: ImageRole
     private let imageView = NSImageView()
@@ -266,13 +259,14 @@ private final class FilmstripCellView: NSView {
     private var isHovered = false
     private var isTrashHovered = false
 
-    init(image: NSImage, index: Int, role: ImageRole, isSelected: Bool) {
-        self.index = index
-        self.role = role
-        self.titlePill = TitlePillView(title: "Image \(index + 1)", role: role)
+    init(image: CaptureImage, isSelected: Bool) {
+        self.imageID = image.id
+        self.index = image.index
+        self.role = image.role
+        self.titlePill = TitlePillView(title: image.title, role: image.role)
         self.isSelected = isSelected
         super.init(frame: .zero)
-        setupView(image: image)
+        setupView(image: image.sourceImage)
     }
 
     required init?(coder: NSCoder) { fatalError() }

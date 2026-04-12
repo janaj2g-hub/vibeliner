@@ -2,12 +2,18 @@ import AppKit
 
 /// Manages an ordered list of images in a capture session.
 /// Single-image captures are represented as a list of one.
-final class CaptureStore {
+final class CaptureSession {
+
+    static let annotatedImageFilename = "screenshot.png"
+    static let legacyAnnotatedImageFilename = "composite.png"
+    static let promptFilename = "prompt.txt"
 
     private(set) var images: [CaptureImage] = []
 
     var isSingleImage: Bool { images.count == 1 }
-    var isComposite: Bool { images.count >= 2 }
+    var isMultiImage: Bool { images.count >= 2 }
+    var isComposite: Bool { isMultiImage }
+    var primaryImage: CaptureImage? { images.first }
 
     /// Initialize with a single screenshot (backward-compatible path).
     init(image: NSImage, title: String = "Image 1", role: ImageRole = .observed) {
@@ -27,6 +33,10 @@ final class CaptureStore {
         reindexImages()
     }
 
+    func snapshot() -> CaptureSession {
+        CaptureSession(images: images)
+    }
+
     /// Append a new image and assign the next index.
     func addImage(_ image: NSImage, title: String, role: ImageRole) {
         let entry = CaptureImage(
@@ -40,10 +50,12 @@ final class CaptureStore {
     }
 
     /// Remove the image at the given index and reindex remaining entries.
-    func removeImage(at index: Int) {
-        guard index >= 0, index < images.count else { return }
-        images.remove(at: index)
+    @discardableResult
+    func removeImage(at index: Int) -> CaptureImage? {
+        guard index >= 0, index < images.count else { return nil }
+        let removed = images.remove(at: index)
         reindexImages()
+        return removed
     }
 
     /// Update the title of an image at the given index.
@@ -68,6 +80,32 @@ final class CaptureStore {
         return roles.first.map { ImageRole(name: $0.name) } ?? .observed
     }
 
+    func image(at index: Int) -> CaptureImage? {
+        guard index >= 0, index < images.count else { return nil }
+        return images[index]
+    }
+
+    func imageID(at index: Int) -> UUID? {
+        image(at: index)?.id
+    }
+
+    func index(forImageID id: UUID) -> Int? {
+        images.firstIndex { $0.id == id }
+    }
+
+    func title(forImageID id: UUID?, fallbackIndex: Int?) -> String {
+        if let id, let image = images.first(where: { $0.id == id }) {
+            return image.title
+        }
+        if let fallbackIndex, let image = image(at: fallbackIndex) {
+            return image.title
+        }
+        if let fallbackIndex {
+            return "Image \(fallbackIndex + 1)"
+        }
+        return "Image 1"
+    }
+
     /// Update indices to match array positions (call after add/remove).
     func reindexImages() {
         for i in images.indices {
@@ -75,19 +113,44 @@ final class CaptureStore {
         }
     }
 
+    static func annotatedImageURL(in folder: URL) -> URL {
+        folder.appendingPathComponent(annotatedImageFilename)
+    }
+
+    static func resolvedAnnotatedImageURL(in folder: URL, fileManager: FileManager = .default) -> URL {
+        let canonicalURL = annotatedImageURL(in: folder)
+        if fileManager.fileExists(atPath: canonicalURL.path) {
+            return canonicalURL
+        }
+
+        let legacyURL = folder.appendingPathComponent(legacyAnnotatedImageFilename)
+        if fileManager.fileExists(atPath: legacyURL.path) {
+            return legacyURL
+        }
+
+        return canonicalURL
+    }
+
+    static func saveAnnotatedImage(_ image: NSImage, to folder: URL) {
+        let fileURL = annotatedImageURL(in: folder)
+        let tempURL = folder.appendingPathComponent(".\(annotatedImageFilename).tmp")
+        _ = image.savePNG(to: tempURL)
+        try? FileManager.default.removeItem(at: fileURL)
+        try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+
+        let legacyURL = folder.appendingPathComponent(legacyAnnotatedImageFilename)
+        try? FileManager.default.removeItem(at: legacyURL)
+    }
+
     // MARK: - Disk persistence
 
     /// Save all source images to the capture folder.
     /// - Single image: `screenshot.png` (unchanged behavior)
-    /// - Multi-image: `image_1.png`, `image_2.png`, ..., `composite.png`
+    /// - Multi-image: `image_1.png`, `image_2.png`, ... plus canonical `screenshot.png`
     func saveImages(to folder: URL) {
         if isSingleImage {
             guard let image = images.first?.sourceImage else { return }
-            let fileURL = folder.appendingPathComponent("screenshot.png")
-            let tempURL = folder.appendingPathComponent(".screenshot_src.png.tmp")
-            _ = image.savePNG(to: tempURL)
-            try? FileManager.default.removeItem(at: fileURL)
-            try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+            Self.saveAnnotatedImage(image, to: folder)
         } else {
             // Save individual source images
             for entry in images {
@@ -99,25 +162,17 @@ final class CaptureStore {
                 try? FileManager.default.moveItem(at: tempURL, to: fileURL)
             }
 
-            // Composite placeholder — copy first image for now (stitching is VIB-264)
+            // Canonical saved image placeholder — copy first image for now (stitching is VIB-264)
             if let firstImage = images.first?.sourceImage {
-                let compositeURL = folder.appendingPathComponent("composite.png")
-                let tempURL = folder.appendingPathComponent(".composite.png.tmp")
-                _ = firstImage.savePNG(to: tempURL)
-                try? FileManager.default.removeItem(at: compositeURL)
-                try? FileManager.default.moveItem(at: tempURL, to: compositeURL)
+                Self.saveAnnotatedImage(firstImage, to: folder)
             }
-
-            // Clean up old screenshot.png if it exists (migrated to multi-image)
-            let oldScreenshot = folder.appendingPathComponent("screenshot.png")
-            try? FileManager.default.removeItem(at: oldScreenshot)
         }
     }
 
     /// Load images from a capture folder on disk.
     /// Handles both old single-image folders (`screenshot.png`) and
     /// new multi-image folders (`image_1.png`, `image_2.png`, ...).
-    static func load(from folder: URL) -> CaptureStore? {
+    static func load(from folder: URL) -> CaptureSession? {
         let fm = FileManager.default
 
         // Check for multi-image folder first
@@ -139,14 +194,15 @@ final class CaptureStore {
         }
 
         if !multiImages.isEmpty {
-            return CaptureStore(images: multiImages)
+            return CaptureSession(images: multiImages)
         }
 
-        // Fall back to single-image (auto-migrate)
-        let screenshotURL = folder.appendingPathComponent("screenshot.png")
-        guard fm.fileExists(atPath: screenshotURL.path),
-              let image = NSImage(contentsOf: screenshotURL) else { return nil }
+        // Fall back to the canonical annotated image with a legacy composite fallback.
+        let screenshotURL = resolvedAnnotatedImageURL(in: folder, fileManager: fm)
+        guard let image = NSImage(contentsOf: screenshotURL) else { return nil }
 
-        return CaptureStore(image: image)
+        return CaptureSession(image: image)
     }
 }
+
+typealias CaptureStore = CaptureSession

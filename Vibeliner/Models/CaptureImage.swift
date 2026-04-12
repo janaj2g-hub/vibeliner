@@ -9,8 +9,8 @@ struct CaptureImage: Identifiable {
     var originalSize: CGSize
     var index: Int
 
-    init(sourceImage: NSImage, title: String, role: ImageRole, originalSize: CGSize, index: Int) {
-        self.id = UUID()
+    init(id: UUID = UUID(), sourceImage: NSImage, title: String, role: ImageRole, originalSize: CGSize, index: Int) {
+        self.id = id
         self.sourceImage = sourceImage
         self.title = title
         self.role = role

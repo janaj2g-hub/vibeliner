@@ -51,4 +51,8 @@ final class ScreenshotCanvasView: NSView {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) not implemented")
     }
+
+    func updateImage(_ image: NSImage) {
+        imageView.image = image
+    }
 }
