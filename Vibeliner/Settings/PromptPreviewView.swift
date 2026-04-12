@@ -3,7 +3,7 @@ import AppKit
 final class PromptPreviewView: NSView {
 
     private let titleLabel = SettingsUI.sectionTitle("Full Prompt Preview")
-    private let previewContainer = NSView()
+    private let previewContainer = AppearanceAwarePreviewSurfaceView()
     private let scrollView = NSScrollView()
     private let previewText = NSTextView()
 
@@ -14,23 +14,6 @@ final class PromptPreviewView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        refreshPreviewAppearance()
-    }
-
-    // VIB-388: Re-style when re-attached to the window after tab switching.
-    // PromptTabView is cached and detached when user switches tabs — it misses
-    // appearance change notifications while detached, leaving stale CGColors.
-    override func viewDidMoveToWindow() {
-        super.viewDidMoveToWindow()
-        if window != nil { refreshPreviewAppearance() }
-    }
-
-    private func refreshPreviewAppearance() {
-        SettingsUI.stylePreviewSurface(previewContainer)
-    }
-
     private func setupView() {
         translatesAutoresizingMaskIntoConstraints = false
 
@@ -38,7 +21,6 @@ final class PromptPreviewView: NSView {
         addSubview(titleLabel)
 
         previewContainer.translatesAutoresizingMaskIntoConstraints = false
-        SettingsUI.stylePreviewSurface(previewContainer)
         addSubview(previewContainer)
 
         // ScrollView setup
@@ -110,5 +92,11 @@ final class PromptPreviewView: NSView {
         )
 
         previewText.string = prompt
+    }
+}
+
+private final class AppearanceAwarePreviewSurfaceView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.stylePreviewSurface(self)
     }
 }

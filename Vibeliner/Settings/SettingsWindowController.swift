@@ -1,6 +1,6 @@
 import AppKit
 
-final class SettingsWindowController: NSWindowController {
+final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - State
 
@@ -10,14 +10,20 @@ final class SettingsWindowController: NSWindowController {
 
     /// Cached tab views — created lazily on first display.
     private var cachedTabViews: [Int: NSView] = [:]
+    private var measuredTabSizes: [Int: NSSize] = [:]
+    private var preferredContentWidth: CGFloat = SettingsWindowController.defaultContentSize.width
+    private var preferredContentHeight: CGFloat = SettingsWindowController.defaultContentSize.height
+    private var isApplyingShellSizing = false
 
     private static let tabBarHeight: CGFloat = 44
+    private static let defaultContentSize = NSSize(width: 600, height: 740)
+    private static let minimumContentSize = NSSize(width: 520, height: 560)
 
     // MARK: - Lifecycle
 
     convenience init() {
         let window = NSWindow(
-            contentRect: NSRect(x: 0, y: 0, width: 600, height: 740),
+            contentRect: NSRect(origin: .zero, size: Self.defaultContentSize),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
             backing: .buffered,
             defer: true
@@ -26,8 +32,9 @@ final class SettingsWindowController: NSWindowController {
         window.center()
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.minSize = NSSize(width: 520, height: 560)
+        window.minSize = Self.minimumContentSize
         self.init(window: window)
+        window.delegate = self
         buildWindowLayout()
     }
 
@@ -61,8 +68,6 @@ final class SettingsWindowController: NSWindowController {
 
         let divider = AppearanceSafeDivider()
         divider.translatesAutoresizingMaskIntoConstraints = false
-        divider.wantsLayer = true
-        divider.setLayerBackground(NSColor.separatorColor)
         contentView.addSubview(divider)
 
         // ── Scroll view wrapping the content area ──
@@ -160,6 +165,8 @@ final class SettingsWindowController: NSWindowController {
         if tabSegmented?.selectedIndex != index {
             tabSegmented?.setSelectedIndex(index, notify: false)
         }
+
+        applyShellSizing(for: index, tabView: tabView)
     }
 
     private func createTabView(for index: Int) -> NSView {
@@ -177,6 +184,36 @@ final class SettingsWindowController: NSWindowController {
         default:
             return NSView()
         }
+    }
+
+    private func applyShellSizing(for index: Int, tabView: NSView) {
+        guard let window else { return }
+
+        contentContainer.layoutSubtreeIfNeeded()
+        tabView.layoutSubtreeIfNeeded()
+        measuredTabSizes[index] = tabView.fittingSize
+
+        let currentContentSize = window.contentRect(forFrameRect: window.frame).size
+        let targetSize = NSSize(
+            width: max(preferredContentWidth, Self.minimumContentSize.width),
+            height: max(preferredContentHeight, Self.minimumContentSize.height)
+        )
+
+        guard abs(currentContentSize.width - targetSize.width) > 0.5 ||
+                abs(currentContentSize.height - targetSize.height) > 0.5 else {
+            return
+        }
+
+        isApplyingShellSizing = true
+        window.setContentSize(targetSize)
+        isApplyingShellSizing = false
+    }
+
+    func windowDidResize(_ notification: Notification) {
+        guard !isApplyingShellSizing, let window else { return }
+        let contentSize = window.contentRect(forFrameRect: window.frame).size
+        preferredContentWidth = max(Self.minimumContentSize.width, contentSize.width)
+        preferredContentHeight = max(Self.minimumContentSize.height, contentSize.height)
     }
 }
 

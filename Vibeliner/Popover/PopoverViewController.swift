@@ -1,5 +1,22 @@
 import AppKit
 
+private final class PopoverDividerView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleDividerSurface(self)
+    }
+}
+
+private final class PopoverKeyboardPillView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(
+            self,
+            background: NSColor.quaternaryLabelColor,
+            border: NSColor.separatorColor,
+            cornerRadius: 5
+        )
+    }
+}
+
 // MARK: - Custom dark popover window (NOT NSPopover — that uses system chrome)
 
 final class PopoverWindow: NSPanel {
@@ -138,9 +155,7 @@ final class PopoverContentView: NSView {
             // VIB-362: Draw divider before items that need one
             if item.hasDividerBefore {
                 y -= dividerH / 2
-                let div = NSView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
-                div.wantsLayer = true
-                div.layer?.backgroundColor = NSColor.separatorColor.cgColor
+                let div = PopoverDividerView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
                 addSubview(div)
                 y -= dividerH / 2
             }
@@ -158,9 +173,7 @@ final class PopoverContentView: NSView {
 
         // Divider
         y -= dividerH / 2
-        let divider = NSView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
-        divider.wantsLayer = true
-        divider.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        let divider = PopoverDividerView(frame: NSRect(x: 14, y: y, width: popWidth - 28, height: 1))
         addSubview(divider)
         y -= dividerH / 2
 
@@ -222,12 +235,7 @@ final class PopoverContentView: NSView {
 
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
-        let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
-        pill.wantsLayer = true
-        pill.layer?.backgroundColor = NSColor.quaternaryLabelColor.cgColor
-        pill.layer?.borderColor = NSColor.separatorColor.cgColor
-        pill.layer?.borderWidth = 1
-        pill.layer?.cornerRadius = 5
+        let pill = PopoverKeyboardPillView(frame: NSRect(x: 0, y: 0, width: w, height: h))
 
         label.frame = NSRect(x: (w - label.frame.width) / 2, y: (h - label.frame.height) / 2, width: label.frame.width, height: label.frame.height)
         pill.addSubview(label)

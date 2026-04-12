@@ -37,7 +37,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private let rootStack = NSStackView()
     private let previewView = PromptPreviewView(frame: .zero)
-    private let editFrame = NSView()
+    private let editFrame = AppearanceAwareFrameSurfaceView()
     private let editStack = NSStackView()
     private let editHeaderLabel = SettingsUI.sectionTitle("Edit Prompt Sections")
     private let saveButton = SettingsPillButton(title: "Save", target: nil, action: nil)
@@ -85,7 +85,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     private func refreshTabAppearance() {
-        SettingsUI.styleFrameSurface(editFrame)
         // Rebuild the active sub-tab so NSTextView colors and editor container
         // layer colors re-resolve for the new appearance
         if contentLoaded {
@@ -126,7 +125,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ])
 
         // Edit frame
-        SettingsUI.styleFrameSurface(editFrame)
         editFrame.translatesAutoresizingMaskIntoConstraints = false
         rootStack.addArrangedSubview(editFrame)
         editFrame.widthAnchor.constraint(equalTo: rootStack.widthAnchor).isActive = true
@@ -520,9 +518,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     /// rounded-rect background and border are visible around the editor.
     private func makeEditor(text: String) -> NSView {
         // Outer container provides the visible field surface (bg + border + radius)
-        let container = NSView()
+        let container = AppearanceAwareFieldView()
         container.translatesAutoresizingMaskIntoConstraints = false
-        SettingsUI.styleFieldSurface(container)
 
         // Scroll view inside the container
         let scroll = NSScrollView()
@@ -736,16 +733,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
 // MARK: - Tool icon view
 
-private final class ToolIconView: NSView {
+private final class ToolIconView: AppearanceAwareFieldView {
 
     private let toolKey: String
 
     init(toolKey: String) {
         self.toolKey = toolKey
         super.init(frame: .zero)
-        wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
-        SettingsUI.styleFieldSurface(self)
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -768,6 +763,12 @@ private final class ToolIconView: NSView {
         case "freehand": ToolbarView.drawFreehandIcon(iconRect, color)
         default: break
         }
+    }
+}
+
+private final class AppearanceAwareFrameSurfaceView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleFrameSurface(self)
     }
 }
 

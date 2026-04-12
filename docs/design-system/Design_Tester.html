@@ -21,6 +21,10 @@
     --secondary-hover-border: rgba(255,255,255,0.35); --secondary-hover-text: rgba(255,255,255,0.80); --secondary-hover-bg: rgba(255,255,255,0.05);
     --settings-pill-border: rgba(175,169,236,0.36); --settings-pill-fill: rgba(175,169,236,0.10); --settings-pill-text: #AFA9EC;
     --settings-seg-track: rgba(255,255,255,0.03); --settings-seg-active: rgba(175,169,236,0.22);
+    --settings-field-surface: rgba(255,255,255,0.06); --settings-field-border: rgba(255,255,255,0.12);
+    --settings-frame-surface: rgba(255,255,255,0.02); --settings-preview-surface: #15161A;
+    --setup-field-bg: rgba(255,255,255,0.05); --setup-field-border: rgba(255,255,255,0.08);
+    --popover-kbd-bg: rgba(255,255,255,0.08); --popover-kbd-border: rgba(255,255,255,0.12);
   }
   .light {
     --bg: #f5f5f7; --fg: #1d1d1f; --fg2: #666; --surface: rgba(0,0,0,0.03); --border: rgba(0,0,0,0.08);
@@ -37,6 +41,10 @@
     --secondary-hover-border: rgba(0,0,0,0.25); --secondary-hover-text: rgba(0,0,0,0.75); --secondary-hover-bg: rgba(0,0,0,0.04);
     --settings-pill-border: rgba(114,103,221,0.26); --settings-pill-fill: rgba(175,169,236,0.16); --settings-pill-text: #7267DD;
     --settings-seg-track: rgba(15,23,42,0.04); --settings-seg-active: rgba(175,169,236,0.18);
+    --settings-field-surface: #EEF0F6; --settings-field-border: rgba(15,23,42,0.12);
+    --settings-frame-surface: rgba(15,23,42,0.02); --settings-preview-surface: #F8FAFC;
+    --setup-field-bg: rgba(255,255,255,0.92); --setup-field-border: rgba(15,23,42,0.10);
+    --popover-kbd-bg: rgba(15,23,42,0.06); --popover-kbd-border: rgba(15,23,42,0.12);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif; background: var(--bg); color: var(--fg); padding: 24px; transition: background 0.2s, color 0.2s; }
@@ -144,6 +152,12 @@
   /* Toolbar mock strip */
   .toolbar-strip { display: inline-flex; align-items: center; gap: 4px; height: 40px; padding: 0 10px; border-radius: 20px; background: var(--toolbar-bg); border: 1px solid var(--toolbar-border); }
   .toolbar-divider { width: 1px; height: 20px; background: var(--divider); margin: 0 4px; }
+  .surface-sample { min-width: 160px; border-radius: 14px; padding: 12px; border: 1px solid var(--border); }
+  .surface-sample.field { background: var(--settings-field-surface); border-color: var(--settings-field-border); }
+  .surface-sample.frame { background: var(--settings-frame-surface); border-color: var(--border); }
+  .surface-sample.preview { background: var(--settings-preview-surface); border-color: var(--settings-field-border); }
+  .surface-sample.setup { background: var(--setup-field-bg); border-color: var(--setup-field-border); }
+  .surface-pill { display: inline-flex; align-items: center; justify-content: center; height: 22px; padding: 0 10px; border-radius: 5px; border: 1px solid var(--popover-kbd-border); background: var(--popover-kbd-bg); font-size: 12px; font-weight: 600; color: var(--fg2); }
 </style>
 </head>
 <body>
@@ -310,6 +324,37 @@
     </div>
     <div class="tokens">toolbarSecondaryHoverBg, toolbarSecondaryHoverBorder, toolbarSecondaryHoverText</div>
     <div class="location">Editor toolbar secondary actions (ToolbarView.swift)</div>
+  </div>
+</div>
+
+<h2>Shared Appearance Surfaces</h2>
+<div class="control-row">
+  <div class="control-card">
+    <div class="label">Settings Field Surface</div>
+    <div class="surface-sample field">Folder path shell</div>
+    <div class="tokens">settingsFieldSurface, settingsFieldBorder</div>
+    <div class="location">SettingsUI.styleSurface / AppearanceAwareFieldView</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Settings Frame Surface</div>
+    <div class="surface-sample frame">Prompt editor frame</div>
+    <div class="tokens">settingsFrameSurface, separatorColor</div>
+    <div class="location">SettingsUI.styleFrameSurface</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Preview Surface</div>
+    <div class="surface-sample preview">Preview shell</div>
+    <div class="tokens">settingsPreviewSurface, settingsFieldBorder</div>
+    <div class="location">PromptPreviewView / SettingsUI.stylePreviewSurface</div>
+  </div>
+  <div class="control-card">
+    <div class="label">Setup / Popover Shared Shells</div>
+    <div class="surface-sample setup" style="display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <span>Setup field</span>
+      <span class="surface-pill">⌘</span>
+    </div>
+    <div class="tokens">setupFieldBg, setupFieldBorder, separatorColor</div>
+    <div class="location">SetupWindowController / PopoverViewController via shared surface helpers</div>
   </div>
 </div>
 

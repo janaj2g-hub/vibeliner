@@ -1,6 +1,6 @@
 # Vibeliner Design System — Token Reference
 
-Last updated: 2026-04-08
+Last updated: 2026-04-11
 Source of truth: `Vibeliner/Design/DesignTokens.swift`
 
 ---
@@ -126,6 +126,15 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `settingsPillFill` | rgba(175,169,236,0.10) | rgba(175,169,236,0.16) | Pill button fill | SettingsUI, PromptTabView |
 | `settingsPillText` | #AFA9EC | #7267DD | Pill button text | SettingsUI, AboutTabView, PromptTabView |
 | `settingsFieldBorder` | rgba(255,255,255,0.12) | rgba(15,23,42,0.12) | Field border | SettingsUI |
+
+### Shared Appearance Surfaces (VIB-412)
+
+The appearance-aware chrome used by Settings, Setup, the status popover, and the editor toolbar now shares one surface contract in `SettingsUI.swift`:
+
+- `styleSurface(_:background:border:cornerRadius:borderWidth:)` applies the canonical fill/border shell for layer-backed controls.
+- `styleDividerSurface(_:,color:)` applies thin divider treatment without screen-specific branches.
+- `styleSegmentedTrackSurface(_:)` and `styleSegmentedHighlightSurface(_:)` keep the Settings segmented shells aligned with toolbar toggle behavior.
+- `AppearanceAwareSurfaceView` and `AppearanceAwareSurfaceButton` refresh those shells on first attach and on later appearance changes, which is the contract used by `SettingsSegmentedControl`, `SettingsPillButton`, `PromptPreviewView`, `ToolbarView`, `PopoverViewController`, and `SetupWindowController`.
 
 ### Role Colors
 
