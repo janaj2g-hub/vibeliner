@@ -62,10 +62,6 @@ final class ScreenshotExporter {
 
     static func saveExportedScreenshot(to folderURL: URL, original: NSImage, annotations: [Annotation], canvasSize: CGSize) {
         let composited = exportAnnotatedScreenshot(original: original, annotations: annotations, canvasSize: canvasSize)
-        let fileURL = folderURL.appendingPathComponent("screenshot.png")
-        let tempURL = folderURL.appendingPathComponent(".screenshot.png.tmp")
-        _ = composited.savePNG(to: tempURL)
-        try? FileManager.default.removeItem(at: fileURL)
-        try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+        CaptureSession.saveAnnotatedImage(composited, to: folderURL)
     }
 }

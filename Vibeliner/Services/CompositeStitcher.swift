@@ -116,7 +116,7 @@ final class CompositeStitcher {
         return image
     }
 
-    /// Save the composite to disk as `composite.png`.
+    /// Save the stitched output using the canonical annotated-image filename.
     static func saveComposite(
         to folder: URL,
         images: [CaptureImage],
@@ -128,11 +128,7 @@ final class CompositeStitcher {
             return
         }
 
-        let fileURL = folder.appendingPathComponent("composite.png")
-        let tempURL = folder.appendingPathComponent(".composite.png.tmp")
-        _ = composite.savePNG(to: tempURL)
-        try? FileManager.default.removeItem(at: fileURL)
-        try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+        CaptureSession.saveAnnotatedImage(composite, to: folder)
     }
 
     // MARK: - Title pill rendering
