@@ -42,6 +42,7 @@ final class PinTool: AnnotationTool {
             badgePosition: CGPoint(x: point.x, y: point.y + DesignTokens.stakeLength + DesignTokens.badgeDiameter / 2)
         )
         annotation.parentImageIndex = store.currentImageIndex
+        annotation.parentImageID = store.currentImageID
         let added = store.add(annotation)
         undoManager.record(.add(annotation: added))
         // VIB-339: Store relative coords for layout-safe positioning

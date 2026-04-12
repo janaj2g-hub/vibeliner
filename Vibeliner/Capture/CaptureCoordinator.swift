@@ -89,11 +89,11 @@ final class CaptureCoordinator {
             }
 
             let folderURL = CapturesManager.shared.createCaptureFolder()
-            let screenshotURL = folderURL.appendingPathComponent("screenshot.png")
+            CaptureSession.saveAnnotatedImage(image, to: folderURL)
 
-            if image.savePNG(to: screenshotURL) {
+            if FileManager.default.fileExists(atPath: CaptureSession.annotatedImageURL(in: folderURL).path) {
                 #if DEBUG
-                print("Captured to \(screenshotURL.path)")
+                print("Captured to \(CaptureSession.annotatedImageURL(in: folderURL).path)")
                 #endif
             } else {
                 #if DEBUG

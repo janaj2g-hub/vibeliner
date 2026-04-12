@@ -4,23 +4,17 @@ final class AutoSaveManager {
 
     private let store: AnnotationStore
     private let captureFolder: URL
-    private let originalImage: NSImage
+    private let session: CaptureSession
     /// VIB-372: Mutable so filmstrip mode can update it to the actual canvas bounds.
     var canvasSize: CGSize
-    /// VIB-297: All images in filmstrip mode; nil for single-image.
-    var allImages: [NSImage]?
-    /// VIB-383: Role names (lowercase) for each image, indexed by position.
-    var imageRoles: [String] = []
-    /// VIB-383: Titles for each image, indexed by position.
-    var imageTitles: [String] = []
     private var storeObserver: Any?
     private var debounceTimer: Timer?
     private var isDirty = false
 
-    init(store: AnnotationStore, captureFolder: URL, originalImage: NSImage, canvasSize: CGSize) {
+    init(store: AnnotationStore, captureFolder: URL, session: CaptureSession, canvasSize: CGSize) {
         self.store = store
         self.captureFolder = captureFolder
-        self.originalImage = originalImage
+        self.session = session
         self.canvasSize = canvasSize
 
         storeObserver = NotificationCenter.default.addObserver(
@@ -55,31 +49,18 @@ private func scheduleSave() {
         // VIB-169: Capture data on main thread, dispatch file I/O to background
         let annotations = store.annotations
         let folder = captureFolder
-        let image = originalImage
+        let sessionSnapshot = session.snapshot()
         let size = canvasSize
-        let currentAllImages = allImages
-        let currentRoles = imageRoles
-        let currentTitles = imageTitles
         isDirty = false
         DispatchQueue.global(qos: .userInitiated).async {
-            // VIB-297/VIB-383: Multi-image composite with actual roles
-            if let allImages = currentAllImages, allImages.count >= 2 {
-                let captureImages = allImages.enumerated().map { i, img in
-                    let title = i < currentTitles.count ? currentTitles[i] : "Image \(i + 1)"
-                    let roleStr = i < currentRoles.count ? currentRoles[i] : "observed"
-                    return CaptureImage(sourceImage: img, title: title, role: ImageRole.from(string: roleStr), originalSize: img.size, index: i)
+            if sessionSnapshot.isMultiImage {
+                if let composite = CompositeStitcher.stitch(images: sessionSnapshot.images, annotations: annotations, canvasSize: size) {
+                    CaptureSession.saveAnnotatedImage(composite, to: folder)
                 }
-                if let composite = CompositeStitcher.stitch(images: captureImages, annotations: annotations, canvasSize: size) {
-                    let fileURL = folder.appendingPathComponent("screenshot.png")
-                    let tempURL = folder.appendingPathComponent(".screenshot.png.tmp")
-                    _ = composite.savePNG(to: tempURL)
-                    try? FileManager.default.removeItem(at: fileURL)
-                    try? FileManager.default.moveItem(at: tempURL, to: fileURL)
-                }
-            } else {
+            } else if let image = sessionSnapshot.primaryImage?.sourceImage {
                 ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
             }
-            PromptGenerator.savePromptFile(to: folder, annotations: annotations)
+            PromptGenerator.savePromptFile(to: folder, annotations: annotations, captureSession: sessionSnapshot)
             // VIB-183: Invalidate captures cache so next submenu open shows the new capture
             CapturesManager.shared.invalidateCache()
         }

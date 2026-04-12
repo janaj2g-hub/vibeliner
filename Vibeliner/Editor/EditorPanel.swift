@@ -3,7 +3,7 @@ import AppKit
 final class EditorPanel: NSPanel, ToolbarDelegate {
 
     private let canvasView: ScreenshotCanvasView
-    private let screenshotImage: NSImage
+    private let captureSession: CaptureSession
     private let toolbarView: ToolbarView
     private let statusPill: StatusPillView
     let annotationStore = AnnotationStore()
@@ -23,17 +23,18 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private var keyMonitor: Any?
 
     // MARK: - Multi-image state
-    private var images: [NSImage] = []
-    private var imageRoles: [String] = []
-    private var imageTitles: [String] = []
     private var filmstripView: FilmstripGridView?
     private var isFilmstripMode = false
     private var singleImageWindowFrame: NSRect?
     private var singleImageToolbarOrigin: NSPoint?
     private var singleImagePillOrigin: NSPoint?
 
+    private var images: [NSImage] {
+        captureSession.images.map(\.sourceImage)
+    }
+
     init(image: NSImage, on screen: NSScreen, captureFolder: URL? = nil) {
-        self.screenshotImage = image
+        self.captureSession = CaptureSession(image: image)
         self.canvasView = ScreenshotCanvasView(image: image)
         self.toolbarView = ToolbarView()
         self.statusPill = StatusPillView()
@@ -76,11 +77,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             defer: false
         )
 
-        // Track images for multi-image support
-        self.images = [image]
-        self.imageRoles = ["observed"]
-        self.imageTitles = ["Image 1"]
-
         isFloatingPanel = true
         level = .floating
         isOpaque = false
@@ -108,6 +104,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         // Undo/redo manager
         self.undoRedoManager = UndoRedoManager(store: annotationStore)
+        annotationStore.updateCurrentImage(id: captureSession.imageID(at: 0), index: 0)
 
         // Wire tools
         selectTool.editorPanel = self
@@ -126,7 +123,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             autoSaveManager = AutoSaveManager(
                 store: annotationStore,
                 captureFolder: folder,
-                originalImage: image,
+                session: captureSession,
                 canvasSize: NSSize(width: dw, height: dh)
             )
         }
@@ -385,27 +382,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     func toolbarDidRequestCopyPrompt() {
         guard let folder = captureFolder else { return }
-        // VIB-268: Pass CaptureStore so prompt includes "Image N:" prefixes in filmstrip mode
-        let store = isFilmstripMode ? buildCaptureStore() : nil
-        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder, captureStore: store)
+        ClipboardManager.copyPromptToClipboard(annotations: annotationStore.annotations, captureFolder: folder, captureSession: captureSession)
         statusPill.showCopied(message: "Prompt copied")
         toolbarView.markCopyState(.prompt)
-    }
-
-    /// Build a CaptureStore from the current multi-image state for prompt generation.
-    private func buildCaptureStore() -> CaptureStore {
-        let captureImages = images.enumerated().map { i, img in
-            let title = i < imageTitles.count ? imageTitles[i] : "Image \(i + 1)"
-            let roleStr = i < imageRoles.count ? imageRoles[i] : "observed"
-            return CaptureImage(
-                sourceImage: img,
-                title: title,
-                role: ImageRole.from(string: roleStr),
-                originalSize: img.size,
-                index: i
-            )
-        }
-        return CaptureStore(images: captureImages)
     }
 
     func toolbarDidRequestNewCapture() {
@@ -420,10 +399,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         // VIB-372: Use actual canvas bounds — in filmstrip mode this is the imageAreaRect
         // (wider than the primary image), not displayWidth × displayHeight.
         let canvasSize = canvasOverlay?.bounds.size ?? CGSize(width: displayWidth, height: displayHeight)
-        // VIB-383: Pass CaptureImage array with actual roles for composite stitching
-        let captureImgs: [CaptureImage]? = isFilmstripMode ? buildCaptureStore().images : nil
         // VIB-357: Completion handler fires after async stitching finishes
-        ClipboardManager.copyImageToClipboard(original: screenshotImage, annotations: annotationStore.annotations, canvasSize: canvasSize, captureImages: captureImgs) { [weak self] in
+        let originalImage = captureSession.primaryImage?.sourceImage ?? images.first ?? NSImage()
+        ClipboardManager.copyImageToClipboard(
+            original: originalImage,
+            annotations: annotationStore.annotations,
+            canvasSize: canvasSize,
+            captureSession: captureSession
+        ) { [weak self] in
             self?.statusPill.showCopied(message: "Image copied")
             self?.toolbarView.markCopyState(.image)
         }
@@ -432,7 +415,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     // MARK: - VIB-262/329: Add image
 
     func toolbarDidRequestAddImage() {
-        guard images.count < 12 else { return }
+        guard captureSession.images.count < 12 else { return }
 
         // Auto-save before hiding
         autoSaveManager?.saveNow()
@@ -446,16 +429,19 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 guard let self else { return }
 
                 // Add the new image
-                self.images.append(newImage)
-                self.imageRoles.append("observed")
-                self.imageTitles.append("Image \(self.images.count)")
+                let nextIndex = self.captureSession.images.count
+                self.captureSession.addImage(
+                    newImage,
+                    title: "Image \(nextIndex + 1)",
+                    role: .observed
+                )
 
                 // Restore editor
                 self.alphaValue = 1.0
                 self.makeKeyAndOrderFront(nil)
 
                 // Transition to filmstrip if going from 1→2, or refresh if already in filmstrip
-                if self.images.count >= 2 {
+                if self.captureSession.images.count >= 2 {
                     if !self.isFilmstripMode {
                         self.transitionToFilmstrip()
                     } else {
@@ -463,13 +449,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                     }
                 }
 
-                // VIB-297/VIB-383: Keep auto-save manager in sync for composite export
-                self.autoSaveManager?.allImages = self.images
-                self.autoSaveManager?.imageRoles = self.imageRoles
-                self.autoSaveManager?.imageTitles = self.imageTitles
-
                 // Update add image button state
-                self.toolbarView.updateAddImageState(imageCount: self.images.count)
+                self.toolbarView.updateAddImageState(imageCount: self.captureSession.images.count)
             },
             onCancel: { [weak self] in
                 // VIB-329: Restore editor after canceled add-image capture
@@ -511,7 +492,14 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
             return filmstrip.imageIndexAtPoint(contentPoint)
         }
+        canvasOverlay?.imageIDAtPoint = { [weak self] point in
+            guard let self, let canvas = self.canvasOverlay, let filmstrip = self.filmstripView else { return nil }
+            let contentPoint = canvas.convert(point, to: filmstrip.scrollableContentView)
+            let imageIndex = filmstrip.imageIndexAtPoint(contentPoint)
+            return self.captureSession.imageID(at: imageIndex)
+        }
 
+        filmstripCellSelected(images.count - 1)
         statusPill.updateNoteCount(annotationStore.count)
     }
 
@@ -531,7 +519,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let shadowPad: CGFloat = 24
         let gap = DesignTokens.filmstripGap
         let pillTotalH = DesignTokens.titlePillHeight + DesignTokens.titlePillGap
-        let imageSizes = images.map { $0.size }
+        let sessionImages = captureSession.images
+        let imageSizes = sessionImages.map(\.sourceImage.size)
 
         // VIB-339: Window grows to accommodate images — up to 85% of screen width.
         // Images should never shrink more than ~15% from single-image display.
@@ -578,21 +567,15 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             let filmstrip = FilmstripGridView(frame: NSRect(
                 x: filmstripX, y: filmstripY, width: filmstripWidth, height: filmstripHeight
             ))
-            filmstrip.setImages(images, roles: imageRoles, selectedIndex: images.count - 1)
+            filmstrip.setImages(sessionImages, selectedIndex: sessionImages.count - 1)
             filmstrip.onCellSelected = { [weak self] index in
                 self?.filmstripCellSelected(index)
             }
             filmstrip.onRoleChanged = { [weak self] index, newRole in
-                guard let self, index < self.imageRoles.count else { return }
-                self.imageRoles[index] = newRole.name.lowercased()
-                // VIB-383: Sync role change to auto-save manager
-                self.autoSaveManager?.imageRoles = self.imageRoles
+                self?.captureSession.updateRole(at: index, role: newRole)
             }
             filmstrip.onTitleChanged = { [weak self] index, newTitle in
-                guard let self, index < self.imageTitles.count else { return }
-                self.imageTitles[index] = newTitle
-                // VIB-383: Sync title change to auto-save manager
-                self.autoSaveManager?.imageTitles = self.imageTitles
+                self?.captureSession.updateTitle(at: index, title: newTitle)
             }
             filmstrip.onDeleteImage = { [weak self] index in
                 self?.removeImageAtIndex(index)
@@ -606,8 +589,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             filmstrip.frame = NSRect(
                 x: filmstripX, y: filmstripY, width: filmstripWidth, height: filmstripHeight
             )
-            let idx = min(filmstrip.selectedIndex, images.count - 1)
-            filmstrip.setImages(images, roles: imageRoles, selectedIndex: idx)
+            let idx = min(filmstrip.selectedIndex, max(captureSession.images.count - 1, 0))
+            filmstrip.setImages(captureSession.images, selectedIndex: idx)
         }
 
         guard let filmstrip = filmstripView else { return }
@@ -635,28 +618,23 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     }
 
     private func removeImageAtIndex(_ index: Int) {
-        guard index < images.count, images.count > 1 else { return }
+        guard captureSession.images.count > 1,
+              let removedImage = captureSession.removeImage(at: index) else { return }
 
-        // VIB-271: Clean up annotations belonging to the deleted image
-        annotationStore.removeAnnotations(forImageIndex: index)
-        annotationStore.shiftImageIndices(above: index)
+        annotationStore.removeAnnotations(forImageID: removedImage.id)
+        annotationStore.synchronizeImageOwnership(using: captureSession)
 
-        images.remove(at: index)
-        imageRoles.remove(at: index)
-        if index < imageTitles.count { imageTitles.remove(at: index) }
-
-        if images.count == 1 {
+        if captureSession.images.count == 1 {
             transitionBackToSingleImage()
         } else {
             refreshFilmstrip()
         }
 
+        let selectedIndex = min(index, max(captureSession.images.count - 1, 0))
+        annotationStore.updateCurrentImage(id: captureSession.imageID(at: selectedIndex), index: selectedIndex)
         canvasOverlay?.marksLayer.needsDisplay = true
         canvasOverlay?.refreshNotePills()
-        autoSaveManager?.allImages = images.count > 1 ? images : nil
-        autoSaveManager?.imageRoles = imageRoles
-        autoSaveManager?.imageTitles = imageTitles
-        toolbarView.updateAddImageState(imageCount: images.count)
+        toolbarView.updateAddImageState(imageCount: captureSession.images.count)
     }
 
     private func transitionBackToSingleImage() {
@@ -685,10 +663,16 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasOverlay?.frame = NSRect(x: 0, y: 0, width: displayWidth, height: displayHeight)
         canvasOverlay?.onBackgroundClick = nil
         canvasOverlay?.imageIndexAtPoint = nil
+        canvasOverlay?.imageIDAtPoint = nil
         canvasView.addSubview(canvasOverlay ?? NSView())
         canvasOverlay?.updateTrackingAreas()
 
-        annotationStore.currentImageIndex = 0
+        if let singleImage = captureSession.primaryImage?.sourceImage {
+            canvasView.updateImage(singleImage)
+            statusPill.updateDimensions(width: Int(singleImage.size.width), height: Int(singleImage.size.height))
+        }
+
+        annotationStore.updateCurrentImage(id: captureSession.imageID(at: 0), index: 0)
 
         // VIB-339: Recalculate annotation positions after returning to single-image
         recalculateAnnotationPositions()
@@ -696,7 +680,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
     private func filmstripCellSelected(_ index: Int) {
         // VIB-269: Track which image is active so new annotations get the right parentImageIndex
-        annotationStore.currentImageIndex = index
+        annotationStore.updateCurrentImage(id: captureSession.imageID(at: index), index: index)
     }
 
     // MARK: - VIB-339: Coordinate system helpers
@@ -715,6 +699,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     /// VIB-339: Recalculate absolute annotation positions from their stored relative
     /// coordinates after any layout change (filmstrip transition, add/delete image, resize).
     private func recalculateAnnotationPositions() {
+        annotationStore.synchronizeImageOwnership(using: captureSession)
         annotationStore.recalculateAbsolutePositions { [weak self] imageIndex in
             self?.imageFrameInCanvas(at: imageIndex) ?? .zero
         }
@@ -726,10 +711,13 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     /// given its current absolute position. Called after creation and after drag.
     func setRelativeCoords(for annotationId: UUID) {
         guard let annotation = annotationStore.annotation(for: annotationId) else { return }
-        let imageFrame = imageFrameInCanvas(at: annotation.parentImageIndex)
+        let parentIndex = annotation.parentImageID.flatMap(captureSession.index(forImageID:)) ?? annotation.parentImageIndex
+        let imageFrame = imageFrameInCanvas(at: parentIndex)
 
         let endFrame: CGRect?
-        if let endIdx = annotation.endImageIndex {
+        if let endID = annotation.endImageID, let endIdx = captureSession.index(forImageID: endID) {
+            endFrame = imageFrameInCanvas(at: endIdx)
+        } else if let endIdx = annotation.endImageIndex {
             endFrame = imageFrameInCanvas(at: endIdx)
         } else {
             endFrame = nil

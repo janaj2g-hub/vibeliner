@@ -90,8 +90,8 @@ final class CapturesManager {
                 continue
             }
 
-            let screenshotURL = url.appendingPathComponent("screenshot.png")
-            let promptURL = url.appendingPathComponent("prompt.txt")
+            let screenshotURL = CaptureSession.resolvedAnnotatedImageURL(in: url)
+            let promptURL = url.appendingPathComponent(CaptureSession.promptFilename)
             let noteCount = countNotes(in: promptURL)
 
             captures.append(CaptureInfo(
