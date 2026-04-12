@@ -325,9 +325,25 @@ enum DesignTokens {
     /// Settings segmented control active fill
     static let settingsSegmentedActive = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
         }
-        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.18)
+        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
+    }
+
+    /// Settings segmented control track border
+    static let settingsSegmentedBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.08)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
+    }
+
+    /// Settings segmented control active border
+    static let settingsSegmentedActiveBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
+        }
+        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.18)
     }
 
     /// Settings pill border color
@@ -352,6 +368,17 @@ enum DesignTokens {
             return purpleLight
         }
         return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
+    }
+
+    /// Settings selector active title color
+    static let settingsSegmentedActiveText = settingsPillText
+
+    /// Settings selector inactive title color
+    static let settingsSegmentedInactiveText = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.58)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.58)
     }
 
     /// Role observed border: #AFA9EC (purple)
@@ -499,6 +526,9 @@ enum DesignTokens {
     /// Settings segmented control inset
     static let settingsSegmentedInset: CGFloat = 2
 
+    /// Horizontal padding inside each selector item
+    static let settingsSegmentedItemPadding: CGFloat = 14
+
     /// Settings pill button height
     static let settingsPillHeight: CGFloat = 28
 
@@ -597,6 +627,12 @@ enum DesignTokens {
 
     /// Settings pill text: system 11px weight 600
     static let settingsPillFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
+
+    /// Primary settings selector label
+    static let settingsSegmentedPrimaryFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+
+    /// Secondary settings selector label
+    static let settingsSegmentedSecondaryFont = NSFont.systemFont(ofSize: 11, weight: .medium)
 
     // MARK: - Setup Window Colors (appearance-aware)
 

@@ -41,7 +41,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private let editStack = NSStackView()
     private let editHeaderLabel = SettingsUI.sectionTitle("Edit Prompt Sections")
     private let saveButton = SettingsPillButton(title: "Save", target: nil, action: nil)
-    private let segmentedControl = SettingsSegmentedControl(items: PromptSubTab.allCases.map(\.title))
+    private let segmentedControl = SettingsSegmentedControl(items: PromptSubTab.allCases.map(\.title), style: .secondary)
     private let activeContentStack = NSStackView()
     private let resetButton = NSButton(title: "Reset to default", target: nil, action: nil)
 
@@ -177,8 +177,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             segmentedControl.centerXAnchor.constraint(equalTo: segmentedRow.centerXAnchor),
             segmentedControl.topAnchor.constraint(equalTo: segmentedRow.topAnchor),
             segmentedControl.bottomAnchor.constraint(equalTo: segmentedRow.bottomAnchor),
-            segmentedControl.widthAnchor.constraint(lessThanOrEqualToConstant: 360),
-            segmentedControl.widthAnchor.constraint(equalTo: segmentedRow.widthAnchor, multiplier: 0.75),
+            segmentedControl.leadingAnchor.constraint(greaterThanOrEqualTo: segmentedRow.leadingAnchor, constant: 12),
+            segmentedControl.trailingAnchor.constraint(lessThanOrEqualTo: segmentedRow.trailingAnchor, constant: -12),
         ])
 
         segmentedControl.setAccessibilityLabel("Prompt section selector")

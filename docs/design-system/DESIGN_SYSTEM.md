@@ -121,7 +121,11 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `settingsFrameSurface` | rgba(255,255,255,0.02) | rgba(15,23,42,0.02) | Framed section bg | SettingsUI |
 | `settingsPreviewSurface` | #15161A | #F8FAFC | Preview panel bg | SettingsUI |
 | `settingsSegmentedTrack` | rgba(255,255,255,0.03) | rgba(15,23,42,0.04) | Segmented control track | SettingsUI |
-| `settingsSegmentedActive` | rgba(175,169,236,0.22) | rgba(175,169,236,0.18) | Segmented active fill | SettingsUI |
+| `settingsSegmentedBorder` | rgba(255,255,255,0.08) | rgba(15,23,42,0.08) | Segmented control track border | SettingsUI |
+| `settingsSegmentedActive` | rgba(175,169,236,0.16) | rgba(175,169,236,0.14) | Segmented active fill | SettingsUI |
+| `settingsSegmentedActiveBorder` | rgba(175,169,236,0.20) | rgba(114,103,221,0.18) | Segmented active border | SettingsUI |
+| `settingsSegmentedInactiveText` | rgba(255,255,255,0.58) | rgba(15,23,42,0.58) | Segmented inactive title color | SettingsUI |
+| `settingsSegmentedActiveText` | #AFA9EC | #7267DD | Segmented active title color | SettingsUI |
 | `settingsPillBorder` | rgba(175,169,236,0.36) | rgba(114,103,221,0.26) | Pill button border | SettingsUI, PromptTabView |
 | `settingsPillFill` | rgba(175,169,236,0.10) | rgba(175,169,236,0.16) | Pill button fill | SettingsUI, PromptTabView |
 | `settingsPillText` | #AFA9EC | #7267DD | Pill button text | SettingsUI, AboutTabView, PromptTabView |
@@ -135,6 +139,14 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 - `styleDividerSurface(_:,color:)` applies thin divider treatment without screen-specific branches.
 - `styleSegmentedTrackSurface(_:)` and `styleSegmentedHighlightSurface(_:)` keep the Settings segmented shells aligned with toolbar toggle behavior.
 - `AppearanceAwareSurfaceView` and `AppearanceAwareSurfaceButton` refresh those shells on first attach and on later appearance changes, which is the contract used by `SettingsSegmentedControl`, `SettingsPillButton`, `PromptPreviewView`, `ToolbarView`, `PopoverViewController`, and `SetupWindowController`.
+
+### Shared Selector Family (VIB-395)
+
+Top-level Settings tabs and Prompt sub-tabs now use one selector contract with two emphasis levels:
+
+- `SettingsSegmentedControl.Style.primary` is used for the window-level `General / Prompt / About` selector.
+- `SettingsSegmentedControl.Style.secondary` is used for prompt-section selectors such as `Preamble / Tools / Footer / Multi-image`.
+- Both styles use intrinsic-width centering, lighter inactive text, and a restrained bordered active fill so the labels carry more hierarchy than the pill chrome does.
 
 ### Role Colors
 
