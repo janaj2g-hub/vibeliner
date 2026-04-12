@@ -15,7 +15,8 @@ final class PromptGenerator {
         captureSession: CaptureSession? = nil,
         preambleOverride: String? = nil,
         footerOverride: String? = nil,
-        toolDescriptionsOverride: [String: String]? = nil
+        toolDescriptionsOverride: [String: String]? = nil,
+        rolesOverride: [RoleConfig]? = nil
     ) -> String {
         var preamble = preambleOverride ?? ConfigManager.shared.preamble
 
@@ -43,12 +44,13 @@ final class PromptGenerator {
         var multiImageBlock = ""
         if let session = captureSession, session.isMultiImage {
             let count = session.images.count
+            let roles = rolesOverride ?? ConfigManager.shared.roles
             var lines: [String] = []
             lines.append("This screenshot contains \(count) framed images in one stitched composite.")
             lines.append("")
             lines.append("Images:")
             for img in session.images {
-                let roleDesc = ConfigManager.shared.roles.first(where: { $0.name.lowercased() == img.role.name.lowercased() })?.description ?? ""
+                let roleDesc = roles.first(where: { $0.name.lowercased() == img.role.name.lowercased() })?.description ?? ""
                 if roleDesc.isEmpty {
                     lines.append("- \(img.title) (\(img.role.displayName))")
                 } else {

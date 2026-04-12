@@ -119,10 +119,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         // Preview section
         previewView.translatesAutoresizingMaskIntoConstraints = false
         rootStack.addArrangedSubview(previewView)
-        NSLayoutConstraint.activate([
-            previewView.heightAnchor.constraint(equalToConstant: 188),
-            previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor),
-        ])
+        previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor).isActive = true
 
         // Edit frame
         editFrame.translatesAutoresizingMaskIntoConstraints = false
@@ -630,13 +627,11 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     private func refreshPreview() {
-        var roleDescs: [String: String] = [:]
-        for role in drafts.roles { roleDescs[role.name.lowercased()] = role.description }
         previewView.refresh(
             preamble: drafts.preamble,
             footer: drafts.footer,
             toolDescriptions: drafts.toolDescriptions,
-            roleDescriptions: roleDescs
+            roles: drafts.roles
         )
     }
 
