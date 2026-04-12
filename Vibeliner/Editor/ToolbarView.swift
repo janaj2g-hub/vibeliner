@@ -12,6 +12,24 @@ protocol ToolbarDelegate: AnyObject {
     func toolbarDidRequestAddImage()
 }
 
+private final class ToolbarTintOverlayView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(
+            self,
+            background: DesignTokens.toolbarBg,
+            cornerRadius: DesignTokens.toolbarCornerRadius,
+            borderWidth: 0
+        )
+        layer?.masksToBounds = true
+    }
+}
+
+private final class ToolbarDividerView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleDividerSurface(self, color: DesignTokens.toolbarDivider)
+    }
+}
+
 final class ToolbarView: NSView {
 
     weak var delegate: ToolbarDelegate?
@@ -23,7 +41,7 @@ final class ToolbarView: NSView {
     private var captureButtonEnabled = true  // VIB-236: debounce new capture
     private var copyImageButton: NSView?
     private let blurView = NSVisualEffectView()
-    private var tintOverlay: NSView?
+    private var tintOverlay: ToolbarTintOverlayView?
 
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
@@ -53,10 +71,7 @@ final class ToolbarView: NSView {
         addSubview(blurView)
 
         // Tint overlay — appearance-aware background
-        let tintView = NSView()
-        tintView.wantsLayer = true
-        tintView.layer?.cornerRadius = DesignTokens.toolbarCornerRadius
-        tintView.layer?.masksToBounds = true
+        let tintView = ToolbarTintOverlayView()
         addSubview(tintView)
         self.tintOverlay = tintView
 
@@ -338,14 +353,18 @@ final class ToolbarView: NSView {
         }
     }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshAppearanceColors()
+    }
+
     private func refreshAppearanceColors() {
         effectiveAppearance.performAsCurrentDrawingAppearance {
             self.layer?.borderColor = DesignTokens.toolbarBorder.cgColor
-            self.tintOverlay?.layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
-            // Refresh divider colors
-            for subview in self.subviews where subview.frame.width == 1 {
-                subview.layer?.backgroundColor = DesignTokens.toolbarDivider.cgColor
-            }
+        }
+        tintOverlay?.refreshSurfaceAppearance()
+        for case let divider as ToolbarDividerView in subviews {
+            divider.refreshSurfaceAppearance()
         }
     }
 
@@ -435,9 +454,7 @@ final class ToolbarView: NSView {
     }
 
     private func addDivider(at x: CGFloat) -> CGFloat {
-        let divider = NSView(frame: NSRect(x: x, y: (DesignTokens.toolbarHeight - 16) / 2, width: 1, height: 16))
-        divider.wantsLayer = true
-        divider.layer?.backgroundColor = DesignTokens.toolbarDivider.cgColor
+        let divider = ToolbarDividerView(frame: NSRect(x: x, y: (DesignTokens.toolbarHeight - 16) / 2, width: 1, height: 16))
         addSubview(divider)
         return x + 1
     }
@@ -563,7 +580,7 @@ final class ModeToggleView: NSView {
 
     private let ideLabel = NSTextField(labelWithString: "IDE")
     private let appLabel = NSTextField(labelWithString: "App")
-    private let highlightView = NSView()
+    private let highlightView = ToolbarModeToggleHighlightView()
     private var currentMode: String
 
     // Prototype: container height 28, borderRadius 14, bg rgba(255,255,255,0.06), padding 2
@@ -581,12 +598,7 @@ final class ModeToggleView: NSView {
 
     private func setupView() {
         wantsLayer = true
-        layer?.cornerRadius = 14
-        layer?.backgroundColor = DesignTokens.toolbarToggleBg.cgColor
-
-        highlightView.wantsLayer = true
-        highlightView.layer?.cornerRadius = 12
-        highlightView.layer?.backgroundColor = DesignTokens.toolbarToggleActiveBg.cgColor
+        SettingsUI.styleSurface(self, background: DesignTokens.toolbarToggleBg, cornerRadius: 14, borderWidth: 0)
         addSubview(highlightView)
 
         for label in [ideLabel, appLabel] {
@@ -617,11 +629,14 @@ final class ModeToggleView: NSView {
         refreshToggleColors()
     }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshToggleColors()
+    }
+
     private func refreshToggleColors() {
-        effectiveAppearance.performAsCurrentDrawingAppearance {
-            self.layer?.backgroundColor = DesignTokens.toolbarToggleBg.cgColor
-            self.highlightView.layer?.backgroundColor = DesignTokens.toolbarToggleActiveBg.cgColor
-        }
+        SettingsUI.styleSurface(self, background: DesignTokens.toolbarToggleBg, cornerRadius: 14, borderWidth: 0)
+        highlightView.refreshSurfaceAppearance()
         updateAppearance()
     }
 
@@ -642,6 +657,12 @@ final class ModeToggleView: NSView {
         currentMode = localPoint.x < bounds.midX ? "ide" : "app"
         updateAppearance()
         onModeChange?(currentMode)
+    }
+}
+
+private final class ToolbarModeToggleHighlightView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(self, background: DesignTokens.toolbarToggleActiveBg, cornerRadius: 12, borderWidth: 0)
     }
 }
 
@@ -720,16 +741,31 @@ final class CopyPillButton: NSView {
         updateAppearance()
     }
 
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        updateAppearance()
+    }
+
     private func updateAppearance() {
         if isCopied {
-            layer?.borderColor = DesignTokens.copiedGreenBorder.cgColor
-            layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.copiedGreenBg,
+                border: DesignTokens.copiedGreenBorder,
+                cornerRadius: 14,
+                borderWidth: 1.5
+            )
             label.textColor = DesignTokens.copiedGreenText
         } else {
             let borderColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBorder : DesignTokens.toolbarPurpleButtonBorder
             let bgColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBg : DesignTokens.toolbarPurpleButtonBg
-            layer?.borderColor = borderColor.cgColor
-            layer?.backgroundColor = bgColor.cgColor
+            SettingsUI.styleSurface(
+                self,
+                background: bgColor,
+                border: borderColor,
+                cornerRadius: 14,
+                borderWidth: 1.5
+            )
             label.textColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverText : DesignTokens.toolbarPurpleButtonText
         }
     }
@@ -793,21 +829,38 @@ final class SecondaryPillButton: NSView {
     private func updateAppearance() {
         if !isButtonEnabled {
             label.textColor = DesignTokens.toolbarSecondaryText.withAlphaComponent(0.3)
-            layer?.borderColor = DesignTokens.toolbarSecondaryBorder.withAlphaComponent(0.15).cgColor
-            layer?.backgroundColor = NSColor.clear.cgColor
+            SettingsUI.styleSurface(
+                self,
+                background: .clear,
+                border: DesignTokens.toolbarSecondaryBorder.withAlphaComponent(0.15),
+                cornerRadius: 13
+            )
         } else if isHovered {
             label.textColor = DesignTokens.toolbarSecondaryHoverText
-            layer?.borderColor = DesignTokens.toolbarSecondaryHoverBorder.cgColor
-            layer?.backgroundColor = DesignTokens.toolbarSecondaryHoverBg.cgColor
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.toolbarSecondaryHoverBg,
+                border: DesignTokens.toolbarSecondaryHoverBorder,
+                cornerRadius: 13
+            )
         } else {
             label.textColor = DesignTokens.toolbarSecondaryText
-            layer?.borderColor = DesignTokens.toolbarSecondaryBorder.cgColor
-            layer?.backgroundColor = DesignTokens.toolbarSecondaryBg.cgColor
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.toolbarSecondaryBg,
+                border: DesignTokens.toolbarSecondaryBorder,
+                cornerRadius: 13
+            )
         }
     }
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
+        updateAppearance()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
         updateAppearance()
     }
 
