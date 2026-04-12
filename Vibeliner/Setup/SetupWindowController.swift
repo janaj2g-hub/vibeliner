@@ -5,6 +5,12 @@ import ApplicationServices
 /// so layer-backed CGColors can be re-applied with the new appearance.
 private class SetupContentView: NSView {
     var onAppearanceChange: (() -> Void)?
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        onAppearanceChange?()
+    }
+
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
         onAppearanceChange?()
@@ -121,8 +127,7 @@ final class SetupWindowController: NSWindowController {
 
         // Footer
         footerContent = NSView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
-        footerContent.wantsLayer = true
-        footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
+        SettingsUI.styleSurface(footerContent, background: DesignTokens.setupFooterBg, borderWidth: 0)
         cv.addSubview(footerContent)
 
         footerBorderView = makeDivider(x: 0, y: footerH - 1, height: 1)
@@ -167,11 +172,12 @@ final class SetupWindowController: NSWindowController {
         centeredCell.lineBreakMode = .byTruncatingHead
         centeredCell.truncatesLastVisibleLine = false
         pathDisplay.cell = centeredCell
-        pathDisplay.wantsLayer = true
-        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
-        pathDisplay.layer?.borderWidth = 1
-        pathDisplay.layer?.cornerRadius = DesignTokens.setupPathBoxRadius
+        SettingsUI.styleSurface(
+            pathDisplay,
+            background: DesignTokens.setupFieldBg,
+            border: DesignTokens.setupFieldBorder,
+            cornerRadius: DesignTokens.setupPathBoxRadius
+        )
         pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
         c.addSubview(pathDisplay)
 
@@ -293,24 +299,19 @@ final class SetupWindowController: NSWindowController {
         let size = DesignTokens.setupBadgeSize
         let view = NSView(frame: NSRect(x: 0, y: 0, width: size, height: size))
         view.wantsLayer = true
-        view.layer?.cornerRadius = size / 2
-        view.layer?.borderWidth = 2
 
         let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
-            view.layer?.borderColor = DesignTokens.setupGreen.cgColor
-            view.layer?.backgroundColor = DesignTokens.setupGreenBadgeBg.cgColor
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2, borderWidth: 2)
             let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            view.layer?.borderColor = DesignTokens.setupGrayText.cgColor
-            view.layer?.backgroundColor = DesignTokens.setupGrayBg.cgColor
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2, borderWidth: 2)
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
-            view.layer?.borderColor = DesignTokens.purpleDark.cgColor
-            view.layer?.backgroundColor = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08).cgColor
+            SettingsUI.styleSurface(view, background: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08), border: DesignTokens.purpleDark, cornerRadius: size / 2, borderWidth: 2)
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark, in: badgeRect)
             view.addSubview(numLabel)
         }
@@ -347,13 +348,9 @@ final class SetupWindowController: NSWindowController {
         let arrowSize = DesignTokens.setupArrowSize
         let arrow = NSButton(title: "→", target: self, action: action)
         arrow.isBordered = false
-        arrow.wantsLayer = true
         arrow.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
         arrow.contentTintColor = DesignTokens.setupButtonText
-        arrow.layer?.backgroundColor = DesignTokens.setupButtonFill.cgColor
-        arrow.layer?.borderColor = DesignTokens.setupButtonBorder.cgColor
-        arrow.layer?.borderWidth = 1
-        arrow.layer?.cornerRadius = arrowSize / 2
+        SettingsUI.styleSurface(arrow, background: DesignTokens.setupButtonFill, border: DesignTokens.setupButtonBorder, cornerRadius: arrowSize / 2)
         arrow.frame = NSRect(x: (width - arrowSize) / 2, y: rowH - 18 - 8 - arrowSize, width: arrowSize, height: arrowSize)
 
         // Hover tracking
@@ -392,22 +389,16 @@ final class SetupWindowController: NSWindowController {
     private func makeSmallPillButton(_ title: String, green: Bool) -> NSButton {
         let btn = NSButton(title: title, target: nil, action: nil)
         btn.isBordered = false
-        btn.wantsLayer = true
         btn.font = DesignTokens.setupSmallPillFont
         let pillH = DesignTokens.setupSmallPillHeight
 
         if green {
             btn.contentTintColor = DesignTokens.setupGreenText
-            btn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
-            btn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
+            SettingsUI.styleSurface(btn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: pillH / 2)
         } else {
             btn.contentTintColor = DesignTokens.purpleButton
-            btn.layer?.backgroundColor = DesignTokens.purpleButtonBg.cgColor
-            btn.layer?.borderColor = DesignTokens.purpleButton.cgColor
+            SettingsUI.styleSurface(btn, background: DesignTokens.purpleButtonBg, border: DesignTokens.purpleButton, cornerRadius: pillH / 2)
         }
-
-        btn.layer?.borderWidth = 1
-        btn.layer?.cornerRadius = pillH / 2
         btn.sizeToFit()
         let w = btn.frame.width + 20
         btn.setFrameSize(NSSize(width: w, height: pillH))
@@ -429,13 +420,9 @@ final class SetupWindowController: NSWindowController {
             // Right: Green "Start using Vibeliner →" button
             let startBtn = NSButton(title: "Start using Vibeliner \u{2192}", target: self, action: #selector(startClicked))
             startBtn.isBordered = false
-            startBtn.wantsLayer = true
             startBtn.font = DesignTokens.setupActionLabelFont
             startBtn.contentTintColor = DesignTokens.setupGreenText
-            startBtn.layer?.backgroundColor = DesignTokens.setupGreenBg.cgColor
-            startBtn.layer?.borderColor = DesignTokens.setupGreenBorder.cgColor
-            startBtn.layer?.borderWidth = 1
-            startBtn.layer?.cornerRadius = 20
+            SettingsUI.styleSurface(startBtn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: 20)
             startBtn.sizeToFit()
             let btnW = startBtn.frame.width + 48
             startBtn.setFrameSize(NSSize(width: btnW, height: 36))
@@ -445,13 +432,9 @@ final class SetupWindowController: NSWindowController {
             // VIB-360: "Take a tour" ghost button, to the left of Start button
             let tourBtn = NSButton(title: "Take a tour", target: self, action: #selector(tourClicked))
             tourBtn.isBordered = false
-            tourBtn.wantsLayer = true
             tourBtn.font = DesignTokens.setupActionLabelFont
             tourBtn.contentTintColor = DesignTokens.setupTextSecondary
-            tourBtn.layer?.backgroundColor = NSColor.clear.cgColor
-            tourBtn.layer?.borderColor = DesignTokens.setupBorder.cgColor
-            tourBtn.layer?.borderWidth = 1
-            tourBtn.layer?.cornerRadius = 20
+            SettingsUI.styleSurface(tourBtn, background: .clear, border: DesignTokens.setupBorder, cornerRadius: 20)
             tourBtn.sizeToFit()
             let tourBtnW = tourBtn.frame.width + 36
             tourBtn.setFrameSize(NSSize(width: tourBtnW, height: 36))
@@ -488,11 +471,7 @@ final class SetupWindowController: NSWindowController {
 
         let groupH: CGFloat = 28
         let group = NSView(frame: NSRect(x: 0, y: 0, width: totalW, height: groupH))
-        group.wantsLayer = true
-        group.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        group.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
-        group.layer?.borderWidth = 1
-        group.layer?.cornerRadius = groupH / 2
+        SettingsUI.styleSurface(group, background: DesignTokens.setupFieldBg, border: DesignTokens.setupFieldBorder, cornerRadius: groupH / 2)
 
         var x = innerPad
         hint.frame.origin = NSPoint(x: x, y: (groupH - hint.frame.height) / 2)
@@ -518,11 +497,7 @@ final class SetupWindowController: NSWindowController {
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
-        pill.wantsLayer = true
-        pill.layer?.backgroundColor = DesignTokens.setupKbdBg.cgColor
-        pill.layer?.borderColor = DesignTokens.setupKbdBorder.cgColor
-        pill.layer?.borderWidth = 1
-        pill.layer?.cornerRadius = 5
+        SettingsUI.styleSurface(pill, background: DesignTokens.setupKbdBg, border: DesignTokens.setupKbdBorder, cornerRadius: 5)
         label.frame = NSRect(x: 0, y: (h - label.frame.height) / 2, width: w, height: label.frame.height)
         pill.addSubview(label)
         return pill
@@ -644,12 +619,16 @@ final class SetupWindowController: NSWindowController {
     /// Dynamic NSColor resolves correctly when .cgColor is called again.
     private func reapplyLayerColors() {
         window?.backgroundColor = DesignTokens.setupWindowBg
-        footerContent.layer?.backgroundColor = DesignTokens.setupFooterBg.cgColor
-        divider1?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
-        divider2?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
-        footerBorderView?.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
-        pathDisplay.layer?.backgroundColor = DesignTokens.setupFieldBg.cgColor
-        pathDisplay.layer?.borderColor = DesignTokens.setupFieldBorder.cgColor
+        SettingsUI.styleSurface(footerContent, background: DesignTokens.setupFooterBg, borderWidth: 0)
+        if let divider1 { SettingsUI.styleDividerSurface(divider1, color: DesignTokens.setupBorder) }
+        if let divider2 { SettingsUI.styleDividerSurface(divider2, color: DesignTokens.setupBorder) }
+        if let footerBorderView { SettingsUI.styleDividerSurface(footerBorderView, color: DesignTokens.setupBorder) }
+        SettingsUI.styleSurface(
+            pathDisplay,
+            background: DesignTokens.setupFieldBg,
+            border: DesignTokens.setupFieldBorder,
+            cornerRadius: DesignTokens.setupPathBoxRadius
+        )
         // Rebuild footer (shortcut group, start button) with fresh colors
         updateFooter()
         // Rebuild badges with fresh colors for current state
@@ -765,8 +744,7 @@ final class SetupWindowController: NSWindowController {
 
     private func makeDivider(x: CGFloat, y: CGFloat, height: CGFloat) -> NSView {
         let d = NSView(frame: NSRect(x: x, y: y, width: 1, height: height))
-        d.wantsLayer = true
-        d.layer?.backgroundColor = DesignTokens.setupBorder.cgColor
+        SettingsUI.styleDividerSurface(d, color: DesignTokens.setupBorder)
         return d
     }
 

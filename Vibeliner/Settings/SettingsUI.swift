@@ -47,11 +47,8 @@ enum SettingsUI {
     }
 
     static func divider() -> NSView {
-        // VIB-388: Use appearance-aware subclass so divider updates on theme change
         let view = AppearanceSafeDivider()
         view.translatesAutoresizingMaskIntoConstraints = false
-        view.wantsLayer = true
-        view.setLayerBackground(NSColor.separatorColor)
 
         let scale = NSScreen.main?.backingScaleFactor ?? 2
         NSLayoutConstraint.activate([
@@ -64,27 +61,72 @@ enum SettingsUI {
     /// Apply field surface styling. Call again from viewDidChangeEffectiveAppearance
     /// to refresh CGColor values when dark/light mode changes.
     static func styleFieldSurface(_ view: NSView, cornerRadius: CGFloat = 10) {
-        view.wantsLayer = true
-        view.layer?.cornerRadius = cornerRadius
-        view.layer?.borderWidth = 1
-        view.setLayerBackground(DesignTokens.settingsFieldSurface)
-        view.setLayerBorder(DesignTokens.settingsFieldBorder)
+        styleSurface(
+            view,
+            background: DesignTokens.settingsFieldSurface,
+            border: DesignTokens.settingsFieldBorder,
+            cornerRadius: cornerRadius
+        )
     }
 
     static func styleFrameSurface(_ view: NSView) {
-        view.wantsLayer = true
-        view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.borderWidth = 1
-        view.setLayerBackground(DesignTokens.settingsFrameSurface)
-        view.setLayerBorder(NSColor.separatorColor)
+        styleSurface(
+            view,
+            background: DesignTokens.settingsFrameSurface,
+            border: NSColor.separatorColor,
+            cornerRadius: DesignTokens.settingsFrameRadius
+        )
     }
 
     static func stylePreviewSurface(_ view: NSView) {
+        styleSurface(
+            view,
+            background: DesignTokens.settingsPreviewSurface,
+            border: DesignTokens.settingsFieldBorder,
+            cornerRadius: DesignTokens.settingsFrameRadius
+        )
+    }
+
+    static func styleSegmentedTrackSurface(_ view: NSView) {
+        styleSurface(
+            view,
+            background: DesignTokens.settingsSegmentedTrack,
+            border: NSColor.separatorColor,
+            cornerRadius: DesignTokens.settingsSegmentedHeight / 2
+        )
+    }
+
+    static func styleSegmentedHighlightSurface(_ view: NSView) {
+        styleSurface(
+            view,
+            background: DesignTokens.settingsSegmentedActive,
+            border: DesignTokens.settingsPillBorder,
+            cornerRadius: (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
+        )
+    }
+
+    static func styleDividerSurface(_ view: NSView, color: NSColor = .separatorColor) {
         view.wantsLayer = true
-        view.layer?.cornerRadius = DesignTokens.settingsFrameRadius
-        view.layer?.borderWidth = 1
-        view.setLayerBackground(DesignTokens.settingsPreviewSurface)
-        view.setLayerBorder(DesignTokens.settingsFieldBorder)
+        view.setLayerBackground(color)
+    }
+
+    static func styleSurface(
+        _ view: NSView,
+        background: NSColor,
+        border: NSColor? = nil,
+        cornerRadius: CGFloat = 0,
+        borderWidth: CGFloat = 1
+    ) {
+        view.wantsLayer = true
+        view.layer?.cornerRadius = cornerRadius
+        if let border {
+            view.layer?.borderWidth = borderWidth
+            view.setLayerBorder(border)
+        } else {
+            view.layer?.borderWidth = 0
+            view.layer?.borderColor = nil
+        }
+        view.setLayerBackground(background)
     }
 
     static func makeSection(title: String, contentView: NSView, labelWidth: CGFloat = DesignTokens.settingsSectionLabelWidth) -> NSView {
@@ -131,9 +173,47 @@ extension NSView {
     }
 }
 
+class AppearanceAwareSurfaceView: NSView {
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        refreshSurfaceAppearance()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshSurfaceAppearance()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshSurfaceAppearance()
+    }
+
+    func refreshSurfaceAppearance() {}
+}
+
+class AppearanceAwareSurfaceButton: NSButton {
+    override func viewDidMoveToSuperview() {
+        super.viewDidMoveToSuperview()
+        refreshSurfaceAppearance()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        refreshSurfaceAppearance()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        refreshSurfaceAppearance()
+    }
+
+    func refreshSurfaceAppearance() {}
+}
+
 // MARK: - Pill button (Save, Change, etc.)
 
-final class SettingsPillButton: NSButton {
+final class SettingsPillButton: AppearanceAwareSurfaceButton {
 
     init(title: String, target: AnyObject?, action: Selector?) {
         super.init(frame: .zero)
@@ -148,8 +228,6 @@ final class SettingsPillButton: NSButton {
         wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
         setButtonType(.momentaryPushIn)
-        layer?.cornerRadius = DesignTokens.settingsPillHeight / 2
-        layer?.borderWidth = 1
         refreshColors()
 
         NSLayoutConstraint.activate([
@@ -159,15 +237,18 @@ final class SettingsPillButton: NSButton {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        refreshColors()
-    }
-
     func refreshColors() {
         contentTintColor = DesignTokens.settingsPillText
-        setLayerBackground(DesignTokens.settingsPillFill)
-        setLayerBorder(DesignTokens.settingsPillBorder)
+        SettingsUI.styleSurface(
+            self,
+            background: DesignTokens.settingsPillFill,
+            border: DesignTokens.settingsPillBorder,
+            cornerRadius: DesignTokens.settingsPillHeight / 2
+        )
+    }
+
+    override func refreshSurfaceAppearance() {
+        refreshColors()
     }
 }
 
@@ -198,6 +279,11 @@ final class SettingsTextField: NSTextField {
 
     override func viewDidChangeEffectiveAppearance() {
         super.viewDidChangeEffectiveAppearance()
+        SettingsUI.styleFieldSurface(self)
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
         SettingsUI.styleFieldSurface(self)
     }
 }
@@ -248,14 +334,26 @@ final class SettingsKeyPillRow: NSStackView {
     }
 }
 
+private final class SettingsSegmentedTrackView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSegmentedTrackSurface(self)
+    }
+}
+
+private final class SettingsSegmentedHighlightView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSegmentedHighlightSurface(self)
+    }
+}
+
 // MARK: - Segmented control (Preamble/Tools/Footer + Light/Dark/System)
 
 final class SettingsSegmentedControl: NSView {
 
     var onSelectionChanged: ((Int) -> Void)?
 
-    private let trackView = NSView()
-    private let highlightView = NSView()
+    private let trackView = SettingsSegmentedTrackView()
+    private let highlightView = SettingsSegmentedHighlightView()
     private let stackView = NSStackView()
     private var buttons: [NSButton] = []
     private(set) var selectedIndex: Int = 0
@@ -276,11 +374,6 @@ final class SettingsSegmentedControl: NSView {
         updateHighlightFrame()
     }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        refreshColors()
-    }
-
     func setSelectedIndex(_ index: Int, notify: Bool = true) {
         guard index >= 0, index < buttons.count else { return }
         selectedIndex = index
@@ -294,14 +387,6 @@ final class SettingsSegmentedControl: NSView {
         highlightView.translatesAutoresizingMaskIntoConstraints = false
         stackView.translatesAutoresizingMaskIntoConstraints = false
 
-        trackView.wantsLayer = true
-        trackView.layer?.cornerRadius = DesignTokens.settingsSegmentedHeight / 2
-        trackView.layer?.borderWidth = 1
-
-        highlightView.wantsLayer = true
-        highlightView.layer?.cornerRadius = (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
-        highlightView.layer?.borderWidth = 1
-
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
         stackView.distribution = .fillEqually
@@ -310,8 +395,6 @@ final class SettingsSegmentedControl: NSView {
         addSubview(trackView)
         trackView.addSubview(highlightView)
         trackView.addSubview(stackView)
-
-        refreshColors()
 
         NSLayoutConstraint.activate([
             heightAnchor.constraint(equalToConstant: DesignTokens.settingsSegmentedHeight),
@@ -324,13 +407,6 @@ final class SettingsSegmentedControl: NSView {
             stackView.topAnchor.constraint(equalTo: trackView.topAnchor, constant: DesignTokens.settingsSegmentedInset),
             stackView.bottomAnchor.constraint(equalTo: trackView.bottomAnchor, constant: -DesignTokens.settingsSegmentedInset)
         ])
-    }
-
-    private func refreshColors() {
-        trackView.setLayerBackground(DesignTokens.settingsSegmentedTrack)
-        trackView.setLayerBorder(NSColor.separatorColor)
-        highlightView.setLayerBackground(DesignTokens.settingsSegmentedActive)
-        highlightView.setLayerBorder(DesignTokens.settingsPillBorder)
     }
 
     private func configureButtons(_ items: [String]) {
@@ -372,20 +448,18 @@ final class SettingsSegmentedControl: NSView {
 
 // MARK: - Appearance-aware field view (refreshes layer colors on theme change)
 
-final class AppearanceAwareFieldView: NSView {
+class AppearanceAwareFieldView: AppearanceAwareSurfaceView {
     var fieldCornerRadius: CGFloat = 10
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
+    override func refreshSurfaceAppearance() {
         SettingsUI.styleFieldSurface(self, cornerRadius: fieldCornerRadius)
     }
 }
 
 // MARK: - Appearance-safe divider (VIB-388: re-resolves separatorColor on theme change)
 
-final class AppearanceSafeDivider: NSView {
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        setLayerBackground(NSColor.separatorColor)
+final class AppearanceSafeDivider: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleDividerSurface(self)
     }
 }
