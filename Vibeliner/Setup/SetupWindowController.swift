@@ -17,6 +17,119 @@ private class SetupContentView: NSView {
     }
 }
 
+private final class SetupDividerView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleDividerSurface(self, color: DesignTokens.setupBorder)
+    }
+}
+
+private final class SetupFooterSurfaceView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(self, background: DesignTokens.setupFooterBg, borderWidth: 0)
+    }
+}
+
+private enum SetupPillRole {
+    case accent
+    case success
+    case ghost
+}
+
+private final class SetupPillButton: AppearanceAwareSurfaceButton {
+    private let role: SetupPillRole
+    private let heightValue: CGFloat
+
+    init(
+        title: String,
+        role: SetupPillRole,
+        height: CGFloat,
+        font: NSFont,
+        horizontalPadding: CGFloat,
+        target: AnyObject?,
+        action: Selector?
+    ) {
+        self.role = role
+        self.heightValue = height
+        super.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+        isBordered = false
+        bezelStyle = .regularSquare
+        focusRingType = .none
+        setButtonType(.momentaryPushIn)
+        self.font = font
+        wantsLayer = true
+        translatesAutoresizingMaskIntoConstraints = false
+        sizeToFit()
+        let width = frame.width + horizontalPadding
+        setFrameSize(NSSize(width: width, height: heightValue))
+        refreshSurfaceAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func refreshSurfaceAppearance() {
+        switch role {
+        case .accent:
+            contentTintColor = DesignTokens.setupButtonText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.setupButtonFill,
+                border: DesignTokens.setupButtonBorder,
+                cornerRadius: heightValue / 2
+            )
+        case .success:
+            contentTintColor = DesignTokens.setupGreenText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.setupGreenBg,
+                border: DesignTokens.setupGreenBorder,
+                cornerRadius: heightValue / 2
+            )
+        case .ghost:
+            contentTintColor = DesignTokens.setupTextSecondary
+            SettingsUI.styleSurface(
+                self,
+                background: .clear,
+                border: DesignTokens.setupBorder,
+                cornerRadius: heightValue / 2
+            )
+        }
+    }
+}
+
+private final class SetupCircleButton: AppearanceAwareSurfaceButton {
+    init(title: String, target: AnyObject?, action: Selector?) {
+        super.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+        isBordered = false
+        bezelStyle = .regularSquare
+        focusRingType = .none
+        setButtonType(.momentaryPushIn)
+        font = NSFont.systemFont(ofSize: 18, weight: .semibold)
+        wantsLayer = true
+        translatesAutoresizingMaskIntoConstraints = false
+        let size = DesignTokens.setupArrowSize
+        setFrameSize(NSSize(width: size, height: size))
+        refreshSurfaceAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func refreshSurfaceAppearance() {
+        contentTintColor = DesignTokens.setupButtonText
+        SettingsUI.styleSurface(
+            self,
+            background: DesignTokens.setupButtonFill,
+            border: DesignTokens.setupButtonBorder,
+            cornerRadius: bounds.height / 2
+        )
+    }
+}
+
 /// 3-panel setup: Captures Folder → Accessibility → Screen Recording (VIB-303)
 final class SetupWindowController: NSWindowController {
 
@@ -33,7 +146,7 @@ final class SetupWindowController: NSWindowController {
     private var panel1Container: NSView!
     private var panel2Container: NSView!
     private var panel3Container: NSView!
-    private var footerContent: NSView!
+    private var footerContent: SetupFooterSurfaceView!
     private var badge1View: NSView!
     private var badge2View: NSView!
     private var badge3View: NSView!
@@ -126,8 +239,7 @@ final class SetupWindowController: NSWindowController {
         panel3Container.alphaValue = 0.35
 
         // Footer
-        footerContent = NSView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
-        SettingsUI.styleSurface(footerContent, background: DesignTokens.setupFooterBg, borderWidth: 0)
+        footerContent = SetupFooterSurfaceView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
         cv.addSubview(footerContent)
 
         footerBorderView = makeDivider(x: 0, y: footerH - 1, height: 1)
@@ -311,8 +423,14 @@ final class SetupWindowController: NSWindowController {
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
-            SettingsUI.styleSurface(view, background: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08), border: DesignTokens.purpleDark, cornerRadius: size / 2, borderWidth: 2)
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark, in: badgeRect)
+            SettingsUI.styleSurface(
+                view,
+                background: DesignTokens.setupButtonFill,
+                border: DesignTokens.setupButtonBorder,
+                cornerRadius: size / 2,
+                borderWidth: 2
+            )
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupButtonText, in: badgeRect)
             view.addSubview(numLabel)
         }
 
@@ -333,31 +451,24 @@ final class SetupWindowController: NSWindowController {
         let rowH: CGFloat = 72
         let row = NSView(frame: NSRect(x: 0, y: 0, width: width, height: rowH))
 
-        // Label (clickable)
         let labelBtn = NSButton(title: label, target: self, action: action)
         labelBtn.isBordered = false
-        labelBtn.wantsLayer = true
         labelBtn.font = DesignTokens.setupActionLabelFont
         labelBtn.contentTintColor = DesignTokens.setupButtonText
         labelBtn.sizeToFit()
-        let labelW = labelBtn.frame.width
-        labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)
-        row.addSubview(labelBtn)
 
-        // Arrow button
-        let arrowSize = DesignTokens.setupArrowSize
-        let arrow = NSButton(title: "→", target: self, action: action)
-        arrow.isBordered = false
-        arrow.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
-        arrow.contentTintColor = DesignTokens.setupButtonText
-        SettingsUI.styleSurface(arrow, background: DesignTokens.setupButtonFill, border: DesignTokens.setupButtonBorder, cornerRadius: arrowSize / 2)
-        arrow.frame = NSRect(x: (width - arrowSize) / 2, y: rowH - 18 - 8 - arrowSize, width: arrowSize, height: arrowSize)
+        let arrow = SetupCircleButton(title: "→", target: self, action: action)
 
-        // Hover tracking
-        let trackArea = NSTrackingArea(rect: arrow.bounds, options: [.mouseEnteredAndExited, .activeInActiveApp], owner: nil, userInfo: nil)
-        arrow.addTrackingArea(trackArea)
-
-        row.addSubview(arrow)
+        let stack = NSStackView(views: [labelBtn, arrow])
+        stack.orientation = .vertical
+        stack.alignment = .centerX
+        stack.spacing = 8
+        stack.translatesAutoresizingMaskIntoConstraints = false
+        row.addSubview(stack)
+        NSLayoutConstraint.activate([
+            stack.centerXAnchor.constraint(equalTo: row.centerXAnchor),
+            stack.centerYAnchor.constraint(equalTo: row.centerYAnchor)
+        ])
         return row
     }
 
@@ -387,22 +498,16 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Small pill button
 
     private func makeSmallPillButton(_ title: String, green: Bool) -> NSButton {
-        let btn = NSButton(title: title, target: nil, action: nil)
-        btn.isBordered = false
-        btn.font = DesignTokens.setupSmallPillFont
-        let pillH = DesignTokens.setupSmallPillHeight
-
-        if green {
-            btn.contentTintColor = DesignTokens.setupGreenText
-            SettingsUI.styleSurface(btn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: pillH / 2)
-        } else {
-            btn.contentTintColor = DesignTokens.purpleButton
-            SettingsUI.styleSurface(btn, background: DesignTokens.purpleButtonBg, border: DesignTokens.purpleButton, cornerRadius: pillH / 2)
-        }
-        btn.sizeToFit()
-        let w = btn.frame.width + 20
-        btn.setFrameSize(NSSize(width: w, height: pillH))
-        return btn
+        let role: SetupPillRole = green ? .success : .accent
+        return SetupPillButton(
+            title: title,
+            role: role,
+            height: DesignTokens.setupSmallPillHeight,
+            font: DesignTokens.setupSmallPillFont,
+            horizontalPadding: 20,
+            target: nil,
+            action: nil
+        )
     }
 
     // MARK: - Footer
@@ -418,26 +523,30 @@ final class SetupWindowController: NSWindowController {
             footerContent.addSubview(shortcutGroup)
 
             // Right: Green "Start using Vibeliner →" button
-            let startBtn = NSButton(title: "Start using Vibeliner \u{2192}", target: self, action: #selector(startClicked))
-            startBtn.isBordered = false
-            startBtn.font = DesignTokens.setupActionLabelFont
-            startBtn.contentTintColor = DesignTokens.setupGreenText
-            SettingsUI.styleSurface(startBtn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: 20)
-            startBtn.sizeToFit()
-            let btnW = startBtn.frame.width + 48
-            startBtn.setFrameSize(NSSize(width: btnW, height: 36))
+            let startBtn = SetupPillButton(
+                title: "Start using Vibeliner \u{2192}",
+                role: .success,
+                height: 36,
+                font: DesignTokens.setupActionLabelFont,
+                horizontalPadding: 32,
+                target: self,
+                action: #selector(startClicked)
+            )
+            let btnW = startBtn.frame.width
             startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
             footerContent.addSubview(startBtn)
 
             // VIB-360: "Take a tour" ghost button, to the left of Start button
-            let tourBtn = NSButton(title: "Take a tour", target: self, action: #selector(tourClicked))
-            tourBtn.isBordered = false
-            tourBtn.font = DesignTokens.setupActionLabelFont
-            tourBtn.contentTintColor = DesignTokens.setupTextSecondary
-            SettingsUI.styleSurface(tourBtn, background: .clear, border: DesignTokens.setupBorder, cornerRadius: 20)
-            tourBtn.sizeToFit()
-            let tourBtnW = tourBtn.frame.width + 36
-            tourBtn.setFrameSize(NSSize(width: tourBtnW, height: 36))
+            let tourBtn = SetupPillButton(
+                title: "Take a tour",
+                role: .ghost,
+                height: 36,
+                font: DesignTokens.setupActionLabelFont,
+                horizontalPadding: 24,
+                target: self,
+                action: #selector(tourClicked)
+            )
+            let tourBtnW = tourBtn.frame.width
             tourBtn.frame.origin = NSPoint(x: winW - 24 - btnW - 10 - tourBtnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
             footerContent.addSubview(tourBtn)
         } else {
@@ -743,8 +852,7 @@ final class SetupWindowController: NSWindowController {
     }
 
     private func makeDivider(x: CGFloat, y: CGFloat, height: CGFloat) -> NSView {
-        let d = NSView(frame: NSRect(x: x, y: y, width: 1, height: height))
-        SettingsUI.styleDividerSurface(d, color: DesignTokens.setupBorder)
+        let d = SetupDividerView(frame: NSRect(x: x, y: y, width: 1, height: height))
         return d
     }
 
