@@ -14,6 +14,10 @@
 		4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A4FBC164B13DB84291343D /* CursorManager.swift */; };
 		A10000010000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* AppDelegate.swift */; };
 		A10000010000000000000002 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* DesignTokens.swift */; };
+		D100000100000000000000B1 /* DesignTokens+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A1 /* DesignTokens+Settings.swift */; };
+		D100000100000000000000B2 /* DesignTokens+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A2 /* DesignTokens+Layout.swift */; };
+		D100000100000000000000B3 /* DesignTokens+SetupTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A3 /* DesignTokens+SetupTour.swift */; };
+		D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */; };
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
 		A10000010000000000000004 /* CapturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* CapturesManager.swift */; };
 		A10000010000000000000005 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HotkeyManager.swift */; };
@@ -97,6 +101,10 @@
 		D2A4FBC164B13DB84291343D /* CursorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A20000010000000000000002 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		D100000100000000000000A1 /* DesignTokens+Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+Settings.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A2 /* DesignTokens+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+Layout.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A3 /* DesignTokens+SetupTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+SetupTour.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+TourIllustrations.swift"; sourceTree = "<group>"; };
 		A20000010000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
@@ -296,6 +304,10 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000002 /* DesignTokens.swift */,
+				D100000100000000000000A1 /* DesignTokens+Settings.swift */,
+				D100000100000000000000A2 /* DesignTokens+Layout.swift */,
+				D100000100000000000000A3 /* DesignTokens+SetupTour.swift */,
+				D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */,
 			);
 			path = Design;
 			sourceTree = "<group>";
@@ -542,6 +554,10 @@
 				4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */,
 				A10000010000000000000001 /* AppDelegate.swift in Sources */,
 				A10000010000000000000002 /* DesignTokens.swift in Sources */,
+				D100000100000000000000B1 /* DesignTokens+Settings.swift in Sources */,
+				D100000100000000000000B2 /* DesignTokens+Layout.swift in Sources */,
+				D100000100000000000000B3 /* DesignTokens+SetupTour.swift in Sources */,
+				D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
 				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
