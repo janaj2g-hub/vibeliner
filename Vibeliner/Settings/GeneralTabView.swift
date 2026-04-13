@@ -11,7 +11,8 @@ final class GeneralTabView: NSView {
     private let folderFieldContainer = AppearanceAwareFieldView()
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
-    private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"])
+    // VIB-433: Toggle-token segmented control for appearance
+    private let appearanceControl = SettingsToggleControl(items: ["Light", "Dark", "System"])
 
     init() {
         super.init(frame: .zero)
@@ -140,10 +141,6 @@ final class GeneralTabView: NSView {
 
         appearanceControl.setAccessibilityLabel("Appearance mode")
         appearanceControl.setAccessibilityRole(.radioGroup)
-
-        NSLayoutConstraint.activate([
-            appearanceControl.widthAnchor.constraint(equalToConstant: 240),
-        ])
 
         let appearanceRow = NSStackView(views: [appearanceLabel, appearanceControl])
         appearanceRow.orientation = .horizontal
