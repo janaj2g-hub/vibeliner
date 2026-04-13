@@ -7,7 +7,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let toolbarView: ToolbarView
     private let statusPill: StatusPillView
     let annotationStore = AnnotationStore()
-    private(set) var undoRedoManager: UndoRedoManager!
+    private let undoRedoManager: UndoRedoManager
     private var canvasOverlay: CanvasView?
     private let selectTool = SelectTool()
     private let pinTool = PinTool()
@@ -38,6 +38,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         self.canvasView = ScreenshotCanvasView(image: image)
         self.toolbarView = ToolbarView()
         self.statusPill = StatusPillView()
+        self.undoRedoManager = UndoRedoManager(store: annotationStore)
 
         // Calculate display size — scale down if larger than screen usable area
         let screenFrame = screen.visibleFrame
@@ -102,8 +103,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         canvasView.addSubview(canvas)
         self.canvasOverlay = canvas
 
-        // Undo/redo manager
-        self.undoRedoManager = UndoRedoManager(store: annotationStore)
         annotationStore.updateCurrentImage(id: captureSession.imageID(at: 0), index: 0)
 
         // Wire tools

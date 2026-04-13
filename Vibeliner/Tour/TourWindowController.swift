@@ -86,8 +86,9 @@ final class TourWindowController: NSWindowController {
 
     private func buildUI() {
         guard let panel = window else { return }
+        guard let baseContentView = panel.contentView else { return }
 
-        let contentView = TourContentView(frame: panel.contentView!.bounds)
+        let contentView = TourContentView(frame: baseContentView.bounds)
         contentView.onAppearanceChange = { [weak self] in self?.refreshAppearanceColors() }
         contentView.wantsLayer = true
         contentView.layer?.backgroundColor = DesignTokens.tourWindowBg.cgColor

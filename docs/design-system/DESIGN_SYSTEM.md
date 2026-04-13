@@ -1,7 +1,8 @@
 # Vibeliner Design System — Token Reference
 
-Last updated: 2026-04-11
+Last updated: 2026-04-13
 Source of truth: `Vibeliner/Design/DesignTokens.swift`
+Canonical docs location: `docs/design-system/`
 
 ---
 
@@ -11,7 +12,7 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, FirstUseTooltipView, PromptTabView, SettingsWindowController |
+| `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, PromptTabView, SettingsWindowController |
 | `purpleDark` | #534AB7 | Dimension label bg, settings accents | DimensionLabelView, SetupWindowController |
 | `purpleButton` | #A796EB | Copy button outline and text (legacy) | SetupWindowController |
 | `purpleButtonBg` | rgba(116, 97, 194, 0.25) | Copy button fill (legacy) | SetupWindowController |
@@ -48,12 +49,12 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | `dividerColor` | rgba(255, 255, 255, 0.08) | Divider (legacy) | — |
 | `chromeBorder` | rgba(175, 169, 236, 0.12) | Toolbar/canvas border | ScreenshotCanvasView, CaptureRowView |
 
-### Tooltip
+### Tooltip (Legacy / Unshipped)
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `tooltipDarkBg` | rgba(28, 28, 32, 0.96) | Tooltip background | FirstUseTooltipView |
-| `tooltipDarkBorder` | rgba(255, 255, 255, 0.1) | Tooltip border | FirstUseTooltipView |
+| `tooltipDarkBg` | rgba(28, 28, 32, 0.96) | Reserved tooltip background token | — |
+| `tooltipDarkBorder` | rgba(255, 255, 255, 0.1) | Reserved tooltip border token | — |
 
 ### Toolbar — Appearance-Aware (VIB-235)
 

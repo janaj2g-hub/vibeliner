@@ -1,7 +1,7 @@
 # Vibeliner — Master Product Requirements Document
 
-**Version:** 1.0
-**Last updated:** 2026-03-30
+**Version:** 1.0.0
+**Last updated:** 2026-04-13
 **Status:** All sections locked via interactive prototyping
 
 ---
@@ -52,20 +52,20 @@ Vibeliner is a native macOS menu bar app that captures, annotates, and packages 
 |---|---|
 | Type | Standard macOS window, centered on screen |
 | Title | "Welcome to Vibeliner" |
-| Size | Fixed, approximately 680×400px |
-| Behavior | Appears on first launch only. Never reappears after completion. |
+| Size | Fixed, 700×366px |
+| Behavior | Appears whenever setup is incomplete: first launch, revoked permissions, or a missing captures folder. |
 
 ### Layout
 
 Three vertical panels with 0.5px dividers between them:
 
-**Panel 1: Screen recording permission**
+**Panel 1: Captures folder**
 - Blue "1" badge when active, green checkmark when done
-- Description explains why the permission is needed
-- "Open System Settings →" button links directly to Privacy & Security
-- Auto-detects when permission is granted (polls on window focus)
-- Bottom status bar: amber "Not yet granted" → green "Permission granted"
-- Panel dims to 50% opacity when complete
+- Description explains where screenshots and prompts are saved
+- Path field pre-fills the current captures folder on re-run, otherwise starts at "No folder selected"
+- "Choose folder…" action opens a directory picker
+- Completed state swaps to "Folder ready" plus a green "Change folder" pill
+- Panel remains fully visible after completion
 
 **Panel 2: Accessibility**
 - Locked until Panel 1 completes
@@ -74,18 +74,18 @@ Three vertical panels with 0.5px dividers between them:
 - Bottom status bar: gray "Complete step 1 first" → amber "Not yet granted" → green "Permission granted"
 - Panel dims after completion
 
-**Panel 3: Captures folder**
+**Panel 3: Screen recording**
 - Locked until Panel 2 completes
-- Pre-fills `~/Documents/vibeliner` if that folder already exists
-- "Choose folder…" button opens a directory picker and saves the selected path
-- Bottom status bar: gray "Complete step 2 first" → amber "Folder not yet chosen" → green "Folder ready"
-- Panel stays fully visible after completion
+- "Open Screen Recording Settings →" button links directly to Privacy & Security → Screen Recording
+- Restart warning appears only while this step is active
+- Bottom status bar: gray "Complete step 2 first" → amber "Not yet granted" → green "Permission granted"
+- Panel dims after completion
 
 ### Footer bar
 
 - Before completion: right-aligned text "Complete all steps to continue"
-- After completion: left hotkey reminder `Capture shortcut: ⌘ ⇧ 6`, right green "Start using Vibeliner →" button
-- Clicking "Start using Vibeliner" closes the window permanently and activates the menu bar icon
+- After completion: left shortcut group showing the current hotkey, right ghost "Take a tour" button, and right green "Start using Vibeliner →" button
+- Clicking either completion button marks setup complete and closes the window; "Take a tour" immediately opens the in-app tour
 
 ### Edge cases
 
@@ -369,17 +369,7 @@ The toggle persists across sessions.
 
 ### First-use tooltip
 
-A dark tooltip appears above the toggle on first editor open:
-
-> Terminal tools can read files on your computer. Web chat apps cannot. Select a mode based on your workflow.
->
-> **IDE** — Choose when pasting into Claude Code, Codex, or any terminal. You only need the prompt.
->
-> **App** — Choose when pasting into Claude.ai, ChatGPT, or Gemini. You'll copy the prompt and the image in two steps.
->
-> Got it
-
-Dismisses permanently on "Got it" click. Stored in `config.toml`.
+The shipped app does not currently show a one-time IDE/App mode tooltip. Mode selection happens through the toolbar toggle only.
 
 ---
 
@@ -390,6 +380,10 @@ Dismisses permanently on "Got it" click. Stored in `config.toml`.
 ### Base folder
 
 Configured captures folder — default `~/Documents/vibeliner/`, set during setup and configurable in settings.
+
+### App config
+
+App configuration is stored separately at `~/Library/Application Support/Vibeliner/config.toml` so changing the captures folder does not move or duplicate the config file.
 
 ### Capture folder structure
 
@@ -576,7 +570,7 @@ The active segment changes the editing area inside the frame. `Reset to default`
 
 ### About tab
 
-Centered layout: app icon (64px red rounded square), "Vibeliner", version, links (GitHub, Report an Issue, Documentation), tagline.
+Centered layout: real application icon, "Vibeliner", bundle-derived version label, links (GitHub, Report an Issue, Documentation), tagline.
 
 ---
 
@@ -630,13 +624,12 @@ Each row: thumbnail (40×28px) → timestamp → note count → hover reveals "C
 | Color | Hex | Usage |
 |---|---|---|
 | Light purple | `#AFA9EC` | Crosshair, selection border, active tool highlight, copy button text/border |
-| Dark purple | `#534AB7` | Dimension label, settings accents, "Got it" text |
+| Dark purple | `#534AB7` | Dimension label, settings accents |
 | Button purple | `#a796eb` | Copy button outline and text |
 | Button hover purple | `#c4b8f5` | Copy button hover state |
 | Button bg purple | `rgba(116,97,194,0.25)` | Copy button fill |
 | Red | `#EF4444` | All annotation marks, badges, strokes |
 | Dark chrome | `rgba(30,30,30,0.92-0.95)` | Toolbar, status pill, popover |
-| Tooltip purple | `#f0edf9` bg, `#d4cef0` border | First-use tooltip |
 
 ### Typography
 

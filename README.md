@@ -6,8 +6,6 @@ Annotate screenshots for AI coding tools.
 
 Spot a visual bug, press a hotkey, and draw numbered annotations directly on your screen. Vibeliner captures the region, bakes your marks into the screenshot, and generates a structured prompt with matching numbered instructions. Paste both into Claude Code, ChatGPT, or any LLM and it knows exactly what to fix.
 
-![Vibeliner editor](docs/assets/editor-screenshot.png)
-
 ## Features
 
 - **5 annotation tools** — Pin, Arrow, Rectangle, Circle, Freehand. Each mark gets a number and a note that becomes part of the prompt.
@@ -37,6 +35,16 @@ Spot a visual bug, press a hotkey, and draw numbered annotations directly on you
 - Changes in **Settings → Prompt** stay in a draft until you click **Save**.
 - The preview updates live while you edit, but copied prompts, exported prompts, and saved `prompt.txt` files use the last saved prompt settings.
 - Annotation edits still auto-save normally.
+
+## Where data lives
+
+- Captures save under your configured captures folder. The default location is `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/`.
+- App settings save to `~/Library/Application Support/Vibeliner/config.toml`.
+
+## Documentation
+
+- Product requirements: [`docs/VIBELINER_PRD.md`](docs/VIBELINER_PRD.md)
+- Design system: [`docs/design-system/`](docs/design-system/)
 
 ## Requirements
 

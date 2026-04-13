@@ -27,7 +27,8 @@ final class VisualTestHarness {
         win.isReleasedWhenClosed = false
         win.backgroundColor = NSColor(red: 30/255, green: 30/255, blue: 35/255, alpha: 1)
 
-        let container = NSView(frame: NSRect(origin: .zero, size: win.contentView!.frame.size))
+        guard let baseContentView = win.contentView else { return }
+        let container = NSView(frame: NSRect(origin: .zero, size: baseContentView.frame.size))
         win.contentView = container
 
         // --- Generate sample screenshot image (gradient) ---
@@ -262,7 +263,7 @@ final class VisualTestHarness {
             number: 0,
             noteText: "this area is off",
             position: .freehand(points: freehandPoints),
-            badgePosition: freehandPoints.first!
+            badgePosition: freehandPoints.first ?? CGPoint(x: 500, y: 100)
         )
         _ = store.add(freehand)
     }

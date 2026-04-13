@@ -1,7 +1,8 @@
 # Tour Audit
 
 Date: 2026-04-10
-Prototype reference: `docs/design-system/vibeliner-tutorial-v4.html`
+Historical prototype reference: the older HTML walkthrough prototype is not part of the current repo checkout.
+Live reference sources: `Vibeliner/Tour/`, `Vibeliner/Tour/Illustrations/`, and `docs/design-system/DESIGN_SYSTEM.md`
 Audited source scope: `Vibeliner/Tour/` and `Vibeliner/Tour/Illustrations/`
 
 ## Tour Window Chrome

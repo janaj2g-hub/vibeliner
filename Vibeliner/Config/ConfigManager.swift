@@ -63,8 +63,11 @@ final class ConfigManager {
     /// Stable config location — survives captures folder changes and clean builds.
     /// ~/Library/Application Support/Vibeliner/config.toml
     private var configFileURL: URL {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return appSupport.appendingPathComponent("Vibeliner").appendingPathComponent("config.toml")
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library")
+            .appendingPathComponent("Application Support")
+            .appendingPathComponent("Vibeliner")
+            .appendingPathComponent("config.toml")
     }
 
     /// Legacy config path inside the captures folder (pre-VIB-301).
