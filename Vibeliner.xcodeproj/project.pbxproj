@@ -57,6 +57,7 @@
 		D300000100000000000000B1 /* SetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A1 /* SetupComponents.swift */; };
 		D300000100000000000000B2 /* SetupWindowController+Panels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A2 /* SetupWindowController+Panels.swift */; };
 		D300000100000000000000B3 /* SetupWindowController+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A3 /* SetupWindowController+Actions.swift */; };
+		DD00000100000000000000B1 /* SetupWindowController+UIFactories.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */; };
 		T10000010000000000000001 /* TourStepData.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000001 /* TourStepData.swift */; };
 		T10000010000000000000002 /* TourWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000002 /* TourWindowController.swift */; };
 		T10000010000000000000010 /* AnnotationMarkViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000010 /* AnnotationMarkViews.swift */; };
@@ -172,6 +173,7 @@
 		D300000100000000000000A1 /* SetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupComponents.swift; sourceTree = "<group>"; };
 		D300000100000000000000A2 /* SetupWindowController+Panels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+Panels.swift"; sourceTree = "<group>"; };
 		D300000100000000000000A3 /* SetupWindowController+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+Actions.swift"; sourceTree = "<group>"; };
+		DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+UIFactories.swift"; sourceTree = "<group>"; };
 		T20000010000000000000001 /* TourStepData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourStepData.swift; sourceTree = "<group>"; };
 		T20000010000000000000002 /* TourWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourWindowController.swift; sourceTree = "<group>"; };
 		T20000010000000000000010 /* AnnotationMarkViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationMarkViews.swift; sourceTree = "<group>"; };
@@ -467,6 +469,7 @@
 				D300000100000000000000A1 /* SetupComponents.swift */,
 				D300000100000000000000A2 /* SetupWindowController+Panels.swift */,
 				D300000100000000000000A3 /* SetupWindowController+Actions.swift */,
+				DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */,
 			);
 			path = Setup;
 			sourceTree = "<group>";
@@ -675,6 +678,7 @@
 				D300000100000000000000B1 /* SetupComponents.swift in Sources */,
 				D300000100000000000000B2 /* SetupWindowController+Panels.swift in Sources */,
 				D300000100000000000000B3 /* SetupWindowController+Actions.swift in Sources */,
+				DD00000100000000000000B1 /* SetupWindowController+UIFactories.swift in Sources */,
 				A10000010000000000000026 /* PermissionPanel.swift in Sources */,
 				A10000010000000000000027 /* FolderPanel.swift in Sources */,
 				A10000010000000000000028 /* ShareExplanationPanel.swift in Sources */,
