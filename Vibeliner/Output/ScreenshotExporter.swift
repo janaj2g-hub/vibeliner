@@ -4,6 +4,7 @@ final class ScreenshotExporter {
 
     private static let pinRenderer = PinRenderer()
     private static let arrowRenderer = ArrowRenderer()
+    private static let lineRenderer = LineRenderer()
     private static let rectangleRenderer = RectangleRenderer()
     private static let circleRenderer = CircleRenderer()
     private static let freehandRenderer = FreehandRenderer()
@@ -47,6 +48,7 @@ final class ScreenshotExporter {
         // Draw marks only (no notes, no handles, no hover states)
         pinRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
         arrowRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
+        lineRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
         rectangleRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
         circleRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)
         freehandRenderer.drawMarks(in: bitmapContext, annotations: annotations, canvasSize: canvasSize)

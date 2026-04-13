@@ -763,6 +763,7 @@ private final class ToolIconView: AppearanceAwareFieldView {
         switch tool {
         case .pin: ToolbarView.drawPinIcon(iconRect, color)
         case .arrow: ToolbarView.drawArrowIcon(iconRect, color)
+        case .line: ToolbarView.drawLineIcon(iconRect, color)
         case .rectangle: ToolbarView.drawRectIcon(iconRect, color)
         case .circle: ToolbarView.drawCircleIcon(iconRect, color)
         case .freehand: ToolbarView.drawFreehandIcon(iconRect, color)

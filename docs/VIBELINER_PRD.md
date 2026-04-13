@@ -11,7 +11,7 @@
 1. Product overview
 2. Setup flow
 3. Capture experience
-4. Annotation tools (Pin, Arrow, Rectangle, Circle, Freehand)
+4. Annotation tools (Pin, Arrow, Line, Rectangle, Circle, Freehand)
 5. Editor window
 6. Copy flow and IDE/App mode
 7. File structure and LLM access
@@ -244,6 +244,16 @@ Custom overlay using borderless `NSWindow` + Core Graphics rendering. NOT `scree
 **Selection:** 5–8 evenly spaced control point handles appear. Dragging handles reshapes the curve with real-time Catmull-Rom recalculation.
 
 **v1:** Clean uniform-width smooth curve only. **Future polish:** Pressure fade — last 30% of stroke gradually thins and fades in opacity.
+
+### 4F. Line Tool
+
+**Goal:** Draw a neutral straight line for connections or alignment without implying directional movement.
+
+**Anatomy:** Same as Arrow but with no arrowhead chevron. Plain 2.5px stroke using `DesignTokens.red`. Badge at the start point. Note centered on badge, offset away from line.
+
+**Placement:** Same click-drag behavior as Arrow. Minimum 20px movement to register. Badge anchored at the drag start point.
+
+**Selection:** Endpoint handle at the line's end point. Dashed purple ring around the badge. Same hit-testing as Arrow (line-proximity with generous slop for short and shallow-angle lines).
 
 ---
 

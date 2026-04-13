@@ -5,6 +5,7 @@ private final class EditorToolController {
 
     private let pinTool = PinTool()
     private let arrowTool = ArrowTool()
+    private let lineTool = LineTool()
     private let rectangleTool = RectangleTool()
     private let circleTool = CircleTool()
     private let freehandTool = FreehandTool()
@@ -12,6 +13,7 @@ private final class EditorToolController {
         .select: selectTool,
         .pin: pinTool,
         .arrow: arrowTool,
+        .line: lineTool,
         .rectangle: rectangleTool,
         .circle: circleTool,
         .freehand: freehandTool,
@@ -21,6 +23,7 @@ private final class EditorToolController {
         selectTool.editorPanel = editorPanel
         pinTool.editorPanel = editorPanel
         arrowTool.editorPanel = editorPanel
+        lineTool.editorPanel = editorPanel
         rectangleTool.editorPanel = editorPanel
         circleTool.editorPanel = editorPanel
         freehandTool.editorPanel = editorPanel

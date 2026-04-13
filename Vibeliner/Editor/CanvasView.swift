@@ -586,6 +586,7 @@ final class MarksLayerView: NSView {
     private let store: AnnotationStore
     private let pinRenderer = PinRenderer()
     private let arrowRenderer = ArrowRenderer()
+    private let lineRenderer = LineRenderer()
     private let rectangleRenderer = RectangleRenderer()
     private let circleRenderer = CircleRenderer()
     private let freehandRenderer = FreehandRenderer()
@@ -604,6 +605,7 @@ final class MarksLayerView: NSView {
         // VIB-216 Pass 1: Draw all shapes WITHOUT badges (so hover halo renders beneath badges)
         pinRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
         arrowRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
+        lineRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
         rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
         circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
         freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)

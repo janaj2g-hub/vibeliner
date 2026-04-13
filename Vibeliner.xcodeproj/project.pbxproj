@@ -37,6 +37,8 @@
 		A10000010000000000000017 /* PinRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* PinRenderer.swift */; };
 		A10000010000000000000018 /* ArrowTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001A /* ArrowTool.swift */; };
 		A10000010000000000000019 /* ArrowRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001B /* ArrowRenderer.swift */; };
+		E10000010000000000000001 /* LineTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000010000000000000001 /* LineTool.swift */; };
+		E10000010000000000000002 /* LineRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000010000000000000002 /* LineRenderer.swift */; };
 		A1000001000000000000001A /* RectangleTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001C /* RectangleTool.swift */; };
 		A1000001000000000000001B /* RectangleRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001D /* RectangleRenderer.swift */; };
 		A1000001000000000000001C /* CircleTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2000001000000000000001E /* CircleTool.swift */; };
@@ -121,6 +123,8 @@
 		A20000010000000000000019 /* PinRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PinRenderer.swift; sourceTree = "<group>"; };
 		A2000001000000000000001A /* ArrowTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrowTool.swift; sourceTree = "<group>"; };
 		A2000001000000000000001B /* ArrowRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArrowRenderer.swift; sourceTree = "<group>"; };
+		E20000010000000000000001 /* LineTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineTool.swift; sourceTree = "<group>"; };
+		E20000010000000000000002 /* LineRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LineRenderer.swift; sourceTree = "<group>"; };
 		A2000001000000000000001C /* RectangleTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RectangleTool.swift; sourceTree = "<group>"; };
 		A2000001000000000000001D /* RectangleRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RectangleRenderer.swift; sourceTree = "<group>"; };
 		A2000001000000000000001E /* CircleTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CircleTool.swift; sourceTree = "<group>"; };
@@ -320,6 +324,7 @@
 				A20000010000000000000018 /* PinTool.swift */,
 				C20000010000000000000001 /* SelectTool.swift */,
 				A2000001000000000000001A /* ArrowTool.swift */,
+				E20000010000000000000001 /* LineTool.swift */,
 				A2000001000000000000001C /* RectangleTool.swift */,
 				A2000001000000000000001E /* CircleTool.swift */,
 				A20000010000000000000020 /* FreehandTool.swift */,
@@ -332,6 +337,7 @@
 			children = (
 				A20000010000000000000019 /* PinRenderer.swift */,
 				A2000001000000000000001B /* ArrowRenderer.swift */,
+				E20000010000000000000002 /* LineRenderer.swift */,
 				D20000010000000000000001 /* BadgeRenderer.swift */,
 				A2000001000000000000001D /* RectangleRenderer.swift */,
 				A2000001000000000000001F /* CircleRenderer.swift */,
@@ -561,6 +567,8 @@
 				A10000010000000000000017 /* PinRenderer.swift in Sources */,
 				A10000010000000000000018 /* ArrowTool.swift in Sources */,
 				A10000010000000000000019 /* ArrowRenderer.swift in Sources */,
+				E10000010000000000000001 /* LineTool.swift in Sources */,
+				E10000010000000000000002 /* LineRenderer.swift in Sources */,
 				A1000001000000000000001A /* RectangleTool.swift in Sources */,
 				A1000001000000000000001B /* RectangleRenderer.swift in Sources */,
 				A1000001000000000000001C /* CircleTool.swift in Sources */,

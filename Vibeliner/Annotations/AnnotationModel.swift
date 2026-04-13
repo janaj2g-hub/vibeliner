@@ -14,6 +14,7 @@ struct AnnotationToolDefinition {
         case .select: return "select"
         case .pin: return "pin"
         case .arrow: return "arrow"
+        case .line: return "line"
         case .rectangle: return "rectangle"
         case .circle: return "circle"
         case .freehand: return "freehand"
@@ -27,7 +28,7 @@ struct AnnotationToolDefinition {
 }
 
 enum AnnotationToolType: Int, CaseIterable {
-    case select = 0, pin, arrow, rectangle, circle, freehand
+    case select = 0, pin, arrow, line, rectangle, circle, freehand
 
     static let allDefinitions: [AnnotationToolDefinition] = [
         AnnotationToolDefinition(
@@ -53,6 +54,14 @@ enum AnnotationToolType: Int, CaseIterable {
             shortcutKeyCode: 20,
             supportsPromptExport: true,
             defaultPromptDescription: "points at or between elements"
+        ),
+        AnnotationToolDefinition(
+            type: .line,
+            displayName: "Line",
+            shortcutDigit: "7",
+            shortcutKeyCode: 26,
+            supportsPromptExport: true,
+            defaultPromptDescription: "marks a connection or alignment"
         ),
         AnnotationToolDefinition(
             type: .rectangle,

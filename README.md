@@ -8,7 +8,7 @@ Spot a visual bug, press a hotkey, and draw numbered annotations directly on you
 
 ## Features
 
-- **5 annotation tools** — Pin, Arrow, Rectangle, Circle, Freehand. Each mark gets a number and a note that becomes part of the prompt.
+- **6 annotation tools** — Pin, Arrow, Line, Rectangle, Circle, Freehand. Each mark gets a number and a note that becomes part of the prompt.
 - **IDE mode** — One paste. The prompt includes the file path so terminal tools (Claude Code, Codex) read the image from disk.
 - **App mode** — Two pastes. Copy the prompt and the image separately into chat apps (Claude.ai, ChatGPT, Gemini).
 - **Multi-image filmstrip** — Capture additional screenshots into the same session. Assign roles (Observed, Expected, Reference) so the AI knows which image is which.

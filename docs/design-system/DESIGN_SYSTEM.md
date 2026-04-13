@@ -202,9 +202,9 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `ghostDotColor` | rgba(175, 169, 236, 0.85) | Ghost anchor dot | PinTool, RectangleTool, CircleTool, ArrowTool, FreehandTool |
-| `ghostStrokeColor` | rgba(239, 68, 68, 0.22) | Ghost silhouette stroke | PinTool, RectangleTool, CircleTool, ArrowTool |
-| `ghostDashPattern` | [3, 2] | Ghost dash pattern | PinTool, RectangleTool, CircleTool, ArrowTool |
+| `ghostDotColor` | rgba(175, 169, 236, 0.85) | Ghost anchor dot | PinTool, RectangleTool, CircleTool, ArrowTool, LineTool, FreehandTool |
+| `ghostStrokeColor` | rgba(239, 68, 68, 0.22) | Ghost silhouette stroke | PinTool, RectangleTool, CircleTool, ArrowTool, LineTool |
+| `ghostDashPattern` | [3, 2] | Ghost dash pattern | PinTool, RectangleTool, CircleTool, ArrowTool, LineTool |
 
 ### Setup Window Colors (Static Dark)
 
@@ -303,6 +303,10 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `arrowChevronLength` | 12px | Chevron arm length | ArrowRenderer |
 | `arrowChevronAngle` | 28° | Chevron angle | ArrowRenderer |
 
+### Line Tool
+
+The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but renders no chevron arrowhead. No new tokens required — `LineRenderer` and `LineTool` consume the same annotation and ghost tokens as Arrow.
+
 ### Shape Tools
 
 | Token | Value | Usage | Consuming files |
@@ -315,8 +319,8 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `ghostDotRadius` | 3px | Anchor dot radius | PinTool, RectangleTool, CircleTool, ArrowTool, FreehandTool |
-| `ghostStrokeWidth` | 1.5px | Silhouette stroke width | PinTool, RectangleTool, CircleTool, ArrowTool |
+| `ghostDotRadius` | 3px | Anchor dot radius | PinTool, RectangleTool, CircleTool, ArrowTool, LineTool, FreehandTool |
+| `ghostStrokeWidth` | 1.5px | Silhouette stroke width | PinTool, RectangleTool, CircleTool, ArrowTool, LineTool |
 
 ### Settings
 
