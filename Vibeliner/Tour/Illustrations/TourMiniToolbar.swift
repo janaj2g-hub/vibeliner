@@ -6,6 +6,7 @@ enum TourModeType { case ide, app }
 struct TourMiniToolbarConfig {
     var activeTool: TourToolType = .pin
     var mode: TourModeType = .app
+    var showToolSection: Bool = true
     var showCopyPrompt: Bool = true
     var showCopyImage: Bool = true
     var showAddImage: Bool = false
@@ -37,9 +38,12 @@ final class TourMiniToolbar: NSView {
         if config.showCloseButton {
             totalWidth += toolSize + toolSpacing + dividerWidth + sectionPadding
         }
-        let toolsSectionWidth = CGFloat(5) * toolSize + CGFloat(4) * toolSpacing
-        totalWidth += toolsSectionWidth + sectionPadding
-        totalWidth += dividerWidth + sectionPadding + toggleWidth + sectionPadding
+        if config.showToolSection {
+            let toolsSectionWidth = CGFloat(5) * toolSize + CGFloat(4) * toolSpacing
+            totalWidth += toolsSectionWidth + sectionPadding
+            totalWidth += dividerWidth + sectionPadding
+        }
+        totalWidth += toggleWidth + sectionPadding
         if config.showCopyPrompt || config.showCopyImage || config.showAddImage {
             totalWidth += dividerWidth + sectionPadding
             if config.showCopyPrompt { totalWidth += 70 + toolSpacing }
@@ -95,43 +99,43 @@ final class TourMiniToolbar: NSView {
         }
 
         // -- Tool buttons --
-        let tools: [TourToolType] = [.pin, .arrow, .rect, .circle, .freehand]
-        for tool in tools {
-            let toolY = (h - toolSize) / 2
-            let toolRect = CGRect(x: x, y: toolY, width: toolSize, height: toolSize)
+        if config.showToolSection {
+            let tools: [TourToolType] = [.pin, .arrow, .rect, .circle, .freehand]
+            for tool in tools {
+                let toolY = (h - toolSize) / 2
+                let toolRect = CGRect(x: x, y: toolY, width: toolSize, height: toolSize)
 
-            if tool == config.activeTool {
-                ctx.setFillColor(DesignTokens.toolbarToolActiveBg.cgColor)
-                ctx.fillEllipse(in: toolRect)
+                if tool == config.activeTool {
+                    ctx.setFillColor(DesignTokens.toolbarToolActiveBg.cgColor)
+                    ctx.fillEllipse(in: toolRect)
+                }
+
+                let iconColor = tool == config.activeTool
+                    ? DesignTokens.toolbarPurpleActive
+                    : DesignTokens.toolbarIconDefault
+
+                switch tool {
+                case .pin:
+                    ToolbarView.drawPinIcon(toolRect, iconColor)
+                case .arrow:
+                    ToolbarView.drawArrowIcon(toolRect, iconColor)
+                case .rect:
+                    ToolbarView.drawRectIcon(toolRect, iconColor)
+                case .circle:
+                    ToolbarView.drawCircleIcon(toolRect, iconColor)
+                case .freehand:
+                    ToolbarView.drawFreehandIcon(toolRect, iconColor)
+                }
+
+                x += toolSize + toolSpacing
             }
+            x += sectionPadding - toolSpacing
 
-            let iconColor = tool == config.activeTool
-                ? DesignTokens.toolbarPurpleActive.cgColor
-                : DesignTokens.toolbarIconDefault.cgColor
-            ctx.setStrokeColor(iconColor)
-            ctx.setFillColor(iconColor)
-            ctx.setLineWidth(1.5)
-            ctx.setLineCap(.round)
-
-            let cx = toolRect.midX
-            let cy = toolRect.midY
-
-            switch tool {
-            case .pin:    drawPinIcon(ctx: ctx, cx: cx, cy: cy)
-            case .arrow:  drawArrowIcon(ctx: ctx, cx: cx, cy: cy)
-            case .rect:   drawRectIcon(ctx: ctx, cx: cx, cy: cy)
-            case .circle: drawCircleIcon(ctx: ctx, cx: cx, cy: cy)
-            case .freehand: drawFreehandIcon(ctx: ctx, cx: cx, cy: cy)
-            }
-
-            x += toolSize + toolSpacing
+            // -- Divider --
+            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+            ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
+            x += dividerWidth + sectionPadding
         }
-        x += sectionPadding - toolSpacing
-
-        // -- Divider --
-        ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
-        ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
-        x += dividerWidth + sectionPadding
 
         // -- IDE / App toggle --
         drawModeToggle(ctx: ctx, x: x, h: h)
@@ -155,52 +159,6 @@ final class TourMiniToolbar: NSView {
                 x = drawAddImagePill(ctx: ctx, text: "+ Add image", x: x, h: h, width: 64)
             }
         }
-    }
-
-    // MARK: - Tool Icons
-
-    private func drawPinIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        let circleR: CGFloat = 3
-        ctx.strokeEllipse(in: CGRect(x: cx - circleR, y: cy, width: circleR * 2, height: circleR * 2))
-        ctx.move(to: CGPoint(x: cx, y: cy))
-        ctx.addLine(to: CGPoint(x: cx, y: cy - 4))
-        ctx.strokePath()
-    }
-
-    private func drawArrowIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        let len: CGFloat = 5
-        ctx.move(to: CGPoint(x: cx - len, y: cy - len))
-        ctx.addLine(to: CGPoint(x: cx + len, y: cy + len))
-        ctx.strokePath()
-        let chev: CGFloat = 3
-        ctx.move(to: CGPoint(x: cx + len - chev, y: cy + len))
-        ctx.addLine(to: CGPoint(x: cx + len, y: cy + len))
-        ctx.addLine(to: CGPoint(x: cx + len, y: cy + len - chev))
-        ctx.strokePath()
-    }
-
-    private func drawRectIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        let s: CGFloat = 5
-        let rect = CGRect(x: cx - s, y: cy - s + 1, width: s * 2, height: s * 2 - 2)
-        let path = CGPath(roundedRect: rect, cornerWidth: 2, cornerHeight: 2, transform: nil)
-        ctx.addPath(path)
-        ctx.strokePath()
-    }
-
-    private func drawCircleIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        let r: CGFloat = 5
-        ctx.strokeEllipse(in: CGRect(x: cx - r, y: cy - r, width: r * 2, height: r * 2))
-    }
-
-    private func drawFreehandIcon(ctx: CGContext, cx: CGFloat, cy: CGFloat) {
-        ctx.move(to: CGPoint(x: cx - 6, y: cy))
-        ctx.addCurve(to: CGPoint(x: cx, y: cy),
-                     control1: CGPoint(x: cx - 4, y: cy + 4),
-                     control2: CGPoint(x: cx - 2, y: cy - 4))
-        ctx.addCurve(to: CGPoint(x: cx + 6, y: cy),
-                     control1: CGPoint(x: cx + 2, y: cy + 4),
-                     control2: CGPoint(x: cx + 4, y: cy - 4))
-        ctx.strokePath()
     }
 
     // MARK: - Mode Toggle

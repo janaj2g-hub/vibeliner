@@ -141,6 +141,12 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 - `styleSegmentedTrackSurface(_:)` and `styleSegmentedHighlightSurface(_:)` keep the Settings segmented shells aligned with toolbar toggle behavior.
 - `AppearanceAwareSurfaceView` and `AppearanceAwareSurfaceButton` refresh those shells on first attach and on later appearance changes, which is the contract used by `SettingsSegmentedControl`, `SettingsPillButton`, `PromptPreviewView`, `ToolbarView`, `PopoverViewController`, and `SetupWindowController`.
 
+### Tour / Runtime Contract
+
+- `TourMiniToolbar` is the canonical tour adapter for runtime toolbar chrome. Both the full editor toolbar illustrations and the compact mode-toolbar card now route through it, and its tool icons come from the same `ToolbarView.draw*Icon` helpers used by the live editor.
+- `TourSurfaceView` and `TourFilenamePillView` are the narrow illustration adapters for output-card and prompt-sheet chrome. They keep those surfaces on one appearance-aware path instead of reimplementing card shells in each tour step.
+- `tourOutput*` and `tourPromptSheet*` remain illustration-only tokens. They are acceptable where the tour intentionally simplifies runtime UI for teaching clarity, but they should stay behind the shared adapter layer above instead of being redrawn ad hoc in multiple illustration files.
+
 ### Shared Selector Family (VIB-395)
 
 Top-level Settings tabs and Prompt sub-tabs now use one selector contract with two emphasis levels:

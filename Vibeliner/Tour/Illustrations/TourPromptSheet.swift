@@ -9,7 +9,7 @@ struct TourPromptLine {
 
 /// Monospace text block for tour illustrations.
 /// Renders a formatted prompt preview with preamble, annotation lines, and footer.
-final class TourPromptSheet: NSView {
+final class TourPromptSheet: TourSurfaceView {
 
     private let preamble: String?
     private let annotations: [TourPromptLine]
@@ -21,22 +21,10 @@ final class TourPromptSheet: NSView {
         self.preamble = preamble
         self.annotations = annotations
         self.footer = footer
-        super.init(frame: .zero)
-
-        wantsLayer = true
-        layer?.cornerRadius = DesignTokens.tourPromptSheetRadius
-        layer?.masksToBounds = true
-        layer?.borderWidth = 1
-        updateAppearance()
+        super.init(role: .promptSheet)
     }
 
     required init?(coder: NSCoder) { fatalError() }
-
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        updateAppearance()
-        needsDisplay = true
-    }
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
@@ -73,7 +61,7 @@ final class TourPromptSheet: NSView {
         ]
         let numberAttrs: [NSAttributedString.Key: Any] = [
             .font: monoBoldFont,
-            .foregroundColor: DesignTokens.tourPromptSheetNumber,
+            .foregroundColor: DesignTokens.red,
             .paragraphStyle: paragraphStyle,
         ]
 
@@ -129,10 +117,5 @@ final class TourPromptSheet: NSView {
                 output.append(NSAttributedString(string: "\n", attributes: attributes))
             }
         }
-    }
-
-    private func updateAppearance() {
-        layer?.backgroundColor = DesignTokens.tourPromptSheetBg.cgColor
-        layer?.borderColor = DesignTokens.tourPromptSheetBorder.cgColor
     }
 }

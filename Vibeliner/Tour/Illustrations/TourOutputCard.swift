@@ -1,97 +1,128 @@
 import AppKit
 
-/// Rounded rect container for tour illustrations.
-/// Shows a label pill at top (e.g. "screenshot.png") and a public content area below.
-final class TourOutputCard: NSView {
+enum TourSurfaceRole {
+    case outputCard
+    case promptSheet
+}
 
-    private let labelText: String
-    /// Public content area for callers to add child views.
-    let contentArea: NSView
-
-    private var labelHeight: CGFloat {
-        ceil(DesignTokens.tourOutputLabelFont.pointSize) + DesignTokens.tourOutputLabelPaddingV * 2
+enum TourSurfaceContract {
+    static func apply(to view: NSView, role: TourSurfaceRole) {
+        switch role {
+        case .outputCard:
+            SettingsUI.styleSurface(
+                view,
+                background: DesignTokens.tourOutputCardBg,
+                border: DesignTokens.tourOutputCardBorder,
+                cornerRadius: DesignTokens.tourOutputCardRadius
+            )
+        case .promptSheet:
+            SettingsUI.styleSurface(
+                view,
+                background: DesignTokens.tourPromptSheetBg,
+                border: DesignTokens.tourPromptSheetBorder,
+                cornerRadius: DesignTokens.tourPromptSheetRadius
+            )
+        }
     }
+}
 
-    init(label: String) {
-        self.labelText = label
-        self.contentArea = NSView()
+class TourSurfaceView: AppearanceAwareSurfaceView {
+    private let role: TourSurfaceRole
+
+    init(role: TourSurfaceRole) {
+        self.role = role
         super.init(frame: .zero)
-
         wantsLayer = true
-        layer?.cornerRadius = DesignTokens.tourOutputCardRadius
-        layer?.masksToBounds = true
-        layer?.borderWidth = 1
-        updateAppearance()
-
-        contentArea.wantsLayer = true
-        addSubview(contentArea)
+        refreshSurfaceAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        updateAppearance()
-        needsDisplay = true
+    override func refreshSurfaceAppearance() {
+        TourSurfaceContract.apply(to: self, role: role)
+        layer?.masksToBounds = true
     }
+}
+
+final class TourFilenamePillView: AppearanceAwareSurfaceView {
+    private let label = NSTextField(labelWithString: "")
+
+    init(text: String) {
+        super.init(frame: .zero)
+        wantsLayer = true
+        label.stringValue = text
+        label.font = DesignTokens.tourOutputLabelFont
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+
+        NSLayoutConstraint.activate([
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: DesignTokens.tourOutputLabelPaddingH),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -DesignTokens.tourOutputLabelPaddingH),
+            label.topAnchor.constraint(equalTo: topAnchor, constant: DesignTokens.tourOutputLabelPaddingV),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -DesignTokens.tourOutputLabelPaddingV),
+        ])
+
+        refreshSurfaceAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    override var intrinsicContentSize: NSSize {
+        let labelSize = label.intrinsicContentSize
+        return NSSize(
+            width: labelSize.width + DesignTokens.tourOutputLabelPaddingH * 2,
+            height: ceil(DesignTokens.tourOutputLabelFont.pointSize) + DesignTokens.tourOutputLabelPaddingV * 2
+        )
+    }
+
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(
+            self,
+            background: DesignTokens.tourOutputLabelBg,
+            border: DesignTokens.tourOutputLabelBorder,
+            cornerRadius: intrinsicContentSize.height / 2
+        )
+        label.textColor = DesignTokens.tourTextSecondary
+    }
+}
+
+/// Rounded rect container for tour illustrations.
+/// Shows a label pill at top (e.g. "screenshot.png") and a public content area below.
+final class TourOutputCard: TourSurfaceView {
+
+    private let labelPill: TourFilenamePillView
+    /// Public content area for callers to add child views.
+    let contentArea: NSView
+
+    init(label: String) {
+        self.labelPill = TourFilenamePillView(text: label)
+        self.contentArea = NSView()
+        super.init(role: .outputCard)
+
+        contentArea.wantsLayer = true
+        addSubview(labelPill)
+        addSubview(contentArea)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
 
     override func layout() {
         super.layout()
         let w = bounds.width
         let h = bounds.height
         let pad = DesignTokens.tourOutputCardPadding
+        let labelSize = labelPill.intrinsicContentSize
+        let labelY = h - pad - labelSize.height
 
         // Content area fills below the label pill
         let contentY: CGFloat = pad
-        let contentH = h - pad - labelHeight - DesignTokens.tourOutputLabelGap - pad
+        let contentH = h - pad - labelSize.height - DesignTokens.tourOutputLabelGap - pad
         contentArea.frame = CGRect(
             x: pad,
             y: contentY,
             width: w - pad * 2,
             height: max(0, contentH)
         )
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-        let h = bounds.height
-        let pad = DesignTokens.tourOutputCardPadding
-
-        // Label pill at top
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: DesignTokens.tourOutputLabelFont,
-            .foregroundColor: DesignTokens.tourTextSecondary,
-        ]
-        let str = NSAttributedString(string: labelText, attributes: attrs)
-        let textSize = str.size()
-        let pillW = textSize.width + DesignTokens.tourOutputLabelPaddingH * 2
-        let pillX = pad
-        let pillY = h - pad - labelHeight
-
-        let pillRect = CGRect(x: pillX, y: pillY, width: pillW, height: labelHeight)
-
-        // Pill background
-        ctx.setFillColor(DesignTokens.tourOutputLabelBg.cgColor)
-        let pillPath = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
-        ctx.addPath(pillPath)
-        ctx.fillPath()
-
-        // Pill border
-        ctx.setStrokeColor(DesignTokens.tourOutputLabelBorder.cgColor)
-        ctx.setLineWidth(1)
-        ctx.addPath(pillPath)
-        ctx.strokePath()
-
-        // Pill text
-        str.draw(at: NSPoint(
-            x: pillRect.midX - textSize.width / 2,
-            y: pillRect.midY - textSize.height / 2
-        ))
-    }
-
-    private func updateAppearance() {
-        layer?.backgroundColor = DesignTokens.tourOutputCardBg.cgColor
-        layer?.borderColor = DesignTokens.tourOutputCardBorder.cgColor
+        labelPill.frame = CGRect(x: pad, y: labelY, width: labelSize.width, height: labelSize.height)
     }
 }

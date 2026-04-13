@@ -309,141 +309,36 @@ final class TourIllustration5: NSView {
 
 // MARK: - Compact mode toolbar pill (custom-drawn, no annotation tools)
 
-/// A compact mini toolbar showing only: IDE/App toggle + divider + copy pill(s).
-/// Drawn entirely in draw(_:) to avoid NSButton rendering issues.
+/// A compact mini toolbar showing only: IDE/App toggle + copy pill(s).
+/// This wraps the shared tour toolbar helper so the compact mode card follows the
+/// same runtime toolbar contract as the other tour editor surfaces.
 private final class ModeToolbarPill: NSView {
 
     enum Mode { case ide, app }
 
-    private let activeMode: Mode
-    private let showCopyImage: Bool
-
-    private let barHeight: CGFloat = 36
-    private let toggleW: CGFloat = 62
-    private let toggleH: CGFloat = 20
-    private let segW: CGFloat = 31
-    private let pillH: CGFloat = 20
-    private let sectionPad: CGFloat = 8
-    private let divW: CGFloat = 1
+    private let toolbar: TourMiniToolbar
 
     init(activeMode: Mode, showCopyImage: Bool) {
-        self.activeMode = activeMode
-        self.showCopyImage = showCopyImage
-
-        // Calculate width
-        var totalW: CGFloat = sectionPad + 62 + sectionPad + 1 + sectionPad
-        totalW += 70 // "Copy Prompt" pill
-        if showCopyImage {
-            totalW += 4 + 66 // gap + "Copy Image" pill
-        }
-        totalW += sectionPad
-
-        super.init(frame: NSRect(x: 0, y: 0, width: totalW, height: barHeight))
-        wantsLayer = true
-        layer?.cornerRadius = barHeight / 2
-        layer?.masksToBounds = true
-        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
-        layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+        let config = TourMiniToolbarConfig(
+            activeTool: .pin,
+            mode: activeMode == .ide ? .ide : .app,
+            showToolSection: false,
+            showCopyPrompt: true,
+            showCopyImage: showCopyImage,
+            showAddImage: false,
+            showCloseButton: false
+        )
+        toolbar = TourMiniToolbar(config: config)
+        super.init(frame: NSRect(origin: .zero, size: toolbar.intrinsicContentSize))
+        addSubview(toolbar)
     }
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override var intrinsicContentSize: NSSize { bounds.size }
+    override var intrinsicContentSize: NSSize { toolbar.intrinsicContentSize }
 
-    override func viewDidChangeEffectiveAppearance() {
-        super.viewDidChangeEffectiveAppearance()
-        layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
-        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
-        needsDisplay = true
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard let ctx = NSGraphicsContext.current?.cgContext else { return }
-        let h = bounds.height
-        var x: CGFloat = sectionPad
-
-        // -- IDE / App toggle --
-        let toggleY = (h - toggleH) / 2
-        let toggleRect = CGRect(x: x, y: toggleY, width: toggleW, height: toggleH)
-        let togglePath = CGPath(roundedRect: toggleRect, cornerWidth: toggleH / 2, cornerHeight: toggleH / 2, transform: nil)
-        ctx.setFillColor(DesignTokens.toolbarToggleBg.cgColor)
-        ctx.addPath(togglePath)
-        ctx.fillPath()
-
-        // Active segment highlight
-        let activeX = activeMode == .ide ? x : x + segW
-        let segRect = CGRect(x: activeX + 2, y: toggleY + 2, width: segW - 4, height: toggleH - 4)
-        let segPath = CGPath(roundedRect: segRect, cornerWidth: (toggleH - 4) / 2, cornerHeight: (toggleH - 4) / 2, transform: nil)
-        ctx.setFillColor(DesignTokens.toolbarToggleActiveBg.cgColor)
-        ctx.addPath(segPath)
-        ctx.fillPath()
-
-        // Toggle labels
-        let ideAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
-            .foregroundColor: activeMode == .ide ? DesignTokens.purpleLight : DesignTokens.toolbarToggleInactiveText,
-        ]
-        let appAttrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
-            .foregroundColor: activeMode == .app ? DesignTokens.purpleLight : DesignTokens.toolbarToggleInactiveText,
-        ]
-        let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
-        let appStr = NSAttributedString(string: "App", attributes: appAttrs)
-        let ideSize = ideStr.size()
-        let appSize = appStr.size()
-        ideStr.draw(at: NSPoint(
-            x: x + (segW - ideSize.width) / 2,
-            y: toggleY + (toggleH - ideSize.height) / 2
-        ))
-        appStr.draw(at: NSPoint(
-            x: x + segW + (segW - appSize.width) / 2,
-            y: toggleY + (toggleH - appSize.height) / 2
-        ))
-
-        x += toggleW + sectionPad
-
-        // -- Divider --
-        ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
-        ctx.fill(CGRect(x: x, y: h * 0.2, width: divW, height: h * 0.6))
-        x += divW + sectionPad
-
-        // -- Copy Prompt pill --
-        x = drawCopyPill(ctx: ctx, text: "Copy Prompt", x: x, h: h, width: 70)
-
-        // -- Copy Image pill (only in app mode) --
-        if showCopyImage {
-            x += 4
-            x = drawCopyPill(ctx: ctx, text: "Copy Image", x: x, h: h, width: 66)
-        }
-    }
-
-    private func drawCopyPill(ctx: CGContext, text: String, x: CGFloat, h: CGFloat, width: CGFloat) -> CGFloat {
-        let pillY = (h - pillH) / 2
-        let pillRect = CGRect(x: x, y: pillY, width: width, height: pillH)
-        let pillPath = CGPath(roundedRect: pillRect, cornerWidth: pillH / 2, cornerHeight: pillH / 2, transform: nil)
-
-        ctx.setFillColor(DesignTokens.toolbarPurpleButtonBg.cgColor)
-        ctx.addPath(pillPath)
-        ctx.fillPath()
-
-        ctx.setStrokeColor(DesignTokens.toolbarPurpleButtonBorder.cgColor)
-        ctx.setLineWidth(1)
-        ctx.addPath(pillPath)
-        ctx.strokePath()
-
-        let attrs: [NSAttributedString.Key: Any] = [
-            .font: NSFont.systemFont(ofSize: 9, weight: .semibold),
-            .foregroundColor: DesignTokens.toolbarPurpleButtonText,
-        ]
-        let str = NSAttributedString(string: text, attributes: attrs)
-        let size = str.size()
-        str.draw(at: NSPoint(
-            x: pillRect.midX - size.width / 2,
-            y: pillRect.midY - size.height / 2
-        ))
-
-        return x + width
+    override func layout() {
+        super.layout()
+        toolbar.frame = bounds
     }
 }

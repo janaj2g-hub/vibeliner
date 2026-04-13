@@ -5,6 +5,12 @@ Historical prototype reference: the older HTML walkthrough prototype is not part
 Live reference sources: `Vibeliner/Tour/`, `Vibeliner/Tour/Illustrations/`, and `docs/design-system/DESIGN_SYSTEM.md`
 Audited source scope: `Vibeliner/Tour/` and `Vibeliner/Tour/Illustrations/`
 
+## Shared Contract Boundary
+
+- Runtime toolbar chrome in the tour should go through `TourMiniToolbar`, which now reuses the live editor toolbar icon drawers and shared toolbar tokens instead of maintaining a second icon-drawing path.
+- Output-card and prompt-sheet shells should go through `TourSurfaceView` / `TourFilenamePillView`, which keep the illustration-specific `tourOutput*` and `tourPromptSheet*` tokens behind one appearance-aware adapter.
+- Illustration-only helpers are still allowed for teaching aids such as mini screenshots, flow arrows, and simplified filmstrip cells, but they should stay explicitly tour-specific rather than looking like accidental forks of runtime surfaces.
+
 ## Tour Window Chrome
 
 ### HTML prototype structure
