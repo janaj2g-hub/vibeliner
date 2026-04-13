@@ -111,6 +111,15 @@
 		D600000100000000000000B1 /* ToolbarButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A1 /* ToolbarButtons.swift */; };
 		D600000100000000000000B2 /* ToolbarIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A2 /* ToolbarIcons.swift */; };
 		D600000100000000000000B3 /* ToolbarView+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A3 /* ToolbarView+State.swift */; };
+		D700000100000000000000B1 /* EditorPanelHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A1 /* EditorPanelHelpers.swift */; };
+		D700000100000000000000B2 /* EditorPanel+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A2 /* EditorPanel+Toolbar.swift */; };
+		D700000100000000000000B3 /* EditorPanel+Filmstrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */; };
+		D800000100000000000000B1 /* CanvasView+NoteEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D800000100000000000000A1 /* CanvasView+NoteEditing.swift */; };
+		D800000100000000000000B2 /* MarksLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D800000100000000000000A2 /* MarksLayerView.swift */; };
+		D900000100000000000000B1 /* SettingsControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D900000100000000000000A1 /* SettingsControls.swift */; };
+		DA00000100000000000000B1 /* NotePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA00000100000000000000A1 /* NotePillView.swift */; };
+		DB00000100000000000000B1 /* FilmstripCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB00000100000000000000A1 /* FilmstripCellView.swift */; };
+		DC00000100000000000000B1 /* PopoverWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC00000100000000000000A1 /* PopoverWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -221,6 +230,15 @@
 		D600000100000000000000A1 /* ToolbarButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarButtons.swift; sourceTree = "<group>"; };
 		D600000100000000000000A2 /* ToolbarIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarIcons.swift; sourceTree = "<group>"; };
 		D600000100000000000000A3 /* ToolbarView+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToolbarView+State.swift"; sourceTree = "<group>"; };
+		D700000100000000000000A1 /* EditorPanelHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPanelHelpers.swift; sourceTree = "<group>"; };
+		D700000100000000000000A2 /* EditorPanel+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorPanel+Toolbar.swift"; sourceTree = "<group>"; };
+		D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorPanel+Filmstrip.swift"; sourceTree = "<group>"; };
+		D800000100000000000000A1 /* CanvasView+NoteEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CanvasView+NoteEditing.swift"; sourceTree = "<group>"; };
+		D800000100000000000000A2 /* MarksLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarksLayerView.swift; sourceTree = "<group>"; };
+		D900000100000000000000A1 /* SettingsControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsControls.swift; sourceTree = "<group>"; };
+		DA00000100000000000000A1 /* NotePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillView.swift; sourceTree = "<group>"; };
+		DB00000100000000000000A1 /* FilmstripCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripCellView.swift; sourceTree = "<group>"; };
+		DC00000100000000000000A1 /* PopoverWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -390,6 +408,7 @@
 				A2000001000000000000001F /* CircleRenderer.swift */,
 				A20000010000000000000021 /* FreehandRenderer.swift */,
 				A20000010000000000000034 /* NotePillRenderer.swift */,
+				DA00000100000000000000A1 /* NotePillView.swift */,
 			);
 			path = Renderers;
 			sourceTree = "<group>";
@@ -422,8 +441,12 @@
 			isa = PBXGroup;
 			children = (
 				A2000001000000000000000D /* EditorPanel.swift */,
+				D700000100000000000000A1 /* EditorPanelHelpers.swift */,
+				D700000100000000000000A2 /* EditorPanel+Toolbar.swift */,
+				D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */,
 				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
 				F32900020000000000000001 /* FilmstripGridView.swift */,
+				DB00000100000000000000A1 /* FilmstripCellView.swift */,
 				A2000001000000000000000F /* ToolButton.swift */,
 				A20000010000000000000011 /* ToolbarView.swift */,
 				D600000100000000000000A1 /* ToolbarButtons.swift */,
@@ -431,6 +454,8 @@
 				D600000100000000000000A3 /* ToolbarView+State.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
 				A20000010000000000000017 /* CanvasView.swift */,
+				D800000100000000000000A1 /* CanvasView+NoteEditing.swift */,
+				D800000100000000000000A2 /* MarksLayerView.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -495,6 +520,7 @@
 				A2000001000000000000002E /* PromptPreviewView.swift */,
 				A2000001000000000000002F /* AboutTabView.swift */,
 				A20000010000000000000035 /* SettingsUI.swift */,
+				D900000100000000000000A1 /* SettingsControls.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -503,6 +529,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000030 /* PopoverViewController.swift */,
+				DC00000100000000000000A1 /* PopoverWindow.swift */,
 				A20000010000000000000031 /* RecentCapturesSubmenu.swift */,
 				A20000010000000000000032 /* CaptureRowView.swift */,
 			);
@@ -705,6 +732,15 @@
 				D600000100000000000000B1 /* ToolbarButtons.swift in Sources */,
 				D600000100000000000000B2 /* ToolbarIcons.swift in Sources */,
 				D600000100000000000000B3 /* ToolbarView+State.swift in Sources */,
+				D700000100000000000000B1 /* EditorPanelHelpers.swift in Sources */,
+				D700000100000000000000B2 /* EditorPanel+Toolbar.swift in Sources */,
+				D700000100000000000000B3 /* EditorPanel+Filmstrip.swift in Sources */,
+				D800000100000000000000B1 /* CanvasView+NoteEditing.swift in Sources */,
+				D800000100000000000000B2 /* MarksLayerView.swift in Sources */,
+				D900000100000000000000B1 /* SettingsControls.swift in Sources */,
+				DA00000100000000000000B1 /* NotePillView.swift in Sources */,
+				DB00000100000000000000B1 /* FilmstripCellView.swift in Sources */,
+				DC00000100000000000000B1 /* PopoverWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
