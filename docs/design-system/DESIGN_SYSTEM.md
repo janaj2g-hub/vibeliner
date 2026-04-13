@@ -279,6 +279,7 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `toolbarHeight` | 40px | Toolbar height | ToolbarView, EditorPanel |
 | `toolbarCornerRadius` | 20px | Toolbar corner radius | ToolbarView |
 | `toolButtonSize` | 30px | Tool button size | ToolbarView, ToolButton |
+| `toolbarToolButtonGap` | 2px | Visual gap between adjacent tool buttons | ToolbarView |
 | `iconButtonSize` | 28px | Icon button size | ToolbarView, ToolButton |
 | `closeButtonSize` | 24px | Close button size | ToolbarView, ToolButton |
 
@@ -335,6 +336,9 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `setupBadgeSize` | 32px | Badge size | SetupWindowController |
 | `setupArrowSize` | 36px | Arrow button size | SetupWindowController |
 | `setupSmallPillHeight` | 22px | Small pill height | SetupWindowController |
+| `setupFooterButtonHeight` | 36px | Footer CTA height | SetupWindowController |
+| `setupFooterPrimaryPadding` | 48px | Horizontal padding added to primary footer CTA title width | SetupWindowController |
+| `setupFooterSecondaryPadding` | 36px | Horizontal padding added to secondary footer CTA title width | SetupWindowController |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
 
 ### Tour Window

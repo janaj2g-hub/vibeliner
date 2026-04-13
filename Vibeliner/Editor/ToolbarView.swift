@@ -149,7 +149,7 @@ final class ToolbarView: NSView {
         selectBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(selectBtn)
         toolButtons[.select] = selectBtn
-        x += DesignTokens.toolButtonSize
+        x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
 
         // VIB-164 (attempt 4): Pin icon — uses the shared drawPinIcon, same as settings
         let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)", iconDrawer: ToolbarView.drawPinIcon)
@@ -160,7 +160,7 @@ final class ToolbarView: NSView {
         pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
         addSubview(pinBtn)
         toolButtons[.pin] = pinBtn
-        x += DesignTokens.toolButtonSize
+        x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
 
         // Other tool buttons
         let toolDefs: [(AnnotationToolType, String, (NSRect, NSColor) -> Void)] = [
@@ -179,8 +179,10 @@ final class ToolbarView: NSView {
             btn.setFrameOrigin(NSPoint(x: x, y: centerY))
             addSubview(btn)
             toolButtons[tool] = btn
-            x += DesignTokens.toolButtonSize
+            x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
         }
+
+        x -= DesignTokens.toolbarToolButtonGap
 
         // VIB-202: Trash — now part of tool group, always visible, grayed when no selection
         let iconY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2

@@ -35,9 +35,10 @@ private enum SetupPillRole {
     case ghost
 }
 
-private final class SetupPillButton: AppearanceAwareSurfaceButton {
+private class SetupPillButton: AppearanceAwareSurfaceButton {
     private let role: SetupPillRole
     private let heightValue: CGFloat
+    private let horizontalPadding: CGFloat
 
     init(
         title: String,
@@ -50,6 +51,7 @@ private final class SetupPillButton: AppearanceAwareSurfaceButton {
     ) {
         self.role = role
         self.heightValue = height
+        self.horizontalPadding = horizontalPadding
         super.init(frame: .zero)
         self.title = title
         self.target = target
@@ -60,14 +62,19 @@ private final class SetupPillButton: AppearanceAwareSurfaceButton {
         setButtonType(.momentaryPushIn)
         self.font = font
         wantsLayer = true
-        translatesAutoresizingMaskIntoConstraints = false
+        cell?.lineBreakMode = .byClipping
         sizeToFit()
-        let width = frame.width + horizontalPadding
-        setFrameSize(NSSize(width: width, height: heightValue))
+        updateButtonGeometry()
         refreshSurfaceAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    func updateButtonGeometry() {
+        sizeToFit()
+        let width = frame.width + horizontalPadding
+        setFrameSize(NSSize(width: width, height: heightValue))
+    }
 
     override func refreshSurfaceAppearance() {
         switch role {
@@ -97,6 +104,23 @@ private final class SetupPillButton: AppearanceAwareSurfaceButton {
             )
         }
     }
+}
+
+private final class SetupFooterButton: SetupPillButton {
+    init(title: String, role: SetupPillRole, target: AnyObject?, action: Selector?) {
+        let padding = role == .success ? DesignTokens.setupFooterPrimaryPadding : DesignTokens.setupFooterSecondaryPadding
+        super.init(
+            title: title,
+            role: role,
+            height: DesignTokens.setupFooterButtonHeight,
+            font: DesignTokens.setupActionLabelFont,
+            horizontalPadding: padding,
+            target: target,
+            action: action
+        )
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
 }
 
 private final class SetupCircleButton: AppearanceAwareSurfaceButton {
@@ -453,22 +477,23 @@ final class SetupWindowController: NSWindowController {
 
         let labelBtn = NSButton(title: label, target: self, action: action)
         labelBtn.isBordered = false
+        labelBtn.wantsLayer = true
         labelBtn.font = DesignTokens.setupActionLabelFont
         labelBtn.contentTintColor = DesignTokens.setupButtonText
         labelBtn.sizeToFit()
+        let labelW = labelBtn.frame.width
+        labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)
+        row.addSubview(labelBtn)
 
         let arrow = SetupCircleButton(title: "→", target: self, action: action)
-
-        let stack = NSStackView(views: [labelBtn, arrow])
-        stack.orientation = .vertical
-        stack.alignment = .centerX
-        stack.spacing = 8
-        stack.translatesAutoresizingMaskIntoConstraints = false
-        row.addSubview(stack)
-        NSLayoutConstraint.activate([
-            stack.centerXAnchor.constraint(equalTo: row.centerXAnchor),
-            stack.centerYAnchor.constraint(equalTo: row.centerYAnchor)
-        ])
+        let arrowSize = DesignTokens.setupArrowSize
+        arrow.frame = NSRect(
+            x: (width - arrowSize) / 2,
+            y: rowH - 18 - 8 - arrowSize,
+            width: arrowSize,
+            height: arrowSize
+        )
+        row.addSubview(arrow)
         return row
     }
 
@@ -523,31 +548,31 @@ final class SetupWindowController: NSWindowController {
             footerContent.addSubview(shortcutGroup)
 
             // Right: Green "Start using Vibeliner →" button
-            let startBtn = SetupPillButton(
+            let startBtn = SetupFooterButton(
                 title: "Start using Vibeliner \u{2192}",
                 role: .success,
-                height: 36,
-                font: DesignTokens.setupActionLabelFont,
-                horizontalPadding: 32,
                 target: self,
                 action: #selector(startClicked)
             )
             let btnW = startBtn.frame.width
-            startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
+            startBtn.frame.origin = NSPoint(
+                x: winW - 24 - btnW,
+                y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
+            )
             footerContent.addSubview(startBtn)
 
             // VIB-360: "Take a tour" ghost button, to the left of Start button
-            let tourBtn = SetupPillButton(
+            let tourBtn = SetupFooterButton(
                 title: "Take a tour",
                 role: .ghost,
-                height: 36,
-                font: DesignTokens.setupActionLabelFont,
-                horizontalPadding: 24,
                 target: self,
                 action: #selector(tourClicked)
             )
             let tourBtnW = tourBtn.frame.width
-            tourBtn.frame.origin = NSPoint(x: winW - 24 - btnW - 10 - tourBtnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
+            tourBtn.frame.origin = NSPoint(
+                x: winW - 24 - btnW - 10 - tourBtnW,
+                y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
+            )
             footerContent.addSubview(tourBtn)
         } else {
             let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)

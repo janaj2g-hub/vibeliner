@@ -561,6 +561,9 @@ enum DesignTokens {
     /// 30px tool button size
     static let toolButtonSize: CGFloat = 30
 
+    /// 2px visual separation between adjacent tool buttons
+    static let toolbarToolButtonGap: CGFloat = 2
+
     /// 28px icon button size
     static let iconButtonSize: CGFloat = 28
 
@@ -787,6 +790,9 @@ enum DesignTokens {
     static let setupBadgeSize: CGFloat = 32
     static let setupArrowSize: CGFloat = 36
     static let setupSmallPillHeight: CGFloat = 22
+    static let setupFooterButtonHeight: CGFloat = 36
+    static let setupFooterPrimaryPadding: CGFloat = 48
+    static let setupFooterSecondaryPadding: CGFloat = 36
     static let setupPathBoxRadius: CGFloat = 8
 
     // MARK: - Setup Window Fonts
