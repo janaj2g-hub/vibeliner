@@ -26,6 +26,11 @@ final class CursorManager {
         hideCount = 0
     }
 
+    func showArrowCursor() {
+        showCursor()
+        NSCursor.arrow.set()
+    }
+
     /// Emergency reset — unconditionally ensures cursor is visible.
     /// Calls unhide() regardless of tracked state to fix any desync,
     /// then resets the arrow cursor to clear custom cursors.

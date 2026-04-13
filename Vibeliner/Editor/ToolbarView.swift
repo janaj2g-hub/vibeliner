@@ -48,6 +48,7 @@ private enum ToolbarIconGeometry {
 final class ToolbarView: NSView {
 
     weak var delegate: ToolbarDelegate?
+    var onChromeHoverChanged: ((Bool) -> Void)?
 
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
@@ -119,62 +120,16 @@ final class ToolbarView: NSView {
         x = addDivider(at: x)
         x += 10
 
-        // VIB-159: Select tool — clean pointer arrow icon
-        // SVG path: M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z in 15×15 viewBox
-        let selectBtn = ToolButton(style: .tool, tooltip: "Select (1)") { rect, color in
-            let w = rect.width, h = rect.height
-            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-            }
-            let path = NSBezierPath()
-            path.move(to: pt(3, 2))
-            path.line(to: pt(12, 7.5))
-            path.line(to: pt(8, 8.5))
-            path.line(to: pt(10.5, 13))
-            path.line(to: pt(9, 13.8))
-            path.line(to: pt(6.5, 9.3))
-            path.line(to: pt(3.5, 12.3))
-            path.close()
-            color.setFill()
-            path.fill()
-            color.setStroke()
-            path.lineWidth = 0.5
-            path.lineJoinStyle = .round
-            path.stroke()
-        }
-        selectBtn.isActive = (selectedTool == .select)
-        selectBtn.onClick = { [weak self] in self?.selectTool(.select) }
-        selectBtn.setAccessibilityLabel("Select tool")
-        selectBtn.setAccessibilityRole(.radioButton)
-        selectBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
-        addSubview(selectBtn)
-        toolButtons[.select] = selectBtn
-        x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
-
-        // VIB-164 (attempt 4): Pin icon — uses the shared drawPinIcon, same as settings
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)", iconDrawer: ToolbarView.drawPinIcon)
-        pinBtn.isActive = (selectedTool == .pin)
-        pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
-        pinBtn.setAccessibilityLabel("Pin tool")
-        pinBtn.setAccessibilityRole(.radioButton)
-        pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
-        addSubview(pinBtn)
-        toolButtons[.pin] = pinBtn
-        x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
-
-        // Other tool buttons
-        let toolDefs: [(AnnotationToolType, String, (NSRect, NSColor) -> Void)] = [
-            (.arrow, "Arrow (3)", ToolbarView.drawArrowIcon),
-            (.rectangle, "Rectangle (4)", ToolbarView.drawRectIcon),
-            (.circle, "Circle (5)", ToolbarView.drawCircleIcon),
-            (.freehand, "Freehand (6)", ToolbarView.drawFreehandIcon),
-        ]
-
-        for (tool, name, drawer) in toolDefs {
-            let btn = ToolButton(style: .tool, tooltip: name, iconDrawer: drawer)
+        for definition in AnnotationToolType.toolbarDefinitions {
+            let btn = ToolButton(
+                style: .tool,
+                tooltip: definition.toolbarTooltip,
+                iconDrawer: ToolbarView.iconDrawer(for: definition.type)
+            )
+            let tool = definition.type
             btn.isActive = (tool == selectedTool)
             btn.onClick = { [weak self] in self?.selectTool(tool) }
-            btn.setAccessibilityLabel("\(name.components(separatedBy: " (").first ?? name) tool")
+            btn.setAccessibilityLabel("\(definition.displayName) tool")
             btn.setAccessibilityRole(.radioButton)
             btn.setFrameOrigin(NSPoint(x: x, y: centerY))
             addSubview(btn)
@@ -393,7 +348,11 @@ final class ToolbarView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        CursorManager.shared.showCursor()
+        onChromeHoverChanged?(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        onChromeHoverChanged?(false)
     }
 
     func selectTool(_ tool: AnnotationToolType) {
@@ -576,6 +535,44 @@ final class ToolbarView: NSView {
         path.lineWidth = 1.5
         color.setStroke()
         path.stroke()
+    }
+
+    private static func iconDrawer(for tool: AnnotationToolType) -> (NSRect, NSColor) -> Void {
+        switch tool {
+        case .select:
+            return { rect, color in
+                let w = rect.width
+                let h = rect.height
+                func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                    NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+                }
+                let path = NSBezierPath()
+                path.move(to: pt(3, 2))
+                path.line(to: pt(12, 7.5))
+                path.line(to: pt(8, 8.5))
+                path.line(to: pt(10.5, 13))
+                path.line(to: pt(9, 13.8))
+                path.line(to: pt(6.5, 9.3))
+                path.line(to: pt(3.5, 12.3))
+                path.close()
+                color.setFill()
+                path.fill()
+                color.setStroke()
+                path.lineWidth = 0.5
+                path.lineJoinStyle = .round
+                path.stroke()
+            }
+        case .pin:
+            return drawPinIcon
+        case .arrow:
+            return drawArrowIcon
+        case .rectangle:
+            return drawRectIcon
+        case .circle:
+            return drawCircleIcon
+        case .freehand:
+            return drawFreehandIcon
+        }
     }
 }
 

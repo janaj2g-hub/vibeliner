@@ -289,8 +289,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         activeContentStack.addArrangedSubview(rowsStack)
 
-        for (title, key) in toolRows() {
-            let row = makeToolRow(title: title, key: key)
+        for definition in toolRows() {
+            let row = makeToolRow(definition: definition)
             rowsStack.addArrangedSubview(row)
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
@@ -575,20 +575,20 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private static let toolRowHeight: CGFloat = 40
 
-    private func makeToolRow(title: String, key: String) -> NSView {
+    private func makeToolRow(definition: AnnotationToolDefinition) -> NSView {
         let row = NSView()
         row.translatesAutoresizingMaskIntoConstraints = false
 
-        let icon = ToolIconView(toolKey: key)
-        let nameLabel = SettingsUI.regularLabel(title)
+        let icon = ToolIconView(tool: definition.type)
+        let nameLabel = SettingsUI.regularLabel(definition.displayName)
         nameLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
 
         let field = SettingsTextField()
-        field.stringValue = drafts.toolDescriptions[key] ?? ""
+        field.stringValue = drafts.toolDescriptions[definition.label] ?? ""
         field.delegate = self
-        field.identifier = NSUserInterfaceItemIdentifier(key)
+        field.identifier = NSUserInterfaceItemIdentifier(definition.label)
         field.translatesAutoresizingMaskIntoConstraints = false
-        toolFields[key] = field
+        toolFields[definition.label] = field
 
         row.addSubview(icon)
         row.addSubview(nameLabel)
@@ -618,9 +618,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         return row
     }
 
-    private func toolRows() -> [(String, String)] {
-        [("Pin", "pin"), ("Arrow", "arrow"), ("Rectangle", "rectangle"),
-         ("Circle", "circle"), ("Freehand", "freehand")]
+    private func toolRows() -> [AnnotationToolDefinition] {
+        AnnotationToolType.promptExportDefinitions
     }
 
     // MARK: - Data
@@ -719,13 +718,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private static let defaultFooter = "Make the changes and verify they match the design."
 
-    private static let defaultToolDescriptions: [String: String] = [
-        "pin": "points to a specific issue",
-        "arrow": "points at or between elements",
-        "rectangle": "highlights a region or container",
-        "circle": "calls out a specific element",
-        "freehand": "marks an irregular area",
-    ]
+    private static let defaultToolDescriptions = AnnotationToolType.defaultPromptDescriptions
 
     private var hasUnsavedChanges: Bool {
         drafts != PromptDrafts.current()
@@ -747,10 +740,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
 private final class ToolIconView: AppearanceAwareFieldView {
 
-    private let toolKey: String
+    private let tool: AnnotationToolType
 
-    init(toolKey: String) {
-        self.toolKey = toolKey
+    init(tool: AnnotationToolType) {
+        self.tool = tool
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
     }
@@ -767,13 +760,13 @@ private final class ToolIconView: AppearanceAwareFieldView {
             height: iconSize
         )
         let color = NSColor.secondaryLabelColor
-        switch toolKey {
-        case "pin":      ToolbarView.drawPinIcon(iconRect, color)
-        case "arrow":    ToolbarView.drawArrowIcon(iconRect, color)
-        case "rectangle": ToolbarView.drawRectIcon(iconRect, color)
-        case "circle":   ToolbarView.drawCircleIcon(iconRect, color)
-        case "freehand": ToolbarView.drawFreehandIcon(iconRect, color)
-        default: break
+        switch tool {
+        case .pin: ToolbarView.drawPinIcon(iconRect, color)
+        case .arrow: ToolbarView.drawArrowIcon(iconRect, color)
+        case .rectangle: ToolbarView.drawRectIcon(iconRect, color)
+        case .circle: ToolbarView.drawCircleIcon(iconRect, color)
+        case .freehand: ToolbarView.drawFreehandIcon(iconRect, color)
+        case .select: break
         }
     }
 }

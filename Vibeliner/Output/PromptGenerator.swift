@@ -149,7 +149,7 @@ final class PromptGenerator {
         guard !toolTypes.isEmpty else { return "" }
 
         let descriptions = toolDescriptions ?? ConfigManager.shared.toolDescriptions
-        let ordered: [AnnotationToolType] = [.pin, .arrow, .rectangle, .circle, .freehand]
+        let ordered = AnnotationToolType.promptExportDefinitions.map(\.type)
         let used = ordered.filter { toolTypes.contains($0) }
 
         if used.count == 1, let tool = used.first {

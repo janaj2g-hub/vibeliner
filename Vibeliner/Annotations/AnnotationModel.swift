@@ -1,11 +1,16 @@
 import Foundation
 import CoreGraphics
 
-enum AnnotationToolType: Int, CaseIterable {
-    case select = 0, pin, arrow, rectangle, circle, freehand
+struct AnnotationToolDefinition {
+    let type: AnnotationToolType
+    let displayName: String
+    let shortcutDigit: String?
+    let shortcutKeyCode: UInt16?
+    let supportsPromptExport: Bool
+    let defaultPromptDescription: String?
 
     var label: String {
-        switch self {
+        switch type {
         case .select: return "select"
         case .pin: return "pin"
         case .arrow: return "arrow"
@@ -13,6 +18,103 @@ enum AnnotationToolType: Int, CaseIterable {
         case .circle: return "circle"
         case .freehand: return "freehand"
         }
+    }
+
+    var toolbarTooltip: String {
+        guard let shortcutDigit else { return displayName }
+        return "\(displayName) (\(shortcutDigit))"
+    }
+}
+
+enum AnnotationToolType: Int, CaseIterable {
+    case select = 0, pin, arrow, rectangle, circle, freehand
+
+    static let allDefinitions: [AnnotationToolDefinition] = [
+        AnnotationToolDefinition(
+            type: .select,
+            displayName: "Select",
+            shortcutDigit: "1",
+            shortcutKeyCode: 18,
+            supportsPromptExport: false,
+            defaultPromptDescription: nil
+        ),
+        AnnotationToolDefinition(
+            type: .pin,
+            displayName: "Pin",
+            shortcutDigit: "2",
+            shortcutKeyCode: 19,
+            supportsPromptExport: true,
+            defaultPromptDescription: "points to a specific issue"
+        ),
+        AnnotationToolDefinition(
+            type: .arrow,
+            displayName: "Arrow",
+            shortcutDigit: "3",
+            shortcutKeyCode: 20,
+            supportsPromptExport: true,
+            defaultPromptDescription: "points at or between elements"
+        ),
+        AnnotationToolDefinition(
+            type: .rectangle,
+            displayName: "Rectangle",
+            shortcutDigit: "4",
+            shortcutKeyCode: 21,
+            supportsPromptExport: true,
+            defaultPromptDescription: "highlights a region or container"
+        ),
+        AnnotationToolDefinition(
+            type: .circle,
+            displayName: "Circle",
+            shortcutDigit: "5",
+            shortcutKeyCode: 22,
+            supportsPromptExport: true,
+            defaultPromptDescription: "calls out a specific element"
+        ),
+        AnnotationToolDefinition(
+            type: .freehand,
+            displayName: "Freehand",
+            shortcutDigit: "6",
+            shortcutKeyCode: 23,
+            supportsPromptExport: true,
+            defaultPromptDescription: "marks an irregular area"
+        ),
+    ]
+
+    static var toolbarDefinitions: [AnnotationToolDefinition] {
+        allDefinitions
+    }
+
+    static var promptExportDefinitions: [AnnotationToolDefinition] {
+        allDefinitions.filter(\.supportsPromptExport)
+    }
+
+    static var defaultPromptDescriptions: [String: String] {
+        Dictionary(
+            uniqueKeysWithValues: promptExportDefinitions.compactMap { definition in
+                guard let description = definition.defaultPromptDescription else { return nil }
+                return (definition.label, description)
+            }
+        )
+    }
+
+    static func tool(forShortcutKeyCode keyCode: UInt16) -> AnnotationToolType? {
+        allDefinitions.first(where: { $0.shortcutKeyCode == keyCode })?.type
+    }
+
+    var definition: AnnotationToolDefinition {
+        Self.allDefinitions.first(where: { $0.type == self }) ?? Self.allDefinitions[0]
+    }
+
+    var label: String {
+        definition.label
+    }
+
+    var displayName: String {
+        definition.displayName
+    }
+
+    var shortcutKeyCode: UInt16? {
+        definition.shortcutKeyCode
     }
 
     /// Whether this is an annotation-creating tool (vs select)

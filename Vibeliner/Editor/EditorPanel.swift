@@ -1,5 +1,76 @@
 import AppKit
 
+private final class EditorToolController {
+    let selectTool = SelectTool()
+
+    private let pinTool = PinTool()
+    private let arrowTool = ArrowTool()
+    private let rectangleTool = RectangleTool()
+    private let circleTool = CircleTool()
+    private let freehandTool = FreehandTool()
+    private lazy var toolsByType: [AnnotationToolType: AnnotationTool] = [
+        .select: selectTool,
+        .pin: pinTool,
+        .arrow: arrowTool,
+        .rectangle: rectangleTool,
+        .circle: circleTool,
+        .freehand: freehandTool,
+    ]
+
+    init(editorPanel: EditorPanel) {
+        selectTool.editorPanel = editorPanel
+        pinTool.editorPanel = editorPanel
+        arrowTool.editorPanel = editorPanel
+        rectangleTool.editorPanel = editorPanel
+        circleTool.editorPanel = editorPanel
+        freehandTool.editorPanel = editorPanel
+    }
+
+    func configure(canvas: CanvasView, undoManager: UndoRedoManager, defaultTool: AnnotationToolType = .pin) {
+        canvas.undoManager_ = undoManager
+        canvas.selectTool = selectTool
+        select(defaultTool, on: canvas)
+    }
+
+    func select(_ tool: AnnotationToolType, on canvas: CanvasView?) {
+        canvas?.activeTool = toolsByType[tool] ?? selectTool
+    }
+}
+
+private final class EditorCursorController {
+    private var windowIsActive = true
+    private var chromeHovering = false
+    private var canvasIntent: CanvasView.CursorIntent = .visibleArrow
+
+    func setWindowActive(_ isActive: Bool) {
+        windowIsActive = isActive
+        apply(resetStack: !isActive)
+    }
+
+    func setChromeHovering(_ isHovering: Bool) {
+        chromeHovering = isHovering
+        apply()
+    }
+
+    func setCanvasIntent(_ intent: CanvasView.CursorIntent) {
+        canvasIntent = intent
+        apply()
+    }
+
+    private func apply(resetStack: Bool = false) {
+        let shouldHideCursor = windowIsActive
+            && !chromeHovering
+            && canvasIntent == .hiddenForDrawing
+        if shouldHideCursor {
+            CursorManager.shared.hideCursor()
+        } else if resetStack {
+            CursorManager.shared.forceShow()
+        } else {
+            CursorManager.shared.showArrowCursor()
+        }
+    }
+}
+
 final class EditorPanel: NSPanel, ToolbarDelegate {
 
     private let canvasView: ScreenshotCanvasView
@@ -8,13 +79,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     private let statusPill: StatusPillView
     let annotationStore = AnnotationStore()
     private let undoRedoManager: UndoRedoManager
+    private lazy var toolController = EditorToolController(editorPanel: self)
+    private let cursorController = EditorCursorController()
     private var canvasOverlay: CanvasView?
-    private let selectTool = SelectTool()
-    private let pinTool = PinTool()
-    private let arrowTool = ArrowTool()
-    private let rectangleTool = RectangleTool()
-    private let circleTool = CircleTool()
-    private let freehandTool = FreehandTool()
     private let displayWidth: CGFloat
     private let displayHeight: CGFloat
     private var captureFolder: URL?
@@ -105,16 +172,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
 
         annotationStore.updateCurrentImage(id: captureSession.imageID(at: 0), index: 0)
 
-        // Wire tools
-        selectTool.editorPanel = self
-        pinTool.editorPanel = self
-        arrowTool.editorPanel = self
-        rectangleTool.editorPanel = self
-        circleTool.editorPanel = self
-        freehandTool.editorPanel = self
-        canvas.activeTool = pinTool  // Default to pin tool
-        canvas.undoManager_ = undoRedoManager
-        canvas.selectTool = selectTool  // VIB-217: click-through edit
+        toolController.configure(canvas: canvas, undoManager: undoRedoManager)
+        canvas.onCursorIntentChanged = { [weak self] intent in
+            self?.cursorController.setCanvasIntent(intent)
+        }
 
         // Auto-save
         self.captureFolder = captureFolder
@@ -132,6 +193,9 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         let toolbarY = canvasY + dh + (toolbarGap - DesignTokens.toolbarHeight) / 2
         toolbarView.setFrameOrigin(NSPoint(x: toolbarX, y: toolbarY))
         toolbarView.delegate = self
+        toolbarView.onChromeHoverChanged = { [weak self] isHovering in
+            self?.cursorController.setChromeHovering(isHovering)
+        }
         container.addSubview(toolbarView)
 
         // VIB-191: Status pill below canvas
@@ -141,44 +205,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         statusPill.setFrameOrigin(NSPoint(x: pillX, y: pillY))
         container.addSubview(statusPill)
 
-        // Observe annotation changes
-        storeObserver = NotificationCenter.default.addObserver(
-            forName: .annotationsDidChange, object: annotationStore, queue: .main
-        ) { [weak self] _ in
-            guard let self else { return }
-            self.toolbarView.updateAnnotationCount(self.annotationStore.count)
-            self.statusPill.updateNoteCount(self.annotationStore.count)
-            // Reset copy buttons to purple on any annotation change
-            self.toolbarView.resetCopyState()
-            // VIB-202: Enable trash only when an annotation is selected
-            self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
-        }
-
-        // VIB-193 / VIB-326: Key monitor — use KeyEventGuard to detect ANY text editing,
-        // not just canvas note editing. This prevents backspace/delete from being swallowed
-        // when the title pill or other text inputs are active.
-        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard let self, self.isVisible else { return event }
-
-            // VIB-392: If a DIFFERENT window's text field is editing (e.g. Settings),
-            // pass through so Cmd+Z/Shift+Z reach that window's field editor.
-            let keyWindow = NSApp.keyWindow
-            if keyWindow !== self && !KeyEventGuard.shouldHandleShortcut(in: keyWindow) {
-                return event
-            }
-
-            // VIB-326: Broad guard — if ANY text field/editor is first responder, pass through.
-            // Only intercept Escape for note editing cancellation.
-            if !KeyEventGuard.shouldHandleShortcut(in: self) {
-                if event.keyCode == 53, let canvas = self.canvasOverlay, canvas.isEditingNote {
-                    canvas.cancelNoteEditing()
-                    return nil  // consumed
-                }
-                return event  // pass through to text field (Cmd+C/V/A, arrows, backspace, etc.)
-            }
-
-            return self.handleKeyEvent(event) ? nil : event
-        }
+        installAnnotationObserver()
+        installKeyMonitor()
     }
 
     deinit {
@@ -190,10 +218,40 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
         }
     }
 
-    // VIB-318: Safety nets — always restore cursor on deactivation or close
+    private func installAnnotationObserver() {
+        storeObserver = NotificationCenter.default.addObserver(
+            forName: .annotationsDidChange, object: annotationStore, queue: .main
+        ) { [weak self] _ in
+            guard let self else { return }
+            self.toolbarView.updateAnnotationCount(self.annotationStore.count)
+            self.statusPill.updateNoteCount(self.annotationStore.count)
+            self.toolbarView.resetCopyState()
+            self.toolbarView.updateTrashState(hasSelection: self.annotationStore.selectedAnnotation != nil)
+        }
+    }
+
+    private func installKeyMonitor() {
+        keyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            guard let self, self.isVisible else { return event }
+            if self.otherWindowOwnsActiveTextInput() {
+                return event
+            }
+            if let routedEvent = self.routeTextOwnedKeyEvent(event) {
+                return self.handleKeyEvent(routedEvent) ? nil : routedEvent
+            }
+            return nil
+        }
+    }
+
+    override func becomeKey() {
+        super.becomeKey()
+        cursorController.setWindowActive(true)
+        canvasOverlay?.refreshInteractionState()
+    }
+
     override func resignKey() {
         super.resignKey()
-        CursorManager.shared.forceShow()
+        cursorController.setWindowActive(false)
     }
 
     override func close() {
@@ -203,7 +261,7 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             NSEvent.removeMonitor(monitor)
             keyMonitor = nil
         }
-        CursorManager.shared.forceShow()
+        cursorController.setWindowActive(false)
         super.close()
     }
 
@@ -214,35 +272,60 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     /// field editor and return true to swallow the event. This prevents it from
     /// reaching AppKit's main menu validation (which beeps on borderless panels).
     override func performKeyEquivalent(with event: NSEvent) -> Bool {
-        if let canvas = canvasOverlay, canvas.isEditingNote {
-            if let activeField = canvas.activeNoteField,
-               let fieldEditor = fieldEditor(false, for: activeField) as? NSTextView {
-                let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
-                let chars = event.charactersIgnoringModifiers ?? ""
-                if flags == .command {
-                    switch chars {
-                    case "c": fieldEditor.copy(nil); return true
-                    case "v": fieldEditor.paste(nil); return true
-                    case "x": fieldEditor.cut(nil); return true
-                    case "a": fieldEditor.selectAll(nil); return true
-                    case "z": fieldEditor.undoManager?.undo(); return true
-                    default: break
-                    }
-                } else if flags.contains(.command) && flags.contains(.shift) && chars.lowercased() == "z" {
-                    fieldEditor.undoManager?.redo()
-                    return true
-                }
-            }
-            // VIB-205 (attempt 2): Do NOT swallow unhandled key equivalents —
-            // arrow keys and other combos must pass through to the responder chain
-            return false
+        if let textResponder = KeyEventGuard.activeTextResponder(in: self) {
+            return handleTextResponderKeyEquivalent(event, textResponder: textResponder)
         }
-        // VIB-205 (attempt 4): Handle non-editing Cmd+key here too —
-        // performKeyEquivalent fires before the key monitor on borderless panels,
-        // so handleKeyEvent never sees these events.
+        return handlePanelKeyEquivalent(event)
+    }
+
+    override func keyDown(with event: NSEvent) {
+        if !handleKeyEvent(event) {
+            super.keyDown(with: event)
+        }
+    }
+
+    private func otherWindowOwnsActiveTextInput() -> Bool {
+        let keyWindow = NSApp.keyWindow
+        return keyWindow !== self && !KeyEventGuard.shouldHandleShortcut(in: keyWindow)
+    }
+
+    private func routeTextOwnedKeyEvent(_ event: NSEvent) -> NSEvent? {
+        guard KeyEventGuard.activeTextResponder(in: self) != nil else {
+            return event
+        }
+
+        if event.keyCode == 53, canvasOverlay?.isEditingNote == true {
+            canvasOverlay?.cancelNoteEditing()
+            return nil
+        }
+
+        // Let NSTextView/NSTextField own their normal shortcuts and key handling.
+        return event
+    }
+
+    private func handleTextResponderKeyEquivalent(_ event: NSEvent, textResponder: NSTextView) -> Bool {
         let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
         let chars = event.charactersIgnoringModifiers ?? ""
-        // VIB-239: Cmd+W closes editor (replaces old Escape-closes behavior)
+        if flags == .command {
+            switch chars {
+            case "c": textResponder.copy(nil); return true
+            case "v": textResponder.paste(nil); return true
+            case "x": textResponder.cut(nil); return true
+            case "a": textResponder.selectAll(nil); return true
+            case "z": textResponder.undoManager?.undo(); return true
+            default: return false
+            }
+        }
+        if flags.contains(.command) && flags.contains(.shift) && chars.lowercased() == "z" {
+            textResponder.undoManager?.redo()
+            return true
+        }
+        return false
+    }
+
+    private func handlePanelKeyEquivalent(_ event: NSEvent) -> Bool {
+        let flags = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let chars = event.charactersIgnoringModifiers ?? ""
         if flags == .command && chars == "w" {
             autoSaveManager?.saveNow()
             close()
@@ -261,12 +344,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             return true
         }
         return false
-    }
-
-    override func keyDown(with event: NSEvent) {
-        if !handleKeyEvent(event) {
-            super.keyDown(with: event)
-        }
     }
 
     private func handleKeyEvent(_ event: NSEvent) -> Bool {
@@ -308,14 +385,21 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             }
             // Priority 4: No-op — editor stays open
             return true
-        } else if keyCode >= 18 && keyCode <= 23 && flags.isEmpty {
-            let keyMap: [UInt16: AnnotationToolType] = [18: .select, 19: .pin, 20: .arrow, 21: .rectangle, 22: .circle, 23: .freehand]
-            if let tool = keyMap[keyCode] {
+        } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
+            // VIB-326: Only consume the event when an action is actually performed.
+            // Previously returned true unconditionally, swallowing backspace even
+            // when no annotation was selected and filmstrip wasn't active.
+            if annotationStore.selectedAnnotation != nil {
+                toolbarView.delegate?.toolbarDidRequestDelete()
+                return true
+            } else if isFilmstripMode, images.count > 1 {
+                removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
+                return true
+            }
+            return false
+        } else if flags.isEmpty {
+            if let tool = AnnotationToolType.tool(forShortcutKeyCode: keyCode) {
                 toolbarView.selectTool(tool)
-                // VIB-334: Show cursor when switching to select tool via keyboard
-                if tool == .select {
-                    CursorManager.shared.showCursor()
-                }
                 return true
             }
         } else if flags == .command && event.charactersIgnoringModifiers == "z" {
@@ -329,18 +413,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
                 toolbarView.delegate?.toolbarDidRequestCopyPrompt()
                 return true
             }
-        } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
-            // VIB-326: Only consume the event when an action is actually performed.
-            // Previously returned true unconditionally, swallowing backspace even
-            // when no annotation was selected and filmstrip wasn't active.
-            if annotationStore.selectedAnnotation != nil {
-                toolbarView.delegate?.toolbarDidRequestDelete()
-                return true
-            } else if isFilmstripMode, images.count > 1 {
-                removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
-                return true
-            }
-            return false
         }
         return false
     }
@@ -348,14 +420,8 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
     // MARK: - ToolbarDelegate
 
     func toolbarDidSelectTool(_ tool: AnnotationToolType) {
-        switch tool {
-        case .select: canvasOverlay?.activeTool = selectTool
-        case .pin: canvasOverlay?.activeTool = pinTool
-        case .arrow: canvasOverlay?.activeTool = arrowTool
-        case .rectangle: canvasOverlay?.activeTool = rectangleTool
-        case .circle: canvasOverlay?.activeTool = circleTool
-        case .freehand: canvasOverlay?.activeTool = freehandTool
-        }
+        toolController.select(tool, on: canvasOverlay)
+        canvasOverlay?.refreshInteractionState()
     }
 
     func toolbarDidRequestClose() {
