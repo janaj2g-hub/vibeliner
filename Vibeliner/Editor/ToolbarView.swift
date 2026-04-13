@@ -30,6 +30,21 @@ private final class ToolbarDividerView: AppearanceAwareSurfaceView {
     }
 }
 
+private enum ToolbarIconGeometry {
+    static let viewBox: CGFloat = 15
+
+    static func point(in rect: NSRect, _ x: CGFloat, _ y: CGFloat) -> NSPoint {
+        NSPoint(
+            x: rect.minX + (x / viewBox) * rect.width,
+            y: rect.maxY - (y / viewBox) * rect.height
+        )
+    }
+
+    static func outlineRect(in rect: NSRect, inset: CGFloat = 1.25) -> NSRect {
+        rect.insetBy(dx: inset, dy: inset)
+    }
+}
+
 final class ToolbarView: NSView {
 
     weak var delegate: ToolbarDelegate?
@@ -499,41 +514,31 @@ final class ToolbarView: NSView {
     /// Pin icon: filled circle + stake, 15×15 viewBox, same pattern as all other tool icons.
     /// Uses currentColor — no special colors, no counter.
     static func drawPinIcon(_ rect: NSRect, _ color: NSColor) {
-        let w = rect.width, h = rect.height
-        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-        }
         // Filled circle at (7.5, 5), r=3.5 in 15×15 viewBox
-        let center = pt(7.5, 5)
-        let r = 3.5 * (w / 15)
+        let center = ToolbarIconGeometry.point(in: rect, 7.5, 5)
+        let r = 3.5 * (rect.width / ToolbarIconGeometry.viewBox)
         let circle = NSBezierPath(ovalIn: NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
         color.setFill()
         circle.fill()
         // Stake line from (7.5, 9) to (7.5, 14)
         let stake = NSBezierPath()
-        stake.move(to: pt(7.5, 9))
-        stake.line(to: pt(7.5, 14))
-        stake.lineWidth = 1.8 * (w / 15)
+        stake.move(to: ToolbarIconGeometry.point(in: rect, 7.5, 9))
+        stake.line(to: ToolbarIconGeometry.point(in: rect, 7.5, 14))
+        stake.lineWidth = 1.8 * (rect.width / ToolbarIconGeometry.viewBox)
         stake.lineCapStyle = .round
         color.setStroke()
         stake.stroke()
     }
 
     static func drawArrowIcon(_ rect: NSRect, _ color: NSColor) {
-        // Matches prototype SVG: line (2,13)→(13,2), polyline (8,2)→(13,2)→(13,7) in 15×15 viewBox
-        // SVG is y-down; AppKit is y-up. Map: svgY → rect.maxY - (svgY / 15) * rect.height
-        let w = rect.width, h = rect.height
-        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-        }
         let path = NSBezierPath()
         // Diagonal line
-        path.move(to: pt(2, 13))
-        path.line(to: pt(13, 2))
+        path.move(to: ToolbarIconGeometry.point(in: rect, 2, 13))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 2))
         // Arrowhead chevron
-        path.move(to: pt(8, 2))
-        path.line(to: pt(13, 2))
-        path.line(to: pt(13, 7))
+        path.move(to: ToolbarIconGeometry.point(in: rect, 8, 2))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 2))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 7))
         path.lineWidth = 1.4
         path.lineCapStyle = .round
         path.lineJoinStyle = .round
@@ -542,7 +547,7 @@ final class ToolbarView: NSView {
     }
 
     static func drawRectIcon(_ rect: NSRect, _ color: NSColor) {
-        let inset = rect.insetBy(dx: 1, dy: 1)
+        let inset = ToolbarIconGeometry.outlineRect(in: rect)
         let path = NSBezierPath(roundedRect: inset, xRadius: 2, yRadius: 2)
         path.lineWidth = 1.5
         color.setStroke()
@@ -550,7 +555,7 @@ final class ToolbarView: NSView {
     }
 
     static func drawCircleIcon(_ rect: NSRect, _ color: NSColor) {
-        let inset = rect.insetBy(dx: 1, dy: 1)
+        let inset = ToolbarIconGeometry.outlineRect(in: rect)
         let path = NSBezierPath(ovalIn: inset)
         path.lineWidth = 1.5
         color.setStroke()
