@@ -4,7 +4,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
 
     // MARK: - State
 
-    private var tabSegmented: SettingsSegmentedControl?
+    private var tabStrip: UnderlineTabStripView?
     private let contentContainer = NSView()
     private var activeTabIndex = -1
 
@@ -50,26 +50,21 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabBar)
 
-        let segmented = SettingsSegmentedControl(items: ["General", "Prompt", "About"], style: .primary)
-        tabBar.addSubview(segmented)
-        self.tabSegmented = segmented
+        // VIB-431: Underline-style tab strip
+        let strip = UnderlineTabStripView(items: ["General", "Prompt", "About"])
+        tabBar.addSubview(strip)
+        self.tabStrip = strip
 
         NSLayoutConstraint.activate([
-            segmented.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
-            segmented.centerYAnchor.constraint(equalTo: tabBar.centerYAnchor),
-            segmented.leadingAnchor.constraint(greaterThanOrEqualTo: tabBar.leadingAnchor, constant: DesignTokens.settingsContentPadding),
-            segmented.trailingAnchor.constraint(lessThanOrEqualTo: tabBar.trailingAnchor, constant: -DesignTokens.settingsContentPadding),
+            strip.leadingAnchor.constraint(equalTo: tabBar.leadingAnchor),
+            strip.trailingAnchor.constraint(equalTo: tabBar.trailingAnchor),
+            strip.topAnchor.constraint(equalTo: tabBar.topAnchor),
+            strip.bottomAnchor.constraint(equalTo: tabBar.bottomAnchor),
         ])
 
-        segmented.onSelectionChanged = { [weak self] index in
+        strip.onSelectionChanged = { [weak self] index in
             self?.selectTab(index)
         }
-
-        // ── Divider ── (VIB-388: appearance-safe divider)
-
-        let divider = AppearanceSafeDivider()
-        divider.translatesAutoresizingMaskIntoConstraints = false
-        contentView.addSubview(divider)
 
         // ── Scroll view wrapping the content area ──
 
@@ -101,12 +96,8 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             tabBar.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             tabBar.heightAnchor.constraint(equalToConstant: Self.tabBarHeight),
 
-            divider.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
-            divider.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            divider.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            divider.heightAnchor.constraint(equalToConstant: 0.5),
-
-            scrollView.topAnchor.constraint(equalTo: divider.bottomAnchor),
+            // VIB-431: Divider is now part of the tab strip
+            scrollView.topAnchor.constraint(equalTo: tabBar.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
@@ -162,9 +153,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             documentView.scroll(.zero)
         }
 
-        // Sync segmented control for programmatic tab switches
-        if tabSegmented?.selectedIndex != index {
-            tabSegmented?.setSelectedIndex(index, notify: false)
+        // Sync tab strip for programmatic tab switches
+        if tabStrip?.selectedIndex != index {
+            tabStrip?.setSelectedIndex(index, notify: false)
         }
 
         applyShellSizing(for: index, tabView: tabView)
