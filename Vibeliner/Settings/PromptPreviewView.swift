@@ -6,8 +6,8 @@ final class PromptPreviewView: NSView {
     private let subtitleLabel = SettingsUI.bodyCopy(
         "Representative single-image and multi-image outputs generated from the same prompt builder used by copy, export, and saved prompts."
     )
-    // VIB-432: Pill switcher to toggle between single/multi preview
-    private let previewToggle = SettingsToggleControl(items: ["Single image", "Multi-image"])
+    // VIB-432/436: Pill switcher — uses same SettingsSegmentedControl as Edit Prompt Sections sub-tabs
+    private let previewToggle = SettingsSegmentedControl(items: ["Single image", "Multi-image"], style: .secondary)
     private let previewContainer = AppearanceAwarePreviewSurfaceView()
     private let singleSampleView = PromptPreviewSampleView(title: "Single-image sample")
     private let multiSampleView = PromptPreviewSampleView(title: "Multi-image sample")

@@ -11,8 +11,8 @@ final class GeneralTabView: NSView {
     private let folderFieldContainer = AppearanceAwareFieldView()
     private let loginCheckbox = NSButton(checkboxWithTitle: "", target: nil, action: nil)
     private let loginLabel = SettingsUI.regularLabel("Start Vibeliner when you log in")
-    // VIB-433: Toggle-token segmented control for appearance
-    private let appearanceControl = SettingsToggleControl(items: ["Light", "Dark", "System"])
+    // VIB-433/436: Same SettingsSegmentedControl as Edit Prompt Sections sub-tabs
+    private let appearanceControl = SettingsSegmentedControl(items: ["Light", "Dark", "System"], style: .secondary)
 
     init() {
         super.init(frame: .zero)
