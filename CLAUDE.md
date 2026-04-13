@@ -80,7 +80,9 @@ Every line from the prompt's **Verification** section must appear with Pass or F
 ```
 Vibeliner/
 ├── App/
-│   └── AppDelegate.swift               # Menu bar icon, app lifecycle
+│   ├── AppDelegate.swift               # Menu bar icon, app lifecycle
+│   ├── main.swift                      # App entry point
+│   └── VisualTestHarness.swift         # Visual test gallery
 ├── Design/
 │   └── DesignTokens.swift              # ALL colors, dimensions, fonts — single source of truth
 ├── Config/
@@ -100,12 +102,14 @@ Vibeliner/
 │   ├── CanvasView.swift                # Marks layer + Notes layer
 │   ├── ToolbarView.swift               # Pill-shaped floating toolbar
 │   ├── ToolButton.swift                # Reusable circular button
-│   └── StatusPillView.swift            # Floating status pill below screenshot
+│   ├── StatusPillView.swift            # Floating status pill below screenshot
+│   └── FilmstripGridView.swift         # Multi-image filmstrip layout
 ├── Annotations/
 │   ├── AnnotationModel.swift           # Data model: Annotation, AnnotationPosition
 │   ├── AnnotationStore.swift           # Single source of truth for annotations
 │   ├── UndoRedoManager.swift           # Undo/redo stack
 │   ├── Tools/
+│   │   ├── SelectTool.swift
 │   │   ├── PinTool.swift
 │   │   ├── ArrowTool.swift
 │   │   ├── LineTool.swift
@@ -113,6 +117,8 @@ Vibeliner/
 │   │   ├── CircleTool.swift
 │   │   └── FreehandTool.swift
 │   └── Renderers/
+│       ├── BadgeRenderer.swift         # Shared numbered badge drawing
+│       ├── NotePillRenderer.swift      # Note pill layout and rendering
 │       ├── PinRenderer.swift
 │       ├── ArrowRenderer.swift
 │       ├── LineRenderer.swift
@@ -131,7 +137,8 @@ Vibeliner/
 │   ├── GeneralTabView.swift            # Hotkey, folder, launch at login
 │   ├── PromptTabView.swift             # Sub-tabs: Preamble, Tools, Footer
 │   ├── PromptPreviewView.swift         # Live preview at bottom
-│   └── AboutTabView.swift              # Version, links
+│   ├── AboutTabView.swift              # Version, links
+│   └── SettingsUI.swift                # Shared settings view helpers
 ├── Models/
 │   ├── CaptureStore.swift              # CaptureSession source of truth
 │   ├── CaptureImage.swift              # Per-image capture metadata
@@ -146,6 +153,7 @@ Vibeliner/
 │   └── LayoutCalculator.swift          # Filmstrip layout helper
 ├── Tour/
 │   ├── TourWindowController.swift      # Product walkthrough window
+│   ├── TourStepData.swift              # Tour step configuration data
 │   └── Illustrations/                  # Tour-specific illustration helpers
 ├── Utilities/
 │   ├── CursorManager.swift             # Balanced cursor hide/show

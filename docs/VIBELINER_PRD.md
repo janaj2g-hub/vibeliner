@@ -289,7 +289,7 @@ Custom overlay using borderless `NSWindow` + Core Graphics rendering. NOT `scree
 **Layout (left to right):**
 
 ```
-[4px] [X close 24px] [30px spacer] [divider] [10px] [Pin] [Arrow] [Rect] [Circle] [Freehand] [10px] [divider] [20px] [Trash] [10px] [Undo][Redo 1px gap] [20px] [divider] [10px] [IDE/App toggle] [10px] [divider] [10px] [Copy Prompt] [4px] [Copy Image*] [4px]
+[4px] [X close 24px] [30px spacer] [divider] [10px] [Pin] [Arrow] [Line] [Rect] [Circle] [Freehand] [10px] [divider] [20px] [Trash] [10px] [Undo][Redo 1px gap] [20px] [divider] [10px] [IDE/App toggle] [10px] [divider] [10px] [Copy Prompt] [4px] [Copy Image*] [4px]
 ```
 
 *Copy Image only visible in App mode
@@ -349,7 +349,7 @@ On copy: transitions to green `rgba(22,163,74,0.9)` showing "Copied" for 2 secon
 | Cmd+Shift+Z | Redo |
 | Cmd+C (no text field focused) | Copy Prompt |
 | Delete / Backspace | Delete selected annotation |
-| 1–6 | Switch tools (`1=Select`, `2=Pin`, `3=Arrow`, `4=Rectangle`, `5=Circle`, `6=Freehand`) |
+| 1–7 | Switch tools (`1=Select`, `2=Pin`, `3=Arrow`, `4=Rectangle`, `5=Circle`, `6=Freehand`, `7=Line`) |
 
 ---
 
@@ -477,6 +477,7 @@ Each tool's description is editable in settings:
 |---|---|
 | Pin | points to a specific issue |
 | Arrow | points at or between elements |
+| Line | marks a connection or alignment |
 | Rectangle | highlights a region or container |
 | Circle | calls out a specific element |
 | Freehand | marks an irregular area |
