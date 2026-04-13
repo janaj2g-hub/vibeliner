@@ -211,15 +211,13 @@ private final class AppearanceAwarePreviewSurfaceView: AppearanceAwareSurfaceVie
     }
 }
 
-private final class PromptPreviewSampleView: AppearanceAwareFieldView {
+// VIB-434: Plain view — no inner border/background (outer previewContainer provides the frame)
+private final class PromptPreviewSampleView: NSView {
 
-    private let titleLabel: NSTextField
     private let promptLabel = NSTextField(wrappingLabelWithString: "")
 
     init(title: String) {
-        self.titleLabel = SettingsUI.regularLabel(title)
         super.init(frame: .zero)
-        fieldCornerRadius = 12
         translatesAutoresizingMaskIntoConstraints = false
         setupView()
     }
@@ -227,27 +225,20 @@ private final class PromptPreviewSampleView: AppearanceAwareFieldView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        titleLabel.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
-        titleLabel.textColor = .secondaryLabelColor
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(titleLabel)
-
         promptLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
         promptLabel.textColor = .labelColor
         promptLabel.maximumNumberOfLines = 0
         promptLabel.lineBreakMode = .byWordWrapping
+        promptLabel.isEditable = false
+        promptLabel.isSelectable = true
         promptLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(promptLabel)
 
         NSLayoutConstraint.activate([
-            titleLabel.topAnchor.constraint(equalTo: topAnchor, constant: 12),
-            titleLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            titleLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-
-            promptLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 8),
-            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 12),
-            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -12),
-            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -12),
+            promptLabel.topAnchor.constraint(equalTo: topAnchor),
+            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
+            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
+            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
