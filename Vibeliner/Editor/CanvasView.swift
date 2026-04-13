@@ -25,13 +25,22 @@ final class CanvasView: NSView, NotePillDelegate {
     var onCursorIntentChanged: ((CursorIntent) -> Void)?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
-    private var storeObserver: Any?
-    private var ghostPosition: CGPoint?
-    private var isPointerInsideCanvas = false
+    var storeObserver: Any?
+    var ghostPosition: CGPoint?
+    var isPointerInsideCanvas = false
+
+    // Note editing state (used by CanvasView+NoteEditing extension)
+    var activeNoteField: NSTextField?
+    var editingAnnotationId: UUID?
+    var preEditNoteText: String?
+    var noteFieldDelegate: CanvasNoteFieldDelegate?
+    var shapeHoveredId: UUID?
+    var pillHoveredId: UUID?
+    var activeEditorPill: NSView?
 
     // VIB-354: Display-link-synchronized rendering — coalesce mouseDragged redraws
-    private var needsRedraw = false
-    private var dragTimer: Timer?
+    var needsRedraw = false
+    var dragTimer: Timer?
 
     init(frame: NSRect, store: AnnotationStore) {
         self.store = store
@@ -91,7 +100,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     // Hit testing matching prototype ht() function
     // Priority: badge(12px) → arrow endpoint(10px) → rect corners(10px) → circle resize(10px) → body containment → freehand CPs(8px)
-    private func hitTestAnnotation(at point: CGPoint) -> UUID? {
+    func hitTestAnnotation(at point: CGPoint) -> UUID? {
         let bbMargin: CGFloat = 20
         for annotation in store.annotations.reversed() {
             // VIB-355: Bounding-box quick-reject — skip expensive distance math
@@ -204,7 +213,7 @@ final class CanvasView: NSView, NotePillDelegate {
         startDragTimer()
     }
 
-    private func handleEditHit(id: UUID, at point: CGPoint) {
+    func handleEditHit(id: UUID, at point: CGPoint) {
         if let annotation = store.annotation(for: id) {
             // Open editor if pill is hovered or badge clicked with no note
             let badgeClicked = hypot(point.x - annotation.badgePosition.x, point.y - annotation.badgePosition.y) < 12
@@ -256,7 +265,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     // MARK: - VIB-354: Drag timer for frame-synchronized rendering
 
-    private func startDragTimer() {
+    func startDragTimer() {
         guard dragTimer == nil else { return }
         dragTimer = Timer.scheduledTimer(withTimeInterval: 1.0 / 120.0, repeats: true) { [weak self] _ in
             guard let self, self.needsRedraw else { return }
@@ -265,7 +274,7 @@ final class CanvasView: NSView, NotePillDelegate {
         }
     }
 
-    private func stopDragTimer() {
+    func stopDragTimer() {
         dragTimer?.invalidate()
         dragTimer = nil
         needsRedraw = false
@@ -279,481 +288,4 @@ final class CanvasView: NSView, NotePillDelegate {
         NotePillRenderer.drawNotePills(in: notesLayer, annotations: store.annotations, canvasSize: bounds.size, hoveredId: pillHoveredId, selectedId: store.selectedAnnotation?.id, editingId: editingAnnotationId, delegate: self)
     }
 
-    // MARK: - NotePillDelegate
-
-    func notePillHovered(annotationId: UUID?) {
-        let oldPillHovered = pillHoveredId
-        pillHoveredId = annotationId
-        if pillHoveredId != oldPillHovered {
-            // VIB-203/215: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
-            // VIB-221: Suppress ghost when pill hovered with drawing tool active
-            refreshInteractionState()
-            refreshNotePills()
-        }
-    }
-
-    func notePillClicked(annotationId: UUID) {
-        // Clicking a note pill opens it for editing
-        guard let annotation = store.annotation(for: annotationId) else { return }
-        openNoteEditor(for: annotation)
-    }
-
-    var activeNoteField: NSTextField?
-    private var editingAnnotationId: UUID?
-    private var preEditNoteText: String?  // VIB-327: text before editing started
-    private var noteFieldDelegate: CanvasNoteFieldDelegate?
-    // VIB-215: Separate shape hover (drives marksLayer halo) from pill hover (drives pill highlight)
-    private var shapeHoveredId: UUID?
-    private var pillHoveredId: UUID?
-
-    private var activeEditorPill: NSView?
-
-    func openNoteEditor(for annotation: Annotation) {
-        activeNoteField?.removeFromSuperview()
-        activeEditorPill?.removeFromSuperview()
-
-        // VIB-162: Get raw placement with anchor, apply anchor using EDITING pill width
-        let placement = NotePillRenderer.notePlacementForEditing(for: annotation)
-        let maxPillW: CGFloat = 180  // VIB-209: match resting pill max width to prevent reflow on commit
-        // VIB-192 (attempt 5): Configure temp field with wrapping to get correct multi-line height
-        let estTextX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
-        let maxTextW = maxPillW - estTextX - 12
-        let tempField = NSTextField(labelWithString: annotation.noteText)
-        tempField.font = DesignTokens.noteTextFont
-        tempField.maximumNumberOfLines = 0
-        tempField.lineBreakMode = .byWordWrapping
-        tempField.cell?.wraps = true
-        // VIB-204 (attempt 2): Use cellSize(forBounds:) — same pattern that works in NotePillView.init
-        let cellBounds = NSRect(x: 0, y: 0, width: maxTextW, height: CGFloat.greatestFiniteMagnitude)
-        let fittedSize = tempField.cell?.cellSize(forBounds: cellBounds) ?? NSSize(width: maxTextW, height: 16)
-        let pillH = max(DesignTokens.noteHeight, fittedSize.height + 8)
-        // Apply anchor transform with the EDITING pill width (200px, not resting 130px)
-        let pillPos = NotePillRenderer.anchoredOrigin(point: placement.point, anchor: placement.anchor, pillWidth: maxPillW, pillHeight: pillH)
-
-        let pillContainer = NSView(frame: NSRect(x: pillPos.x, y: pillPos.y, width: maxPillW, height: pillH))
-        pillContainer.wantsLayer = true
-        pillContainer.layer?.masksToBounds = false
-
-        // Shadow
-        pillContainer.layer?.shadowColor = DesignTokens.editorNoteShadow.cgColor
-        pillContainer.layer?.shadowOffset = CGSize(width: 0, height: -1)
-        pillContainer.layer?.shadowRadius = 4
-        pillContainer.layer?.shadowOpacity = 1
-
-        // VIB-197: Use PillChromeBuilder for blur, tint, and prefix (single source of truth)
-        let chrome = PillChromeBuilder.build(size: NSSize(width: maxPillW, height: pillH), number: annotation.number)
-        pillContainer.layer?.addSublayer(chrome.blurLayer)
-        // Apply editing state colors directly
-        chrome.tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceEditing.cgColor
-        chrome.tintView.layer?.borderColor = DesignTokens.editorNoteEditingGlow.cgColor
-        pillContainer.addSubview(chrome.tintView)
-        pillContainer.addSubview(chrome.prefixLabel)
-
-        // VIB-197: Use PillChromeBuilder for editable text field
-        let numberLabel = chrome.prefixLabel
-        let textField = PillChromeBuilder.createEditableTextField(
-            pillWidth: maxPillW, pillHeight: pillH,
-            text: annotation.noteText, prefixWidth: numberLabel.frame.width
-        )
-
-        // Red caret color
-        if let fieldEditor = textField.window?.fieldEditor(true, for: textField) as? NSTextView {
-            fieldEditor.insertionPointColor = DesignTokens.red
-        }
-
-        let delegate = CanvasNoteFieldDelegate(canvas: self)
-        self.noteFieldDelegate = delegate
-        textField.delegate = delegate
-        textField.target = delegate
-        textField.action = #selector(CanvasNoteFieldDelegate.confirmNote(_:))
-
-        pillContainer.addSubview(textField)
-
-        // VIB-204 (attempt 3): Set editingAnnotationId BEFORE adding pill to view
-        // so refreshNotePills() removes the resting pill (no ghost behind editing pill)
-        editingAnnotationId = annotation.id
-        preEditNoteText = annotation.noteText  // VIB-327: save for cancel logic
-        refreshNotePills()
-
-        notesLayer.addSubview(pillContainer)
-        activeNoteField = textField
-        activeEditorPill = pillContainer
-
-        // VIB-193: Force panel to become key so makeFirstResponder works
-        DispatchQueue.main.async { [weak self, weak textField] in
-            guard let self, let window = self.window, let tf = textField else { return }
-            window.makeKeyAndOrderFront(nil)  // Must be key window for first responder
-            window.makeFirstResponder(tf)
-            if let fieldEditor = window.fieldEditor(true, for: tf) as? NSTextView {
-                fieldEditor.insertionPointColor = DesignTokens.red
-                // VIB-192 (attempt 5): Place cursor at END of text, not select-all
-                fieldEditor.setSelectedRange(NSRange(location: fieldEditor.string.count, length: 0))
-            }
-            self.refreshInteractionState()
-        }
-    }
-
-    /// VIB-162: Resize editing pill as text grows
-    func resizeEditingPill() {
-        guard let pill = activeEditorPill, let field = activeNoteField else { return }
-        let minH = DesignTokens.noteHeight
-        // VIB-204: Get LIVE text from the field editor, not stale stringValue
-        let liveText: String
-        if let fieldEditor = field.currentEditor() as? NSTextView {
-            liveText = fieldEditor.string
-        } else {
-            liveText = field.stringValue
-        }
-        guard !liveText.isEmpty else { return }
-        // Measure with a temp label matching the editing field's wrapping config
-        let measurer = NSTextField(labelWithString: liveText)
-        measurer.font = DesignTokens.noteTextFont
-        measurer.maximumNumberOfLines = 0
-        measurer.lineBreakMode = .byWordWrapping
-        measurer.cell?.wraps = true
-        // VIB-204 (attempt 2): Use cellSize(forBounds:) — same pattern that works in NotePillView.init
-        let cellBounds = NSRect(x: 0, y: 0, width: field.frame.width, height: CGFloat.greatestFiniteMagnitude)
-        let fittedSize = measurer.cell?.cellSize(forBounds: cellBounds) ?? NSSize(width: field.frame.width, height: 16)
-        let newH = max(minH, fittedSize.height + 8)
-
-        if abs(pill.frame.height - newH) > 1 {
-            let heightDelta = newH - pill.frame.height
-            pill.frame.origin.y -= heightDelta  // keep top edge fixed (AppKit y-up)
-            pill.setFrameSize(NSSize(width: pill.frame.width, height: newH))
-            for sub in pill.subviews {
-                if sub.layer?.cornerRadius == DesignTokens.noteCornerRadius {
-                    sub.frame = NSRect(origin: .zero, size: pill.frame.size)
-                }
-            }
-            if let blurLayer = pill.layer?.sublayers?.first(where: { $0.cornerRadius == DesignTokens.noteCornerRadius }) {
-                blurLayer.frame = NSRect(origin: .zero, size: pill.frame.size)
-            }
-            field.frame = NSRect(x: field.frame.origin.x, y: 4, width: field.frame.width, height: newH - 8)
-            for sub in pill.subviews {
-                if let label = sub as? NSTextField, label.font?.pointSize == 8 {
-                    label.frame.origin.y = (newH - label.frame.height) / 2
-                    break
-                }
-            }
-        }
-    }
-
-    func confirmNoteEditing() {
-        guard let id = editingAnnotationId, let field = activeNoteField else { return }
-        let text = field.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
-        let oldText = store.annotation(for: id)?.noteText ?? ""
-        store.update(id: id, noteText: text)
-        if oldText != text {
-            undoManager_?.record(.editText(id: id, oldText: oldText, newText: text))
-        }
-        // VIB-326: Resign field editor before removing pill — prevents the stale
-        // NSTextView from lingering as first responder and blocking KeyEventGuard.
-        window?.makeFirstResponder(nil)
-        activeEditorPill?.removeFromSuperview()
-        activeEditorPill = nil
-        activeNoteField = nil
-        editingAnnotationId = nil
-        preEditNoteText = nil
-        noteFieldDelegate = nil
-        window?.makeFirstResponder(self)
-        refreshNotePills()
-        refreshInteractionState()
-        marksLayer.needsDisplay = true
-    }
-
-    func cancelNoteEditing() {
-        guard let id = editingAnnotationId else { return }
-
-        // VIB-327: If this was a first-time edit (pre-edit text empty) and field is
-        // still empty, the user is cancelling a brand-new annotation → delete it.
-        let fieldText = activeNoteField?.stringValue.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        if (preEditNoteText ?? "").isEmpty && fieldText.isEmpty {
-            if let annotation = store.annotation(for: id) {
-                store.remove(id: id)
-                undoManager_?.record(.remove(annotation: annotation))
-            }
-        }
-
-        // VIB-326: Resign field editor before removing pill — prevents the stale
-        // NSTextView from lingering as first responder and blocking KeyEventGuard.
-        window?.makeFirstResponder(nil)
-        activeEditorPill?.removeFromSuperview()
-        activeEditorPill = nil
-        activeNoteField = nil
-        editingAnnotationId = nil
-        preEditNoteText = nil
-        noteFieldDelegate = nil
-        window?.makeFirstResponder(self)
-        refreshNotePills()
-        refreshInteractionState()
-        marksLayer.needsDisplay = true
-    }
-
-    var isEditingNote: Bool { activeNoteField != nil }
-
-    override func mouseEntered(with event: NSEvent) {
-        let point = convert(event.locationInWindow, from: nil)
-        updatePointerState(at: point, notifyActiveTool: false)
-    }
-
-    func refreshInteractionState() {
-        updateSuppressedGhostState()
-        emitCursorIntent()
-        marksLayer.needsDisplay = true
-    }
-
-    private func updatePointerState(at point: CGPoint?, notifyActiveTool: Bool) {
-        ghostPosition = point
-        isPointerInsideCanvas = point != nil
-        marksLayer.ghostPosition = point
-
-        if let point {
-            if notifyActiveTool {
-                activeTool?.mouseMoved(to: point, in: self)
-            }
-            let oldHovered = shapeHoveredId
-            shapeHoveredId = hitTestAnnotation(at: point)
-            if shapeHoveredId != oldHovered {
-                marksLayer.hoveredId = shapeHoveredId
-                refreshNotePills()
-            }
-        } else {
-            shapeHoveredId = nil
-            marksLayer.hoveredId = nil
-        }
-
-        updateSuppressedGhostState()
-        emitCursorIntent()
-        marksLayer.needsDisplay = true
-    }
-
-    private func updateSuppressedGhostState() {
-        let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
-        let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
-        let shouldSuppressGhost = isPointerInsideCanvas
-            && isDrawingToolActive
-            && isHoveringAnnotation
-            && !(activeTool?.isActivelyDrawing == true)
-        marksLayer.suppressGhost = shouldSuppressGhost
-    }
-
-    private func emitCursorIntent() {
-        let shouldHideCursor = isPointerInsideCanvas
-            && activeTool?.toolType.isDrawingTool == true
-            && !isEditingNote
-            && !marksLayer.suppressGhost
-        onCursorIntentChanged?(shouldHideCursor ? .hiddenForDrawing : .visibleArrow)
-    }
-}
-
-// MARK: - Note field delegate
-
-final class CanvasNoteFieldDelegate: NSObject, NSTextFieldDelegate {
-    weak var canvas: CanvasView?
-
-    init(canvas: CanvasView) {
-        self.canvas = canvas
-        super.init()
-    }
-
-    @objc func confirmNote(_ sender: NSTextField) {
-        canvas?.confirmNoteEditing()
-    }
-
-    // VIB-162: Resize pill on text changes so all text is visible
-    func controlTextDidChange(_ obj: Notification) {
-        canvas?.resizeEditingPill()
-    }
-
-    func control(_ control: NSControl, textView: NSTextView, doCommandBy commandSelector: Selector) -> Bool {
-        if commandSelector == #selector(NSResponder.cancelOperation(_:)) {
-            canvas?.cancelNoteEditing()
-            return true
-        }
-        return false
-    }
-}
-
-// MARK: - Marks Layer (draws annotations + ghost)
-
-final class MarksLayerView: NSView {
-
-    var ghostPosition: CGPoint?
-    var ghostTool: AnnotationTool?
-    var hoveredId: UUID?
-    var selectedId: UUID?
-    var suppressGhost: Bool = false  // VIB-221: set true when hovering annotation with drawing tool
-    private let store: AnnotationStore
-    private let pinRenderer = PinRenderer()
-    private let arrowRenderer = ArrowRenderer()
-    private let lineRenderer = LineRenderer()
-    private let rectangleRenderer = RectangleRenderer()
-    private let circleRenderer = CircleRenderer()
-    private let freehandRenderer = FreehandRenderer()
-
-    init(frame: NSRect, store: AnnotationStore) {
-        self.store = store
-        super.init(frame: frame)
-    }
-
-    required init?(coder: NSCoder) { fatalError() }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        guard let context = NSGraphicsContext.current?.cgContext else { return }
-
-        // VIB-216 Pass 1: Draw all shapes WITHOUT badges (so hover halo renders beneath badges)
-        pinRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-        arrowRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-        lineRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-        rectangleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-        circleRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-        freehandRenderer.drawMarks(in: context, annotations: store.annotations, canvasSize: bounds.size, drawBadge: false)
-
-        // VIB-216 Pass 2: Draw hover glow
-        if let hId = hoveredId, let annotation = store.annotations.first(where: { $0.id == hId }) {
-            let bp = annotation.badgePosition
-
-            // Badge glow (keep existing)
-            let glowRadius = DesignTokens.badgeDiameter / 2 + 7 // prototype: badgeR + 7
-            context.setFillColor(DesignTokens.editorAnnotationHoverFill.cgColor)
-            context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
-
-            // VIB-203: Shape halo — draw thicker/warmer version behind the shape with soft shadow
-            context.saveGState()
-            context.setShadow(offset: .zero, blur: 6, color: DesignTokens.editorAnnotationHoverShadow.cgColor)
-
-            switch annotation.position {
-            case .pin:
-                // Stake halo
-                let stakeTopY = bp.y - DesignTokens.badgeDiameter / 2
-                let stakeBottomY = stakeTopY - DesignTokens.stakeLength
-                context.setStrokeColor(DesignTokens.editorAnnotationHoverStroke.cgColor)
-                context.setLineWidth(6)
-                context.setLineCap(.round)
-                context.move(to: CGPoint(x: bp.x, y: stakeTopY))
-                context.addLine(to: CGPoint(x: bp.x, y: stakeBottomY))
-                context.strokePath()
-
-            case .rectangle(let origin, let size):
-                context.setFillColor(DesignTokens.editorAnnotationHoverShapeFill.cgColor)
-                let path = CGPath(roundedRect: CGRect(origin: origin, size: size), cornerWidth: 3, cornerHeight: 3, transform: nil)
-                context.addPath(path)
-                context.fillPath()
-                context.setStrokeColor(DesignTokens.red.cgColor)
-                context.setLineWidth(3)
-                context.addPath(path)
-                context.strokePath()
-
-            case .circle(let center, let radius):
-                context.setFillColor(DesignTokens.editorAnnotationHoverShapeFill.cgColor)
-                let circleRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
-                context.fillEllipse(in: circleRect)
-                context.setStrokeColor(DesignTokens.red.cgColor)
-                context.setLineWidth(3)
-                context.strokeEllipse(in: circleRect)
-
-            case .arrow(let start, let end):
-                let dx = end.x - start.x, dy = end.y - start.y
-                let len = hypot(dx, dy)
-                guard len > 0 else { break }
-                let ux = dx / len, uy = dy / len
-                let lineStart = CGPoint(x: start.x + ux * 9, y: start.y + uy * 9)
-                context.setStrokeColor(DesignTokens.red.cgColor)
-                context.setLineWidth(3.5)
-                context.setLineCap(.round)
-                context.move(to: lineStart)
-                context.addLine(to: end)
-                context.strokePath()
-
-            case .freehand(let pts):
-                guard pts.count >= 2 else { break }
-                context.setStrokeColor(DesignTokens.red.cgColor)
-                context.setLineWidth(3.5)
-                context.setLineCap(.round)
-                context.setLineJoin(.round)
-                context.move(to: pts[0])
-                for i in 1..<pts.count { context.addLine(to: pts[i]) }
-                context.strokePath()
-            }
-
-            context.restoreGState()
-        }
-
-        // VIB-216 Pass 3: Draw all badges on top of hover halo
-        let badgeRadius = DesignTokens.badgeDiameter / 2
-        for annotation in store.annotations {
-            let bp: CGPoint
-            if annotation.type == .pin {
-                // Pin badge is clamped to canvas bounds
-                bp = CGPoint(
-                    x: max(badgeRadius, min(bounds.width - badgeRadius, annotation.badgePosition.x)),
-                    y: max(badgeRadius, min(bounds.height - badgeRadius, annotation.badgePosition.y))
-                )
-            } else {
-                bp = annotation.badgePosition
-            }
-            BadgeRenderer.drawBadge(at: bp, number: annotation.number, in: context)
-        }
-
-        // Draw selected state: dashed purple ring + handles
-        if let sId = selectedId, let annotation = store.annotations.first(where: { $0.id == sId }) {
-            let bp = annotation.badgePosition
-            let ringRadius = DesignTokens.badgeDiameter / 2 + 5 // prototype: badgeR + 5
-
-            // Dashed purple ring: #AFA9EC, 1.5px, dash 3,2
-            context.setStrokeColor(DesignTokens.purpleLight.cgColor)
-            context.setLineWidth(1.5)
-            context.setLineDash(phase: 0, lengths: [3, 2])
-            context.strokeEllipse(in: CGRect(x: bp.x - ringRadius, y: bp.y - ringRadius, width: ringRadius * 2, height: ringRadius * 2))
-            context.setLineDash(phase: 0, lengths: []) // reset dash
-
-            // Draw handles per tool type
-            switch annotation.position {
-            case .arrow(_, let end):
-                drawHandle(in: context, at: end)
-            case .rectangle(let origin, let size):
-                let corners = [
-                    CGPoint(x: origin.x, y: origin.y),
-                    CGPoint(x: origin.x + size.width, y: origin.y),
-                    CGPoint(x: origin.x, y: origin.y + size.height),
-                    CGPoint(x: origin.x + size.width, y: origin.y + size.height)
-                ]
-                for corner in corners {
-                    // Skip badge corner
-                    if hypot(corner.x - bp.x, corner.y - bp.y) > 5 {
-                        drawHandle(in: context, at: corner)
-                    }
-                }
-            case .circle(let center, _):
-                // Opposite handle
-                let ox = center.x * 2 - bp.x
-                let oy = center.y * 2 - bp.y
-                drawHandle(in: context, at: CGPoint(x: ox, y: oy))
-            case .freehand(let pts):
-                for pt in pts {
-                    drawHandle(in: context, at: pt)
-                }
-            case .pin:
-                break
-            }
-        }
-
-        // Draw ghost preview (VIB-221: suppressed when hovering existing annotation)
-        if let pos = ghostPosition, let tool = ghostTool, !suppressGhost {
-            tool.drawGhost(at: pos, in: context)
-        }
-    }
-
-    /// Handle: white circle, 5px radius, #AFA9EC 2px border
-    private func drawHandle(in context: CGContext, at point: CGPoint) {
-        let r: CGFloat = 5
-        let handleRect = CGRect(x: point.x - r, y: point.y - r, width: r * 2, height: r * 2)
-        context.setFillColor(NSColor.white.cgColor)
-        context.fillEllipse(in: handleRect)
-        context.setStrokeColor(DesignTokens.purpleLight.cgColor)
-        context.setLineWidth(2)
-        context.setLineDash(phase: 0, lengths: [])
-        context.strokeEllipse(in: handleRect)
-    }
 }
