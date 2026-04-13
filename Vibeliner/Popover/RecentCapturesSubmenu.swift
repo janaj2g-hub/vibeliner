@@ -1,6 +1,6 @@
 import AppKit
 
-final class RecentCapturesSubmenu: NSView {
+final class RecentCapturesSubmenu: PopoverBorderedSurfaceView {
 
     var onMouseEntered: (() -> Void)?
     var onMouseExited: (() -> Void)?
@@ -22,10 +22,8 @@ final class RecentCapturesSubmenu: NSView {
         let rowH: CGFloat = 42
 
         wantsLayer = true
-        layer?.cornerRadius = 10
+        surfaceCornerRadius = 10
         layer?.masksToBounds = true
-        layer?.borderWidth = 0.5
-        layer?.borderColor = NSColor.separatorColor.cgColor
 
         let captures = Array(CapturesManager.shared.listRecentCaptures(limit: 5).prefix(5))
         CapturesManager.shared.listRecentCapturesAsync(limit: 5) { _ in }
@@ -83,9 +81,7 @@ final class RecentCapturesSubmenu: NSView {
     }
 
     private func addDivider(at y: CGFloat, width: CGFloat) {
-        let div = NSView(frame: NSRect(x: 12, y: y + 4, width: width - 24, height: 1))
-        div.wantsLayer = true
-        div.layer?.backgroundColor = NSColor.separatorColor.cgColor
+        let div = PopoverDividerView(frame: NSRect(x: 12, y: y + 4, width: width - 24, height: 1))
         addSubview(div)
     }
 
@@ -105,8 +101,7 @@ final class RecentCapturesSubmenu: NSView {
 }
 
 // "Open Captures Folder" row at bottom of submenu (no folder icon)
-final class OpenFolderRowView: NSView {
-    private var isHovered = false { didSet { needsDisplay = true } }
+final class OpenFolderRowView: PopoverHoverSurfaceView {
 
     override init(frame: NSRect) {
         super.init(frame: frame)
@@ -122,22 +117,14 @@ final class OpenFolderRowView: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        if isHovered {
-            NSColor.labelColor.withAlphaComponent(0.08).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
-        }
-    }
-
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
         for area in trackingAreas { removeTrackingArea(area) }
         addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseEnteredAndExited, .activeAlways], owner: self))
     }
 
-    override func mouseEntered(with event: NSEvent) { isHovered = true }
-    override func mouseExited(with event: NSEvent) { isHovered = false }
+    override func mouseEntered(with event: NSEvent) { isSurfaceHovered = true }
+    override func mouseExited(with event: NSEvent) { isSurfaceHovered = false }
     override func mouseDown(with event: NSEvent) {
         let url = URL(fileURLWithPath: ConfigManager.shared.expandedCapturesFolder)
         NSWorkspace.shared.open(url)

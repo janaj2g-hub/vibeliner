@@ -1,6 +1,36 @@
 import AppKit
 
-private final class PopoverDividerView: AppearanceAwareSurfaceView {
+class PopoverBorderedSurfaceView: AppearanceAwareSurfaceView {
+    var surfaceCornerRadius: CGFloat = 10
+
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(
+            self,
+            background: .clear,
+            border: NSColor.separatorColor,
+            cornerRadius: surfaceCornerRadius,
+            borderWidth: 0.5
+        )
+    }
+}
+
+class PopoverHoverSurfaceView: AppearanceAwareSurfaceView {
+    var hoverCornerRadius: CGFloat = 4
+    var isSurfaceHovered = false {
+        didSet { refreshSurfaceAppearance() }
+    }
+
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(
+            self,
+            background: isSurfaceHovered ? DesignTokens.toolbarButtonHoverBg : .clear,
+            cornerRadius: hoverCornerRadius,
+            borderWidth: 0
+        )
+    }
+}
+
+final class PopoverDividerView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
         SettingsUI.styleDividerSurface(self)
     }
@@ -91,7 +121,7 @@ final class PopoverWindow: NSPanel {
 
 // MARK: - Popover content view (dark frosted glass with arrow)
 
-final class PopoverContentView: NSView {
+final class PopoverContentView: PopoverBorderedSurfaceView {
 
     weak var popoverWindow: PopoverWindow?
     private let cornerRadius: CGFloat = 10
@@ -100,6 +130,7 @@ final class PopoverContentView: NSView {
     init() {
         super.init(frame: .zero)
         wantsLayer = true
+        surfaceCornerRadius = cornerRadius
         buildContent()
     }
 
@@ -243,18 +274,6 @@ final class PopoverContentView: NSView {
         return pill
     }
 
-    // MARK: - Drawing (border only — NSVisualEffectView handles background)
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        // Subtle border on top of the vibrancy effect
-        let borderColor = NSColor.separatorColor
-        borderColor.setStroke()
-        let borderPath = NSBezierPath(roundedRect: bounds.insetBy(dx: 0.25, dy: 0.25), xRadius: cornerRadius, yRadius: cornerRadius)
-        borderPath.lineWidth = 0.5
-        borderPath.stroke()
-    }
-
     // MARK: - Actions
 
     @objc private func captureNow() {
@@ -360,20 +379,10 @@ final class PopoverContentView: NSView {
 
 // MARK: - Hover Row
 
-final class PopoverRowView: NSView {
+final class PopoverRowView: PopoverHoverSurfaceView {
     var onAction: (() -> Void)?  // VIB-219: direct closure, works on first click
     var onHoverEnter: (() -> Void)?
     var onHoverExit: (() -> Void)?
-    private var isHovered = false { didSet { needsDisplay = true } }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        if isHovered {
-            // Uses labelColor at low opacity — works in both dark (white tint) and light (dark tint)
-            NSColor.labelColor.withAlphaComponent(0.08).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
-        }
-    }
 
     override func updateTrackingAreas() {
         super.updateTrackingAreas()
@@ -382,11 +391,11 @@ final class PopoverRowView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        isHovered = true
+        isSurfaceHovered = true
         onHoverEnter?()
     }
     override func mouseExited(with event: NSEvent) {
-        isHovered = false
+        isSurfaceHovered = false
         onHoverExit?()
     }
     // VIB-219: accept first click even when popover isn't the key window
