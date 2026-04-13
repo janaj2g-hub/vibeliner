@@ -6,8 +6,9 @@ final class PromptPreviewView: NSView {
     private let subtitleLabel = SettingsUI.bodyCopy(
         "Representative single-image and multi-image outputs generated from the same prompt builder used by copy, export, and saved prompts."
     )
+    // VIB-432: Pill switcher to toggle between single/multi preview
+    private let previewToggle = SettingsToggleControl(items: ["Single image", "Multi-image"])
     private let previewContainer = AppearanceAwarePreviewSurfaceView()
-    private let sampleStack = NSStackView()
     private let singleSampleView = PromptPreviewSampleView(title: "Single-image sample")
     private let multiSampleView = PromptPreviewSampleView(title: "Multi-image sample")
 
@@ -27,17 +28,23 @@ final class PromptPreviewView: NSView {
         subtitleLabel.translatesAutoresizingMaskIntoConstraints = false
         addSubview(subtitleLabel)
 
+        // VIB-432: Centered pill switcher between header and preview
+        previewToggle.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(previewToggle)
+        previewToggle.onSelectionChanged = { [weak self] index in
+            self?.showPreview(index: index)
+        }
+
         previewContainer.translatesAutoresizingMaskIntoConstraints = false
         addSubview(previewContainer)
 
-        sampleStack.orientation = .vertical
-        sampleStack.alignment = .leading
-        sampleStack.spacing = 10
-        sampleStack.translatesAutoresizingMaskIntoConstraints = false
-        previewContainer.addSubview(sampleStack)
+        // Both sample views share the same container, only one visible at a time
+        singleSampleView.translatesAutoresizingMaskIntoConstraints = false
+        previewContainer.addSubview(singleSampleView)
 
-        sampleStack.addArrangedSubview(singleSampleView)
-        sampleStack.addArrangedSubview(multiSampleView)
+        multiSampleView.translatesAutoresizingMaskIntoConstraints = false
+        multiSampleView.isHidden = true
+        previewContainer.addSubview(multiSampleView)
 
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: topAnchor),
@@ -48,19 +55,29 @@ final class PromptPreviewView: NSView {
             subtitleLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
             subtitleLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
 
-            previewContainer.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 14),
+            previewToggle.topAnchor.constraint(equalTo: subtitleLabel.bottomAnchor, constant: 14),
+            previewToggle.centerXAnchor.constraint(equalTo: centerXAnchor),
+
+            previewContainer.topAnchor.constraint(equalTo: previewToggle.bottomAnchor, constant: 14),
             previewContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
             previewContainer.trailingAnchor.constraint(equalTo: trailingAnchor),
             previewContainer.bottomAnchor.constraint(equalTo: bottomAnchor),
 
-            sampleStack.topAnchor.constraint(equalTo: previewContainer.topAnchor, constant: 10),
-            sampleStack.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 10),
-            sampleStack.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -10),
-            sampleStack.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10),
-        ])
+            singleSampleView.topAnchor.constraint(equalTo: previewContainer.topAnchor, constant: 10),
+            singleSampleView.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 10),
+            singleSampleView.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -10),
+            singleSampleView.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10),
 
-        singleSampleView.widthAnchor.constraint(equalTo: sampleStack.widthAnchor).isActive = true
-        multiSampleView.widthAnchor.constraint(equalTo: sampleStack.widthAnchor).isActive = true
+            multiSampleView.topAnchor.constraint(equalTo: previewContainer.topAnchor, constant: 10),
+            multiSampleView.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 10),
+            multiSampleView.trailingAnchor.constraint(equalTo: previewContainer.trailingAnchor, constant: -10),
+            multiSampleView.bottomAnchor.constraint(equalTo: previewContainer.bottomAnchor, constant: -10),
+        ])
+    }
+
+    private func showPreview(index: Int) {
+        singleSampleView.isHidden = (index != 0)
+        multiSampleView.isHidden = (index != 1)
     }
 
     func refresh(
