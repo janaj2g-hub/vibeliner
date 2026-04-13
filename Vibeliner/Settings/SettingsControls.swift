@@ -268,6 +268,20 @@ final class SettingsSegmentedControl: NSView {
         )
     }
 
+    // VIB-434: Forward clicks on track gaps/inset to the nearest button
+    override func mouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        guard bounds.contains(point) else { super.mouseDown(with: event); return }
+        for (index, btn) in stackView.arrangedSubviews.enumerated() {
+            let frame = stackView.convert(btn.frame, to: self)
+            if point.x >= frame.minX && point.x < frame.maxX {
+                setSelectedIndex(index)
+                return
+            }
+        }
+        super.mouseDown(with: event)
+    }
+
     @objc private func buttonClicked(_ sender: NSButton) {
         setSelectedIndex(sender.tag)
     }
@@ -389,10 +403,14 @@ final class UnderlineTabStripView: NSView {
             button.setContentHuggingPriority(.defaultHigh, for: .horizontal)
             button.setContentCompressionResistancePriority(.required, for: .horizontal)
 
-            // Generous tap target: 12px top + 10px bottom padding
-            let wrapper = NSView()
+            // VIB-434: Use TabWrapperView so clicks anywhere in the padded
+            // area forward to the button (not just on the text label).
+            let wrapper = TabWrapperView()
             wrapper.translatesAutoresizingMaskIntoConstraints = false
+            wrapper.targetButton = button
             wrapper.addSubview(button)
+
+            // Generous tap target: 12px top + 10px bottom padding
             NSLayoutConstraint.activate([
                 button.leadingAnchor.constraint(equalTo: wrapper.leadingAnchor, constant: Self.tabHPadding),
                 button.trailingAnchor.constraint(equalTo: wrapper.trailingAnchor, constant: -Self.tabHPadding),
@@ -495,6 +513,16 @@ final class UnderlineTabStripView: NSView {
 
     @objc private func tabClicked(_ sender: NSButton) {
         setSelectedIndex(sender.tag)
+    }
+}
+
+// VIB-434: Wrapper view that forwards clicks on padding area to the tab button
+private class TabWrapperView: NSView {
+    weak var targetButton: NSButton?
+
+    override func mouseDown(with event: NSEvent) {
+        // Forward clicks anywhere in the wrapper to the button's action
+        targetButton?.performClick(self)
     }
 }
 
@@ -636,6 +664,31 @@ final class SettingsToggleControl: NSView {
             self.highlightView.layer?.backgroundColor = DesignTokens.purpleDark.cgColor
         }
         updateStates()
+    }
+
+    // VIB-434: Forward clicks on track gaps/inset to the nearest segment
+    override func mouseDown(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        guard bounds.contains(point) else { super.mouseDown(with: event); return }
+        // Find which segment column the click falls in
+        for (index, seg) in stackView.arrangedSubviews.enumerated() {
+            let frame = stackView.convert(seg.frame, to: self)
+            if point.x >= frame.minX && point.x < frame.maxX {
+                setSelectedIndex(index)
+                return
+            }
+        }
+        // Fallback: pick closest segment
+        if !buttons.isEmpty {
+            let trackLocal = convert(point, to: stackView)
+            var bestIndex = 0
+            var bestDist = CGFloat.greatestFiniteMagnitude
+            for (index, seg) in stackView.arrangedSubviews.enumerated() {
+                let dist = abs(seg.frame.midX - trackLocal.x)
+                if dist < bestDist { bestDist = dist; bestIndex = index }
+            }
+            setSelectedIndex(bestIndex)
+        }
     }
 
     @objc private func segmentClicked(_ sender: NSButton) {
