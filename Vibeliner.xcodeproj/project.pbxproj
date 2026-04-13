@@ -84,6 +84,9 @@
 		A10000010000000000000033 /* SettingsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* SettingsUI.swift */; };
 		A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* HotkeyCapturePanel.swift */; };
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
+		D200000100000000000000B1 /* HarnessPreviewSurfaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */; };
+		D200000100000000000000B2 /* EditorHarnessSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */; };
+		D200000100000000000000B3 /* EditorHarnessSurfaceView+Annotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
 		R20000010000000000000001 /* CaptureImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000001 /* CaptureImage.swift */; };
@@ -173,6 +176,9 @@
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
 		A20000010000000000000035 /* SettingsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUI.swift; sourceTree = "<group>"; };
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
+		D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarnessPreviewSurfaces.swift; sourceTree = "<group>"; };
+		D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorHarnessSurfaceView.swift; sourceTree = "<group>"; };
+		D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorHarnessSurfaceView+Annotations.swift"; sourceTree = "<group>"; };
 		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
 		D20000010000000000000001 /* BadgeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRenderer.swift; sourceTree = "<group>"; };
 		R10000010000000000000001 /* CaptureImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureImage.swift; sourceTree = "<group>"; };
@@ -296,6 +302,9 @@
 				A20000010000000000000001 /* AppDelegate.swift */,
 				A2000001000000000000000C /* main.swift */,
 				B20000010000000000000001 /* VisualTestHarness.swift */,
+				D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */,
+				D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */,
+				D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -611,6 +620,9 @@
 				A10000010000000000000030 /* CaptureRowView.swift in Sources */,
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
+				D200000100000000000000B1 /* HarnessPreviewSurfaces.swift in Sources */,
+				D200000100000000000000B2 /* EditorHarnessSurfaceView.swift in Sources */,
+				D200000100000000000000B3 /* EditorHarnessSurfaceView+Annotations.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
 				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
 				R20000010000000000000001 /* CaptureImage.swift in Sources */,
