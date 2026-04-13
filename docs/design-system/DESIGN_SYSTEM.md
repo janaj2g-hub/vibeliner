@@ -186,6 +186,12 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `roleSwatchOutline` | rgba(255,255,255,0.16) | rgba(15,23,42,0.16) | Role swatch outer outline for visibility | PromptTabView |
 | `roleSwatchInnerBorder` | rgba(0,0,0,0.22) | rgba(255,255,255,0.82) | Role swatch inner contrast ring | PromptTabView |
 | `roleSwatchSelectedRing` | rgba(255,255,255,0.92) | rgba(83,74,183,0.78) | Selected role swatch ring | PromptTabView |
+| `roleGrayBorder` | rgba(107,114,128,1.0) | Gray preset role border | PromptTabView |
+| `roleTealBorder` | rgba(20,184,166,1.0) | Teal preset role border | PromptTabView |
+| `roleOrangeBorder` | rgba(249,115,22,1.0) | Orange preset role border | PromptTabView |
+| `roleYellowBorder` | rgba(234,179,8,1.0) | Yellow preset role border | PromptTabView |
+| `rolePinkBorder` | rgba(236,72,153,1.0) | Pink preset role border | PromptTabView |
+| `rolePresetColors` | Array of (name, hex, color) tuples | Preset role color palette | PromptTabView |
 
 ### Filmstrip & Title Pill
 
@@ -196,7 +202,6 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `titlePillHeight` | 30px | Height of title pill in filmstrip | TitlePillView, FilmstripGridView |
 | `titlePillGap` | 6px | Gap between title pill and image | FilmstripGridView |
 | `titlePillExportShadow` | rgba(0,0,0,0.3) | Export title pill shadow | CompositeStitcher |
-| `minCellWidth` | 200px | Minimum filmstrip cell width before scrolling | FilmstripGridView |
 
 ### Ghost Preview
 
@@ -244,6 +249,22 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `tourTextPrimary` | #E0E0E0 | Tour primary text | TourWindowController |
 | `tourTextSecondary` | rgba(255,255,255,0.55) | Tour secondary text | TourWindowController |
 | `tourTextDim` | rgba(255,255,255,0.35) | Tour dim text | TourWindowController |
+| `tourBarDivider` | Appearance-aware | Tour header/footer divider | TourWindowController |
+| `tourWindowBorder` | Appearance-aware | Tour window border | TourWindowController |
+| `tourIllustrationPaneBg` | Appearance-aware | Illustration pane background | Tour Illustrations |
+| `tourPrimaryButtonBg` | Appearance-aware | Primary CTA button fill | TourWindowController |
+| `tourPrimaryButtonBorder` | Appearance-aware | Primary CTA button border | TourWindowController |
+| `tourPrimaryButtonText` | Appearance-aware | Primary CTA button text | TourWindowController |
+| `tourPrimaryButtonHoverBg` | Appearance-aware | Primary CTA button hover fill | TourWindowController |
+| `tourPrimaryButtonHoverBorder` | Appearance-aware | Primary CTA button hover border | TourWindowController |
+| `tourGhostButtonText` | tourTextDim | Ghost button text | TourWindowController |
+| `tourGhostButtonBorder` | Appearance-aware | Ghost button border | TourWindowController |
+| `tourGhostButtonHoverText` | tourTextSecondary | Ghost button hover text | TourWindowController |
+| `tourGhostButtonHoverBorder` | Appearance-aware | Ghost button hover border | TourWindowController |
+| `tourDoneButtonBg` | rgba(34,197,94,0.14) | Done button fill | TourWindowController |
+| `tourDoneButtonBorder` | rgba(74,222,128,0.34) | Done button border | TourWindowController |
+| `tourDoneButtonText` | #FFFFFF | Done button text | TourWindowController |
+| `tourDoneButtonHoverBg` | rgba(34,197,94,0.20) | Done button hover fill | TourWindowController |
 
 ---
 
@@ -334,6 +355,9 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `settingsFieldHeight` | 32px | Field height | SettingsUI, GeneralTabView, PromptTabView |
 | `settingsSegmentedHeight` | 28px | Segmented control height | SettingsUI |
 | `settingsSegmentedInset` | 2px | Segmented control inset | SettingsUI |
+| `settingsSegmentedItemPadding` | 14px | Segmented item horizontal padding | SettingsUI |
+| `settingsSegmentedPrimaryFont` | System 12px semibold | Primary segmented font | SettingsUI |
+| `settingsSegmentedSecondaryFont` | System 11px medium | Secondary segmented font | SettingsUI |
 | `settingsPillHeight` | 28px | Pill button height | SettingsUI |
 
 ### Setup Window
@@ -351,6 +375,13 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `setupFooterPrimaryPadding` | 48px | Horizontal padding added to primary footer CTA title width | SetupWindowController |
 | `setupFooterSecondaryPadding` | 36px | Horizontal padding added to secondary footer CTA title width | SetupWindowController |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
+
+### Popover
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `popoverCopyButtonBg` | Appearance-aware | Copy button fill | PopoverViewController |
+| `popoverCopyButtonText` | Appearance-aware | Copy button text | PopoverViewController |
 
 ### Tour Window
 
@@ -524,6 +555,8 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourLLMThumbHeight` | 28px | LLM thumbnail height | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
 | `tourLLMSendSize` | 24px | LLM send button size | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
 | `tourLLMSendBg` | rgba(175,169,236,0.2) | LLM send button background | TourIllustration0, TourIllustration2, TourIllustration4, TourIllustration6 |
+| `tourLLMBubbleTailSize` | 12px | LLM bubble tail triangle size | Tour Illustrations |
+| `tourLLMDotGlowSize` | 24px | LLM status dot glow diameter | Tour Illustrations |
 
 #### Flow Arrow
 
@@ -638,7 +671,8 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `tourEditorFrameBg` | rgba(20,20,24,0.9) | Editor frame dark background | Tour Illustrations |
-| `tourEditorFrameBgLight` | rgba(248,248,254,0.96) | Editor frame light background | Tour Illustrations |
+| `tourEditorFrameBorder` | Appearance-aware | Editor frame border | Tour Illustrations |
+| `tourEditorFrameShadowColor` | rgba(0,0,0,alpha) | Editor frame shadow | Tour Illustrations |
 
 #### Role Tag
 
