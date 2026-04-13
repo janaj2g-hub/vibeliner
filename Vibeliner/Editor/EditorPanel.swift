@@ -315,11 +315,10 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             // Priority 4: No-op — editor stays open
             return true
         } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
+            // VIB-435: Call shared delete method directly (same path as trash button).
             // VIB-326: Only consume the event when an action is actually performed.
-            // Previously returned true unconditionally, swallowing backspace even
-            // when no annotation was selected and filmstrip wasn't active.
             if annotationStore.selectedAnnotation != nil {
-                toolbarView.delegate?.toolbarDidRequestDelete()
+                deleteSelectedAnnotation()
                 return true
             } else if isFilmstripMode, images.count > 1 {
                 removeImageAtIndex(filmstripView?.selectedIndex ?? 0)

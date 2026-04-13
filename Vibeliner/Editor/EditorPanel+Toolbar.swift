@@ -15,11 +15,22 @@ extension EditorPanel {
     }
 
     func toolbarDidRequestDelete() {
-        // Delete the selected annotation (not the entire capture)
-        if let selected = annotationStore.selectedAnnotation {
-            undoRedoManager.record(.remove(annotation: selected))
-            annotationStore.remove(id: selected.id)
+        deleteSelectedAnnotation()
+    }
+
+    /// VIB-435: Shared delete path — called by both the toolbar trash button
+    /// and the Backspace/Delete keyboard shortcut. Removes the selected
+    /// annotation's mark, badge, and note pill, renumbers remaining
+    /// annotations, registers with undo/redo, and triggers auto-save
+    /// via the store's .annotationsDidChange notification.
+    func deleteSelectedAnnotation() {
+        guard let selected = annotationStore.selectedAnnotation else { return }
+        // If a note pill is being edited on this annotation, confirm/dismiss first
+        if canvasOverlay?.isEditingNote == true {
+            canvasOverlay?.confirmNoteEditing()
         }
+        undoRedoManager.record(.remove(annotation: selected))
+        annotationStore.remove(id: selected.id)
     }
 
     func toolbarDidRequestUndo() {
