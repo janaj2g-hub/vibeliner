@@ -2,7 +2,7 @@ import AppKit
 import ApplicationServices
 
 class AppDelegate: NSObject, NSApplicationDelegate {
-    private var statusItem: NSStatusItem!
+    private var statusItem: NSStatusItem?
     var setupWindowController: SetupWindowController?
     var settingsWindowController: SettingsWindowController?
     private var popoverWindow: PopoverWindow?
@@ -122,7 +122,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         highlightedIcon = createCrosshairImage(color: .white)
         highlightedIcon?.isTemplate = false  // Won't adapt to menu bar — stays white/bright
 
-        if let button = statusItem.button {
+        if let button = statusItem?.button {
             button.image = normalIcon
             button.action = #selector(statusItemClicked)
             button.target = self
@@ -137,16 +137,16 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             win.closePopover()
             popoverWindow = nil
             // VIB-175: Swap back to normal template icon
-            statusItem.button?.image = normalIcon
+            statusItem?.button?.image = normalIcon
         } else {
             let win = PopoverWindow()
             win.onClose = { [weak self] in
-                self?.statusItem.button?.image = self?.normalIcon
+                self?.statusItem?.button?.image = self?.normalIcon
             }
-            if let button = statusItem.button {
+            if let button = statusItem?.button {
                 win.showRelativeTo(button: button)
                 // VIB-175: Swap to non-template highlighted icon (always white/bright)
-                statusItem.button?.image = highlightedIcon
+                statusItem?.button?.image = highlightedIcon
             }
             popoverWindow = win
         }

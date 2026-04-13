@@ -13,22 +13,25 @@ import AppKit
 ///   guard KeyEventGuard.shouldHandleShortcut(in: window) else { return }
 enum KeyEventGuard {
 
+    static func activeTextResponder(in window: NSWindow?) -> NSTextView? {
+        guard let window else { return nil }
+
+        if let textView = window.firstResponder as? NSTextView {
+            return textView
+        }
+
+        if let firstResponderView = window.firstResponder as? NSView,
+           let fieldEditor = window.fieldEditor(false, for: firstResponderView) as? NSTextView {
+            return fieldEditor
+        }
+
+        return nil
+    }
+
     /// Returns true if the keyboard shortcut should be handled by the app.
     /// Returns false if a text field is editing and the key event should pass through
     /// to the text field's field editor.
     static func shouldHandleShortcut(in window: NSWindow?) -> Bool {
-        guard let firstResponder = window?.firstResponder else { return true }
-
-        // If a text view is the first responder (includes field editors for
-        // NSTextField, note text fields, title pill text fields, etc.), pass through.
-        if firstResponder is NSTextView { return false }
-        if firstResponder is NSTextField { return false }
-
-        // Double-check: if the window has an active field editor, pass through.
-        if let window = window, window.fieldEditor(false, for: nil) != nil {
-            if window.firstResponder is NSTextView { return false }
-        }
-
-        return true
+        activeTextResponder(in: window) == nil
     }
 }

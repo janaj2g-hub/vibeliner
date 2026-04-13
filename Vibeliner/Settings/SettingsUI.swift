@@ -91,7 +91,7 @@ enum SettingsUI {
         styleSurface(
             view,
             background: DesignTokens.settingsSegmentedTrack,
-            border: NSColor.separatorColor,
+            border: DesignTokens.settingsSegmentedBorder,
             cornerRadius: DesignTokens.settingsSegmentedHeight / 2
         )
     }
@@ -100,7 +100,7 @@ enum SettingsUI {
         styleSurface(
             view,
             background: DesignTokens.settingsSegmentedActive,
-            border: DesignTokens.settingsPillBorder,
+            border: DesignTokens.settingsSegmentedActiveBorder,
             cornerRadius: (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
         )
     }
@@ -350,16 +350,34 @@ private final class SettingsSegmentedHighlightView: AppearanceAwareSurfaceView {
 
 final class SettingsSegmentedControl: NSView {
 
+    enum Style {
+        case primary
+        case secondary
+
+        var font: NSFont {
+            switch self {
+            case .primary:
+                return DesignTokens.settingsSegmentedPrimaryFont
+            case .secondary:
+                return DesignTokens.settingsSegmentedSecondaryFont
+            }
+        }
+    }
+
     var onSelectionChanged: ((Int) -> Void)?
 
+    private let style: Style
+    private let items: [String]
     private let trackView = SettingsSegmentedTrackView()
     private let highlightView = SettingsSegmentedHighlightView()
     private let stackView = NSStackView()
     private var buttons: [NSButton] = []
     private(set) var selectedIndex: Int = 0
 
-    init(items: [String], selectedIndex: Int = 0) {
+    init(items: [String], selectedIndex: Int = 0, style: Style = .primary) {
         self.selectedIndex = selectedIndex
+        self.style = style
+        self.items = items
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
         setupTrack()
@@ -372,6 +390,18 @@ final class SettingsSegmentedControl: NSView {
     override func layout() {
         super.layout()
         updateHighlightFrame()
+    }
+
+    override var intrinsicContentSize: NSSize {
+        let itemWidth = items.reduce(CGFloat.zero) { partialResult, item in
+            partialResult + buttonWidth(for: item)
+        }
+        let spacing = CGFloat(max(items.count - 1, 0)) * stackView.spacing
+        let insets = DesignTokens.settingsSegmentedInset * 2
+        return NSSize(
+            width: itemWidth + spacing + insets,
+            height: DesignTokens.settingsSegmentedHeight
+        )
     }
 
     func setSelectedIndex(_ index: Int, notify: Bool = true) {
@@ -389,7 +419,7 @@ final class SettingsSegmentedControl: NSView {
 
         stackView.orientation = .horizontal
         stackView.alignment = .centerY
-        stackView.distribution = .fillEqually
+        stackView.distribution = .fill
         stackView.spacing = 4
 
         addSubview(trackView)
@@ -413,18 +443,28 @@ final class SettingsSegmentedControl: NSView {
         for (index, item) in items.enumerated() {
             let button = NSButton(title: item, target: self, action: #selector(buttonClicked(_:)))
             button.isBordered = false
-            button.font = DesignTokens.settingsSectionFont
+            button.font = style.font
             button.tag = index
             button.focusRingType = .none
             button.translatesAutoresizingMaskIntoConstraints = false
+            button.setContentHuggingPriority(.required, for: .horizontal)
+            button.setContentCompressionResistancePriority(.required, for: .horizontal)
             buttons.append(button)
             stackView.addArrangedSubview(button)
+
+            NSLayoutConstraint.activate([
+                button.widthAnchor.constraint(greaterThanOrEqualToConstant: buttonWidth(for: item))
+            ])
         }
     }
 
     private func updateButtonStates() {
         for (index, button) in buttons.enumerated() {
-            button.contentTintColor = index == selectedIndex ? .labelColor : .secondaryLabelColor
+            let isActive = index == selectedIndex
+            button.contentTintColor = isActive ? DesignTokens.settingsSegmentedActiveText : DesignTokens.settingsSegmentedInactiveText
+            button.font = isActive
+                ? NSFont.systemFont(ofSize: style.font.pointSize, weight: .semibold)
+                : style.font
         }
     }
 
@@ -443,6 +483,12 @@ final class SettingsSegmentedControl: NSView {
 
     @objc private func buttonClicked(_ sender: NSButton) {
         setSelectedIndex(sender.tag)
+    }
+
+    private func buttonWidth(for title: String) -> CGFloat {
+        let attributes: [NSAttributedString.Key: Any] = [.font: style.font]
+        let measuredWidth = ceil((title as NSString).size(withAttributes: attributes).width)
+        return measuredWidth + (DesignTokens.settingsSegmentedItemPadding * 2)
     }
 }
 

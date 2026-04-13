@@ -2,9 +2,19 @@ import AppKit
 
 final class CanvasView: NSView, NotePillDelegate {
 
+    enum CursorIntent {
+        case hiddenForDrawing
+        case visibleArrow
+    }
+
     let marksLayer: MarksLayerView
     let notesLayer: NSView
-    var activeTool: AnnotationTool?
+    var activeTool: AnnotationTool? {
+        didSet {
+            marksLayer.ghostTool = activeTool
+            refreshInteractionState()
+        }
+    }
     var selectTool: SelectTool?
     /// Filmstrip mode: fired on every canvas mouseDown with the local click point.
     var onBackgroundClick: ((CGPoint) -> Void)?
@@ -12,10 +22,12 @@ final class CanvasView: NSView, NotePillDelegate {
     var imageIndexAtPoint: ((CGPoint) -> Int)?
     /// Stable image identity resolver for filmstrip ownership updates.
     var imageIDAtPoint: ((CGPoint) -> UUID?)?
+    var onCursorIntentChanged: ((CursorIntent) -> Void)?
     var store: AnnotationStore
     var undoManager_: UndoRedoManager?
     private var storeObserver: Any?
     private var ghostPosition: CGPoint?
+    private var isPointerInsideCanvas = false
 
     // VIB-354: Display-link-synchronized rendering — coalesce mouseDragged redraws
     private var needsRedraw = false
@@ -74,44 +86,7 @@ final class CanvasView: NSView, NotePillDelegate {
 
     override func mouseMoved(with event: NSEvent) {
         let point = convert(event.locationInWindow, from: nil)
-        ghostPosition = point
-
-        // VIB-334: Safety net — if no drawing tool active but cursor is hidden, force-show
-        if activeTool?.toolType.isDrawingTool != true && CursorManager.shared.isCursorHidden {
-            CursorManager.shared.forceShow()
-        }
-
-        activeTool?.mouseMoved(to: point, in: self)
-        marksLayer.ghostPosition = point
-        marksLayer.ghostTool = activeTool
-
-        // Hit-test for shape hover (must run before cursor/ghost logic)
-        let oldHovered = shapeHoveredId
-        shapeHoveredId = hitTestAnnotation(at: point)
-        if shapeHoveredId != oldHovered {
-            marksLayer.hoveredId = shapeHoveredId
-            refreshNotePills()
-        }
-
-        // VIB-221: Suppress ghost when hovering annotation with drawing tool (unless mid-stroke)
-        let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
-        let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
-        let shouldSuppressGhost = isDrawingToolActive && isHoveringAnnotation && !(activeTool?.isActivelyDrawing == true)
-        marksLayer.suppressGhost = shouldSuppressGhost
-
-        // VIB-318: Cursor management via CursorManager (balanced hide/unhide)
-        if isDrawingToolActive && !isEditingNote {
-            if shouldSuppressGhost {
-                CursorManager.shared.showCursor()
-                NSCursor.arrow.set()
-            } else {
-                CursorManager.shared.hideCursor()
-            }
-        } else {
-            CursorManager.shared.showCursor()
-        }
-
-        marksLayer.needsDisplay = true
+        updatePointerState(at: point, notifyActiveTool: true)
     }
 
     // Hit testing matching prototype ht() function
@@ -297,11 +272,7 @@ final class CanvasView: NSView, NotePillDelegate {
     }
 
     override func mouseExited(with event: NSEvent) {
-        CursorManager.shared.showCursor()
-        marksLayer.suppressGhost = false
-        ghostPosition = nil
-        marksLayer.ghostPosition = nil
-        marksLayer.needsDisplay = true
+        updatePointerState(at: nil, notifyActiveTool: false)
     }
 
     func refreshNotePills() {
@@ -316,15 +287,8 @@ final class CanvasView: NSView, NotePillDelegate {
         if pillHoveredId != oldPillHovered {
             // VIB-203/215: Do NOT set marksLayer.hoveredId here — pill hover is independent from shape hover
             // VIB-221: Suppress ghost when pill hovered with drawing tool active
-            let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
-            marksLayer.suppressGhost = isDrawingToolActive && (pillHoveredId != nil || shapeHoveredId != nil)
-            marksLayer.needsDisplay = true
+            refreshInteractionState()
             refreshNotePills()
-            // VIB-221: Show arrow cursor when pill hovered with drawing tool
-            if isDrawingToolActive && !isEditingNote && pillHoveredId != nil {
-                CursorManager.shared.showCursor()
-                NSCursor.arrow.set()
-            }
         }
     }
 
@@ -345,7 +309,6 @@ final class CanvasView: NSView, NotePillDelegate {
     private var activeEditorPill: NSView?
 
     func openNoteEditor(for annotation: Annotation) {
-        CursorManager.shared.showCursor()  // VIB-201: Restore cursor when editor opens
         activeNoteField?.removeFromSuperview()
         activeEditorPill?.removeFromSuperview()
 
@@ -372,7 +335,7 @@ final class CanvasView: NSView, NotePillDelegate {
         pillContainer.layer?.masksToBounds = false
 
         // Shadow
-        pillContainer.layer?.shadowColor = NSColor.black.withAlphaComponent(0.06).cgColor
+        pillContainer.layer?.shadowColor = DesignTokens.editorNoteShadow.cgColor
         pillContainer.layer?.shadowOffset = CGSize(width: 0, height: -1)
         pillContainer.layer?.shadowRadius = 4
         pillContainer.layer?.shadowOpacity = 1
@@ -381,8 +344,8 @@ final class CanvasView: NSView, NotePillDelegate {
         let chrome = PillChromeBuilder.build(size: NSSize(width: maxPillW, height: pillH), number: annotation.number)
         pillContainer.layer?.addSublayer(chrome.blurLayer)
         // Apply editing state colors directly
-        chrome.tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.961, blue: 0.961, alpha: 0.92).cgColor
-        chrome.tintView.layer?.borderColor = DesignTokens.red.cgColor
+        chrome.tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceEditing.cgColor
+        chrome.tintView.layer?.borderColor = DesignTokens.editorNoteEditingGlow.cgColor
         pillContainer.addSubview(chrome.tintView)
         pillContainer.addSubview(chrome.prefixLabel)
 
@@ -426,6 +389,7 @@ final class CanvasView: NSView, NotePillDelegate {
                 // VIB-192 (attempt 5): Place cursor at END of text, not select-all
                 fieldEditor.setSelectedRange(NSRange(location: fieldEditor.string.count, length: 0))
             }
+            self.refreshInteractionState()
         }
     }
 
@@ -491,10 +455,9 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         preEditNoteText = nil
         noteFieldDelegate = nil
+        window?.makeFirstResponder(self)
         refreshNotePills()
-        if activeTool?.toolType.isDrawingTool == true {
-            marksLayer.ghostTool = activeTool
-        }
+        refreshInteractionState()
         marksLayer.needsDisplay = true
     }
 
@@ -520,14 +483,67 @@ final class CanvasView: NSView, NotePillDelegate {
         editingAnnotationId = nil
         preEditNoteText = nil
         noteFieldDelegate = nil
+        window?.makeFirstResponder(self)
         refreshNotePills()
-        if activeTool?.toolType.isDrawingTool == true {
-            marksLayer.ghostTool = activeTool
-        }
+        refreshInteractionState()
         marksLayer.needsDisplay = true
     }
 
     var isEditingNote: Bool { activeNoteField != nil }
+
+    override func mouseEntered(with event: NSEvent) {
+        let point = convert(event.locationInWindow, from: nil)
+        updatePointerState(at: point, notifyActiveTool: false)
+    }
+
+    func refreshInteractionState() {
+        updateSuppressedGhostState()
+        emitCursorIntent()
+        marksLayer.needsDisplay = true
+    }
+
+    private func updatePointerState(at point: CGPoint?, notifyActiveTool: Bool) {
+        ghostPosition = point
+        isPointerInsideCanvas = point != nil
+        marksLayer.ghostPosition = point
+
+        if let point {
+            if notifyActiveTool {
+                activeTool?.mouseMoved(to: point, in: self)
+            }
+            let oldHovered = shapeHoveredId
+            shapeHoveredId = hitTestAnnotation(at: point)
+            if shapeHoveredId != oldHovered {
+                marksLayer.hoveredId = shapeHoveredId
+                refreshNotePills()
+            }
+        } else {
+            shapeHoveredId = nil
+            marksLayer.hoveredId = nil
+        }
+
+        updateSuppressedGhostState()
+        emitCursorIntent()
+        marksLayer.needsDisplay = true
+    }
+
+    private func updateSuppressedGhostState() {
+        let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
+        let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
+        let shouldSuppressGhost = isPointerInsideCanvas
+            && isDrawingToolActive
+            && isHoveringAnnotation
+            && !(activeTool?.isActivelyDrawing == true)
+        marksLayer.suppressGhost = shouldSuppressGhost
+    }
+
+    private func emitCursorIntent() {
+        let shouldHideCursor = isPointerInsideCanvas
+            && activeTool?.toolType.isDrawingTool == true
+            && !isEditingNote
+            && !marksLayer.suppressGhost
+        onCursorIntentChanged?(shouldHideCursor ? .hiddenForDrawing : .visibleArrow)
+    }
 }
 
 // MARK: - Note field delegate
@@ -598,19 +614,19 @@ final class MarksLayerView: NSView {
 
             // Badge glow (keep existing)
             let glowRadius = DesignTokens.badgeDiameter / 2 + 7 // prototype: badgeR + 7
-            context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08).cgColor)
+            context.setFillColor(DesignTokens.editorAnnotationHoverFill.cgColor)
             context.fillEllipse(in: CGRect(x: bp.x - glowRadius, y: bp.y - glowRadius, width: glowRadius * 2, height: glowRadius * 2))
 
             // VIB-203: Shape halo — draw thicker/warmer version behind the shape with soft shadow
             context.saveGState()
-            context.setShadow(offset: .zero, blur: 6, color: NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.20).cgColor)
+            context.setShadow(offset: .zero, blur: 6, color: DesignTokens.editorAnnotationHoverShadow.cgColor)
 
             switch annotation.position {
             case .pin:
                 // Stake halo
                 let stakeTopY = bp.y - DesignTokens.badgeDiameter / 2
                 let stakeBottomY = stakeTopY - DesignTokens.stakeLength
-                context.setStrokeColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.3).cgColor)
+                context.setStrokeColor(DesignTokens.editorAnnotationHoverStroke.cgColor)
                 context.setLineWidth(6)
                 context.setLineCap(.round)
                 context.move(to: CGPoint(x: bp.x, y: stakeTopY))
@@ -618,7 +634,7 @@ final class MarksLayerView: NSView {
                 context.strokePath()
 
             case .rectangle(let origin, let size):
-                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                context.setFillColor(DesignTokens.editorAnnotationHoverShapeFill.cgColor)
                 let path = CGPath(roundedRect: CGRect(origin: origin, size: size), cornerWidth: 3, cornerHeight: 3, transform: nil)
                 context.addPath(path)
                 context.fillPath()
@@ -628,7 +644,7 @@ final class MarksLayerView: NSView {
                 context.strokePath()
 
             case .circle(let center, let radius):
-                context.setFillColor(NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14).cgColor)
+                context.setFillColor(DesignTokens.editorAnnotationHoverShapeFill.cgColor)
                 let circleRect = CGRect(x: center.x - radius, y: center.y - radius, width: radius * 2, height: radius * 2)
                 context.fillEllipse(in: circleRect)
                 context.setStrokeColor(DesignTokens.red.cgColor)

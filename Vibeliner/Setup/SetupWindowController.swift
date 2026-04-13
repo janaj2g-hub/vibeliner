@@ -17,6 +17,147 @@ private class SetupContentView: NSView {
     }
 }
 
+private final class SetupDividerView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleDividerSurface(self, color: DesignTokens.setupBorder)
+    }
+}
+
+private final class SetupFooterSurfaceView: AppearanceAwareSurfaceView {
+    override func refreshSurfaceAppearance() {
+        SettingsUI.styleSurface(self, background: DesignTokens.setupFooterBg, borderWidth: 0)
+    }
+}
+
+private enum SetupPillRole {
+    case accent
+    case success
+    case ghost
+}
+
+private class SetupPillButton: AppearanceAwareSurfaceButton {
+    private let role: SetupPillRole
+    private let heightValue: CGFloat
+    private let horizontalPadding: CGFloat
+
+    init(
+        title: String,
+        role: SetupPillRole,
+        height: CGFloat,
+        font: NSFont,
+        horizontalPadding: CGFloat,
+        target: AnyObject?,
+        action: Selector?
+    ) {
+        self.role = role
+        self.heightValue = height
+        self.horizontalPadding = horizontalPadding
+        super.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+        isBordered = false
+        bezelStyle = .regularSquare
+        focusRingType = .none
+        setButtonType(.momentaryPushIn)
+        self.font = font
+        wantsLayer = true
+        cell?.lineBreakMode = .byClipping
+        sizeToFit()
+        updateButtonGeometry()
+        refreshSurfaceAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    func updateButtonGeometry() {
+        sizeToFit()
+        let width = frame.width + horizontalPadding
+        setFrameSize(NSSize(width: width, height: heightValue))
+    }
+
+    override func refreshSurfaceAppearance() {
+        switch role {
+        case .accent:
+            contentTintColor = DesignTokens.setupButtonText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.setupButtonFill,
+                border: DesignTokens.setupButtonBorder,
+                cornerRadius: heightValue / 2
+            )
+        case .success:
+            contentTintColor = DesignTokens.setupGreenText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.setupGreenBg,
+                border: DesignTokens.setupGreenBorder,
+                cornerRadius: heightValue / 2
+            )
+        case .ghost:
+            contentTintColor = DesignTokens.setupTextSecondary
+            SettingsUI.styleSurface(
+                self,
+                background: .clear,
+                border: DesignTokens.setupBorder,
+                cornerRadius: heightValue / 2
+            )
+        }
+    }
+}
+
+private final class SetupFooterButton: SetupPillButton {
+    init(title: String, role: SetupPillRole, target: AnyObject?, action: Selector?) {
+        let padding = role == .success ? DesignTokens.setupFooterPrimaryPadding : DesignTokens.setupFooterSecondaryPadding
+        super.init(
+            title: title,
+            role: role,
+            height: DesignTokens.setupFooterButtonHeight,
+            font: DesignTokens.setupActionLabelFont,
+            horizontalPadding: padding,
+            target: target,
+            action: action
+        )
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+}
+
+private final class SetupCircleButton: AppearanceAwareSurfaceButton {
+    init(title: String, target: AnyObject?, action: Selector?) {
+        super.init(frame: .zero)
+        self.title = title
+        self.target = target
+        self.action = action
+        isBordered = false
+        bezelStyle = .regularSquare
+        focusRingType = .none
+        setButtonType(.momentaryPushIn)
+        font = NSFont.systemFont(ofSize: 18, weight: .semibold)
+        wantsLayer = true
+        let size = DesignTokens.setupArrowSize
+        setFrameSize(NSSize(width: size, height: size))
+        refreshSurfaceAppearance()
+    }
+
+    required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        refreshSurfaceAppearance()
+    }
+
+    override func refreshSurfaceAppearance() {
+        contentTintColor = DesignTokens.setupButtonText
+        SettingsUI.styleSurface(
+            self,
+            background: DesignTokens.setupButtonFill,
+            border: DesignTokens.setupButtonBorder,
+            cornerRadius: bounds.height / 2
+        )
+    }
+}
+
 /// 3-panel setup: Captures Folder → Accessibility → Screen Recording (VIB-303)
 final class SetupWindowController: NSWindowController {
 
@@ -33,7 +174,7 @@ final class SetupWindowController: NSWindowController {
     private var panel1Container: NSView!
     private var panel2Container: NSView!
     private var panel3Container: NSView!
-    private var footerContent: NSView!
+    private var footerContent: SetupFooterSurfaceView!
     private var badge1View: NSView!
     private var badge2View: NSView!
     private var badge3View: NSView!
@@ -126,8 +267,7 @@ final class SetupWindowController: NSWindowController {
         panel3Container.alphaValue = 0.35
 
         // Footer
-        footerContent = NSView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
-        SettingsUI.styleSurface(footerContent, background: DesignTokens.setupFooterBg, borderWidth: 0)
+        footerContent = SetupFooterSurfaceView(frame: NSRect(x: 0, y: 0, width: winW, height: footerH))
         cv.addSubview(footerContent)
 
         footerBorderView = makeDivider(x: 0, y: footerH - 1, height: 1)
@@ -274,8 +414,14 @@ final class SetupWindowController: NSWindowController {
         c.addSubview(desc)
 
         // VIB-303: "Restart" note only on Screen recording panel
-        step3RestartNote = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
-        step3RestartNote.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
+        step3RestartNote = makeWrappingLabel(
+            "You may need to restart the app after granting.",
+            font: DesignTokens.setupHelperFont,
+            color: DesignTokens.setupTextDim,
+            width: contentW
+        )
+        step3RestartNote.alignment = .center
+        step3RestartNote.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step3RestartNote.frame.height)
         step3RestartNote.isHidden = true  // visible only when step 3 is active
         c.addSubview(step3RestartNote)
 
@@ -311,8 +457,14 @@ final class SetupWindowController: NSWindowController {
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
-            SettingsUI.styleSurface(view, background: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08), border: DesignTokens.purpleDark, cornerRadius: size / 2, borderWidth: 2)
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.purpleDark, in: badgeRect)
+            SettingsUI.styleSurface(
+                view,
+                background: DesignTokens.setupButtonFill,
+                border: DesignTokens.setupButtonBorder,
+                cornerRadius: size / 2,
+                borderWidth: 2
+            )
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupButtonText, in: badgeRect)
             view.addSubview(numLabel)
         }
 
@@ -333,7 +485,6 @@ final class SetupWindowController: NSWindowController {
         let rowH: CGFloat = 72
         let row = NSView(frame: NSRect(x: 0, y: 0, width: width, height: rowH))
 
-        // Label (clickable)
         let labelBtn = NSButton(title: label, target: self, action: action)
         labelBtn.isBordered = false
         labelBtn.wantsLayer = true
@@ -344,19 +495,14 @@ final class SetupWindowController: NSWindowController {
         labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)
         row.addSubview(labelBtn)
 
-        // Arrow button
+        let arrow = SetupCircleButton(title: "→", target: self, action: action)
         let arrowSize = DesignTokens.setupArrowSize
-        let arrow = NSButton(title: "→", target: self, action: action)
-        arrow.isBordered = false
-        arrow.font = NSFont.systemFont(ofSize: 18, weight: .semibold)
-        arrow.contentTintColor = DesignTokens.setupButtonText
-        SettingsUI.styleSurface(arrow, background: DesignTokens.setupButtonFill, border: DesignTokens.setupButtonBorder, cornerRadius: arrowSize / 2)
-        arrow.frame = NSRect(x: (width - arrowSize) / 2, y: rowH - 18 - 8 - arrowSize, width: arrowSize, height: arrowSize)
-
-        // Hover tracking
-        let trackArea = NSTrackingArea(rect: arrow.bounds, options: [.mouseEnteredAndExited, .activeInActiveApp], owner: nil, userInfo: nil)
-        arrow.addTrackingArea(trackArea)
-
+        arrow.frame = NSRect(
+            x: (width - arrowSize) / 2,
+            y: rowH - 18 - 8 - arrowSize,
+            width: arrowSize,
+            height: arrowSize
+        )
         row.addSubview(arrow)
         return row
     }
@@ -387,22 +533,16 @@ final class SetupWindowController: NSWindowController {
     // MARK: - Small pill button
 
     private func makeSmallPillButton(_ title: String, green: Bool) -> NSButton {
-        let btn = NSButton(title: title, target: nil, action: nil)
-        btn.isBordered = false
-        btn.font = DesignTokens.setupSmallPillFont
-        let pillH = DesignTokens.setupSmallPillHeight
-
-        if green {
-            btn.contentTintColor = DesignTokens.setupGreenText
-            SettingsUI.styleSurface(btn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: pillH / 2)
-        } else {
-            btn.contentTintColor = DesignTokens.purpleButton
-            SettingsUI.styleSurface(btn, background: DesignTokens.purpleButtonBg, border: DesignTokens.purpleButton, cornerRadius: pillH / 2)
-        }
-        btn.sizeToFit()
-        let w = btn.frame.width + 20
-        btn.setFrameSize(NSSize(width: w, height: pillH))
-        return btn
+        let role: SetupPillRole = green ? .success : .accent
+        return SetupPillButton(
+            title: title,
+            role: role,
+            height: DesignTokens.setupSmallPillHeight,
+            font: DesignTokens.setupSmallPillFont,
+            horizontalPadding: 20,
+            target: nil,
+            action: nil
+        )
     }
 
     // MARK: - Footer
@@ -418,27 +558,31 @@ final class SetupWindowController: NSWindowController {
             footerContent.addSubview(shortcutGroup)
 
             // Right: Green "Start using Vibeliner →" button
-            let startBtn = NSButton(title: "Start using Vibeliner \u{2192}", target: self, action: #selector(startClicked))
-            startBtn.isBordered = false
-            startBtn.font = DesignTokens.setupActionLabelFont
-            startBtn.contentTintColor = DesignTokens.setupGreenText
-            SettingsUI.styleSurface(startBtn, background: DesignTokens.setupGreenBg, border: DesignTokens.setupGreenBorder, cornerRadius: 20)
-            startBtn.sizeToFit()
-            let btnW = startBtn.frame.width + 48
-            startBtn.setFrameSize(NSSize(width: btnW, height: 36))
-            startBtn.frame.origin = NSPoint(x: winW - 24 - btnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
+            let startBtn = SetupFooterButton(
+                title: "Start using Vibeliner \u{2192}",
+                role: .success,
+                target: self,
+                action: #selector(startClicked)
+            )
+            let btnW = startBtn.frame.width
+            startBtn.frame.origin = NSPoint(
+                x: winW - 24 - btnW,
+                y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
+            )
             footerContent.addSubview(startBtn)
 
             // VIB-360: "Take a tour" ghost button, to the left of Start button
-            let tourBtn = NSButton(title: "Take a tour", target: self, action: #selector(tourClicked))
-            tourBtn.isBordered = false
-            tourBtn.font = DesignTokens.setupActionLabelFont
-            tourBtn.contentTintColor = DesignTokens.setupTextSecondary
-            SettingsUI.styleSurface(tourBtn, background: .clear, border: DesignTokens.setupBorder, cornerRadius: 20)
-            tourBtn.sizeToFit()
-            let tourBtnW = tourBtn.frame.width + 36
-            tourBtn.setFrameSize(NSSize(width: tourBtnW, height: 36))
-            tourBtn.frame.origin = NSPoint(x: winW - 24 - btnW - 10 - tourBtnW, y: (DesignTokens.setupFooterHeight - 36) / 2)
+            let tourBtn = SetupFooterButton(
+                title: "Take a tour",
+                role: .ghost,
+                target: self,
+                action: #selector(tourClicked)
+            )
+            let tourBtnW = tourBtn.frame.width
+            tourBtn.frame.origin = NSPoint(
+                x: winW - 24 - btnW - 10 - tourBtnW,
+                y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
+            )
             footerContent.addSubview(tourBtn)
         } else {
             let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
@@ -661,11 +805,13 @@ final class SetupWindowController: NSWindowController {
 
     @objc private func openSystemSettings() {
         // Open System Settings directly — no macOS dialog
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture")!)
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     @objc private func openAccessibilitySettings() {
-        NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")!)
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     @objc private func chooseFolder() {
@@ -743,8 +889,7 @@ final class SetupWindowController: NSWindowController {
     }
 
     private func makeDivider(x: CGFloat, y: CGFloat, height: CGFloat) -> NSView {
-        let d = NSView(frame: NSRect(x: x, y: y, width: 1, height: height))
-        SettingsUI.styleDividerSurface(d, color: DesignTokens.setupBorder)
+        let d = SetupDividerView(frame: NSRect(x: x, y: y, width: 1, height: height))
         return d
     }
 

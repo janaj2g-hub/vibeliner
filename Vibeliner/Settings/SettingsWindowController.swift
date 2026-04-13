@@ -50,14 +50,15 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         tabBar.translatesAutoresizingMaskIntoConstraints = false
         contentView.addSubview(tabBar)
 
-        let segmented = SettingsSegmentedControl(items: ["General", "Prompt", "About"])
+        let segmented = SettingsSegmentedControl(items: ["General", "Prompt", "About"], style: .primary)
         tabBar.addSubview(segmented)
         self.tabSegmented = segmented
 
         NSLayoutConstraint.activate([
             segmented.centerXAnchor.constraint(equalTo: tabBar.centerXAnchor),
             segmented.centerYAnchor.constraint(equalTo: tabBar.centerYAnchor),
-            segmented.widthAnchor.constraint(equalToConstant: 280),
+            segmented.leadingAnchor.constraint(greaterThanOrEqualTo: tabBar.leadingAnchor, constant: DesignTokens.settingsContentPadding),
+            segmented.trailingAnchor.constraint(lessThanOrEqualTo: tabBar.trailingAnchor, constant: -DesignTokens.settingsContentPadding),
         ])
 
         segmented.onSelectionChanged = { [weak self] index in

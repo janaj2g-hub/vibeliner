@@ -1,7 +1,8 @@
 # Vibeliner Design System — Token Reference
 
-Last updated: 2026-04-11
+Last updated: 2026-04-13
 Source of truth: `Vibeliner/Design/DesignTokens.swift`
+Canonical docs location: `docs/design-system/`
 
 ---
 
@@ -11,7 +12,7 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, FirstUseTooltipView, PromptTabView, SettingsWindowController |
+| `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, PromptTabView, SettingsWindowController |
 | `purpleDark` | #534AB7 | Dimension label bg, settings accents | DimensionLabelView, SetupWindowController |
 | `purpleButton` | #A796EB | Copy button outline and text (legacy) | SetupWindowController |
 | `purpleButtonBg` | rgba(116, 97, 194, 0.25) | Copy button fill (legacy) | SetupWindowController |
@@ -48,12 +49,12 @@ Source of truth: `Vibeliner/Design/DesignTokens.swift`
 | `dividerColor` | rgba(255, 255, 255, 0.08) | Divider (legacy) | — |
 | `chromeBorder` | rgba(175, 169, 236, 0.12) | Toolbar/canvas border | ScreenshotCanvasView, CaptureRowView |
 
-### Tooltip
+### Tooltip (Legacy / Unshipped)
 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
-| `tooltipDarkBg` | rgba(28, 28, 32, 0.96) | Tooltip background | FirstUseTooltipView |
-| `tooltipDarkBorder` | rgba(255, 255, 255, 0.1) | Tooltip border | FirstUseTooltipView |
+| `tooltipDarkBg` | rgba(28, 28, 32, 0.96) | Reserved tooltip background token | — |
+| `tooltipDarkBorder` | rgba(255, 255, 255, 0.1) | Reserved tooltip border token | — |
 
 ### Toolbar — Appearance-Aware (VIB-235)
 
@@ -121,7 +122,11 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `settingsFrameSurface` | rgba(255,255,255,0.02) | rgba(15,23,42,0.02) | Framed section bg | SettingsUI |
 | `settingsPreviewSurface` | #15161A | #F8FAFC | Preview panel bg | SettingsUI |
 | `settingsSegmentedTrack` | rgba(255,255,255,0.03) | rgba(15,23,42,0.04) | Segmented control track | SettingsUI |
-| `settingsSegmentedActive` | rgba(175,169,236,0.22) | rgba(175,169,236,0.18) | Segmented active fill | SettingsUI |
+| `settingsSegmentedBorder` | rgba(255,255,255,0.08) | rgba(15,23,42,0.08) | Segmented control track border | SettingsUI |
+| `settingsSegmentedActive` | rgba(175,169,236,0.16) | rgba(175,169,236,0.14) | Segmented active fill | SettingsUI |
+| `settingsSegmentedActiveBorder` | rgba(175,169,236,0.20) | rgba(114,103,221,0.18) | Segmented active border | SettingsUI |
+| `settingsSegmentedInactiveText` | rgba(255,255,255,0.58) | rgba(15,23,42,0.58) | Segmented inactive title color | SettingsUI |
+| `settingsSegmentedActiveText` | #AFA9EC | #7267DD | Segmented active title color | SettingsUI |
 | `settingsPillBorder` | rgba(175,169,236,0.36) | rgba(114,103,221,0.26) | Pill button border | SettingsUI, PromptTabView |
 | `settingsPillFill` | rgba(175,169,236,0.10) | rgba(175,169,236,0.16) | Pill button fill | SettingsUI, PromptTabView |
 | `settingsPillText` | #AFA9EC | #7267DD | Pill button text | SettingsUI, AboutTabView, PromptTabView |
@@ -136,6 +141,38 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 - `styleSegmentedTrackSurface(_:)` and `styleSegmentedHighlightSurface(_:)` keep the Settings segmented shells aligned with toolbar toggle behavior.
 - `AppearanceAwareSurfaceView` and `AppearanceAwareSurfaceButton` refresh those shells on first attach and on later appearance changes, which is the contract used by `SettingsSegmentedControl`, `SettingsPillButton`, `PromptPreviewView`, `ToolbarView`, `PopoverViewController`, and `SetupWindowController`.
 
+### Tour / Runtime Contract
+
+- `TourMiniToolbar` is the canonical tour adapter for runtime toolbar chrome. Both the full editor toolbar illustrations and the compact mode-toolbar card now route through it, and its tool icons come from the same `ToolbarView.draw*Icon` helpers used by the live editor.
+- `TourSurfaceView` and `TourFilenamePillView` are the narrow illustration adapters for output-card and prompt-sheet chrome. They keep those surfaces on one appearance-aware path instead of reimplementing card shells in each tour step.
+- `tourOutput*` and `tourPromptSheet*` remain illustration-only tokens. They are acceptable where the tour intentionally simplifies runtime UI for teaching clarity, but they should stay behind the shared adapter layer above instead of being redrawn ad hoc in multiple illustration files.
+
+### Shared Selector Family (VIB-395)
+
+Top-level Settings tabs and Prompt sub-tabs now use one selector contract with two emphasis levels:
+
+- `SettingsSegmentedControl.Style.primary` is used for the window-level `General / Prompt / About` selector.
+- `SettingsSegmentedControl.Style.secondary` is used for prompt-section selectors such as `Preamble / Tools / Footer / Multi-image`.
+- Both styles use intrinsic-width centering, lighter inactive text, and a restrained bordered active fill so the labels carry more hierarchy than the pill chrome does.
+
+### Editor Interaction Tokens (VIB-411)
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `editorAnnotationHoverFill` | rgba(239,68,68,0.08) | Hover halo behind annotation badge | CanvasView |
+| `editorAnnotationHoverStroke` | rgba(239,68,68,0.30) | Hover stake/outline accent | CanvasView |
+| `editorAnnotationHoverShadow` | rgba(239,68,68,0.20) | Hover glow shadow | CanvasView |
+| `editorAnnotationHoverShapeFill` | rgba(239,68,68,0.14) | Hover fill behind rectangle/circle chrome | CanvasView |
+| `editorNoteShadow` | rgba(0,0,0,0.06) | Editing note chrome shadow | CanvasView |
+| `editorNoteSurfaceDefault` | rgba(255,244,244,0.72) | Resting note pill fill | NotePillRenderer |
+| `editorNoteSurfaceHover` | rgba(255,244,244,0.80) | Hovered note pill fill | NotePillRenderer |
+| `editorNoteSurfaceSelected` | rgba(255,244,244,0.88) | Selected note pill fill | NotePillRenderer |
+| `editorNoteSurfaceEditing` | rgba(255,250,250,0.96) | Editing note pill fill | CanvasView, NotePillRenderer |
+| `editorNoteBorderDefault` | rgba(180,180,180,0.22) | Resting note pill border | NotePillRenderer |
+| `editorNoteBorderHover` | rgba(239,68,68,0.45) | Hovered note pill border | NotePillRenderer |
+| `editorNoteBorderSelected` | rgba(239,68,68,0.55) | Selected note pill border | NotePillRenderer |
+| `editorNoteEditingGlow` | #EF4444 | Editing note border and glow | CanvasView, NotePillRenderer |
+
 ### Role Colors
 
 | Token | Value | Usage | Consuming files |
@@ -146,6 +183,9 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 | `roleExpectedBg` | rgba(22,100,52,0.85) | Expected role pill fill | TitlePillView, CompositeStitcher |
 | `roleReferenceBorder` | #3B82F6 (blue) | Reference role border | PromptTabView, FilmstripGridView, TitlePillView |
 | `roleReferenceBg` | rgba(30,70,140,0.85) | Reference role pill fill | TitlePillView, CompositeStitcher |
+| `roleSwatchOutline` | rgba(255,255,255,0.16) | rgba(15,23,42,0.16) | Role swatch outer outline for visibility | PromptTabView |
+| `roleSwatchInnerBorder` | rgba(0,0,0,0.22) | rgba(255,255,255,0.82) | Role swatch inner contrast ring | PromptTabView |
+| `roleSwatchSelectedRing` | rgba(255,255,255,0.92) | rgba(83,74,183,0.78) | Selected role swatch ring | PromptTabView |
 
 ### Filmstrip & Title Pill
 
@@ -246,6 +286,7 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 | `toolbarHeight` | 40px | Toolbar height | ToolbarView, EditorPanel |
 | `toolbarCornerRadius` | 20px | Toolbar corner radius | ToolbarView |
 | `toolButtonSize` | 30px | Tool button size | ToolbarView, ToolButton |
+| `toolbarToolButtonGap` | 2px | Visual gap between adjacent tool buttons | ToolbarView |
 | `iconButtonSize` | 28px | Icon button size | ToolbarView, ToolButton |
 | `closeButtonSize` | 24px | Close button size | ToolbarView, ToolButton |
 
@@ -302,6 +343,9 @@ The appearance-aware chrome used by Settings, Setup, the status popover, and the
 | `setupBadgeSize` | 32px | Badge size | SetupWindowController |
 | `setupArrowSize` | 36px | Arrow button size | SetupWindowController |
 | `setupSmallPillHeight` | 22px | Small pill height | SetupWindowController |
+| `setupFooterButtonHeight` | 36px | Footer CTA height | SetupWindowController |
+| `setupFooterPrimaryPadding` | 48px | Horizontal padding added to primary footer CTA title width | SetupWindowController |
+| `setupFooterSecondaryPadding` | 36px | Horizontal padding added to secondary footer CTA title width | SetupWindowController |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
 
 ### Tour Window

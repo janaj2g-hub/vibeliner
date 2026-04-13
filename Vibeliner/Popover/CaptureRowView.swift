@@ -1,13 +1,13 @@
 import AppKit
 
-final class CaptureRowView: NSView {
+final class CaptureRowView: PopoverHoverSurfaceView {
 
     private let capture: CaptureInfo
-    private var isHovered = false { didSet { needsDisplay = true; updateCopyButtonVisibility() } }
+    private var isHovered = false { didSet { isSurfaceHovered = isHovered; updateCopyButtonVisibility() } }
     private let timestampLabel = NSTextField(labelWithString: "")
     private let noteCountLabel = NSTextField(labelWithString: "")
-    private var promptButton: NSButton?
-    private var imageButton: NSButton?
+    private var promptButton: PopoverCopyButton?
+    private var imageButton: PopoverCopyButton?
 
     init(capture: CaptureInfo) {
         self.capture = capture
@@ -68,26 +68,14 @@ final class CaptureRowView: NSView {
         let buttonY = (h - 20) / 2
 
         // Copy Prompt button (hidden until hover)
-        let promptBtn = HoverButton(title: "Prompt", target: self, action: #selector(copyPrompt))
-        promptBtn.isBordered = false
-        promptBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
-        promptBtn.wantsLayer = true
-        promptBtn.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
-        promptBtn.layer?.cornerRadius = 6
-        promptBtn.contentTintColor = DesignTokens.popoverCopyButtonText
+        let promptBtn = PopoverCopyButton(title: "Prompt", target: self, action: #selector(copyPrompt))
         promptBtn.frame = NSRect(x: 150, y: buttonY, width: 52, height: 20)
         promptBtn.isHidden = true
         addSubview(promptBtn)
         self.promptButton = promptBtn
 
         // Copy Image button (hidden until hover)
-        let imgBtn = HoverButton(title: "Image", target: self, action: #selector(copyImage))
-        imgBtn.isBordered = false
-        imgBtn.font = NSFont.systemFont(ofSize: 10, weight: .medium)
-        imgBtn.wantsLayer = true
-        imgBtn.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
-        imgBtn.layer?.cornerRadius = 6
-        imgBtn.contentTintColor = DesignTokens.popoverCopyButtonText
+        let imgBtn = PopoverCopyButton(title: "Image", target: self, action: #selector(copyImage))
         imgBtn.frame = NSRect(x: 155, y: buttonY, width: 48, height: 20)
         imgBtn.isHidden = true
         addSubview(imgBtn)
@@ -121,22 +109,12 @@ final class CaptureRowView: NSView {
     }
 
     private func showCopiedFeedback(on button: NSButton?, originalTitle: String) {
-        guard let button else { return }
+        guard let button = button as? PopoverCopyButton else { return }
         button.title = "Copied"
-        button.contentTintColor = DesignTokens.copiedGreenText
-        button.layer?.backgroundColor = DesignTokens.copiedGreenBg.cgColor
+        button.isCopied = true
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak button] in
             button?.title = originalTitle
-            button?.contentTintColor = DesignTokens.popoverCopyButtonText
-            button?.layer?.backgroundColor = DesignTokens.popoverCopyButtonBg.cgColor
-        }
-    }
-
-    override func draw(_ dirtyRect: NSRect) {
-        super.draw(dirtyRect)
-        if isHovered {
-            NSColor.labelColor.withAlphaComponent(0.08).setFill()
-            NSBezierPath(roundedRect: bounds, xRadius: 4, yRadius: 4).fill()
+            button?.isCopied = false
         }
     }
 
@@ -168,15 +146,26 @@ final class CaptureRowView: NSView {
 
 // MARK: - Button with hover highlight
 
-private final class HoverButton: NSButton {
-
-    private var defaultBgColor: CGColor?
+private final class PopoverCopyButton: AppearanceAwareSurfaceButton {
+    var isCopied = false {
+        didSet { refreshSurfaceAppearance() }
+    }
+    private var isHovered = false {
+        didSet { refreshSurfaceAppearance() }
+    }
 
     convenience init(title: String, target: AnyObject?, action: Selector?) {
         self.init(frame: .zero)
         self.title = title
         self.target = target
         self.action = action
+        isBordered = false
+        bezelStyle = .regularSquare
+        focusRingType = .none
+        font = NSFont.systemFont(ofSize: 10, weight: .medium)
+        wantsLayer = true
+        setButtonType(.momentaryPushIn)
+        refreshSurfaceAppearance()
     }
 
     override func updateTrackingAreas() {
@@ -186,11 +175,32 @@ private final class HoverButton: NSButton {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        defaultBgColor = layer?.backgroundColor
-        layer?.backgroundColor = NSColor.labelColor.withAlphaComponent(0.12).cgColor
+        isHovered = true
     }
 
     override func mouseExited(with event: NSEvent) {
-        layer?.backgroundColor = defaultBgColor
+        isHovered = false
+    }
+
+    override func refreshSurfaceAppearance() {
+        if isCopied {
+            contentTintColor = DesignTokens.copiedGreenText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.copiedGreenBg,
+                border: DesignTokens.copiedGreenBorder,
+                cornerRadius: 6
+            )
+            return
+        }
+
+        contentTintColor = DesignTokens.popoverCopyButtonText
+        let borderColor = isHovered ? DesignTokens.settingsPillBorder : NSColor.separatorColor
+        SettingsUI.styleSurface(
+            self,
+            background: isHovered ? DesignTokens.toolbarButtonHoverBg : DesignTokens.popoverCopyButtonBg,
+            border: borderColor,
+            cornerRadius: 6
+        )
     }
 }

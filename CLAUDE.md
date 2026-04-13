@@ -84,7 +84,7 @@ Vibeliner/
 ├── Design/
 │   └── DesignTokens.swift              # ALL colors, dimensions, fonts — single source of truth
 ├── Config/
-│   ├── ConfigManager.swift             # Read/write config.toml in the captures folder
+│   ├── ConfigManager.swift             # Read/write stable config in Application Support + legacy migration
 │   └── CapturesManager.swift           # Folder creation, listing captures
 ├── Hotkey/
 │   └── HotkeyManager.swift            # Global Cmd+Shift+6 registration
@@ -100,8 +100,7 @@ Vibeliner/
 │   ├── CanvasView.swift                # Marks layer + Notes layer
 │   ├── ToolbarView.swift               # Pill-shaped floating toolbar
 │   ├── ToolButton.swift                # Reusable circular button
-│   ├── StatusPillView.swift            # Floating status pill below screenshot
-│   └── FirstUseTooltipView.swift       # One-time IDE/App mode explanation
+│   └── StatusPillView.swift            # Floating status pill below screenshot
 ├── Annotations/
 │   ├── AnnotationModel.swift           # Data model: Annotation, AnnotationPosition
 │   ├── AnnotationStore.swift           # Single source of truth for annotations
@@ -124,17 +123,35 @@ Vibeliner/
 │   ├── ClipboardManager.swift          # NSPasteboard for text and image
 │   └── AutoSaveManager.swift           # Save on every annotation change
 ├── Setup/
-│   └── SetupWindowController.swift     # One-time welcome window: Screen Recording → Accessibility → Captures Folder
+│   └── SetupWindowController.swift     # Welcome window: Captures Folder → Accessibility → Screen Recording
 ├── Settings/
 │   ├── SettingsWindowController.swift  # 3-tab settings window
 │   ├── GeneralTabView.swift            # Hotkey, folder, launch at login
 │   ├── PromptTabView.swift             # Sub-tabs: Preamble, Tools, Footer
 │   ├── PromptPreviewView.swift         # Live preview at bottom
 │   └── AboutTabView.swift              # Version, links
+├── Models/
+│   ├── CaptureStore.swift              # CaptureSession source of truth
+│   ├── CaptureImage.swift              # Per-image capture metadata
+│   └── ImageRole.swift                 # Multi-image role model
 └── Popover/
     ├── PopoverViewController.swift     # Dark utility menu
-    ├── RecentCapturesSubmenu.swift      # Hover submenu with thumbnails
+    ├── RecentCapturesSubmenu.swift     # Hover submenu with thumbnails
     └── CaptureRowView.swift            # Thumbnail + timestamp + copy buttons
+├── Services/
+│   ├── CompositeStitcher.swift         # Filmstrip export renderer
+│   ├── CoordinateConverter.swift       # Relative coordinate conversion
+│   └── LayoutCalculator.swift          # Filmstrip layout helper
+├── Tour/
+│   ├── TourWindowController.swift      # Product walkthrough window
+│   └── Illustrations/                  # Tour-specific illustration helpers
+├── Utilities/
+│   ├── CursorManager.swift             # Balanced cursor hide/show
+│   ├── ImageUtils.swift                # NSImage helpers
+│   └── KeyEventGuard.swift             # Shortcut routing safety
+└── Views/
+    ├── FilmCellView.swift              # Filmstrip screenshot cell
+    └── TitlePillView.swift             # Editable filmstrip title + role pill
 ```
 
 ## Conventions
@@ -143,7 +160,7 @@ Vibeliner/
 - Swift naming: camelCase for vars/funcs, PascalCase for types
 - Prefer `let` over `var`
 - Use `guard` for early returns
-- No force unwraps (`!`) — use `guard let` or `if let`
+- Avoid force unwraps in production logic. Narrow exceptions are allowed for `fatalError("init(coder:)")` and AppKit construction-time IUOs that are assigned during view or window setup.
 
 ### Visual constants
 - ALL colors, dimensions, and fonts live in `DesignTokens.swift`
@@ -159,8 +176,8 @@ Vibeliner/
 - **Renderer protocol:** all 5 renderers conform to a shared `AnnotationRenderer` protocol with `drawMarks(in:)` and `drawNotes(in:)` methods
 
 ### File paths
-- Config: `[captures folder]/config.toml` (default: `~/Documents/vibeliner/config.toml`)
-- Captures: `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/screenshot.png + prompt.txt`
+- Config: `~/Library/Application Support/Vibeliner/config.toml`
+- Captures: configured captures folder (default `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/`) containing `screenshot.png` and `prompt.txt`
 - Built app: `dist/Vibeliner.app` (git-ignored, built by xcodebuild)
 
 ### What NOT to do
@@ -192,7 +209,7 @@ Vibeliner/
 
 ## Design System
 
-Three files in `docs/design-system/` document the visual design system. These files are PROTECTED — never delete them.
+The canonical design-system documentation lives in `docs/design-system/`. These three files are PROTECTED — never delete them.
 
 | File | Purpose | Audience |
 |------|---------|----------|
@@ -205,6 +222,7 @@ Three files in `docs/design-system/` document the visual design system. These fi
 - Any ticket that adds, changes, or removes a token in DesignTokens.swift MUST also update all 3 design system files
 - Any ticket that adds a new button or interactive control MUST add it to Design_Tester.html
 - Never delete these files or overwrite them with empty content
+- Do not recreate root-level duplicate peers such as `docs/DESIGN_SYSTEM.md` or `docs/design-system.html`
 
 ## Reference docs
 

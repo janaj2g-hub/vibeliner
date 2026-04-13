@@ -1,5 +1,52 @@
 # Vibeliner Scalability Audit
 
+## 2026-04-13 Dense Annotation Baseline
+
+This repo now has a practical local verification surface for dense editor checks:
+
+```sh
+open dist/Vibeliner.app --args --visual-test
+```
+
+Use the `Vibeliner Visual Harness` window and focus on these runtime-backed scenarios:
+
+1. `Editor — calm canvas`
+2. `Editor — dense hover/select`
+3. `Editor — dense filmstrip`
+
+### Manual regression checklist
+
+- `Editor — dense hover/select`
+  Move the pointer continuously across note pills and badges for 10-15 seconds. Hover rings, note-pill updates, and selection outlines should keep up without visible stutter or dropped-state flicker.
+- `Editor — dense hover/select`
+  Drag a selected annotation across the canvas with the Select tool. The mark, badge, and note pill should stay visually locked together while redraw remains responsive.
+- `Editor — dense hover/select`
+  Resize at least one rectangle or arrow endpoint after selecting it. Handle hit-testing should stay reliable even with many nearby annotations.
+- `Editor — dense filmstrip`
+  Click between filmstrip cells, then hover and drag a cross-image annotation. Title pills, selection state, and annotation ownership should remain stable while the overlay keeps up.
+- `Editor — dense filmstrip`
+  Scroll horizontally if needed and repeat the hover/drag checks near cell boundaries. The overlay should continue to track the correct cell geometry and image ownership.
+
+### What counts as a regression
+
+- Multi-frame lag between pointer motion and hover/selection updates.
+- Note pills popping, jumping, or visibly desynchronizing from their badges during drag.
+- Cross-image arrows or filmstrip annotations appearing to belong to the wrong cell after interaction.
+- Horizontal scrolling or cell reselection causing overlays to detach, redraw late, or flicker.
+
+### First hot paths to inspect
+
+- `Vibeliner/Editor/CanvasView.swift`
+  Hover hit-testing, drag invalidation, and filmstrip point-to-image resolution.
+- `Vibeliner/Annotations/Renderers/NotePillRenderer.swift`
+  Dense note-pill update churn and anchor repositioning during hover/drag.
+- `Vibeliner/Editor/FilmstripGridView.swift`
+  Cell layout churn, scroll-container geometry, and image-area frame calculations.
+- `Vibeliner/Editor/ToolbarView.swift`
+  Editor chrome validation only if the regression appears to be toolbar-state churn rather than canvas performance.
+
+The goal of this checklist is intentionally practical: future polish work should be able to re-run these scenes locally without Instruments or a separate one-off test harness.
+
 **Date:** 2026-04-09
 **Scope:** All 60 Swift files in `Vibeliner/`
 **Total LOC:** ~10,000 across 60 files

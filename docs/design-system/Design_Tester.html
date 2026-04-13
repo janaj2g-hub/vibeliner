@@ -20,7 +20,8 @@
     --secondary-border: rgba(255,255,255,0.20); --secondary-text: rgba(255,255,255,0.60); --secondary-bg: transparent;
     --secondary-hover-border: rgba(255,255,255,0.35); --secondary-hover-text: rgba(255,255,255,0.80); --secondary-hover-bg: rgba(255,255,255,0.05);
     --settings-pill-border: rgba(175,169,236,0.36); --settings-pill-fill: rgba(175,169,236,0.10); --settings-pill-text: #AFA9EC;
-    --settings-seg-track: rgba(255,255,255,0.03); --settings-seg-active: rgba(175,169,236,0.22);
+    --settings-seg-track: rgba(255,255,255,0.03); --settings-seg-border: rgba(255,255,255,0.08); --settings-seg-active: rgba(175,169,236,0.16); --settings-seg-active-border: rgba(175,169,236,0.20);
+    --settings-seg-active-text: #AFA9EC; --settings-seg-inactive-text: rgba(255,255,255,0.58);
     --settings-field-surface: rgba(255,255,255,0.06); --settings-field-border: rgba(255,255,255,0.12);
     --settings-frame-surface: rgba(255,255,255,0.02); --settings-preview-surface: #15161A;
     --setup-field-bg: rgba(255,255,255,0.05); --setup-field-border: rgba(255,255,255,0.08);
@@ -40,7 +41,8 @@
     --secondary-border: rgba(0,0,0,0.15); --secondary-text: rgba(0,0,0,0.55); --secondary-bg: transparent;
     --secondary-hover-border: rgba(0,0,0,0.25); --secondary-hover-text: rgba(0,0,0,0.75); --secondary-hover-bg: rgba(0,0,0,0.04);
     --settings-pill-border: rgba(114,103,221,0.26); --settings-pill-fill: rgba(175,169,236,0.16); --settings-pill-text: #7267DD;
-    --settings-seg-track: rgba(15,23,42,0.04); --settings-seg-active: rgba(175,169,236,0.18);
+    --settings-seg-track: rgba(15,23,42,0.04); --settings-seg-border: rgba(15,23,42,0.08); --settings-seg-active: rgba(175,169,236,0.14); --settings-seg-active-border: rgba(114,103,221,0.18);
+    --settings-seg-active-text: #7267DD; --settings-seg-inactive-text: rgba(15,23,42,0.58);
     --settings-field-surface: #EEF0F6; --settings-field-border: rgba(15,23,42,0.12);
     --settings-frame-surface: rgba(15,23,42,0.02); --settings-preview-surface: #F8FAFC;
     --setup-field-bg: rgba(255,255,255,0.92); --setup-field-border: rgba(15,23,42,0.10);
@@ -101,8 +103,11 @@
   .settings-pill:hover { filter: brightness(1.15); }
 
   /* Settings Segmented Control */
-  .settings-seg { display: inline-flex; height: 28px; border-radius: 14px; background: var(--settings-seg-track); padding: 2px; cursor: pointer; user-select: none; border: 1px solid var(--border); }
-  .settings-seg .seg-item.active { background: var(--settings-seg-active); color: var(--purple-active); }
+  .settings-seg { display: inline-flex; height: 28px; border-radius: 14px; background: var(--settings-seg-track); padding: 2px; cursor: pointer; user-select: none; border: 1px solid var(--settings-seg-border); }
+  .settings-seg .seg-item { color: var(--settings-seg-inactive-text); }
+  .settings-seg .seg-item.active { background: var(--settings-seg-active); color: var(--settings-seg-active-text); border: 1px solid var(--settings-seg-active-border); }
+  .settings-seg.primary .seg-item { font-size: 12px; font-weight: 600; padding: 0 14px; }
+  .settings-seg.secondary .seg-item { font-size: 11px; font-weight: 500; padding: 0 14px; }
 
   /* Note Pills */
   .note-pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; font-size: 12px; cursor: pointer; user-select: none; transition: all 0.15s; background: rgba(255,248,248,0.82); border: 1px solid rgba(239,68,68,0.18); color: #7F1D1D; }
@@ -134,9 +139,11 @@
   .setup-green-btn:hover { filter: brightness(1.1); }
 
   /* Role Swatches */
-  .role-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s; border: 2px solid transparent; }
-  .role-swatch:hover { transform: scale(1.15); }
-  .role-swatch.selected { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px currentColor; }
+  .role-swatch { width: 28px; height: 28px; border-radius: 50%; cursor: pointer; transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s; border: 2px solid rgba(15,23,42,0.16); box-shadow: inset 0 0 0 2px rgba(255,255,255,0.82); }
+  body:not(.light) .role-swatch { border-color: rgba(255,255,255,0.16); box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22); }
+  .role-swatch:hover { transform: scale(1.08); border-color: var(--settings-seg-active-text); }
+  .role-swatch.selected { box-shadow: inset 0 0 0 2px rgba(255,255,255,0.82), 0 0 0 2px currentColor; }
+  body:not(.light) .role-swatch.selected { box-shadow: inset 0 0 0 2px rgba(0,0,0,0.22), 0 0 0 2px rgba(255,255,255,0.92); }
 
   /* Badge */
   .badge { width: 18px; height: 18px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
@@ -274,14 +281,14 @@
   </div>
   <div class="control-card">
     <div class="label">Settings Tab Selector (click to switch)</div>
-    <div class="settings-seg" onclick="toggleSeg(this)" style="min-width:240px"><div class="seg-item active" style="flex:1;text-align:center">General</div><div class="seg-item" style="flex:1;text-align:center">Prompt</div><div class="seg-item" style="flex:1;text-align:center">About</div></div>
-    <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
+    <div class="settings-seg primary" onclick="toggleSeg(this)"><div class="seg-item active">General</div><div class="seg-item">Prompt</div><div class="seg-item">About</div></div>
+    <div class="tokens">settingsSegmentedTrack, settingsSegmentedBorder, settingsSegmentedActive, settingsSegmentedActiveBorder, settingsSegmentedActiveText, settingsSegmentedInactiveText</div>
     <div class="location">Settings window (SettingsWindowController — SettingsSegmentedControl)</div>
   </div>
   <div class="control-card">
     <div class="label">Prompt Sub-tabs (click to switch)</div>
-    <div class="settings-seg" onclick="toggleSeg(this)" style="min-width:300px"><div class="seg-item active" style="flex:1;text-align:center">Preamble</div><div class="seg-item" style="flex:1;text-align:center">Tools</div><div class="seg-item" style="flex:1;text-align:center">Footer</div><div class="seg-item" style="flex:1;text-align:center">Multi-image</div></div>
-    <div class="tokens">settingsSegmentedTrack, settingsSegmentedActive</div>
+    <div class="settings-seg secondary" onclick="toggleSeg(this)"><div class="seg-item active">Preamble</div><div class="seg-item">Tools</div><div class="seg-item">Footer</div><div class="seg-item">Multi-image</div></div>
+    <div class="tokens">Shared selector family with secondary emphasis</div>
     <div class="location">Settings Prompt tab (PromptTabView — SettingsSegmentedControl)</div>
   </div>
 </div>

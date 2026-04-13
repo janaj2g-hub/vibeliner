@@ -30,9 +30,25 @@ private final class ToolbarDividerView: AppearanceAwareSurfaceView {
     }
 }
 
+private enum ToolbarIconGeometry {
+    static let viewBox: CGFloat = 15
+
+    static func point(in rect: NSRect, _ x: CGFloat, _ y: CGFloat) -> NSPoint {
+        NSPoint(
+            x: rect.minX + (x / viewBox) * rect.width,
+            y: rect.maxY - (y / viewBox) * rect.height
+        )
+    }
+
+    static func outlineRect(in rect: NSRect, inset: CGFloat = 1.25) -> NSRect {
+        rect.insetBy(dx: inset, dy: inset)
+    }
+}
+
 final class ToolbarView: NSView {
 
     weak var delegate: ToolbarDelegate?
+    var onChromeHoverChanged: ((Bool) -> Void)?
 
     private(set) var selectedTool: AnnotationToolType = .pin
     private var toolButtons: [AnnotationToolType: ToolButton] = [:]
@@ -104,68 +120,24 @@ final class ToolbarView: NSView {
         x = addDivider(at: x)
         x += 10
 
-        // VIB-159: Select tool — clean pointer arrow icon
-        // SVG path: M3 2l9 5.5-4 1 2.5 4.5-1.5.8-2.5-4.5-3 3z in 15×15 viewBox
-        let selectBtn = ToolButton(style: .tool, tooltip: "Select (1)") { rect, color in
-            let w = rect.width, h = rect.height
-            func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-                NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-            }
-            let path = NSBezierPath()
-            path.move(to: pt(3, 2))
-            path.line(to: pt(12, 7.5))
-            path.line(to: pt(8, 8.5))
-            path.line(to: pt(10.5, 13))
-            path.line(to: pt(9, 13.8))
-            path.line(to: pt(6.5, 9.3))
-            path.line(to: pt(3.5, 12.3))
-            path.close()
-            color.setFill()
-            path.fill()
-            color.setStroke()
-            path.lineWidth = 0.5
-            path.lineJoinStyle = .round
-            path.stroke()
-        }
-        selectBtn.isActive = (selectedTool == .select)
-        selectBtn.onClick = { [weak self] in self?.selectTool(.select) }
-        selectBtn.setAccessibilityLabel("Select tool")
-        selectBtn.setAccessibilityRole(.radioButton)
-        selectBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
-        addSubview(selectBtn)
-        toolButtons[.select] = selectBtn
-        x += DesignTokens.toolButtonSize
-
-        // VIB-164 (attempt 4): Pin icon — uses the shared drawPinIcon, same as settings
-        let pinBtn = ToolButton(style: .tool, tooltip: "Pin (2)", iconDrawer: ToolbarView.drawPinIcon)
-        pinBtn.isActive = (selectedTool == .pin)
-        pinBtn.onClick = { [weak self] in self?.selectTool(.pin) }
-        pinBtn.setAccessibilityLabel("Pin tool")
-        pinBtn.setAccessibilityRole(.radioButton)
-        pinBtn.setFrameOrigin(NSPoint(x: x, y: centerY))
-        addSubview(pinBtn)
-        toolButtons[.pin] = pinBtn
-        x += DesignTokens.toolButtonSize
-
-        // Other tool buttons
-        let toolDefs: [(AnnotationToolType, String, (NSRect, NSColor) -> Void)] = [
-            (.arrow, "Arrow (3)", ToolbarView.drawArrowIcon),
-            (.rectangle, "Rectangle (4)", ToolbarView.drawRectIcon),
-            (.circle, "Circle (5)", ToolbarView.drawCircleIcon),
-            (.freehand, "Freehand (6)", ToolbarView.drawFreehandIcon),
-        ]
-
-        for (tool, name, drawer) in toolDefs {
-            let btn = ToolButton(style: .tool, tooltip: name, iconDrawer: drawer)
+        for definition in AnnotationToolType.toolbarDefinitions {
+            let btn = ToolButton(
+                style: .tool,
+                tooltip: definition.toolbarTooltip,
+                iconDrawer: ToolbarView.iconDrawer(for: definition.type)
+            )
+            let tool = definition.type
             btn.isActive = (tool == selectedTool)
             btn.onClick = { [weak self] in self?.selectTool(tool) }
-            btn.setAccessibilityLabel("\(name.components(separatedBy: " (").first ?? name) tool")
+            btn.setAccessibilityLabel("\(definition.displayName) tool")
             btn.setAccessibilityRole(.radioButton)
             btn.setFrameOrigin(NSPoint(x: x, y: centerY))
             addSubview(btn)
             toolButtons[tool] = btn
-            x += DesignTokens.toolButtonSize
+            x += DesignTokens.toolButtonSize + DesignTokens.toolbarToolButtonGap
         }
+
+        x -= DesignTokens.toolbarToolButtonGap
 
         // VIB-202: Trash — now part of tool group, always visible, grayed when no selection
         let iconY = (DesignTokens.toolbarHeight - DesignTokens.iconButtonSize) / 2
@@ -376,7 +348,11 @@ final class ToolbarView: NSView {
     }
 
     override func mouseEntered(with event: NSEvent) {
-        CursorManager.shared.showCursor()
+        onChromeHoverChanged?(true)
+    }
+
+    override func mouseExited(with event: NSEvent) {
+        onChromeHoverChanged?(false)
     }
 
     func selectTool(_ tool: AnnotationToolType) {
@@ -499,41 +475,31 @@ final class ToolbarView: NSView {
     /// Pin icon: filled circle + stake, 15×15 viewBox, same pattern as all other tool icons.
     /// Uses currentColor — no special colors, no counter.
     static func drawPinIcon(_ rect: NSRect, _ color: NSColor) {
-        let w = rect.width, h = rect.height
-        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-        }
         // Filled circle at (7.5, 5), r=3.5 in 15×15 viewBox
-        let center = pt(7.5, 5)
-        let r = 3.5 * (w / 15)
+        let center = ToolbarIconGeometry.point(in: rect, 7.5, 5)
+        let r = 3.5 * (rect.width / ToolbarIconGeometry.viewBox)
         let circle = NSBezierPath(ovalIn: NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
         color.setFill()
         circle.fill()
         // Stake line from (7.5, 9) to (7.5, 14)
         let stake = NSBezierPath()
-        stake.move(to: pt(7.5, 9))
-        stake.line(to: pt(7.5, 14))
-        stake.lineWidth = 1.8 * (w / 15)
+        stake.move(to: ToolbarIconGeometry.point(in: rect, 7.5, 9))
+        stake.line(to: ToolbarIconGeometry.point(in: rect, 7.5, 14))
+        stake.lineWidth = 1.8 * (rect.width / ToolbarIconGeometry.viewBox)
         stake.lineCapStyle = .round
         color.setStroke()
         stake.stroke()
     }
 
     static func drawArrowIcon(_ rect: NSRect, _ color: NSColor) {
-        // Matches prototype SVG: line (2,13)→(13,2), polyline (8,2)→(13,2)→(13,7) in 15×15 viewBox
-        // SVG is y-down; AppKit is y-up. Map: svgY → rect.maxY - (svgY / 15) * rect.height
-        let w = rect.width, h = rect.height
-        func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
-            NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
-        }
         let path = NSBezierPath()
         // Diagonal line
-        path.move(to: pt(2, 13))
-        path.line(to: pt(13, 2))
+        path.move(to: ToolbarIconGeometry.point(in: rect, 2, 13))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 2))
         // Arrowhead chevron
-        path.move(to: pt(8, 2))
-        path.line(to: pt(13, 2))
-        path.line(to: pt(13, 7))
+        path.move(to: ToolbarIconGeometry.point(in: rect, 8, 2))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 2))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 7))
         path.lineWidth = 1.4
         path.lineCapStyle = .round
         path.lineJoinStyle = .round
@@ -542,7 +508,7 @@ final class ToolbarView: NSView {
     }
 
     static func drawRectIcon(_ rect: NSRect, _ color: NSColor) {
-        let inset = rect.insetBy(dx: 1, dy: 1)
+        let inset = ToolbarIconGeometry.outlineRect(in: rect)
         let path = NSBezierPath(roundedRect: inset, xRadius: 2, yRadius: 2)
         path.lineWidth = 1.5
         color.setStroke()
@@ -550,7 +516,7 @@ final class ToolbarView: NSView {
     }
 
     static func drawCircleIcon(_ rect: NSRect, _ color: NSColor) {
-        let inset = rect.insetBy(dx: 1, dy: 1)
+        let inset = ToolbarIconGeometry.outlineRect(in: rect)
         let path = NSBezierPath(ovalIn: inset)
         path.lineWidth = 1.5
         color.setStroke()
@@ -569,6 +535,44 @@ final class ToolbarView: NSView {
         path.lineWidth = 1.5
         color.setStroke()
         path.stroke()
+    }
+
+    private static func iconDrawer(for tool: AnnotationToolType) -> (NSRect, NSColor) -> Void {
+        switch tool {
+        case .select:
+            return { rect, color in
+                let w = rect.width
+                let h = rect.height
+                func pt(_ sx: CGFloat, _ sy: CGFloat) -> NSPoint {
+                    NSPoint(x: rect.minX + sx / 15 * w, y: rect.maxY - sy / 15 * h)
+                }
+                let path = NSBezierPath()
+                path.move(to: pt(3, 2))
+                path.line(to: pt(12, 7.5))
+                path.line(to: pt(8, 8.5))
+                path.line(to: pt(10.5, 13))
+                path.line(to: pt(9, 13.8))
+                path.line(to: pt(6.5, 9.3))
+                path.line(to: pt(3.5, 12.3))
+                path.close()
+                color.setFill()
+                path.fill()
+                color.setStroke()
+                path.lineWidth = 0.5
+                path.lineJoinStyle = .round
+                path.stroke()
+            }
+        case .pin:
+            return drawPinIcon
+        case .arrow:
+            return drawArrowIcon
+        case .rectangle:
+            return drawRectIcon
+        case .circle:
+            return drawCircleIcon
+        case .freehand:
+            return drawFreehandIcon
+        }
     }
 }
 

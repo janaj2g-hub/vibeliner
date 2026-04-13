@@ -401,28 +401,24 @@ final class NotePillView: NSView {
 
         switch state {
         case .default:
-            // Translucent warm white, neutral GRAY border (barely visible)
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.72).cgColor
-            tintView.layer?.borderColor = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceDefault.cgColor
+            tintView.layer?.borderColor = DesignTokens.editorNoteBorderDefault.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .hover:
-            // Slightly more opaque, RED border appears
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.80).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceHover.cgColor
+            tintView.layer?.borderColor = DesignTokens.editorNoteBorderHover.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .selected:
-            // More opaque, stronger red border
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.88).cgColor
-            tintView.layer?.borderColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceSelected.cgColor
+            tintView.layer?.borderColor = DesignTokens.editorNoteBorderSelected.cgColor
             layer?.shadowRadius = 0
             layer?.shadowOpacity = 0
         case .editing:
-            // Nearly opaque, solid red border + red glow halo
-            tintView.layer?.backgroundColor = NSColor(red: 1.0, green: 0.980, blue: 0.980, alpha: 0.96).cgColor
-            tintView.layer?.borderColor = DesignTokens.red.cgColor
-            layer?.shadowColor = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0).cgColor
+            tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceEditing.cgColor
+            tintView.layer?.borderColor = DesignTokens.editorNoteEditingGlow.cgColor
+            layer?.shadowColor = DesignTokens.editorNoteEditingGlow.cgColor
             layer?.shadowOffset = .zero
             layer?.shadowRadius = 10
             layer?.shadowOpacity = 0.22

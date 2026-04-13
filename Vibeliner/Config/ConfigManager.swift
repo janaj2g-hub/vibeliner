@@ -1,7 +1,7 @@
 import Foundation
 
 /// VIB-322: Dynamic role configuration
-struct RoleConfig {
+struct RoleConfig: Equatable {
     var name: String
     var description: String
     var colorHex: String
@@ -27,13 +27,7 @@ final class ConfigManager {
     var appearance: String = "system"
     var preamble: String = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
     var footer: String = "Make the changes and verify they match the design."
-    var toolDescriptions: [String: String] = [
-        "pin": "points to a specific issue",
-        "arrow": "points at or between elements",
-        "rectangle": "highlights a region or container",
-        "circle": "calls out a specific element",
-        "freehand": "marks an irregular area"
-    ]
+    var toolDescriptions: [String: String] = AnnotationToolType.defaultPromptDescriptions
     var roles: [RoleConfig] = RoleConfig.defaultRoles
 
     /// Backward-compatible accessor for prompt preview and legacy code
@@ -63,8 +57,11 @@ final class ConfigManager {
     /// Stable config location — survives captures folder changes and clean builds.
     /// ~/Library/Application Support/Vibeliner/config.toml
     private var configFileURL: URL {
-        let appSupport = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        return appSupport.appendingPathComponent("Vibeliner").appendingPathComponent("config.toml")
+        FileManager.default.homeDirectoryForCurrentUser
+            .appendingPathComponent("Library")
+            .appendingPathComponent("Application Support")
+            .appendingPathComponent("Vibeliner")
+            .appendingPathComponent("config.toml")
     }
 
     /// Legacy config path inside the captures folder (pre-VIB-301).
@@ -98,13 +95,7 @@ final class ConfigManager {
             appearance = "system"
             preamble = "This is a screenshot of my running app. View it at [Screenshot Path]\n\n[Tool Description] Each annotation has a number and a description.\n\nFix each issue:"
             footer = "Make the changes and verify they match the design."
-            toolDescriptions = [
-                "pin": "points to a specific issue",
-                "arrow": "points at or between elements",
-                "rectangle": "highlights a region or container",
-                "circle": "calls out a specific element",
-                "freehand": "marks an irregular area"
-            ]
+            toolDescriptions = AnnotationToolType.defaultPromptDescriptions
             roles = RoleConfig.defaultRoles
             saveInternal()
         }

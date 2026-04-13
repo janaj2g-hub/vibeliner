@@ -68,12 +68,13 @@ Every line from the prompt's `Verification` section must be included with `Pass`
 - All colors/dimensions come from `Vibeliner/Design/DesignTokens.swift` — never hardcode
 - AppKit for editor, canvas, capture overlay. SwiftUI only for settings/popover content.
 - No third-party dependencies
-- No force unwraps (`!`)
+- Avoid force unwraps in production logic. Narrow exceptions are allowed for `fatalError("init(coder:)")` and tightly-scoped AppKit IUO refs that are initialized during view/window construction.
 - Prefer `let` over `var`
 - Use `guard` for early returns
-- Config lives at `[captures folder]/config.toml` (default: `~/Documents/vibeliner/config.toml`)
-- Captures save to `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/` with `screenshot.png` and `prompt.txt`
+- Config lives at `~/Library/Application Support/Vibeliner/config.toml`
+- Captures save under the configured captures folder (default: `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/`) with `screenshot.png` and `prompt.txt`
 - Built app is `dist/Vibeliner.app`
+- Canonical design-system docs live in `docs/design-system/`
 - Read `docs/TECHNICAL_DECISIONS.md` before trying a new approach — check if it already failed
 - Read `docs/VIBELINER_PRD.md` for the complete product spec
 - Use `NotificationCenter` for change propagation, not Combine

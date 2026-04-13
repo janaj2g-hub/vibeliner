@@ -37,6 +37,26 @@ final class ToolButton: NSView {
 
     required init?(coder: NSCoder) { fatalError() }
 
+    private func resolvedBackingScale() -> CGFloat {
+        window?.backingScaleFactor
+            ?? NSScreen.main?.backingScaleFactor
+            ?? 2
+    }
+
+    private func snapped(_ value: CGFloat, scale: CGFloat) -> CGFloat {
+        round(value * scale) / scale
+    }
+
+    private func normalizedIconRect(for size: CGFloat) -> NSRect {
+        let scale = resolvedBackingScale()
+        return NSRect(
+            x: snapped(bounds.midX - (size / 2), scale: scale),
+            y: snapped(bounds.midY - (size / 2), scale: scale),
+            width: snapped(size, scale: scale),
+            height: snapped(size, scale: scale)
+        )
+    }
+
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
         guard let context = NSGraphicsContext.current?.cgContext else { return }
@@ -85,12 +105,7 @@ final class ToolButton: NSView {
         case .icon, .trash: iconSize = 14
         case .tool: iconSize = 15
         }
-        let iconRect = NSRect(
-            x: rect.midX - iconSize / 2,
-            y: rect.midY - iconSize / 2,
-            width: iconSize,
-            height: iconSize
-        )
+        let iconRect = normalizedIconRect(for: iconSize)
 
         context.saveGState()
         iconDrawer(iconRect, iconColor)

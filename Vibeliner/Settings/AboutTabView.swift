@@ -3,6 +3,7 @@ import AppKit
 final class AboutTabView: NSView {
 
     private let contentStack = NSStackView()
+    private let versionLabel = NSTextField(labelWithString: "")
 
     init() {
         super.init(frame: .zero)
@@ -44,11 +45,11 @@ final class AboutTabView: NSView {
         name.alignment = .center
         contentStack.addArrangedSubview(name)
 
-        let version = NSTextField(labelWithString: "Version 1.0.0")
-        version.font = NSFont.systemFont(ofSize: 13)
-        version.textColor = .secondaryLabelColor
-        version.alignment = .center
-        contentStack.addArrangedSubview(version)
+        versionLabel.stringValue = bundleVersionString()
+        versionLabel.font = NSFont.systemFont(ofSize: 13)
+        versionLabel.textColor = .secondaryLabelColor
+        versionLabel.alignment = .center
+        contentStack.addArrangedSubview(versionLabel)
 
         let linksStack = NSStackView()
         linksStack.orientation = .vertical
@@ -78,10 +79,26 @@ final class AboutTabView: NSView {
         let urls: [String: String] = [
             "GitHub Repository": "https://github.com/janaj2g-hub/vibeliner",
             "Report an Issue": "https://github.com/janaj2g-hub/vibeliner/issues",
-            "Documentation": "https://github.com/janaj2g-hub/vibeliner#readme"
+            "Documentation": "https://github.com/janaj2g-hub/vibeliner/blob/main/docs/VIBELINER_PRD.md"
         ]
         if let urlStr = urls[sender.title], let url = URL(string: urlStr) {
             NSWorkspace.shared.open(url)
+        }
+    }
+
+    private func bundleVersionString() -> String {
+        let shortVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String
+        let buildVersion = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String
+
+        switch (shortVersion, buildVersion) {
+        case let (short?, build?) where !build.isEmpty && build != short:
+            return "Version \(short) (\(build))"
+        case let (short?, _):
+            return "Version \(short)"
+        case let (_, build?) where !build.isEmpty:
+            return "Version \(build)"
+        default:
+            return "Version —"
         }
     }
 }

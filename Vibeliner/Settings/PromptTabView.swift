@@ -17,7 +17,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         }
     }
 
-    private struct PromptDrafts {
+    private struct PromptDrafts: Equatable {
         var preamble: String
         var footer: String
         var toolDescriptions: [String: String]
@@ -40,8 +40,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private let editFrame = AppearanceAwareFrameSurfaceView()
     private let editStack = NSStackView()
     private let editHeaderLabel = SettingsUI.sectionTitle("Edit Prompt Sections")
-    private let saveButton = SettingsPillButton(title: "Save", target: nil, action: nil)
-    private let segmentedControl = SettingsSegmentedControl(items: PromptSubTab.allCases.map(\.title))
+    private let saveButton = SettingsPillButton(title: "Save changes", target: nil, action: nil)
+    private let draftStateView = PromptDraftStateView()
+    private let draftHelperLabel = SettingsUI.bodyCopy("")
+    private let segmentedControl = SettingsSegmentedControl(items: PromptSubTab.allCases.map(\.title), style: .secondary)
     private let activeContentStack = NSStackView()
     private let resetButton = NSButton(title: "Reset to default", target: nil, action: nil)
 
@@ -54,7 +56,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     private var toolFields: [String: SettingsTextField] = [:]
     private var roleFields: [String: SettingsTextField] = [:]
     private var contentLoaded = false
-    private var savedResetTimer: Timer?
 
     // MARK: - Init
 
@@ -98,6 +99,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         contentLoaded = true
         refreshPreview()
         selectSubTab(.preamble, syncDrafts: false)
+        updateDraftStateUI()
     }
 
     // MARK: - Layout
@@ -119,10 +121,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         // Preview section
         previewView.translatesAutoresizingMaskIntoConstraints = false
         rootStack.addArrangedSubview(previewView)
-        NSLayoutConstraint.activate([
-            previewView.heightAnchor.constraint(equalToConstant: 188),
-            previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor),
-        ])
+        previewView.widthAnchor.constraint(equalTo: rootStack.widthAnchor).isActive = true
 
         // Edit frame
         editFrame.translatesAutoresizingMaskIntoConstraints = false
@@ -162,9 +161,14 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         headerRow.addArrangedSubview(editHeaderLabel)
         headerRow.addArrangedSubview(spacer)
+        headerRow.addArrangedSubview(draftStateView)
         headerRow.addArrangedSubview(saveButton)
         editStack.addArrangedSubview(headerRow)
         headerRow.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
+
+        draftHelperLabel.translatesAutoresizingMaskIntoConstraints = false
+        editStack.addArrangedSubview(draftHelperLabel)
+        draftHelperLabel.widthAnchor.constraint(equalTo: editStack.widthAnchor).isActive = true
 
         // Segmented control
         let segmentedRow = NSView()
@@ -177,8 +181,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             segmentedControl.centerXAnchor.constraint(equalTo: segmentedRow.centerXAnchor),
             segmentedControl.topAnchor.constraint(equalTo: segmentedRow.topAnchor),
             segmentedControl.bottomAnchor.constraint(equalTo: segmentedRow.bottomAnchor),
-            segmentedControl.widthAnchor.constraint(lessThanOrEqualToConstant: 360),
-            segmentedControl.widthAnchor.constraint(equalTo: segmentedRow.widthAnchor, multiplier: 0.75),
+            segmentedControl.leadingAnchor.constraint(greaterThanOrEqualTo: segmentedRow.leadingAnchor, constant: 12),
+            segmentedControl.trailingAnchor.constraint(lessThanOrEqualTo: segmentedRow.trailingAnchor, constant: -12),
         ])
 
         segmentedControl.setAccessibilityLabel("Prompt section selector")
@@ -285,8 +289,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
         activeContentStack.addArrangedSubview(rowsStack)
 
-        for (title, key) in toolRows() {
-            let row = makeToolRow(title: title, key: key)
+        for definition in toolRows() {
+            let row = makeToolRow(definition: definition)
             rowsStack.addArrangedSubview(row)
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
@@ -378,8 +382,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
             swatch.leadingAnchor.constraint(equalTo: row.leadingAnchor, constant: 8),
             swatch.centerYAnchor.constraint(equalTo: row.centerYAnchor),
-            swatch.widthAnchor.constraint(equalToConstant: 14),
-            swatch.heightAnchor.constraint(equalToConstant: 14),
+            swatch.widthAnchor.constraint(equalToConstant: 16),
+            swatch.heightAnchor.constraint(equalToConstant: 16),
 
             // VIB-391: Increased spacing for better visual separation
             nameField.leadingAnchor.constraint(equalTo: swatch.trailingAnchor, constant: 12),
@@ -453,13 +457,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             dot.isBordered = false
             dot.wantsLayer = true
             dot.layer?.cornerRadius = dotSize / 2
-            dot.layer?.backgroundColor = preset.color.cgColor
             let isSelected = preset.hex.lowercased() == drafts.roles[roleIndex].colorHex.lowercased()
-            // VIB-389: Visible selection indicator — thick white border + subtle unselected border
-            dot.layer?.borderWidth = isSelected ? 2.5 : 0.5
-            dot.layer?.borderColor = isSelected
-                ? NSColor.white.cgColor
-                : NSColor(white: 0, alpha: 0.1).cgColor
+            applyColorDotStyle(dot, color: preset.color, isSelected: isSelected, in: contentView)
             dot.target = self
             dot.action = #selector(colorPopoverDotClicked(_:))
             dot.tag = roleIndex * 100 + colorIdx
@@ -485,15 +484,16 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         // The popover stays open so the user can try different colors.
         // It closes on outside click because behavior = .transient.
         if let contentView = activeColorPopover?.contentViewController?.view {
-            let dotSize: CGFloat = 22
             for subview in contentView.subviews {
                 guard let dot = subview as? NSButton else { continue }
                 let ci = dot.tag % 100
                 let isNowSelected = ci == colorIndex && dot.tag / 100 == roleIndex
-                dot.layer?.borderWidth = isNowSelected ? 2.5 : 0.5
-                dot.layer?.borderColor = isNowSelected
-                    ? NSColor.white.cgColor
-                    : NSColor(white: 0, alpha: 0.1).cgColor
+                applyColorDotStyle(
+                    dot,
+                    color: DesignTokens.rolePresetColors[ci].color,
+                    isSelected: isNowSelected,
+                    in: contentView
+                )
             }
         }
 
@@ -511,6 +511,18 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
             }
         }
         return nil
+    }
+
+    private func applyColorDotStyle(_ dot: NSButton, color: NSColor, isSelected: Bool, in view: NSView) {
+        dot.layer?.backgroundColor = color.cgColor
+        dot.layer?.borderWidth = isSelected ? 2.5 : 1.0
+        view.effectiveAppearance.performAsCurrentDrawingAppearance {
+            dot.layer?.borderColor = (isSelected ? DesignTokens.roleSwatchSelectedRing : DesignTokens.roleSwatchOutline).cgColor
+            dot.layer?.shadowColor = DesignTokens.roleSwatchSelectedRing.withAlphaComponent(0.26).cgColor
+        }
+        dot.layer?.shadowOpacity = isSelected ? 1.0 : 0.0
+        dot.layer?.shadowRadius = isSelected ? 4 : 0
+        dot.layer?.shadowOffset = .zero
     }
 
     /// Creates an editable text box with visible field surface styling.
@@ -563,20 +575,20 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private static let toolRowHeight: CGFloat = 40
 
-    private func makeToolRow(title: String, key: String) -> NSView {
+    private func makeToolRow(definition: AnnotationToolDefinition) -> NSView {
         let row = NSView()
         row.translatesAutoresizingMaskIntoConstraints = false
 
-        let icon = ToolIconView(toolKey: key)
-        let nameLabel = SettingsUI.regularLabel(title)
+        let icon = ToolIconView(tool: definition.type)
+        let nameLabel = SettingsUI.regularLabel(definition.displayName)
         nameLabel.font = NSFont.systemFont(ofSize: 13, weight: .semibold)
 
         let field = SettingsTextField()
-        field.stringValue = drafts.toolDescriptions[key] ?? ""
+        field.stringValue = drafts.toolDescriptions[definition.label] ?? ""
         field.delegate = self
-        field.identifier = NSUserInterfaceItemIdentifier(key)
+        field.identifier = NSUserInterfaceItemIdentifier(definition.label)
         field.translatesAutoresizingMaskIntoConstraints = false
-        toolFields[key] = field
+        toolFields[definition.label] = field
 
         row.addSubview(icon)
         row.addSubview(nameLabel)
@@ -606,9 +618,8 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         return row
     }
 
-    private func toolRows() -> [(String, String)] {
-        [("Pin", "pin"), ("Arrow", "arrow"), ("Rectangle", "rectangle"),
-         ("Circle", "circle"), ("Freehand", "freehand")]
+    private func toolRows() -> [AnnotationToolDefinition] {
+        AnnotationToolType.promptExportDefinitions
     }
 
     // MARK: - Data
@@ -630,14 +641,15 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
     }
 
     private func refreshPreview() {
-        var roleDescs: [String: String] = [:]
-        for role in drafts.roles { roleDescs[role.name.lowercased()] = role.description }
+        let isDirty = hasUnsavedChanges
         previewView.refresh(
             preamble: drafts.preamble,
             footer: drafts.footer,
             toolDescriptions: drafts.toolDescriptions,
-            roleDescriptions: roleDescs
+            roles: drafts.roles,
+            isDirty: isDirty
         )
+        updateDraftStateUI(isDirty: isDirty)
     }
 
     @objc private func saveAllPromptSections() {
@@ -648,21 +660,6 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         ConfigManager.shared.roles = drafts.roles
         ConfigManager.shared.save()
         refreshPreview()
-
-        // Flash "Saved" green confirmation (matches editor toolbar copy buttons)
-        savedResetTimer?.invalidate()
-        saveButton.title = "Saved"
-        saveButton.contentTintColor = DesignTokens.copiedGreenText
-        // VIB-388: Use appearance-safe helpers so colors resolve correctly on theme change
-        saveButton.setLayerBackground(DesignTokens.copiedGreenBg)
-        saveButton.setLayerBorder(DesignTokens.copiedGreenBorder)
-
-        savedResetTimer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false) { [weak self] _ in
-            self?.saveButton.title = "Save"
-            self?.saveButton.contentTintColor = DesignTokens.settingsPillText
-            self?.saveButton.setLayerBackground(DesignTokens.settingsPillFill)
-            self?.saveButton.setLayerBorder(DesignTokens.settingsPillBorder)
-        }
     }
 
     @objc private func resetCurrentPromptSection() {
@@ -721,13 +718,21 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
     private static let defaultFooter = "Make the changes and verify they match the design."
 
-    private static let defaultToolDescriptions: [String: String] = [
-        "pin": "points to a specific issue",
-        "arrow": "points at or between elements",
-        "rectangle": "highlights a region or container",
-        "circle": "calls out a specific element",
-        "freehand": "marks an irregular area",
-    ]
+    private static let defaultToolDescriptions = AnnotationToolType.defaultPromptDescriptions
+
+    private var hasUnsavedChanges: Bool {
+        drafts != PromptDrafts.current()
+    }
+
+    private func updateDraftStateUI(isDirty: Bool? = nil) {
+        let dirty = isDirty ?? hasUnsavedChanges
+        draftStateView.setState(dirty ? .unsaved : .saved)
+        draftHelperLabel.stringValue = dirty
+            ? "Changes below stay in a draft until you click Save. The preview already reflects the draft values."
+            : "These prompt settings are saved and currently used for copy, export, and prompt.txt."
+        saveButton.isEnabled = dirty
+        saveButton.alphaValue = dirty ? 1.0 : 0.7
+    }
 
 }
 
@@ -735,10 +740,10 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
 
 private final class ToolIconView: AppearanceAwareFieldView {
 
-    private let toolKey: String
+    private let tool: AnnotationToolType
 
-    init(toolKey: String) {
-        self.toolKey = toolKey
+    init(tool: AnnotationToolType) {
+        self.tool = tool
         super.init(frame: .zero)
         translatesAutoresizingMaskIntoConstraints = false
     }
@@ -755,13 +760,13 @@ private final class ToolIconView: AppearanceAwareFieldView {
             height: iconSize
         )
         let color = NSColor.secondaryLabelColor
-        switch toolKey {
-        case "pin":      ToolbarView.drawPinIcon(iconRect, color)
-        case "arrow":    ToolbarView.drawArrowIcon(iconRect, color)
-        case "rectangle": ToolbarView.drawRectIcon(iconRect, color)
-        case "circle":   ToolbarView.drawCircleIcon(iconRect, color)
-        case "freehand": ToolbarView.drawFreehandIcon(iconRect, color)
-        default: break
+        switch tool {
+        case .pin: ToolbarView.drawPinIcon(iconRect, color)
+        case .arrow: ToolbarView.drawArrowIcon(iconRect, color)
+        case .rectangle: ToolbarView.drawRectIcon(iconRect, color)
+        case .circle: ToolbarView.drawCircleIcon(iconRect, color)
+        case .freehand: ToolbarView.drawFreehandIcon(iconRect, color)
+        case .select: break
         }
     }
 }
@@ -769,6 +774,70 @@ private final class ToolIconView: AppearanceAwareFieldView {
 private final class AppearanceAwareFrameSurfaceView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
         SettingsUI.styleFrameSurface(self)
+    }
+}
+
+private final class PromptDraftStateView: AppearanceAwareSurfaceView {
+
+    enum State {
+        case saved
+        case unsaved
+    }
+
+    private let label = NSTextField(labelWithString: "")
+    private var state: State = .saved
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+        translatesAutoresizingMaskIntoConstraints = false
+
+        label.font = NSFont.systemFont(ofSize: 11, weight: .semibold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(label)
+
+        NSLayoutConstraint.activate([
+            label.topAnchor.constraint(equalTo: topAnchor, constant: 6),
+            label.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 10),
+            label.trailingAnchor.constraint(equalTo: trailingAnchor, constant: -10),
+            label.bottomAnchor.constraint(equalTo: bottomAnchor, constant: -6),
+        ])
+
+        setState(.saved)
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    func setState(_ state: State) {
+        self.state = state
+        label.stringValue = state == .saved ? "Saved settings" : "Unsaved draft"
+        invalidateIntrinsicContentSize()
+        refreshSurfaceAppearance()
+    }
+
+    override var intrinsicContentSize: NSSize {
+        let labelSize = label.intrinsicContentSize
+        return NSSize(width: labelSize.width + 20, height: max(24, labelSize.height + 12))
+    }
+
+    override func refreshSurfaceAppearance() {
+        switch state {
+        case .saved:
+            label.textColor = .secondaryLabelColor
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.settingsFieldSurface,
+                border: DesignTokens.settingsFieldBorder,
+                cornerRadius: 12
+            )
+        case .unsaved:
+            label.textColor = DesignTokens.settingsPillText
+            SettingsUI.styleSurface(
+                self,
+                background: DesignTokens.settingsPillFill,
+                border: DesignTokens.settingsPillBorder,
+                cornerRadius: 12
+            )
+        }
     }
 }
 
@@ -810,15 +879,23 @@ private final class RoleSwatchView: NSView {
 
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
-        let path = NSBezierPath(ovalIn: bounds)
+        let outerRect = bounds.insetBy(dx: 0.5, dy: 0.5)
+        let outerPath = NSBezierPath(ovalIn: outerRect)
+        let colorRect = bounds.insetBy(dx: 2.5, dy: 2.5)
+        let colorPath = NSBezierPath(ovalIn: colorRect)
+
+        NSColor.windowBackgroundColor.setFill()
+        outerPath.fill()
         swatchColor.setFill()
-        path.fill()
-        // VIB-338: Hover border indicates clickability
-        if isHovered {
-            NSColor.separatorColor.setStroke()
-            path.lineWidth = 1
-            path.stroke()
-        }
+        colorPath.fill()
+
+        DesignTokens.roleSwatchInnerBorder.setStroke()
+        colorPath.lineWidth = 1
+        colorPath.stroke()
+
+        (isHovered ? DesignTokens.roleSwatchSelectedRing : DesignTokens.roleSwatchOutline).setStroke()
+        outerPath.lineWidth = isHovered ? 1.5 : 1
+        outerPath.stroke()
     }
 
     override func mouseDown(with event: NSEvent) {

@@ -325,9 +325,25 @@ enum DesignTokens {
     /// Settings segmented control active fill
     static let settingsSegmentedActive = NSColor(name: nil) { appearance in
         if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
         }
-        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.18)
+        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
+    }
+
+    /// Settings segmented control track border
+    static let settingsSegmentedBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.08)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
+    }
+
+    /// Settings segmented control active border
+    static let settingsSegmentedActiveBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
+        }
+        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.18)
     }
 
     /// Settings pill border color
@@ -352,6 +368,41 @@ enum DesignTokens {
             return purpleLight
         }
         return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
+    }
+
+    /// Settings selector active title color
+    static let settingsSegmentedActiveText = settingsPillText
+
+    /// Settings selector inactive title color
+    static let settingsSegmentedInactiveText = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.58)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.58)
+    }
+
+    /// Role swatch outer outline for light and dark mode visibility
+    static let roleSwatchOutline = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.16)
+        }
+        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.16)
+    }
+
+    /// Role swatch inner contrast border
+    static let roleSwatchInnerBorder = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 0.0, alpha: 0.22)
+        }
+        return NSColor(white: 1.0, alpha: 0.82)
+    }
+
+    /// Role swatch selected ring
+    static let roleSwatchSelectedRing = NSColor(name: nil) { appearance in
+        if isDarkAppearance(appearance) {
+            return NSColor(white: 1.0, alpha: 0.92)
+        }
+        return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.78)
     }
 
     /// Role observed border: #AFA9EC (purple)
@@ -425,6 +476,47 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
     }
 
+    // MARK: - Editor interaction tokens (VIB-411)
+
+    /// Editor annotation hover fill halo
+    static let editorAnnotationHoverFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08)
+
+    /// Editor annotation hover outline/shadow accent
+    static let editorAnnotationHoverStroke = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.30)
+
+    /// Editor annotation hover shadow glow
+    static let editorAnnotationHoverShadow = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.20)
+
+    /// Editor annotation hover fill for shapes
+    static let editorAnnotationHoverShapeFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14)
+
+    /// Editor note chrome shadow
+    static let editorNoteShadow = NSColor.black.withAlphaComponent(0.06)
+
+    /// Editor note pill surface — resting
+    static let editorNoteSurfaceDefault = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.72)
+
+    /// Editor note pill surface — hover
+    static let editorNoteSurfaceHover = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.80)
+
+    /// Editor note pill surface — selected
+    static let editorNoteSurfaceSelected = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.88)
+
+    /// Editor note pill surface — editing
+    static let editorNoteSurfaceEditing = NSColor(red: 1.0, green: 0.980, blue: 0.980, alpha: 0.96)
+
+    /// Editor note pill border — resting
+    static let editorNoteBorderDefault = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22)
+
+    /// Editor note pill border — hover
+    static let editorNoteBorderHover = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45)
+
+    /// Editor note pill border — selected
+    static let editorNoteBorderSelected = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55)
+
+    /// Editor note pill glow while editing
+    static let editorNoteEditingGlow = red
+
     // MARK: - Dimensions
 
     /// 18px badge diameter (radius 9)
@@ -469,6 +561,9 @@ enum DesignTokens {
     /// 30px tool button size
     static let toolButtonSize: CGFloat = 30
 
+    /// 2px visual separation between adjacent tool buttons
+    static let toolbarToolButtonGap: CGFloat = 2
+
     /// 28px icon button size
     static let iconButtonSize: CGFloat = 28
 
@@ -498,6 +593,9 @@ enum DesignTokens {
 
     /// Settings segmented control inset
     static let settingsSegmentedInset: CGFloat = 2
+
+    /// Horizontal padding inside each selector item
+    static let settingsSegmentedItemPadding: CGFloat = 14
 
     /// Settings pill button height
     static let settingsPillHeight: CGFloat = 28
@@ -598,6 +696,12 @@ enum DesignTokens {
     /// Settings pill text: system 11px weight 600
     static let settingsPillFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
 
+    /// Primary settings selector label
+    static let settingsSegmentedPrimaryFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+
+    /// Secondary settings selector label
+    static let settingsSegmentedSecondaryFont = NSFont.systemFont(ofSize: 11, weight: .medium)
+
     // MARK: - Setup Window Colors (appearance-aware)
 
     // Green/amber status — fixed brand colors (must be visible in both modes)
@@ -686,6 +790,9 @@ enum DesignTokens {
     static let setupBadgeSize: CGFloat = 32
     static let setupArrowSize: CGFloat = 36
     static let setupSmallPillHeight: CGFloat = 22
+    static let setupFooterButtonHeight: CGFloat = 36
+    static let setupFooterPrimaryPadding: CGFloat = 48
+    static let setupFooterSecondaryPadding: CGFloat = 36
     static let setupPathBoxRadius: CGFloat = 8
 
     // MARK: - Setup Window Fonts
