@@ -108,12 +108,14 @@ Vibeliner/
 │   ├── Tools/
 │   │   ├── PinTool.swift
 │   │   ├── ArrowTool.swift
+│   │   ├── LineTool.swift
 │   │   ├── RectangleTool.swift
 │   │   ├── CircleTool.swift
 │   │   └── FreehandTool.swift
 │   └── Renderers/
 │       ├── PinRenderer.swift
 │       ├── ArrowRenderer.swift
+│       ├── LineRenderer.swift
 │       ├── RectangleRenderer.swift
 │       ├── CircleRenderer.swift
 │       └── FreehandRenderer.swift
@@ -172,8 +174,8 @@ Vibeliner/
 - **SwiftUI** for: settings views, popover content — hosted via `NSHostingView`
 - **NotificationCenter** for change propagation (not Combine)
 - **Singleton** managers: `ConfigManager.shared`, `CapturesManager.shared`, `HotkeyManager.shared`
-- **Tool protocol:** all 5 annotation tools conform to a shared `AnnotationTool` protocol
-- **Renderer protocol:** all 5 renderers conform to a shared `AnnotationRenderer` protocol with `drawMarks(in:)` and `drawNotes(in:)` methods
+- **Tool protocol:** all 6 annotation tools conform to a shared `AnnotationTool` protocol
+- **Renderer protocol:** all 6 renderers conform to a shared `AnnotationRenderer` protocol with `drawMarks(in:)` and `drawNotes(in:)` methods
 
 ### File paths
 - Config: `~/Library/Application Support/Vibeliner/config.toml`

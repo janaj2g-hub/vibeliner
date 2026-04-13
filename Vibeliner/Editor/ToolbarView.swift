@@ -507,6 +507,17 @@ final class ToolbarView: NSView {
         path.stroke()
     }
 
+    static func drawLineIcon(_ rect: NSRect, _ color: NSColor) {
+        let path = NSBezierPath()
+        // Diagonal line — same angle as arrow but no arrowhead
+        path.move(to: ToolbarIconGeometry.point(in: rect, 2, 13))
+        path.line(to: ToolbarIconGeometry.point(in: rect, 13, 2))
+        path.lineWidth = 1.4
+        path.lineCapStyle = .round
+        color.setStroke()
+        path.stroke()
+    }
+
     static func drawRectIcon(_ rect: NSRect, _ color: NSColor) {
         let inset = ToolbarIconGeometry.outlineRect(in: rect)
         let path = NSBezierPath(roundedRect: inset, xRadius: 2, yRadius: 2)
@@ -566,6 +577,8 @@ final class ToolbarView: NSView {
             return drawPinIcon
         case .arrow:
             return drawArrowIcon
+        case .line:
+            return drawLineIcon
         case .rectangle:
             return drawRectIcon
         case .circle:

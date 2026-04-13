@@ -9,6 +9,7 @@ final class CompositeStitcher {
 
     private static let pinRenderer = PinRenderer()
     private static let arrowRenderer = ArrowRenderer()
+    private static let lineRenderer = LineRenderer()
     private static let rectangleRenderer = RectangleRenderer()
     private static let circleRenderer = CircleRenderer()
     private static let freehandRenderer = FreehandRenderer()
@@ -105,6 +106,7 @@ final class CompositeStitcher {
                 ctx.scaleBy(x: scaleX, y: scaleY)
                 pinRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
                 arrowRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
+                lineRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
                 rectangleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
                 circleRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
                 freehandRenderer.drawMarks(in: ctx, annotations: annotations, canvasSize: canvasSize)
