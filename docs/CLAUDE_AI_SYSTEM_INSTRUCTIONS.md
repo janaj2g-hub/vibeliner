@@ -34,9 +34,16 @@ Vibeliner/
 ├── App/
 │   ├── AppDelegate.swift               # Menu bar icon, app lifecycle
 │   ├── main.swift                      # App entry point
-│   └── VisualTestHarness.swift         # Visual test gallery
+│   ├── VisualTestHarness.swift         # Visual test gallery (core + gallery layout)
+│   ├── HarnessPreviewSurfaces.swift    # Test harness: card + setup preview surfaces
+│   ├── EditorHarnessSurfaceView.swift  # Test harness: editor canvas scenarios
+│   └── EditorHarnessSurfaceView+Annotations.swift  # Test harness: sample annotations
 ├── Design/
-│   └── DesignTokens.swift              # ALL colors, dimensions, fonts — single source of truth
+│   ├── DesignTokens.swift              # Core colors — single source of truth
+│   ├── DesignTokens+Settings.swift     # Settings + editor interaction tokens
+│   ├── DesignTokens+Layout.swift       # Dimensions, filmstrip, ghost, fonts, text field cell
+│   ├── DesignTokens+SetupTour.swift    # Setup window + Tour window tokens
+│   └── DesignTokens+TourIllustrations.swift  # Tour illustration tokens
 ├── Config/
 │   ├── ConfigManager.swift             # Read/write config in Application Support + legacy migration
 │   └── CapturesManager.swift           # Folder creation, listing captures
@@ -49,13 +56,22 @@ Vibeliner/
 │   ├── DimensionLabelView.swift        # Live w×h pill during drag
 │   └── ScreenCapture.swift             # CGWindowListCreateImage → PNG
 ├── Editor/
-│   ├── EditorPanel.swift               # Borderless floating NSPanel
+│   ├── EditorPanel.swift               # Borderless floating NSPanel (core + keyboard)
+│   ├── EditorPanelHelpers.swift        # EditorToolController + EditorCursorController
+│   ├── EditorPanel+Toolbar.swift       # ToolbarDelegate + add image
+│   ├── EditorPanel+Filmstrip.swift     # Filmstrip transition + coordinate helpers
 │   ├── ScreenshotCanvasView.swift      # Screenshot display with rounded corners
-│   ├── CanvasView.swift                # Marks layer + Notes layer
-│   ├── ToolbarView.swift               # Pill-shaped floating toolbar
+│   ├── CanvasView.swift                # Marks layer + mouse dispatch
+│   ├── CanvasView+NoteEditing.swift    # Note pill editing + field delegate
+│   ├── MarksLayerView.swift            # Annotation marks rendering
+│   ├── ToolbarView.swift               # Pill-shaped floating toolbar (setup + appearance)
+│   ├── ToolbarView+State.swift         # Tool selection, copy state, shadow
+│   ├── ToolbarIcons.swift              # Icon drawing functions + geometry
+│   ├── ToolbarButtons.swift            # ModeToggleView, CopyPillButton, SecondaryPillButton
 │   ├── ToolButton.swift                # Reusable circular button
 │   ├── StatusPillView.swift            # Floating status pill below screenshot
-│   └── FilmstripGridView.swift         # Multi-image filmstrip layout
+│   ├── FilmstripGridView.swift         # Multi-image filmstrip layout
+│   └── FilmstripCellView.swift         # Individual filmstrip cell view
 ├── Annotations/
 │   ├── AnnotationModel.swift           # Data model + centralized tool registry
 │   ├── AnnotationStore.swift           # Single source of truth for annotations
@@ -70,7 +86,8 @@ Vibeliner/
 │   │   └── FreehandTool.swift
 │   └── Renderers/
 │       ├── BadgeRenderer.swift         # Shared numbered badge drawing
-│       ├── NotePillRenderer.swift      # Note pill layout and rendering
+│       ├── NotePillRenderer.swift      # Note pill placement + reuse pool
+│       ├── NotePillView.swift          # Note pill interactive view
 │       ├── PinRenderer.swift
 │       ├── ArrowRenderer.swift
 │       ├── LineRenderer.swift
@@ -83,28 +100,40 @@ Vibeliner/
 │   ├── ClipboardManager.swift          # NSPasteboard for text and image
 │   └── AutoSaveManager.swift           # Save on every annotation change
 ├── Setup/
-│   └── SetupWindowController.swift     # 3-panel setup: Captures Folder → Accessibility → Screen Recording
+│   ├── SetupWindowController.swift     # Welcome window core + polling
+│   ├── SetupComponents.swift           # Setup pill buttons, dividers, surface views
+│   ├── SetupWindowController+Panels.swift  # 3-panel builders + UI factories
+│   └── SetupWindowController+Actions.swift # Step completion + actions + helpers
 ├── Settings/
 │   ├── SettingsWindowController.swift  # 3-tab settings window
 │   ├── GeneralTabView.swift            # Hotkey, folder, launch at login
-│   ├── PromptTabView.swift             # Sub-tabs: Preamble, Tools, Footer, Multi-image
+│   ├── PromptTabView.swift             # Sub-tabs: Preamble, Tools, Footer (core + layout)
+│   ├── PromptTabView+ContentBuilders.swift  # Sub-tab content builders + role management
+│   ├── PromptTabView+State.swift       # Data sync, drafts, delegates
+│   ├── PromptTabCustomViews.swift      # ToolIconView, DraftStateView, RoleSwatchView
 │   ├── PromptPreviewView.swift         # Live preview at bottom
 │   ├── AboutTabView.swift              # Version, links
-│   └── SettingsUI.swift                # Shared settings view helpers
+│   ├── SettingsUI.swift                # Shared settings view helpers + base classes
+│   └── SettingsControls.swift          # PillButton, TextField, KeyPillRow, SegmentedControl
 ├── Models/
 │   ├── CaptureStore.swift              # CaptureSession source of truth
 │   ├── CaptureImage.swift              # Per-image capture metadata
 │   └── ImageRole.swift                 # Multi-image role model
 ├── Popover/
-│   ├── PopoverViewController.swift     # Dark utility menu
+│   ├── PopoverWindow.swift             # Surface views + PopoverWindow panel
+│   ├── PopoverViewController.swift     # PopoverContentView + PopoverRowView
 │   ├── RecentCapturesSubmenu.swift     # Hover submenu with thumbnails
-│   └── CaptureRowView.swift           # Thumbnail + timestamp + copy buttons
+│   └── CaptureRowView.swift            # Thumbnail + timestamp + copy buttons
 ├── Services/
 │   ├── CompositeStitcher.swift         # Filmstrip export renderer
 │   ├── CoordinateConverter.swift       # Relative coordinate conversion
 │   └── LayoutCalculator.swift          # Filmstrip layout helper
 ├── Tour/
-│   ├── TourWindowController.swift      # Product walkthrough window
+│   ├── TourWindowController.swift      # Product walkthrough (singleton + state + init)
+│   ├── TourWindowController+UIBuilder.swift  # Header + footer construction
+│   ├── TourWindowController+Body.swift # Body layout + step rendering
+│   ├── TourWindowController+Content.swift  # Illustrations, done screen, factories, actions
+│   ├── TourUIComponents.swift          # TourContentView, HoverButton, ExitTourPillView
 │   ├── TourStepData.swift              # Tour step configuration data
 │   └── Illustrations/                  # Tour-specific illustration helpers
 ├── Utilities/

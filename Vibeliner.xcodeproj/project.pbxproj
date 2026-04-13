@@ -14,6 +14,10 @@
 		4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2A4FBC164B13DB84291343D /* CursorManager.swift */; };
 		A10000010000000000000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000001 /* AppDelegate.swift */; };
 		A10000010000000000000002 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000002 /* DesignTokens.swift */; };
+		D100000100000000000000B1 /* DesignTokens+Settings.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A1 /* DesignTokens+Settings.swift */; };
+		D100000100000000000000B2 /* DesignTokens+Layout.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A2 /* DesignTokens+Layout.swift */; };
+		D100000100000000000000B3 /* DesignTokens+SetupTour.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A3 /* DesignTokens+SetupTour.swift */; };
+		D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */; };
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
 		A10000010000000000000004 /* CapturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* CapturesManager.swift */; };
 		A10000010000000000000005 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HotkeyManager.swift */; };
@@ -50,6 +54,10 @@
 		A10000010000000000000022 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000024 /* ClipboardManager.swift */; };
 		A10000010000000000000023 /* AutoSaveManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000025 /* AutoSaveManager.swift */; };
 		A10000010000000000000025 /* SetupWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000027 /* SetupWindowController.swift */; };
+		D300000100000000000000B1 /* SetupComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A1 /* SetupComponents.swift */; };
+		D300000100000000000000B2 /* SetupWindowController+Panels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A2 /* SetupWindowController+Panels.swift */; };
+		D300000100000000000000B3 /* SetupWindowController+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = D300000100000000000000A3 /* SetupWindowController+Actions.swift */; };
+		DD00000100000000000000B1 /* SetupWindowController+UIFactories.swift in Sources */ = {isa = PBXBuildFile; fileRef = DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */; };
 		T10000010000000000000001 /* TourStepData.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000001 /* TourStepData.swift */; };
 		T10000010000000000000002 /* TourWindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000002 /* TourWindowController.swift */; };
 		T10000010000000000000010 /* AnnotationMarkViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = T20000010000000000000010 /* AnnotationMarkViews.swift */; };
@@ -80,6 +88,9 @@
 		A10000010000000000000033 /* SettingsUI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000035 /* SettingsUI.swift */; };
 		A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000036 /* HotkeyCapturePanel.swift */; };
 		B10000010000000000000001 /* VisualTestHarness.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000010000000000000001 /* VisualTestHarness.swift */; };
+		D200000100000000000000B1 /* HarnessPreviewSurfaces.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */; };
+		D200000100000000000000B2 /* EditorHarnessSurfaceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */; };
+		D200000100000000000000B3 /* EditorHarnessSurfaceView+Annotations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */; };
 		C10000010000000000000001 /* SelectTool.swift in Sources */ = {isa = PBXBuildFile; fileRef = C20000010000000000000001 /* SelectTool.swift */; };
 		D10000010000000000000001 /* BadgeRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = D20000010000000000000001 /* BadgeRenderer.swift */; };
 		R20000010000000000000001 /* CaptureImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000001 /* CaptureImage.swift */; };
@@ -91,12 +102,35 @@
 		R20000010000000000000007 /* KeyEventGuard.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000007 /* KeyEventGuard.swift */; };
 		R20000010000000000000008 /* FilmCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000008 /* FilmCellView.swift */; };
 		R20000010000000000000009 /* TitlePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = R10000010000000000000009 /* TitlePillView.swift */; };
+		D400000100000000000000B1 /* PromptTabView+ContentBuilders.swift in Sources */ = {isa = PBXBuildFile; fileRef = D400000100000000000000A1 /* PromptTabView+ContentBuilders.swift */; };
+		D400000100000000000000B2 /* PromptTabView+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = D400000100000000000000A2 /* PromptTabView+State.swift */; };
+		D400000100000000000000B3 /* PromptTabCustomViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = D400000100000000000000A3 /* PromptTabCustomViews.swift */; };
+		D500000100000000000000B1 /* TourUIComponents.swift in Sources */ = {isa = PBXBuildFile; fileRef = D500000100000000000000A1 /* TourUIComponents.swift */; };
+		D500000100000000000000B2 /* TourWindowController+UIBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = D500000100000000000000A2 /* TourWindowController+UIBuilder.swift */; };
+		D500000100000000000000B3 /* TourWindowController+Body.swift in Sources */ = {isa = PBXBuildFile; fileRef = D500000100000000000000A3 /* TourWindowController+Body.swift */; };
+		D500000100000000000000B4 /* TourWindowController+Content.swift in Sources */ = {isa = PBXBuildFile; fileRef = D500000100000000000000A4 /* TourWindowController+Content.swift */; };
+		D600000100000000000000B1 /* ToolbarButtons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A1 /* ToolbarButtons.swift */; };
+		D600000100000000000000B2 /* ToolbarIcons.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A2 /* ToolbarIcons.swift */; };
+		D600000100000000000000B3 /* ToolbarView+State.swift in Sources */ = {isa = PBXBuildFile; fileRef = D600000100000000000000A3 /* ToolbarView+State.swift */; };
+		D700000100000000000000B1 /* EditorPanelHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A1 /* EditorPanelHelpers.swift */; };
+		D700000100000000000000B2 /* EditorPanel+Toolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A2 /* EditorPanel+Toolbar.swift */; };
+		D700000100000000000000B3 /* EditorPanel+Filmstrip.swift in Sources */ = {isa = PBXBuildFile; fileRef = D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */; };
+		D800000100000000000000B1 /* CanvasView+NoteEditing.swift in Sources */ = {isa = PBXBuildFile; fileRef = D800000100000000000000A1 /* CanvasView+NoteEditing.swift */; };
+		D800000100000000000000B2 /* MarksLayerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D800000100000000000000A2 /* MarksLayerView.swift */; };
+		D900000100000000000000B1 /* SettingsControls.swift in Sources */ = {isa = PBXBuildFile; fileRef = D900000100000000000000A1 /* SettingsControls.swift */; };
+		DA00000100000000000000B1 /* NotePillView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA00000100000000000000A1 /* NotePillView.swift */; };
+		DB00000100000000000000B1 /* FilmstripCellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB00000100000000000000A1 /* FilmstripCellView.swift */; };
+		DC00000100000000000000B1 /* PopoverWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC00000100000000000000A1 /* PopoverWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		D2A4FBC164B13DB84291343D /* CursorManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000001 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		A20000010000000000000002 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		D100000100000000000000A1 /* DesignTokens+Settings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+Settings.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A2 /* DesignTokens+Layout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+Layout.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A3 /* DesignTokens+SetupTour.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+SetupTour.swift"; sourceTree = "<group>"; };
+		D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "DesignTokens+TourIllustrations.swift"; sourceTree = "<group>"; };
 		A20000010000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
@@ -136,6 +170,10 @@
 		A20000010000000000000024 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000025 /* AutoSaveManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoSaveManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000027 /* SetupWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupWindowController.swift; sourceTree = "<group>"; };
+		D300000100000000000000A1 /* SetupComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetupComponents.swift; sourceTree = "<group>"; };
+		D300000100000000000000A2 /* SetupWindowController+Panels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+Panels.swift"; sourceTree = "<group>"; };
+		D300000100000000000000A3 /* SetupWindowController+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+Actions.swift"; sourceTree = "<group>"; };
+		DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SetupWindowController+UIFactories.swift"; sourceTree = "<group>"; };
 		T20000010000000000000001 /* TourStepData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourStepData.swift; sourceTree = "<group>"; };
 		T20000010000000000000002 /* TourWindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourWindowController.swift; sourceTree = "<group>"; };
 		T20000010000000000000010 /* AnnotationMarkViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnnotationMarkViews.swift; sourceTree = "<group>"; };
@@ -165,6 +203,9 @@
 		A20000010000000000000034 /* NotePillRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillRenderer.swift; sourceTree = "<group>"; };
 		A20000010000000000000035 /* SettingsUI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsUI.swift; sourceTree = "<group>"; };
 		B20000010000000000000001 /* VisualTestHarness.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisualTestHarness.swift; sourceTree = "<group>"; };
+		D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HarnessPreviewSurfaces.swift; sourceTree = "<group>"; };
+		D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorHarnessSurfaceView.swift; sourceTree = "<group>"; };
+		D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorHarnessSurfaceView+Annotations.swift"; sourceTree = "<group>"; };
 		C20000010000000000000001 /* SelectTool.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectTool.swift; sourceTree = "<group>"; };
 		D20000010000000000000001 /* BadgeRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BadgeRenderer.swift; sourceTree = "<group>"; };
 		R10000010000000000000001 /* CaptureImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureImage.swift; sourceTree = "<group>"; };
@@ -181,6 +222,25 @@
 		IC0000010000000000000003 /* Vibeliner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vibeliner.entitlements; sourceTree = "<group>"; };
 		IC0000010000000000000004 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		IC0000010000000000000005 /* ImageUtils.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ImageUtils.swift; sourceTree = "<group>"; };
+		D400000100000000000000A1 /* PromptTabView+ContentBuilders.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PromptTabView+ContentBuilders.swift"; sourceTree = "<group>"; };
+		D400000100000000000000A2 /* PromptTabView+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PromptTabView+State.swift"; sourceTree = "<group>"; };
+		D400000100000000000000A3 /* PromptTabCustomViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PromptTabCustomViews.swift; sourceTree = "<group>"; };
+		D500000100000000000000A1 /* TourUIComponents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TourUIComponents.swift; sourceTree = "<group>"; };
+		D500000100000000000000A2 /* TourWindowController+UIBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TourWindowController+UIBuilder.swift"; sourceTree = "<group>"; };
+		D500000100000000000000A3 /* TourWindowController+Body.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TourWindowController+Body.swift"; sourceTree = "<group>"; };
+		D500000100000000000000A4 /* TourWindowController+Content.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TourWindowController+Content.swift"; sourceTree = "<group>"; };
+		D600000100000000000000A1 /* ToolbarButtons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarButtons.swift; sourceTree = "<group>"; };
+		D600000100000000000000A2 /* ToolbarIcons.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarIcons.swift; sourceTree = "<group>"; };
+		D600000100000000000000A3 /* ToolbarView+State.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToolbarView+State.swift"; sourceTree = "<group>"; };
+		D700000100000000000000A1 /* EditorPanelHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorPanelHelpers.swift; sourceTree = "<group>"; };
+		D700000100000000000000A2 /* EditorPanel+Toolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorPanel+Toolbar.swift"; sourceTree = "<group>"; };
+		D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorPanel+Filmstrip.swift"; sourceTree = "<group>"; };
+		D800000100000000000000A1 /* CanvasView+NoteEditing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CanvasView+NoteEditing.swift"; sourceTree = "<group>"; };
+		D800000100000000000000A2 /* MarksLayerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MarksLayerView.swift; sourceTree = "<group>"; };
+		D900000100000000000000A1 /* SettingsControls.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsControls.swift; sourceTree = "<group>"; };
+		DA00000100000000000000A1 /* NotePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotePillView.swift; sourceTree = "<group>"; };
+		DB00000100000000000000A1 /* FilmstripCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmstripCellView.swift; sourceTree = "<group>"; };
+		DC00000100000000000000A1 /* PopoverWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PopoverWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -288,6 +348,9 @@
 				A20000010000000000000001 /* AppDelegate.swift */,
 				A2000001000000000000000C /* main.swift */,
 				B20000010000000000000001 /* VisualTestHarness.swift */,
+				D200000100000000000000A1 /* HarnessPreviewSurfaces.swift */,
+				D200000100000000000000A2 /* EditorHarnessSurfaceView.swift */,
+				D200000100000000000000A3 /* EditorHarnessSurfaceView+Annotations.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -296,6 +359,10 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000002 /* DesignTokens.swift */,
+				D100000100000000000000A1 /* DesignTokens+Settings.swift */,
+				D100000100000000000000A2 /* DesignTokens+Layout.swift */,
+				D100000100000000000000A3 /* DesignTokens+SetupTour.swift */,
+				D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */,
 			);
 			path = Design;
 			sourceTree = "<group>";
@@ -343,6 +410,7 @@
 				A2000001000000000000001F /* CircleRenderer.swift */,
 				A20000010000000000000021 /* FreehandRenderer.swift */,
 				A20000010000000000000034 /* NotePillRenderer.swift */,
+				DA00000100000000000000A1 /* NotePillView.swift */,
 			);
 			path = Renderers;
 			sourceTree = "<group>";
@@ -375,12 +443,21 @@
 			isa = PBXGroup;
 			children = (
 				A2000001000000000000000D /* EditorPanel.swift */,
+				D700000100000000000000A1 /* EditorPanelHelpers.swift */,
+				D700000100000000000000A2 /* EditorPanel+Toolbar.swift */,
+				D700000100000000000000A3 /* EditorPanel+Filmstrip.swift */,
 				A2000001000000000000000E /* ScreenshotCanvasView.swift */,
 				F32900020000000000000001 /* FilmstripGridView.swift */,
+				DB00000100000000000000A1 /* FilmstripCellView.swift */,
 				A2000001000000000000000F /* ToolButton.swift */,
 				A20000010000000000000011 /* ToolbarView.swift */,
+				D600000100000000000000A1 /* ToolbarButtons.swift */,
+				D600000100000000000000A2 /* ToolbarIcons.swift */,
+				D600000100000000000000A3 /* ToolbarView+State.swift */,
 				A20000010000000000000012 /* StatusPillView.swift */,
 				A20000010000000000000017 /* CanvasView.swift */,
+				D800000100000000000000A1 /* CanvasView+NoteEditing.swift */,
+				D800000100000000000000A2 /* MarksLayerView.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -389,6 +466,10 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000027 /* SetupWindowController.swift */,
+				D300000100000000000000A1 /* SetupComponents.swift */,
+				D300000100000000000000A2 /* SetupWindowController+Panels.swift */,
+				D300000100000000000000A3 /* SetupWindowController+Actions.swift */,
+				DD00000100000000000000A1 /* SetupWindowController+UIFactories.swift */,
 			);
 			path = Setup;
 			sourceTree = "<group>";
@@ -398,6 +479,10 @@
 			children = (
 				T20000010000000000000001 /* TourStepData.swift */,
 				T20000010000000000000002 /* TourWindowController.swift */,
+				D500000100000000000000A1 /* TourUIComponents.swift */,
+				D500000100000000000000A2 /* TourWindowController+UIBuilder.swift */,
+				D500000100000000000000A3 /* TourWindowController+Body.swift */,
+				D500000100000000000000A4 /* TourWindowController+Content.swift */,
 				T40000010000000000000002 /* Illustrations */,
 			);
 			path = Tour;
@@ -432,9 +517,13 @@
 				A2000001000000000000002B /* SettingsWindowController.swift */,
 				A2000001000000000000002C /* GeneralTabView.swift */,
 				A2000001000000000000002D /* PromptTabView.swift */,
+				D400000100000000000000A1 /* PromptTabView+ContentBuilders.swift */,
+				D400000100000000000000A2 /* PromptTabView+State.swift */,
+				D400000100000000000000A3 /* PromptTabCustomViews.swift */,
 				A2000001000000000000002E /* PromptPreviewView.swift */,
 				A2000001000000000000002F /* AboutTabView.swift */,
 				A20000010000000000000035 /* SettingsUI.swift */,
+				D900000100000000000000A1 /* SettingsControls.swift */,
 			);
 			path = Settings;
 			sourceTree = "<group>";
@@ -443,6 +532,7 @@
 			isa = PBXGroup;
 			children = (
 				A20000010000000000000030 /* PopoverViewController.swift */,
+				DC00000100000000000000A1 /* PopoverWindow.swift */,
 				A20000010000000000000031 /* RecentCapturesSubmenu.swift */,
 				A20000010000000000000032 /* CaptureRowView.swift */,
 			);
@@ -542,6 +632,10 @@
 				4348D8759E1EE3D7473363F3 /* CursorManager.swift in Sources */,
 				A10000010000000000000001 /* AppDelegate.swift in Sources */,
 				A10000010000000000000002 /* DesignTokens.swift in Sources */,
+				D100000100000000000000B1 /* DesignTokens+Settings.swift in Sources */,
+				D100000100000000000000B2 /* DesignTokens+Layout.swift in Sources */,
+				D100000100000000000000B3 /* DesignTokens+SetupTour.swift in Sources */,
+				D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
 				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
@@ -581,6 +675,10 @@
 				A10000010000000000000023 /* AutoSaveManager.swift in Sources */,
 				A10000010000000000000024 /* SetupPanelView.swift in Sources */,
 				A10000010000000000000025 /* SetupWindowController.swift in Sources */,
+				D300000100000000000000B1 /* SetupComponents.swift in Sources */,
+				D300000100000000000000B2 /* SetupWindowController+Panels.swift in Sources */,
+				D300000100000000000000B3 /* SetupWindowController+Actions.swift in Sources */,
+				DD00000100000000000000B1 /* SetupWindowController+UIFactories.swift in Sources */,
 				A10000010000000000000026 /* PermissionPanel.swift in Sources */,
 				A10000010000000000000027 /* FolderPanel.swift in Sources */,
 				A10000010000000000000028 /* ShareExplanationPanel.swift in Sources */,
@@ -595,6 +693,9 @@
 				A10000010000000000000030 /* CaptureRowView.swift in Sources */,
 				A10000010000000000000032 /* NotePillRenderer.swift in Sources */,
 				B10000010000000000000001 /* VisualTestHarness.swift in Sources */,
+				D200000100000000000000B1 /* HarnessPreviewSurfaces.swift in Sources */,
+				D200000100000000000000B2 /* EditorHarnessSurfaceView.swift in Sources */,
+				D200000100000000000000B3 /* EditorHarnessSurfaceView+Annotations.swift in Sources */,
 				C10000010000000000000001 /* SelectTool.swift in Sources */,
 				D10000010000000000000001 /* BadgeRenderer.swift in Sources */,
 				R20000010000000000000001 /* CaptureImage.swift in Sources */,
@@ -625,6 +726,25 @@
 				T10000010000000000000026 /* TourIllustration6.swift in Sources */,
 				T10000010000000000000027 /* TourIllustration7.swift in Sources */,
 				IC0000020000000000000004 /* ImageUtils.swift in Sources */,
+				D400000100000000000000B1 /* PromptTabView+ContentBuilders.swift in Sources */,
+				D400000100000000000000B2 /* PromptTabView+State.swift in Sources */,
+				D400000100000000000000B3 /* PromptTabCustomViews.swift in Sources */,
+				D500000100000000000000B1 /* TourUIComponents.swift in Sources */,
+				D500000100000000000000B2 /* TourWindowController+UIBuilder.swift in Sources */,
+				D500000100000000000000B3 /* TourWindowController+Body.swift in Sources */,
+				D500000100000000000000B4 /* TourWindowController+Content.swift in Sources */,
+				D600000100000000000000B1 /* ToolbarButtons.swift in Sources */,
+				D600000100000000000000B2 /* ToolbarIcons.swift in Sources */,
+				D600000100000000000000B3 /* ToolbarView+State.swift in Sources */,
+				D700000100000000000000B1 /* EditorPanelHelpers.swift in Sources */,
+				D700000100000000000000B2 /* EditorPanel+Toolbar.swift in Sources */,
+				D700000100000000000000B3 /* EditorPanel+Filmstrip.swift in Sources */,
+				D800000100000000000000B1 /* CanvasView+NoteEditing.swift in Sources */,
+				D800000100000000000000B2 /* MarksLayerView.swift in Sources */,
+				D900000100000000000000B1 /* SettingsControls.swift in Sources */,
+				DA00000100000000000000B1 /* NotePillView.swift in Sources */,
+				DB00000100000000000000B1 /* FilmstripCellView.swift in Sources */,
+				DC00000100000000000000B1 /* PopoverWindow.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

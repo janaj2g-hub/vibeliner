@@ -13,6 +13,7 @@ This document lists which Claude.ai project files need updating to match the cur
 **What changed:**
 - Annotation tools: now 6 (added Line tool with shortcut 7, prompt tag `[line]`)
 - File structure: added LineTool.swift, LineRenderer.swift, FilmstripGridView.swift, SettingsUI.swift, VisualTestHarness.swift, main.swift, TourStepData.swift, SelectTool.swift, BadgeRenderer.swift, NotePillRenderer.swift
+- VIB-430: 12 oversized files split into ~40 smaller files (see updated file tree in CLAUDE_AI_SYSTEM_INSTRUCTIONS.md)
 - Tool registry section added (VIB-420 centralized registration)
 - CaptureSession model section added
 - Stop-if-Linear-auth-fails rule added
