@@ -135,13 +135,17 @@ private final class SetupCircleButton: AppearanceAwareSurfaceButton {
         setButtonType(.momentaryPushIn)
         font = NSFont.systemFont(ofSize: 18, weight: .semibold)
         wantsLayer = true
-        translatesAutoresizingMaskIntoConstraints = false
         let size = DesignTokens.setupArrowSize
         setFrameSize(NSSize(width: size, height: size))
         refreshSurfaceAppearance()
     }
 
     required init?(coder: NSCoder) { fatalError("init(coder:) not implemented") }
+
+    override func setFrameSize(_ newSize: NSSize) {
+        super.setFrameSize(newSize)
+        refreshSurfaceAppearance()
+    }
 
     override func refreshSurfaceAppearance() {
         contentTintColor = DesignTokens.setupButtonText
@@ -410,8 +414,14 @@ final class SetupWindowController: NSWindowController {
         c.addSubview(desc)
 
         // VIB-303: "Restart" note only on Screen recording panel
-        step3RestartNote = makeLabel("You may need to restart the app after granting.", font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim)
-        step3RestartNote.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
+        step3RestartNote = makeWrappingLabel(
+            "You may need to restart the app after granting.",
+            font: DesignTokens.setupHelperFont,
+            color: DesignTokens.setupTextDim,
+            width: contentW
+        )
+        step3RestartNote.alignment = .center
+        step3RestartNote.frame.origin = NSPoint(x: pad, y: desc.frame.origin.y - 14 - step3RestartNote.frame.height)
         step3RestartNote.isHidden = true  // visible only when step 3 is active
         c.addSubview(step3RestartNote)
 
