@@ -148,6 +148,24 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 - `SettingsSegmentedControl.Style.secondary` is used for prompt-section selectors such as `Preamble / Tools / Footer / Multi-image`.
 - Both styles use intrinsic-width centering, lighter inactive text, and a restrained bordered active fill so the labels carry more hierarchy than the pill chrome does.
 
+### Editor Interaction Tokens (VIB-411)
+
+| Token | Value | Usage | Consuming files |
+|-------|-------|-------|-----------------|
+| `editorAnnotationHoverFill` | rgba(239,68,68,0.08) | Hover halo behind annotation badge | CanvasView |
+| `editorAnnotationHoverStroke` | rgba(239,68,68,0.30) | Hover stake/outline accent | CanvasView |
+| `editorAnnotationHoverShadow` | rgba(239,68,68,0.20) | Hover glow shadow | CanvasView |
+| `editorAnnotationHoverShapeFill` | rgba(239,68,68,0.14) | Hover fill behind rectangle/circle chrome | CanvasView |
+| `editorNoteShadow` | rgba(0,0,0,0.06) | Editing note chrome shadow | CanvasView |
+| `editorNoteSurfaceDefault` | rgba(255,244,244,0.72) | Resting note pill fill | NotePillRenderer |
+| `editorNoteSurfaceHover` | rgba(255,244,244,0.80) | Hovered note pill fill | NotePillRenderer |
+| `editorNoteSurfaceSelected` | rgba(255,244,244,0.88) | Selected note pill fill | NotePillRenderer |
+| `editorNoteSurfaceEditing` | rgba(255,250,250,0.96) | Editing note pill fill | CanvasView, NotePillRenderer |
+| `editorNoteBorderDefault` | rgba(180,180,180,0.22) | Resting note pill border | NotePillRenderer |
+| `editorNoteBorderHover` | rgba(239,68,68,0.45) | Hovered note pill border | NotePillRenderer |
+| `editorNoteBorderSelected` | rgba(239,68,68,0.55) | Selected note pill border | NotePillRenderer |
+| `editorNoteEditingGlow` | #EF4444 | Editing note border and glow | CanvasView, NotePillRenderer |
+
 ### Role Colors
 
 | Token | Value | Usage | Consuming files |

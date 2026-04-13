@@ -476,6 +476,47 @@ enum DesignTokens {
         return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
     }
 
+    // MARK: - Editor interaction tokens (VIB-411)
+
+    /// Editor annotation hover fill halo
+    static let editorAnnotationHoverFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.08)
+
+    /// Editor annotation hover outline/shadow accent
+    static let editorAnnotationHoverStroke = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.30)
+
+    /// Editor annotation hover shadow glow
+    static let editorAnnotationHoverShadow = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.20)
+
+    /// Editor annotation hover fill for shapes
+    static let editorAnnotationHoverShapeFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.14)
+
+    /// Editor note chrome shadow
+    static let editorNoteShadow = NSColor.black.withAlphaComponent(0.06)
+
+    /// Editor note pill surface — resting
+    static let editorNoteSurfaceDefault = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.72)
+
+    /// Editor note pill surface — hover
+    static let editorNoteSurfaceHover = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.80)
+
+    /// Editor note pill surface — selected
+    static let editorNoteSurfaceSelected = NSColor(red: 1.0, green: 0.957, blue: 0.957, alpha: 0.88)
+
+    /// Editor note pill surface — editing
+    static let editorNoteSurfaceEditing = NSColor(red: 1.0, green: 0.980, blue: 0.980, alpha: 0.96)
+
+    /// Editor note pill border — resting
+    static let editorNoteBorderDefault = NSColor(red: 180/255, green: 180/255, blue: 180/255, alpha: 0.22)
+
+    /// Editor note pill border — hover
+    static let editorNoteBorderHover = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.45)
+
+    /// Editor note pill border — selected
+    static let editorNoteBorderSelected = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55)
+
+    /// Editor note pill glow while editing
+    static let editorNoteEditingGlow = red
+
     // MARK: - Dimensions
 
     /// 18px badge diameter (radius 9)
