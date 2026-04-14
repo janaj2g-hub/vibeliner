@@ -263,6 +263,27 @@ The canonical design-system documentation lives in `docs/design-system/`. These 
 - Never delete these files or overwrite them with empty content
 - Do not recreate root-level duplicate peers such as `docs/DESIGN_SYSTEM.md` or `docs/design-system.html`
 
+## Design token rules
+
+These rules are mandatory for every ticket that touches UI.
+
+1. **NEVER create a new color token without checking first.** Before adding any NSColor to DesignTokens.swift, search `docs/design-system/DESIGN_SYSTEM.md` for an existing token with the same purpose. If one exists, use it. If you think a new token is needed, say so in the PR description — do not silently create one.
+
+2. **NEVER create a new button style.** The app has exactly these button families:
+   - `pillButton*` (6 tokens) — all purple outlined pill buttons (Copy Prompt, Change, Save, etc.)
+   - `pillButtonPrimary*` (5 tokens) — solid-fill purple CTA buttons (tour Next, etc.)
+   - `toolbarSecondary*` (6 tokens) — subtle ghost/outlined buttons (+ Add image, New capture)
+   - `copiedGreen*` (4 tokens) — success/copied state
+   If a ticket needs a button, use one of these. Do NOT create a new family.
+
+3. **NEVER create a new segmented control style.** All segmented controls use `segmented*` (6 tokens). The component accepts any number of segments. Do NOT create surface-specific variants.
+
+4. **NEVER hardcode colors.** Every color in UI code must reference a `DesignTokens.*` token or a system color (`.labelColor`, `.separatorColor`, etc.). No raw `NSColor(red:green:blue:alpha:)` in view files.
+
+5. **Token creation requires a DESIGN_SYSTEM.md update.** If a genuinely new token is approved, add it to both `DesignTokens.swift` AND `docs/design-system/DESIGN_SYSTEM.md` in the same commit.
+
+6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files. Tour UI chrome (buttons, controls) must use the universal component tokens above.
+
 ## Reference docs
 
 - `docs/VIBELINER_PRD.md` — master product spec (all 13 locked product definitions)
