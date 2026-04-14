@@ -107,11 +107,22 @@ extension PromptTabView {
             row.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
         }
 
-        // "+ Add role" button
+        // VIB-448: "+ Add role" button — aligned with description fields
+        let addBtnRow = NSView()
+        addBtnRow.translatesAutoresizingMaskIntoConstraints = false
         let addBtn = SettingsPillButton(title: drafts.roles.count >= 10 ? "Maximum 10 roles" : "+ Add role", target: self, action: #selector(addRoleClicked))
         addBtn.isEnabled = drafts.roles.count < 10
-        addBtn.widthAnchor.constraint(equalToConstant: 140).isActive = true
-        activeContentStack.addArrangedSubview(addBtn)
+        addBtn.translatesAutoresizingMaskIntoConstraints = false
+        addBtnRow.addSubview(addBtn)
+        // Leading offset: swatch(8+16+12) + nameField(120+10) = 166
+        NSLayoutConstraint.activate([
+            addBtnRow.heightAnchor.constraint(equalToConstant: DesignTokens.settingsPillHeight),
+            addBtn.leadingAnchor.constraint(equalTo: addBtnRow.leadingAnchor, constant: 166),
+            addBtn.trailingAnchor.constraint(equalTo: addBtnRow.trailingAnchor, constant: -30),
+            addBtn.centerYAnchor.constraint(equalTo: addBtnRow.centerYAnchor),
+        ])
+        activeContentStack.addArrangedSubview(addBtnRow)
+        addBtnRow.widthAnchor.constraint(equalTo: activeContentStack.widthAnchor).isActive = true
     }
 
     func makeDynamicRoleRow(index: Int, role: RoleConfig) -> NSView {

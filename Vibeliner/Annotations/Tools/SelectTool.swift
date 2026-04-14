@@ -93,6 +93,8 @@ final class SelectTool: AnnotationTool {
             }
 
             dragState = .movingAnnotation(id: id, startX: point.x, startY: point.y)
+            // VIB-449: Refresh pills during move (badge positions changed)
+            canvas.refreshNotePills()
 
         case .resizingHandle(let id, let part):
             guard let annotation = store.annotation(for: id) else { return }
@@ -121,6 +123,26 @@ final class SelectTool: AnnotationTool {
                     nw = point.x - origin.x
                     nh = point.y - origin.y
                 default: break
+                }
+                // VIB-449: Shift constrains to original aspect ratio
+                if NSEvent.modifierFlags.contains(.shift), size.width > 0, size.height > 0 {
+                    let aspect = size.width / size.height
+                    if abs(nw) / aspect > abs(nh) {
+                        nh = nw / aspect
+                    } else {
+                        nw = nh * aspect
+                    }
+                    // Recalculate origin for corners that derive it from the drag point
+                    switch ci {
+                    case 0:
+                        nx = (origin.x + size.width) - nw
+                        ny = (origin.y + size.height) - nh
+                    case 1:
+                        ny = (origin.y + size.height) - nh
+                    case 2:
+                        nx = (origin.x + size.width) - nw
+                    default: break
+                    }
                 }
                 // Minimum size 10x10
                 if nw > 10 && nh > 10 {
@@ -179,8 +201,8 @@ final class SelectTool: AnnotationTool {
             }
         }
 
-        // VIB-354: Removed needsDisplay — drag timer in CanvasView handles it
-        canvas.refreshNotePills()
+        // VIB-354/449: During resize, skip refreshNotePills to prevent cursor state thrashing.
+        // Note pills are refreshed on mouseUp instead.
     }
 
     func mouseUp(at point: CGPoint, in canvas: CanvasView, store: AnnotationStore, undoManager: UndoRedoManager) {
@@ -222,6 +244,8 @@ final class SelectTool: AnnotationTool {
             }
             editorPanel?.setRelativeCoords(for: id)
         }
+        // VIB-449: Always refresh pills on mouseUp (deferred from resize drags)
+        canvas.refreshNotePills()
         dragState = nil
     }
 

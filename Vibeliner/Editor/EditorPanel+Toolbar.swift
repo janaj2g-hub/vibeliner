@@ -31,6 +31,9 @@ extension EditorPanel {
         }
         undoRedoManager.record(.remove(annotation: selected))
         annotationStore.remove(id: selected.id)
+        // VIB-449: Ensure cursor is visible after delete — prevents Backspace-triggered
+        // cursor disappearance from state desync between note editing and cursor manager.
+        CursorManager.shared.forceShow()
     }
 
     func toolbarDidRequestUndo() {

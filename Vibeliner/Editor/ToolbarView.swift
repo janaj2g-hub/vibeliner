@@ -157,10 +157,10 @@ final class ToolbarView: NSView {
         trashBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(trashBtn)
         self.trashButton = trashBtn
-        x += DesignTokens.iconButtonSize + 10
+        x += DesignTokens.iconButtonSize + 6
 
         x = addDivider(at: x)
-        x += 20
+        x += 10
 
         // VIB-160: Undo — manual path drawing (NOT SF Symbol which renders black)
         // Prototype SVG: <path d="M3 8h7a3 3 0 010 6H8"/><polyline points="6,5 3,8 6,11"/>
@@ -228,9 +228,9 @@ final class ToolbarView: NSView {
         redoBtn.setAccessibilityRole(.button)
         redoBtn.setFrameOrigin(NSPoint(x: x, y: iconY))
         addSubview(redoBtn)
-        x += DesignTokens.iconButtonSize + 10
+        x += DesignTokens.iconButtonSize + 6
 
-        // VIB-387: Divider between redo and "+ Add image"
+        // VIB-387/448: Divider between redo and "+ Add image" — tightened gap
         x = addDivider(at: x)
         x += 10
 

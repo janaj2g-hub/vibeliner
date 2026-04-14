@@ -211,10 +211,11 @@ private final class AppearanceAwarePreviewSurfaceView: AppearanceAwareSurfaceVie
     }
 }
 
-// VIB-434: Plain view — no inner border/background (outer previewContainer provides the frame)
+// VIB-434/448: Scrollable preview — text scrolls when it overflows the preview container
 private final class PromptPreviewSampleView: NSView {
 
-    private let promptLabel = NSTextField(wrappingLabelWithString: "")
+    private let scrollView = NSScrollView()
+    private let textView = NSTextView()
 
     init(title: String) {
         super.init(frame: .zero)
@@ -225,24 +226,35 @@ private final class PromptPreviewSampleView: NSView {
     required init?(coder: NSCoder) { fatalError() }
 
     private func setupView() {
-        promptLabel.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
-        promptLabel.textColor = .labelColor
-        promptLabel.maximumNumberOfLines = 0
-        promptLabel.lineBreakMode = .byWordWrapping
-        promptLabel.isEditable = false
-        promptLabel.isSelectable = true
-        promptLabel.translatesAutoresizingMaskIntoConstraints = false
-        addSubview(promptLabel)
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.hasVerticalScroller = true
+        scrollView.hasHorizontalScroller = false
+        scrollView.autohidesScrollers = true
+        scrollView.scrollerStyle = .overlay
+        scrollView.drawsBackground = false
+        scrollView.borderType = .noBorder
+        addSubview(scrollView)
+
+        textView.isEditable = false
+        textView.isSelectable = true
+        textView.font = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+        textView.textColor = .labelColor
+        textView.backgroundColor = .clear
+        textView.isVerticallyResizable = true
+        textView.isHorizontallyResizable = false
+        textView.textContainer?.widthTracksTextView = true
+        textView.textContainer?.lineFragmentPadding = 0
+        scrollView.documentView = textView
 
         NSLayoutConstraint.activate([
-            promptLabel.topAnchor.constraint(equalTo: topAnchor),
-            promptLabel.leadingAnchor.constraint(equalTo: leadingAnchor),
-            promptLabel.trailingAnchor.constraint(equalTo: trailingAnchor),
-            promptLabel.bottomAnchor.constraint(equalTo: bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: topAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: bottomAnchor),
         ])
     }
 
     func update(text: String) {
-        promptLabel.stringValue = text
+        textView.string = text
     }
 }
