@@ -32,7 +32,9 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.center()
         window.isReleasedWhenClosed = false
         window.level = .floating
-        window.minSize = Self.minimumContentSize
+        // VIB-453: Lock width — both min and max use the same width to prevent
+        // the Footer textarea from pushing the window wider.
+        window.minSize = NSSize(width: Self.defaultContentSize.width, height: Self.minimumContentSize.height)
         window.maxSize = NSSize(width: Self.defaultContentSize.width, height: CGFloat.greatestFiniteMagnitude)
         self.init(window: window)
         window.delegate = self
