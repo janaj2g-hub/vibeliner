@@ -226,6 +226,10 @@ final class CanvasView: NSView, NotePillDelegate {
         store.select(id: id)
         marksLayer.selectedId = id
         window?.makeKey()
+        // VIB-454: Make canvas first responder so KeyEventGuard doesn't find
+        // a stale field editor (e.g., from title pill editing) that blocks
+        // Backspace/Delete from reaching the delete handler.
+        window?.makeFirstResponder(self)
         selectTool?.mouseDown(at: point, in: self, store: store, undoManager: undoMgr)
         marksLayer.needsDisplay = true
         startDragTimer()
