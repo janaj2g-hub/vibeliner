@@ -55,8 +55,8 @@ let image = NSImage(size: size)
 image.lockFocus()
 
 // Background
-// VIB-347 attempt 4: #1E1E1E off-black (matches Vibeliner dark chrome)
-NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1).setFill()
+// VIB-347 attempt 6: Light gray #F0F0F0 — Finder renders dark labels, always readable
+NSColor(red: 240/255, green: 240/255, blue: 240/255, alpha: 1).setFill()
 NSRect(origin: .zero, size: size).fill()
 
 // ── Top area: wordmark + subtitle (header above icons) ──
@@ -79,7 +79,7 @@ logoStr.draw(at: NSPoint(x: (w - logoSize.width) / 2, y: logoY))
 let subFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
 let subAttrs: [NSAttributedString.Key: Any] = [
     .font: subFont,
-    .foregroundColor: NSColor(white: 1, alpha: 0.22),
+    .foregroundColor: NSColor(red: 153/255, green: 153/255, blue: 153/255, alpha: 1),
     .kern: 0.5 as NSNumber,
 ]
 let subStr = NSAttributedString(string: "SCREENSHOT \u{00B7} ANNOTATE \u{00B7} PROMPT", attributes: subAttrs)
