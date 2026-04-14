@@ -150,7 +150,4 @@ extension DesignTokens {
 
     /// Editor note pill border — selected
     static let editorNoteBorderSelected = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.55)
-
-    /// Editor note pill glow while editing
-    static let editorNoteEditingGlow = red
 }

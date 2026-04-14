@@ -142,7 +142,7 @@ final class TourMiniScreenshot: NSView {
         badgeViews = badges.map {
             let badge = TourMiniBadge(
                 number: $0.number,
-                fillColor: DesignTokens.tourMiniScreenshotBadgeBg,
+                fillColor: DesignTokens.red,
                 textColor: DesignTokens.tourMiniScreenshotBadgeText
             )
             canvasView.addSubview(badge)
@@ -170,7 +170,7 @@ final class TourMiniScreenshot: NSView {
         layer?.shadowOpacity = 1
 
         rectOverlay.layer?.borderWidth = DesignTokens.tourMiniRectStroke
-        rectOverlay.layer?.borderColor = DesignTokens.tourMiniScreenshotMarkColor.cgColor
+        rectOverlay.layer?.borderColor = DesignTokens.red.cgColor
         rectOverlay.layer?.backgroundColor = DesignTokens.tourMiniScreenshotRectFill.cgColor
     }
 }
