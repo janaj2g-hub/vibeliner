@@ -1,5 +1,16 @@
 import AppKit
 
+// Tour Illustration Tokens
+// These tokens are for FAKE UI wireframes in the product tour only.
+// They are NOT used by real app UI components.
+//
+// For real buttons, use: pillButton* or pillButtonPrimary*
+// For real segmented controls, use: segmented*
+// For real colors, use core tokens: red, purpleLight, purpleDark, etc.
+//
+// If you need a new token for a tour illustration, add it here.
+// If you need a new token for real app UI, add it to DesignTokens.swift.
+
 extension DesignTokens {
 
     // MARK: - Tour Illustration
@@ -171,9 +182,7 @@ extension DesignTokens {
     static let tourMiniScreenshotLineColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.06)
     static let tourMiniScreenshotAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
     static let tourMiniScreenshotAccentWidthRatio: CGFloat = 0.5
-    static let tourMiniScreenshotBadgeBg = red
     static let tourMiniScreenshotBadgeText = NSColor.white
-    static let tourMiniScreenshotMarkColor = red
     static let tourMiniScreenshotRectFill = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 0.06)
     static let tourMiniScreenshotRectRadius: CGFloat = 2
     static let tourMiniBadgeSize: CGFloat = 14
@@ -227,7 +236,6 @@ extension DesignTokens {
     static let tourFilmstripCellLineColor = NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.06)
     static let tourFilmstripCellAccent = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
     static let tourFilmstripCellAccentWidthRatio: CGFloat = 0.45
-    static let tourFilmstripCellBadgeBg = red
     static let tourFilmstripCellBadgeText = NSColor.white
 
     // -- Dashed add-image cell --

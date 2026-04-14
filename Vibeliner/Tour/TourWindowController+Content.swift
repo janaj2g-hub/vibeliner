@@ -181,7 +181,7 @@ extension TourWindowController {
             button.layer?.backgroundColor = DesignTokens.pillButtonPrimaryBg.cgColor
             button.layer?.borderColor = DesignTokens.pillButtonPrimaryBorder.cgColor
         } else {
-            updateButtonTitle(button, title: title, color: DesignTokens.tourGhostButtonText)
+            updateButtonTitle(button, title: title, color: DesignTokens.tourTextDim)
             button.layer?.backgroundColor = NSColor.clear.cgColor
             button.layer?.borderColor = DesignTokens.tourGhostButtonBorder.cgColor
         }
@@ -206,7 +206,7 @@ extension TourWindowController {
 
     func updateBackButtonAppearance(hovered: Bool) {
         let border = hovered ? DesignTokens.tourGhostButtonHoverBorder : DesignTokens.tourGhostButtonBorder
-        let text = hovered ? DesignTokens.tourGhostButtonHoverText : DesignTokens.tourGhostButtonText
+        let text = hovered ? DesignTokens.tourTextSecondary : DesignTokens.tourTextDim
         backButton.layer?.borderColor = border.cgColor
         updateButtonTitle(backButton, title: "Back", color: text)
     }

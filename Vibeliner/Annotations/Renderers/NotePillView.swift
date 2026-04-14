@@ -120,8 +120,8 @@ final class NotePillView: NSView {
             layer?.shadowOpacity = 0
         case .editing:
             tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceEditing.cgColor
-            tintView.layer?.borderColor = DesignTokens.editorNoteEditingGlow.cgColor
-            layer?.shadowColor = DesignTokens.editorNoteEditingGlow.cgColor
+            tintView.layer?.borderColor = DesignTokens.red.cgColor
+            layer?.shadowColor = DesignTokens.red.cgColor
             layer?.shadowOffset = .zero
             layer?.shadowRadius = 10
             layer?.shadowOpacity = 0.22

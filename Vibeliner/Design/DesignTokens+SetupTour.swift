@@ -147,15 +147,11 @@ extension DesignTokens {
         dark: NSColor(white: 1.0, alpha: 0.07),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
     )
-    /// Exit/ghost button text
-    static let tourGhostButtonText = tourTextDim
     /// Exit/ghost button hover border
     static let tourGhostButtonHoverBorder = dynamicColor(
         dark: NSColor(white: 1.0, alpha: 0.12),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
     )
-    /// Exit/ghost button hover text
-    static let tourGhostButtonHoverText = tourTextSecondary
     /// Done action background
     static let tourDoneButtonBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.14)
     /// Done action hover background

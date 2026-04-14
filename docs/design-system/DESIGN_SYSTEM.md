@@ -166,7 +166,6 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `editorNoteBorderDefault` | rgba(180,180,180,0.22) | Resting note pill border | NotePillRenderer |
 | `editorNoteBorderHover` | rgba(239,68,68,0.45) | Hovered note pill border | NotePillRenderer |
 | `editorNoteBorderSelected` | rgba(239,68,68,0.55) | Selected note pill border | NotePillRenderer |
-| `editorNoteEditingGlow` | #EF4444 | Editing note border and glow | CanvasView, NotePillRenderer |
 
 ### Role Colors
 
@@ -244,9 +243,7 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `tourBarDivider` | Appearance-aware | Tour header/footer divider | TourWindowController |
 | `tourWindowBorder` | Appearance-aware | Tour window border | TourWindowController |
 | `tourIllustrationPaneBg` | Appearance-aware | Illustration pane background | Tour Illustrations |
-| `tourGhostButtonText` | tourTextDim | Ghost button text | TourWindowController |
 | `tourGhostButtonBorder` | Appearance-aware | Ghost button border | TourWindowController |
-| `tourGhostButtonHoverText` | tourTextSecondary | Ghost button hover text | TourWindowController |
 | `tourGhostButtonHoverBorder` | Appearance-aware | Ghost button hover border | TourWindowController |
 | `tourDoneButtonBg` | rgba(34,197,94,0.14) | Done button fill | TourWindowController |
 | `tourDoneButtonBorder` | rgba(74,222,128,0.34) | Done button border | TourWindowController |
@@ -573,9 +570,7 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourMiniScreenshotLineColor` | rgba(15,23,42,0.06) | Mini screenshot content line color | Tour Illustrations |
 | `tourMiniScreenshotAccent` | rgba(83,74,183,0.12) | Mini screenshot accent | Tour Illustrations |
 | `tourMiniScreenshotAccentWidthRatio` | 0.5 | Mini screenshot accent width ratio | TourMiniScreenshot |
-| `tourMiniScreenshotBadgeBg` | #EF4444 | Mini screenshot badge fill | TourMiniScreenshot |
 | `tourMiniScreenshotBadgeText` | #FFFFFF | Mini screenshot badge text | TourMiniScreenshot |
-| `tourMiniScreenshotMarkColor` | #EF4444 | Mini screenshot annotation mark stroke | TourMiniScreenshot |
 | `tourMiniScreenshotRectFill` | rgba(239,68,68,0.06) | Mini screenshot annotation rect fill | TourMiniScreenshot |
 | `tourMiniScreenshotRectRadius` | 2px | Mini screenshot annotation rect radius | TourMiniScreenshot |
 | `tourMiniBadgeSize` | 14px | Mini annotation badge size | Tour Illustrations |
@@ -626,7 +621,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourFilmstripCellLineColor` | rgba(15,23,42,0.06) | Filmstrip cell content line color | TourIllustration6, TourIllustration7 |
 | `tourFilmstripCellAccent` | rgba(83,74,183,0.12) | Filmstrip cell accent | TourIllustration6, TourIllustration7 |
 | `tourFilmstripCellAccentWidthRatio` | 0.45 | Filmstrip cell accent width ratio | TourFilmstripCell |
-| `tourFilmstripCellBadgeBg` | #EF4444 | Filmstrip cell badge fill | TourFilmstripCell |
 | `tourFilmstripCellBadgeText` | #FFFFFF | Filmstrip cell badge text | TourFilmstripCell |
 
 #### Dashed Add-Image Cell

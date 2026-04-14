@@ -98,7 +98,7 @@ class ExitTourPillView: NSView {
         guard let ctx = NSGraphicsContext.current?.cgContext else { return }
 
         let borderColor = isHovered ? DesignTokens.tourGhostButtonHoverBorder : DesignTokens.tourGhostButtonBorder
-        let textColor = isHovered ? DesignTokens.tourGhostButtonHoverText : DesignTokens.tourGhostButtonText
+        let textColor = isHovered ? DesignTokens.tourTextSecondary : DesignTokens.tourTextDim
 
         // Pill border
         let pillRect = bounds.insetBy(dx: 0.5, dy: 0.5)

@@ -74,7 +74,7 @@ final class TourFilmstripCell: NSView {
         badgeViews = badges.map {
             let badge = TourMiniBadge(
                 number: $0.number,
-                fillColor: DesignTokens.tourFilmstripCellBadgeBg,
+                fillColor: DesignTokens.red,
                 textColor: DesignTokens.tourFilmstripCellBadgeText
             )
             canvasView.addSubview(badge)

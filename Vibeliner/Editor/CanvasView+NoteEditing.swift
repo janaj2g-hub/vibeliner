@@ -60,7 +60,7 @@ extension CanvasView {
         pillContainer.layer?.addSublayer(chrome.blurLayer)
         // Apply editing state colors directly
         chrome.tintView.layer?.backgroundColor = DesignTokens.editorNoteSurfaceEditing.cgColor
-        chrome.tintView.layer?.borderColor = DesignTokens.editorNoteEditingGlow.cgColor
+        chrome.tintView.layer?.borderColor = DesignTokens.red.cgColor
         pillContainer.addSubview(chrome.tintView)
         pillContainer.addSubview(chrome.prefixLabel)
 
