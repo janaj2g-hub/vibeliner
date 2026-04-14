@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FT0000020000000000000001 /* Jersey25-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = FT0000010000000000000001 /* Jersey25-Regular.ttf */; };
 		IC0000020000000000000001 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000001 /* AppIcon.icns */; };
 		IC0000020000000000000002 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000002 /* Assets.xcassets */; };
 		IC0000020000000000000003 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = IC0000010000000000000004 /* PrivacyInfo.xcprivacy */; };
@@ -217,6 +218,8 @@
 		R10000010000000000000007 /* KeyEventGuard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyEventGuard.swift; sourceTree = "<group>"; };
 		R10000010000000000000008 /* FilmCellView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FilmCellView.swift; sourceTree = "<group>"; };
 		R10000010000000000000009 /* TitlePillView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitlePillView.swift; sourceTree = "<group>"; };
+		FT0000010000000000000001 /* Jersey25-Regular.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Jersey25-Regular.ttf"; sourceTree = "<group>"; };
+		FT0000010000000000000002 /* Resources */ = {isa = PBXGroup; children = (FT0000010000000000000001 /* Jersey25-Regular.ttf */,); path = Resources; sourceTree = "<group>"; };
 		IC0000010000000000000001 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AppIcon.icns; sourceTree = "<group>"; };
 		IC0000010000000000000002 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		IC0000010000000000000003 /* Vibeliner.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Vibeliner.entitlements; sourceTree = "<group>"; };
@@ -258,6 +261,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FT0000020000000000000001 /* Jersey25-Regular.ttf in Resources */,
 				IC0000020000000000000001 /* AppIcon.icns in Resources */,
 				IC0000020000000000000002 /* Assets.xcassets in Resources */,
 				IC0000020000000000000003 /* PrivacyInfo.xcprivacy in Resources */,
@@ -333,6 +337,7 @@
 				R30000010000000000000003 /* Views */,
 				A4000001000000000000000E /* Settings */,
 				A4000001000000000000000F /* Popover */,
+				FT0000010000000000000002 /* Resources */,
 				A20000010000000000000003 /* Info.plist */,
 				IC0000010000000000000001 /* AppIcon.icns */,
 				IC0000010000000000000002 /* Assets.xcassets */,
