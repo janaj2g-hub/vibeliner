@@ -22,19 +22,20 @@ extension ToolbarView {
     /// Pin icon: filled circle + stake, 15×15 viewBox, same pattern as all other tool icons.
     /// Uses currentColor — no special colors, no counter.
     static func drawPinIcon(_ rect: NSRect, _ color: NSColor) {
-        // Filled circle at (7.5, 5), r=3.5 in 15×15 viewBox
+        // VIB-455: Open ring (not solid) to match annotation pin style
+        let scale = rect.width / ToolbarIconGeometry.viewBox
         let center = ToolbarIconGeometry.point(in: rect, 7.5, 5)
-        let r = 3.5 * (rect.width / ToolbarIconGeometry.viewBox)
-        let circle = NSBezierPath(ovalIn: NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
-        color.setFill()
-        circle.fill()
-        // Stake line from (7.5, 9) to (7.5, 14)
+        let r = 3.8 * scale
+        let ring = NSBezierPath(ovalIn: NSRect(x: center.x - r, y: center.y - r, width: r * 2, height: r * 2))
+        ring.lineWidth = 1.4 * scale
+        color.setStroke()
+        ring.stroke()
+        // Stake line from bottom of ring to tip
         let stake = NSBezierPath()
         stake.move(to: ToolbarIconGeometry.point(in: rect, 7.5, 9))
         stake.line(to: ToolbarIconGeometry.point(in: rect, 7.5, 14))
-        stake.lineWidth = 1.8 * (rect.width / ToolbarIconGeometry.viewBox)
+        stake.lineWidth = 1.5 * scale
         stake.lineCapStyle = .round
-        color.setStroke()
         stake.stroke()
     }
 
