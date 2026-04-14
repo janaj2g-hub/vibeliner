@@ -97,7 +97,7 @@ final class AboutTabView: NSView {
 
         // ── Element 1: Logo wordmark ──
         wordmarkLabel.stringValue = "vibeliner"
-        wordmarkLabel.font = Self.jersey25(size: 42)
+        wordmarkLabel.font = Self.jersey25(size: 58)
         wordmarkLabel.textColor = DesignTokens.red
         wordmarkLabel.alignment = .center
         contentStack.addArrangedSubview(wordmarkLabel)
@@ -122,7 +122,7 @@ final class AboutTabView: NSView {
         linksStack.alignment = .centerY
         linksStack.translatesAutoresizingMaskIntoConstraints = false
 
-        for title in ["github", "issues", "docs"] {
+        for title in ["github", "docs"] {
             let btn = NSButton(title: title, target: self, action: #selector(linkClicked(_:)))
             btn.isBordered = false
             btn.font = NSFont.monospacedSystemFont(ofSize: 10.5, weight: .medium)
@@ -159,15 +159,31 @@ final class AboutTabView: NSView {
         cursorView.translatesAutoresizingMaskIntoConstraints = false
         taglineRow.addSubview(cursorView)
 
+        // Wrapper to hold text + cursor, centered as a unit in taglineRow
+        let innerWrap = NSView()
+        innerWrap.translatesAutoresizingMaskIntoConstraints = false
+        taglineRow.addSubview(innerWrap)
+
+        taglineLabel.removeFromSuperview()
+        cursorView.removeFromSuperview()
+        innerWrap.addSubview(taglineLabel)
+        innerWrap.addSubview(cursorView)
+
         NSLayoutConstraint.activate([
-            taglineLabel.leadingAnchor.constraint(equalTo: taglineRow.leadingAnchor),
-            taglineLabel.centerYAnchor.constraint(equalTo: taglineRow.centerYAnchor),
+            taglineLabel.leadingAnchor.constraint(equalTo: innerWrap.leadingAnchor),
+            taglineLabel.centerYAnchor.constraint(equalTo: innerWrap.centerYAnchor),
             cursorView.leadingAnchor.constraint(equalTo: taglineLabel.trailingAnchor, constant: 1),
-            cursorView.centerYAnchor.constraint(equalTo: taglineRow.centerYAnchor),
+            cursorView.centerYAnchor.constraint(equalTo: innerWrap.centerYAnchor),
             cursorView.widthAnchor.constraint(equalToConstant: 6),
             cursorView.heightAnchor.constraint(equalToConstant: 11),
-            taglineRow.trailingAnchor.constraint(greaterThanOrEqualTo: cursorView.trailingAnchor),
+            innerWrap.trailingAnchor.constraint(equalTo: cursorView.trailingAnchor),
+            innerWrap.topAnchor.constraint(equalTo: taglineLabel.topAnchor),
+            innerWrap.bottomAnchor.constraint(equalTo: taglineLabel.bottomAnchor),
+            // Center the wrapper in the row
+            innerWrap.centerXAnchor.constraint(equalTo: taglineRow.centerXAnchor),
+            innerWrap.centerYAnchor.constraint(equalTo: taglineRow.centerYAnchor),
             taglineRow.heightAnchor.constraint(equalToConstant: 16),
+            taglineRow.widthAnchor.constraint(greaterThanOrEqualTo: innerWrap.widthAnchor),
         ])
         contentStack.addArrangedSubview(taglineRow)
     }
@@ -263,7 +279,6 @@ final class AboutTabView: NSView {
     @objc private func linkClicked(_ sender: NSButton) {
         let urls: [String: String] = [
             "github": "https://github.com/janaj2g-hub/vibeliner",
-            "issues": "https://github.com/janaj2g-hub/vibeliner/issues",
             "docs": "https://github.com/janaj2g-hub/vibeliner/blob/main/docs/VIBELINER_PRD.md",
         ]
         if let urlStr = urls[sender.title], let url = URL(string: urlStr) {
