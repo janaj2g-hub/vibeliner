@@ -55,7 +55,8 @@ let image = NSImage(size: size)
 image.lockFocus()
 
 // Background
-NSColor(red: 14/255, green: 14/255, blue: 16/255, alpha: 1).setFill()
+// VIB-347 attempt 4: #1E1E1E off-black (matches Vibeliner dark chrome)
+NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1).setFill()
 NSRect(origin: .zero, size: size).fill()
 
 // ── Top area: wordmark + subtitle (header above icons) ──
@@ -116,7 +117,7 @@ let instrAttrs: [NSAttributedString.Key: Any] = [
 ]
 let instrStr = NSAttributedString(string: "Drag to Applications to install", attributes: instrAttrs)
 let instrSize = instrStr.size()
-instrStr.draw(at: NSPoint(x: (w - instrSize.width) / 2, y: 30))
+instrStr.draw(at: NSPoint(x: (w - instrSize.width) / 2, y: 55))
 
 image.unlockFocus()
 
