@@ -188,7 +188,7 @@ final class SetupHarnessSurfaceView: NSView {
 
         if showsAction {
             let labelRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 64, width: contentWidth, height: 18)
-            drawText(actionLabel, rect: labelRect, font: DesignTokens.setupActionLabelFont, color: DesignTokens.setupButtonText, alignment: .center)
+            drawText(actionLabel, rect: labelRect, font: DesignTokens.setupActionLabelFont, color: DesignTokens.pillButtonText, alignment: .center)
             drawCircleArrow(in: CGRect(
                 x: panelRect.midX - DesignTokens.setupArrowSize / 2,
                 y: panelRect.maxY - 64 + 26,
@@ -213,11 +213,11 @@ final class SetupHarnessSurfaceView: NSView {
             path.stroke()
             drawText("✓", rect: rect, font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, alignment: .center)
         case .active:
-            DesignTokens.setupButtonFill.setFill()
-            DesignTokens.setupButtonBorder.setStroke()
+            DesignTokens.pillButtonBg.setFill()
+            DesignTokens.pillButtonBorder.setStroke()
             path.fill()
             path.stroke()
-            drawText("\(index)", rect: rect, font: DesignTokens.setupBadgeFont, color: DesignTokens.setupButtonText, alignment: .center)
+            drawText("\(index)", rect: rect, font: DesignTokens.setupBadgeFont, color: DesignTokens.pillButtonText, alignment: .center)
         case .locked:
             DesignTokens.setupGrayBg.setFill()
             DesignTokens.setupGrayText.setStroke()
@@ -234,8 +234,8 @@ final class SetupHarnessSurfaceView: NSView {
             background: .clear,
             borderWidth: 0
         )
-        DesignTokens.setupButtonFill.setFill()
-        DesignTokens.setupButtonBorder.setStroke()
+        DesignTokens.pillButtonBg.setFill()
+        DesignTokens.pillButtonBorder.setStroke()
         path.lineWidth = 1
         path.fill()
         path.stroke()
@@ -244,7 +244,7 @@ final class SetupHarnessSurfaceView: NSView {
             string: "→",
             attributes: [
                 .font: NSFont.systemFont(ofSize: 18, weight: .semibold),
-                .foregroundColor: DesignTokens.setupButtonText,
+                .foregroundColor: DesignTokens.pillButtonText,
             ]
         )
         let size = arrow.size()

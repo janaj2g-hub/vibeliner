@@ -61,7 +61,7 @@ final class AboutTabView: NSView {
             let btn = NSButton(title: title, target: self, action: #selector(linkClicked(_:)))
             btn.isBordered = false
             btn.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-            btn.contentTintColor = DesignTokens.settingsPillText
+            btn.contentTintColor = DesignTokens.pillButtonText
             btn.setButtonType(.momentaryPushIn)
             btn.focusRingType = .none
             linksStack.addArrangedSubview(btn)

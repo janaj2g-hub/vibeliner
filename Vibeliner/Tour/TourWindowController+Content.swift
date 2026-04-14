@@ -177,9 +177,9 @@ extension TourWindowController {
         button.layer?.cornerRadius = DesignTokens.tourNextButtonHeight / 2
         button.layer?.borderWidth = 1
         if isPrimary {
-            updateButtonTitle(button, title: title, color: DesignTokens.tourPrimaryButtonText)
-            button.layer?.backgroundColor = DesignTokens.tourPrimaryButtonBg.cgColor
-            button.layer?.borderColor = DesignTokens.tourPrimaryButtonBorder.cgColor
+            updateButtonTitle(button, title: title, color: DesignTokens.pillButtonPrimaryText)
+            button.layer?.backgroundColor = DesignTokens.pillButtonPrimaryBg.cgColor
+            button.layer?.borderColor = DesignTokens.pillButtonPrimaryBorder.cgColor
         } else {
             updateButtonTitle(button, title: title, color: DesignTokens.tourGhostButtonText)
             button.layer?.backgroundColor = NSColor.clear.cgColor
@@ -220,11 +220,11 @@ extension TourWindowController {
             return
         }
 
-        let bg = hovered ? DesignTokens.tourPrimaryButtonHoverBg : DesignTokens.tourPrimaryButtonBg
-        let border = hovered ? DesignTokens.tourPrimaryButtonHoverBorder : DesignTokens.tourPrimaryButtonBorder
+        let bg = hovered ? DesignTokens.pillButtonPrimaryHoverBg : DesignTokens.pillButtonPrimaryBg
+        let border = hovered ? DesignTokens.pillButtonPrimaryHoverBorder : DesignTokens.pillButtonPrimaryBorder
         nextButton.layer?.backgroundColor = bg.cgColor
         nextButton.layer?.borderColor = border.cgColor
-        updateButtonTitle(nextButton, title: title, color: DesignTokens.tourPrimaryButtonText)
+        updateButtonTitle(nextButton, title: title, color: DesignTokens.pillButtonPrimaryText)
     }
 
     func updateButtonTitle(_ button: NSButton, title: String, color: NSColor, font: NSFont = DesignTokens.tourButtonFont) {

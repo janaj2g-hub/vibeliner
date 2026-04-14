@@ -48,25 +48,6 @@ extension DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.03) : NSColor(white: 0, alpha: 0.03)
     }
 
-    // Action buttons — appearance-aware (matches settingsPill family)
-    /// Setup action button fill
-    static let setupButtonFill = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.10)
-            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-    }
-    /// Setup action button border
-    static let setupButtonBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.55)
-            : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.26)
-    }
-    /// Setup action button/label text
-    static let setupButtonText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 111/255, green: 105/255, blue: 223/255, alpha: 1.0)
-            : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
-    }
     // Kbd pills — appearance-aware
     /// Setup kbd pill border
     static let setupKbdBorder = NSColor(name: nil) { appearance in
@@ -175,31 +156,6 @@ extension DesignTokens {
     )
     /// Exit/ghost button hover text
     static let tourGhostButtonHoverText = tourTextSecondary
-    /// Primary action text
-    static let tourPrimaryButtonText = dynamicColor(
-        dark: purpleLight,
-        light: NSColor.white
-    )
-    /// Primary action background
-    static let tourPrimaryButtonBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16),
-        light: purpleDark
-    )
-    /// Primary action border
-    static let tourPrimaryButtonBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36),
-        light: purpleDark
-    )
-    /// Primary action hover background
-    static let tourPrimaryButtonHoverBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
-    /// Primary action hover border
-    static let tourPrimaryButtonHoverBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.48),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
     /// Done action background
     static let tourDoneButtonBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.14)
     /// Done action hover background
