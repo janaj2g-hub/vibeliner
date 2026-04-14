@@ -86,38 +86,7 @@ let subStr = NSAttributedString(string: "SCREENSHOT \u{00B7} ANNOTATE \u{00B7} P
 let subSize = subStr.size()
 subStr.draw(at: NSPoint(x: (w - subSize.width) / 2, y: logoY - 22))
 
-// ── Middle area: muted arrow from app icon to Applications ──
-
-let arrowColor = NSColor(white: 1, alpha: 0.18)
-arrowColor.setStroke()
-
-let arrowY = h / 2 - 20  // roughly icon center height
-let arrowPath = NSBezierPath()
-arrowPath.move(to: NSPoint(x: 220, y: arrowY))
-arrowPath.line(to: NSPoint(x: 380, y: arrowY))
-arrowPath.lineWidth = 1.5
-arrowPath.stroke()
-
-// Chevron head
-let chevron = NSBezierPath()
-chevron.move(to: NSPoint(x: 370, y: arrowY + 8))
-chevron.line(to: NSPoint(x: 380, y: arrowY))
-chevron.line(to: NSPoint(x: 370, y: arrowY - 8))
-chevron.lineWidth = 1.5
-chevron.lineCapStyle = .round
-chevron.lineJoinStyle = .round
-chevron.stroke()
-
-// ── Bottom area: instruction text ──
-
-let instrFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
-let instrAttrs: [NSAttributedString.Key: Any] = [
-    .font: instrFont,
-    .foregroundColor: NSColor(white: 1, alpha: 0.25),
-]
-let instrStr = NSAttributedString(string: "Drag to Applications to install", attributes: instrAttrs)
-let instrSize = instrStr.size()
-instrStr.draw(at: NSPoint(x: (w - instrSize.width) / 2, y: 55))
+// VIB-347 attempt 5: Clean background — wordmark + tagline only, no arrow/instructions
 
 image.unlockFocus()
 
