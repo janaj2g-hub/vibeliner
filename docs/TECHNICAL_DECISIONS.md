@@ -41,4 +41,7 @@ This document records architectural decisions and failed approaches. Claude Code
 
 *This section is updated when tickets fail. Each entry explains what was tried, why it failed, and what to do instead.*
 
-*(none yet — project starting fresh)*
+### DMG Applications folder shortcut (VIB-347, attempts 2-4)
+**Tried:** `ln -s /Applications` (symlink), Finder alias via `osascript` in staging dir, Finder alias inside mounted RW DMG volume.
+**Failed:** All three approaches rendered the Applications folder as a black square in the DMG Finder window. The symlink lacks Finder icon metadata. The Finder alias created in staging lost its metadata when copied by `hdiutil create -srcfolder`. The alias created inside the mounted volume still showed a black square — likely a macOS Finder rendering limitation with HFS+ DMG volumes on modern macOS (14+).
+**Decision:** Removed the Applications shortcut entirely. The DMG now contains only Vibeliner.app centered on the branded background. Users drag the app to /Applications manually or via Finder sidebar.
