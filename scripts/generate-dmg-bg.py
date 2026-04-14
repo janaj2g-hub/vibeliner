@@ -48,6 +48,8 @@ import CoreText
 let width = 600
 let height = 400
 let size = NSSize(width: width, height: height)
+let w = CGFloat(width)
+let h = CGFloat(height)
 
 let image = NSImage(size: size)
 image.lockFocus()
@@ -56,7 +58,8 @@ image.lockFocus()
 NSColor(red: 14/255, green: 14/255, blue: 16/255, alpha: 1).setFill()
 NSRect(origin: .zero, size: size).fill()
 
-// "vibeliner" wordmark — try Jersey 25, fall back to monospace bold
+// ── Top area: wordmark + subtitle (header above icons) ──
+
 let fontURL = URL(fileURLWithPath: "Vibeliner/Resources/Jersey25-Regular.ttf")
 CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, nil)
 let logoFont = NSFont(name: "Jersey25-Regular", size: 52)
@@ -68,11 +71,10 @@ let logoAttrs: [NSAttributedString.Key: Any] = [
 ]
 let logoStr = NSAttributedString(string: "vibeliner", attributes: logoAttrs)
 let logoSize = logoStr.size()
-let logoX = (CGFloat(width) - logoSize.width) / 2
-let logoY = (CGFloat(height) - logoSize.height) / 2 + 20
-logoStr.draw(at: NSPoint(x: logoX, y: logoY))
+// Top portion — flipped=false so higher Y = higher on screen
+let logoY = h - 70 - logoSize.height
+logoStr.draw(at: NSPoint(x: (w - logoSize.width) / 2, y: logoY))
 
-// Subtitle
 let subFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
 let subAttrs: [NSAttributedString.Key: Any] = [
     .font: subFont,
@@ -81,9 +83,40 @@ let subAttrs: [NSAttributedString.Key: Any] = [
 ]
 let subStr = NSAttributedString(string: "SCREENSHOT \u{00B7} ANNOTATE \u{00B7} PROMPT", attributes: subAttrs)
 let subSize = subStr.size()
-let subX = (CGFloat(width) - subSize.width) / 2
-let subY = logoY - 24
-subStr.draw(at: NSPoint(x: subX, y: subY))
+subStr.draw(at: NSPoint(x: (w - subSize.width) / 2, y: logoY - 22))
+
+// ── Middle area: muted arrow from app icon to Applications ──
+
+let arrowColor = NSColor(white: 1, alpha: 0.18)
+arrowColor.setStroke()
+
+let arrowY = h / 2 - 20  // roughly icon center height
+let arrowPath = NSBezierPath()
+arrowPath.move(to: NSPoint(x: 220, y: arrowY))
+arrowPath.line(to: NSPoint(x: 380, y: arrowY))
+arrowPath.lineWidth = 1.5
+arrowPath.stroke()
+
+// Chevron head
+let chevron = NSBezierPath()
+chevron.move(to: NSPoint(x: 370, y: arrowY + 8))
+chevron.line(to: NSPoint(x: 380, y: arrowY))
+chevron.line(to: NSPoint(x: 370, y: arrowY - 8))
+chevron.lineWidth = 1.5
+chevron.lineCapStyle = .round
+chevron.lineJoinStyle = .round
+chevron.stroke()
+
+// ── Bottom area: instruction text ──
+
+let instrFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .regular)
+let instrAttrs: [NSAttributedString.Key: Any] = [
+    .font: instrFont,
+    .foregroundColor: NSColor(white: 1, alpha: 0.25),
+]
+let instrStr = NSAttributedString(string: "Drag to Applications to install", attributes: instrAttrs)
+let instrSize = instrStr.size()
+instrStr.draw(at: NSPoint(x: (w - instrSize.width) / 2, y: 30))
 
 image.unlockFocus()
 

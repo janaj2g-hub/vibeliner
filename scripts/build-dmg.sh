@@ -43,7 +43,13 @@ rm -rf "$STAGING"
 mkdir -p "$STAGING"
 
 cp -R dist/Vibeliner.app "$STAGING/"
-ln -s /Applications "$STAGING/Applications"
+# VIB-347 attempt 3: Finder alias instead of symlink — renders proper folder icon
+if osascript -e "tell application \"Finder\" to make alias file to POSIX file \"/Applications\" at POSIX file \"$(cd "$STAGING" && pwd)\"" 2>/dev/null; then
+    # Finder creates "Applications alias" — rename to "Applications"
+    mv "$STAGING/Applications alias" "$STAGING/Applications" 2>/dev/null || true
+else
+    ln -s /Applications "$STAGING/Applications"
+fi
 
 DMG_PATH="dist/Vibeliner-${VERSION}.dmg"
 DMG_RW="dist/Vibeliner-rw.dmg"
@@ -53,12 +59,13 @@ BRANDED=false
 if [ -f "$BG_PATH" ]; then
     echo "▸ Creating branded DMG..."
 
-    # Step 1: Create read-write DMG
+    # Step 1: Create read-write HFS+ DMG (APFS DMGs don't support post-mount writes)
     hdiutil create \
         -volname "Vibeliner" \
         -srcfolder "$STAGING" \
         -ov \
         -format UDRW \
+        -fs HFS+ \
         "$DMG_RW" \
         2>/dev/null
 
@@ -82,8 +89,8 @@ tell application "Finder"
         set icon size of opts to 80
         set arrangement of opts to not arranged
         set background picture of opts to file ".background:dmg-background.png"
-        set position of item "Vibeliner.app" of container window to {160, 200}
-        set position of item "Applications" of container window to {440, 200}
+        set position of item "Vibeliner.app" of container window to {160, 220}
+        set position of item "Applications" of container window to {440, 220}
         close
     end tell
 end tell
