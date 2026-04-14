@@ -85,24 +85,14 @@ final class PromptDraftStateView: AppearanceAwareSurfaceView {
     }
 
     override func refreshSurfaceAppearance() {
+        // VIB-448: Plain status text — no pill border or fill
         switch state {
         case .saved:
-            label.textColor = .secondaryLabelColor
-            SettingsUI.styleSurface(
-                self,
-                background: DesignTokens.settingsFieldSurface,
-                border: DesignTokens.settingsFieldBorder,
-                cornerRadius: 12
-            )
+            label.textColor = .tertiaryLabelColor
         case .unsaved:
             label.textColor = DesignTokens.pillButtonText
-            SettingsUI.styleSurface(
-                self,
-                background: DesignTokens.pillButtonBg,
-                border: DesignTokens.pillButtonBorder,
-                cornerRadius: 12
-            )
         }
+        SettingsUI.styleSurface(self, background: .clear, cornerRadius: 0, borderWidth: 0)
     }
 }
 

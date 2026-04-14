@@ -33,6 +33,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         window.isReleasedWhenClosed = false
         window.level = .floating
         window.minSize = Self.minimumContentSize
+        window.maxSize = NSSize(width: Self.defaultContentSize.width, height: CGFloat.greatestFiniteMagnitude)
         self.init(window: window)
         window.delegate = self
         buildWindowLayout()
