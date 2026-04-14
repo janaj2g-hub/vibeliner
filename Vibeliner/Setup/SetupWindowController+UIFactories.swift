@@ -134,20 +134,6 @@ extension SetupWindowController {
                 y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
             )
             footerContent.addSubview(startBtn)
-
-            // VIB-360: "Take a tour" ghost button, to the left of Start button
-            let tourBtn = SetupFooterButton(
-                title: "Take a tour",
-                role: .ghost,
-                target: self,
-                action: #selector(tourClicked)
-            )
-            let tourBtnW = tourBtn.frame.width
-            tourBtn.frame.origin = NSPoint(
-                x: winW - 24 - btnW - 10 - tourBtnW,
-                y: (DesignTokens.setupFooterHeight - DesignTokens.setupFooterButtonHeight) / 2
-            )
-            footerContent.addSubview(tourBtn)
         } else {
             let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
