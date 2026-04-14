@@ -59,32 +59,8 @@ extension DesignTokens {
         return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.18)
     }
 
-    /// Settings pill border color
-    static let settingsPillBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36)
-        }
-        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.26)
-    }
-
-    /// Settings pill fill color
-    static let settingsPillFill = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.10)
-        }
-        return NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-    }
-
-    /// Settings pill title color
-    static let settingsPillText = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return purpleLight
-        }
-        return NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 1.0)
-    }
-
     /// Settings selector active title color
-    static let settingsSegmentedActiveText = settingsPillText
+    static let settingsSegmentedActiveText = pillButtonText
 
     /// Settings selector inactive title color
     static let settingsSegmentedInactiveText = NSColor(name: nil) { appearance in

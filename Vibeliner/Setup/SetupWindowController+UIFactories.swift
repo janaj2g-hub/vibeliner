@@ -24,12 +24,12 @@ extension SetupWindowController {
         case .active:
             SettingsUI.styleSurface(
                 view,
-                background: DesignTokens.setupButtonFill,
-                border: DesignTokens.setupButtonBorder,
+                background: DesignTokens.pillButtonBg,
+                border: DesignTokens.pillButtonBorder,
                 cornerRadius: size / 2,
                 borderWidth: 2
             )
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupButtonText, in: badgeRect)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.pillButtonText, in: badgeRect)
             view.addSubview(numLabel)
         }
 
@@ -54,7 +54,7 @@ extension SetupWindowController {
         labelBtn.isBordered = false
         labelBtn.wantsLayer = true
         labelBtn.font = DesignTokens.setupActionLabelFont
-        labelBtn.contentTintColor = DesignTokens.setupButtonText
+        labelBtn.contentTintColor = DesignTokens.pillButtonText
         labelBtn.sizeToFit()
         let labelW = labelBtn.frame.width
         labelBtn.frame = NSRect(x: (width - labelW) / 2, y: rowH - 18, width: labelW, height: 18)

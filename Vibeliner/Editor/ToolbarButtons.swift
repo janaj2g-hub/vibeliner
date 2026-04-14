@@ -116,7 +116,7 @@ final class CopyPillButton: NSView {
         layer?.borderWidth = 1.5
 
         label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = DesignTokens.toolbarPurpleButtonText
+        label.textColor = DesignTokens.pillButtonText
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
@@ -185,8 +185,8 @@ final class CopyPillButton: NSView {
             )
             label.textColor = DesignTokens.copiedGreenText
         } else {
-            let borderColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBorder : DesignTokens.toolbarPurpleButtonBorder
-            let bgColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverBg : DesignTokens.toolbarPurpleButtonBg
+            let borderColor = isHovered ? DesignTokens.pillButtonHoverBorder : DesignTokens.pillButtonBorder
+            let bgColor = isHovered ? DesignTokens.pillButtonHoverBg : DesignTokens.pillButtonBg
             SettingsUI.styleSurface(
                 self,
                 background: bgColor,
@@ -194,7 +194,7 @@ final class CopyPillButton: NSView {
                 cornerRadius: 14,
                 borderWidth: 1.5
             )
-            label.textColor = isHovered ? DesignTokens.toolbarPurpleButtonHoverText : DesignTokens.toolbarPurpleButtonText
+            label.textColor = isHovered ? DesignTokens.pillButtonHoverText : DesignTokens.pillButtonText
         }
     }
 

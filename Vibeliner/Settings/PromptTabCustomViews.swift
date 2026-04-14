@@ -95,11 +95,11 @@ final class PromptDraftStateView: AppearanceAwareSurfaceView {
                 cornerRadius: 12
             )
         case .unsaved:
-            label.textColor = DesignTokens.settingsPillText
+            label.textColor = DesignTokens.pillButtonText
             SettingsUI.styleSurface(
                 self,
-                background: DesignTokens.settingsPillFill,
-                border: DesignTokens.settingsPillBorder,
+                background: DesignTokens.pillButtonBg,
+                border: DesignTokens.pillButtonBorder,
                 cornerRadius: 12
             )
         }

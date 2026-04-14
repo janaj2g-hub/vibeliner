@@ -39,6 +39,22 @@ Canonical docs location: `docs/design-system/`
 | `copiedGreenBorder` | rgba(22, 163, 74, 0.5) | Copied state border | ToolbarView, PromptTabView |
 | `copiedGreenText` | rgba(22, 163, 74, 0.8) | Copied state text | ToolbarView, CaptureRowView, PromptTabView |
 
+### Universal Pill Button (VIB-440)
+
+| Token | Dark value | Light value | Usage | Consuming files |
+|-------|-----------|-------------|-------|-----------------|
+| `pillButtonBorder` | #A796EB | #534AB7 | Pill button border | ToolbarButtons, SettingsControls, SetupComponents, CaptureRowView, TourMiniToolbar |
+| `pillButtonText` | #A796EB | #534AB7 | Pill button text | ToolbarButtons, SettingsControls, SetupComponents, CaptureRowView, PromptTabView, AboutTabView, TourMiniToolbar |
+| `pillButtonBg` | rgba(116,97,194,0.25) | rgba(83,74,183,0.08) | Pill button fill | ToolbarButtons, SettingsControls, SetupComponents, CaptureRowView, TourMiniToolbar |
+| `pillButtonHoverBorder` | #C4B8F5 | #7461C2 | Pill button hover border | ToolbarButtons |
+| `pillButtonHoverText` | #C4B8F5 | #7461C2 | Pill button hover text | ToolbarButtons |
+| `pillButtonHoverBg` | rgba(116,97,194,0.35) | rgba(83,74,183,0.12) | Pill button hover fill | ToolbarButtons |
+| `pillButtonPrimaryText` | #AFA9EC | #FFFFFF | Primary CTA text (solid fill) | TourWindowController |
+| `pillButtonPrimaryBg` | rgba(175,169,236,0.16) | #534AB7 | Primary CTA fill | TourWindowController |
+| `pillButtonPrimaryBorder` | rgba(175,169,236,0.36) | #534AB7 | Primary CTA border | TourWindowController |
+| `pillButtonPrimaryHoverBg` | rgba(175,169,236,0.22) | #6055C4 | Primary CTA hover fill | TourWindowController |
+| `pillButtonPrimaryHoverBorder` | rgba(175,169,236,0.48) | #6055C4 | Primary CTA hover border | TourWindowController |
+
 ### Chrome — Floating UI (Legacy Static Dark)
 
 | Token | Value | Usage | Consuming files |
@@ -57,12 +73,6 @@ Canonical docs location: `docs/design-system/`
 | `toolbarIconHover` | rgba(255,255,255,0.70) | rgba(0,0,0,0.70) | Icon hover stroke | ToolButton |
 | `toolbarDivider` | rgba(255,255,255,0.08) | rgba(0,0,0,0.12) | Toolbar dividers | ToolbarView |
 | `toolbarPurpleActive` | #AFA9EC | #534AB7 | Active tool/toggle label | ToolbarView, ToolButton |
-| `toolbarPurpleButtonBorder` | #A796EB | #534AB7 | Purple pill button border | ToolbarView |
-| `toolbarPurpleButtonText` | #A796EB | #534AB7 | Purple pill button text | ToolbarView |
-| `toolbarPurpleButtonBg` | rgba(116,97,194,0.25) | rgba(83,74,183,0.08) | Purple pill button bg | ToolbarView |
-| `toolbarPurpleButtonHoverBorder` | #C4B8F5 | #7461C2 | Purple pill hover border | ToolbarView |
-| `toolbarPurpleButtonHoverText` | #C4B8F5 | #7461C2 | Purple pill hover text | ToolbarView |
-| `toolbarPurpleButtonHoverBg` | rgba(116,97,194,0.35) | rgba(83,74,183,0.12) | Purple pill hover bg | ToolbarView |
 | `toolbarButtonHoverBg` | rgba(255,255,255,0.08) | rgba(0,0,0,0.06) | Generic button hover bg | ToolButton |
 | `toolbarCloseHoverBg` | rgba(255,87,87,0.2) | rgba(255,87,87,0.15) | Close button hover bg | ToolButton |
 | `toolbarCloseIconHover` | #FF5F57 | #FF5F57 | Close icon hover color | ToolButton |
@@ -118,9 +128,6 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `settingsSegmentedActiveBorder` | rgba(175,169,236,0.20) | rgba(114,103,221,0.18) | Segmented active border | SettingsUI |
 | `settingsSegmentedInactiveText` | rgba(255,255,255,0.58) | rgba(15,23,42,0.58) | Segmented inactive title color | SettingsUI |
 | `settingsSegmentedActiveText` | #AFA9EC | #7267DD | Segmented active title color | SettingsUI |
-| `settingsPillBorder` | rgba(175,169,236,0.36) | rgba(114,103,221,0.26) | Pill button border | SettingsUI, PromptTabView |
-| `settingsPillFill` | rgba(175,169,236,0.10) | rgba(175,169,236,0.16) | Pill button fill | SettingsUI, PromptTabView |
-| `settingsPillText` | #AFA9EC | #7267DD | Pill button text | SettingsUI, AboutTabView, PromptTabView |
 | `settingsFieldBorder` | rgba(255,255,255,0.12) | rgba(15,23,42,0.12) | Field border | SettingsUI |
 
 ### Shared Appearance Surfaces (VIB-412)
@@ -222,9 +229,6 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `setupTextDim` | #666666 | Dim/helper text | SetupWindowController |
 | `setupGrayText` | #555555 | Locked badge/gray status | SetupWindowController |
 | `setupGrayBg` | rgba(255,255,255,0.03) | Locked badge bg | SetupWindowController |
-| `setupButtonFill` | rgba(175,169,236,0.08) | Action button fill | SetupWindowController |
-| `setupButtonBorder` | rgba(175,169,236,0.55) | Action button border | SetupWindowController |
-| `setupButtonText` | #6F69DF | Action button/label text | SetupWindowController |
 | `setupKbdBorder` | rgba(255,255,255,0.12) | Kbd pill border | SetupWindowController |
 | `setupKbdBg` | rgba(255,255,255,0.08) | Kbd pill bg | SetupWindowController |
 | `setupKbdText` | rgba(255,255,255,0.55) | Kbd pill text | SetupWindowController |
@@ -243,11 +247,6 @@ Top-level Settings tabs and Prompt sub-tabs now use one selector contract with t
 | `tourBarDivider` | Appearance-aware | Tour header/footer divider | TourWindowController |
 | `tourWindowBorder` | Appearance-aware | Tour window border | TourWindowController |
 | `tourIllustrationPaneBg` | Appearance-aware | Illustration pane background | Tour Illustrations |
-| `tourPrimaryButtonBg` | Appearance-aware | Primary CTA button fill | TourWindowController |
-| `tourPrimaryButtonBorder` | Appearance-aware | Primary CTA button border | TourWindowController |
-| `tourPrimaryButtonText` | Appearance-aware | Primary CTA button text | TourWindowController |
-| `tourPrimaryButtonHoverBg` | Appearance-aware | Primary CTA button hover fill | TourWindowController |
-| `tourPrimaryButtonHoverBorder` | Appearance-aware | Primary CTA button hover border | TourWindowController |
 | `tourGhostButtonText` | tourTextDim | Ghost button text | TourWindowController |
 | `tourGhostButtonBorder` | Appearance-aware | Ghost button border | TourWindowController |
 | `tourGhostButtonHoverText` | tourTextSecondary | Ghost button hover text | TourWindowController |
@@ -366,13 +365,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `setupFooterPrimaryPadding` | 48px | Horizontal padding added to primary footer CTA title width | SetupWindowController |
 | `setupFooterSecondaryPadding` | 36px | Horizontal padding added to secondary footer CTA title width | SetupWindowController |
 | `setupPathBoxRadius` | 8px | Path box corner radius | SetupWindowController |
-
-### Popover
-
-| Token | Value | Usage | Consuming files |
-|-------|-------|-------|-----------------|
-| `popoverCopyButtonBg` | Appearance-aware | Copy button fill | PopoverViewController |
-| `popoverCopyButtonText` | Appearance-aware | Copy button text | PopoverViewController |
 
 ### Tour Window
 
@@ -684,7 +676,7 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | Note pills | Static (on screenshot) | DesignTokens directly (`redNoteBg`, `noteTextColor`) |
 | Ghost previews | Static (on screenshot) | DesignTokens directly (`ghostDotColor`, `ghostStrokeColor`) |
 | Popover menu | Appearance-aware | System colors + `.popover` material |
-| Settings window | Appearance-aware | Dynamic tokens (`settingsFieldSurface`, `settingsPillText`, etc.) |
+| Settings window | Appearance-aware | Dynamic tokens (`settingsFieldSurface`, `pillButtonText`, etc.) |
 | Setup window | Static dark | DesignTokens directly (`setupWindowBg`, `setupBorder`, etc.) |
 | Tour window | Static dark | DesignTokens directly (`tourWindowBg`, `tourTextPrimary`, etc.) |
 
