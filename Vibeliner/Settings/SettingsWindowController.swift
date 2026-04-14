@@ -11,7 +11,6 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     /// Cached tab views — created lazily on first display.
     private var cachedTabViews: [Int: NSView] = [:]
     private var measuredTabSizes: [Int: NSSize] = [:]
-    private var preferredContentWidth: CGFloat = SettingsWindowController.defaultContentSize.width
     private var preferredContentHeight: CGFloat = SettingsWindowController.defaultContentSize.height
     private var isApplyingShellSizing = false
 
@@ -189,13 +188,15 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         measuredTabSizes[index] = tabView.fittingSize
 
         let currentContentSize = window.contentRect(forFrameRect: window.frame).size
+        // VIB-453 attempt 2: Width is ALWAYS fixed at defaultContentSize.width.
+        // Only height adapts to content. This prevents any sub-tab content from
+        // pushing the window wider via fittingSize or intrinsic content size.
         let targetSize = NSSize(
-            width: max(preferredContentWidth, Self.minimumContentSize.width),
+            width: Self.defaultContentSize.width,
             height: max(preferredContentHeight, Self.minimumContentSize.height)
         )
 
-        guard abs(currentContentSize.width - targetSize.width) > 0.5 ||
-                abs(currentContentSize.height - targetSize.height) > 0.5 else {
+        guard abs(currentContentSize.height - targetSize.height) > 0.5 else {
             return
         }
 
@@ -207,7 +208,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
     func windowDidResize(_ notification: Notification) {
         guard !isApplyingShellSizing, let window else { return }
         let contentSize = window.contentRect(forFrameRect: window.frame).size
-        preferredContentWidth = max(Self.minimumContentSize.width, contentSize.width)
+        // VIB-453: Only track height changes — width is locked
         preferredContentHeight = max(Self.minimumContentSize.height, contentSize.height)
     }
 }
