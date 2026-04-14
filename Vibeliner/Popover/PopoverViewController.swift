@@ -37,7 +37,6 @@ final class PopoverContentView: PopoverBorderedSurfaceView {
             MenuItem(label: "Open Captures", keys: nil, action: { [weak self] in self?.openCaptures() }, hasArrow: false, hasDividerBefore: false),
             MenuItem(label: "Settings", keys: nil, action: { [weak self] in self?.openSettings() }, hasArrow: false, hasDividerBefore: false),
             MenuItem(label: "Re-run Setup", keys: nil, action: { [weak self] in self?.reRunSetup() }, hasArrow: false, hasDividerBefore: true),
-            MenuItem(label: "Take a tour", keys: nil, action: { [weak self] in self?.takeATour() }, hasArrow: false, hasDividerBefore: true),
         ]
 
         // Count dividers: one before Quit + any hasDividerBefore items
