@@ -62,6 +62,8 @@ final class PromptPreviewView: NSView {
             previewContainer.leadingAnchor.constraint(equalTo: leadingAnchor),
             previewContainer.trailingAnchor.constraint(equalTo: trailingAnchor),
             previewContainer.bottomAnchor.constraint(equalTo: bottomAnchor),
+            // VIB-452: Fixed height prevents collapse inside nested scroll view
+            previewContainer.heightAnchor.constraint(equalToConstant: 140),
 
             singleSampleView.topAnchor.constraint(equalTo: previewContainer.topAnchor, constant: 10),
             singleSampleView.leadingAnchor.constraint(equalTo: previewContainer.leadingAnchor, constant: 10),
