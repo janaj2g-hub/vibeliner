@@ -43,13 +43,7 @@ rm -rf "$STAGING"
 mkdir -p "$STAGING"
 
 cp -R dist/Vibeliner.app "$STAGING/"
-# VIB-347 attempt 3: Finder alias instead of symlink — renders proper folder icon
-if osascript -e "tell application \"Finder\" to make alias file to POSIX file \"/Applications\" at POSIX file \"$(cd "$STAGING" && pwd)\"" 2>/dev/null; then
-    # Finder creates "Applications alias" — rename to "Applications"
-    mv "$STAGING/Applications alias" "$STAGING/Applications" 2>/dev/null || true
-else
-    ln -s /Applications "$STAGING/Applications"
-fi
+ln -s /Applications "$STAGING/Applications"
 
 DMG_PATH="dist/Vibeliner-${VERSION}.dmg"
 DMG_RW="dist/Vibeliner-rw.dmg"
@@ -69,9 +63,23 @@ if [ -f "$BG_PATH" ]; then
         "$DMG_RW" \
         2>/dev/null
 
-    # Step 2: Mount and customize
-    MOUNT_DIR=$(hdiutil attach "$DMG_RW" -readwrite -noverify -noautoopen 2>/dev/null | grep "Volumes" | awk '{print $3}')
+    # Step 2: Detach any stale Vibeliner volumes, then mount and customize
+    hdiutil detach "/Volumes/Vibeliner" -quiet 2>/dev/null || true
+    MOUNT_DIR=$(hdiutil attach "$DMG_RW" -readwrite -noverify -noautoopen 2>/dev/null | grep "/Volumes/" | sed 's/.*\(\/Volumes\/.*\)/\1/' | xargs)
     if [ -n "$MOUNT_DIR" ] && [ -d "$MOUNT_DIR" ]; then
+        # VIB-347 attempt 4: Replace the symlink with a Finder alias INSIDE
+        # the mounted volume. Finder aliases render the proper folder icon;
+        # Unix symlinks show as black squares in DMG Finder windows.
+        rm -f "$MOUNT_DIR/Applications"
+        osascript -e "tell application \"Finder\" to make alias file to POSIX file \"/Applications\" at POSIX file \"$MOUNT_DIR\"" 2>/dev/null || true
+        # Rename "Applications alias" → "Applications"
+        if [ -e "$MOUNT_DIR/Applications alias" ]; then
+            mv "$MOUNT_DIR/Applications alias" "$MOUNT_DIR/Applications"
+        elif [ ! -e "$MOUNT_DIR/Applications" ]; then
+            # Fallback: recreate symlink if alias failed
+            ln -s /Applications "$MOUNT_DIR/Applications"
+        fi
+
         # Copy background image into hidden .background folder
         mkdir -p "$MOUNT_DIR/.background"
         cp "$BG_PATH" "$MOUNT_DIR/.background/dmg-background.png"
