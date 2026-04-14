@@ -83,6 +83,17 @@ Every line from the prompt's `Verification` section must be included with `Pass`
 - Do not use SwiftUI `Canvas` for annotations; use AppKit `NSView` + Core Graphics
 - Do not use `NSToolbar`; the toolbar is a custom `NSView`
 
+## Design token rules
+
+Mandatory for every ticket that touches UI.
+
+1. **NEVER create a new color token without checking first.** Search `docs/design-system/DESIGN_SYSTEM.md` for an existing token before adding any NSColor to DesignTokens.swift.
+2. **NEVER create a new button style.** Use `pillButton*` (outlined), `pillButtonPrimary*` (solid CTA), `toolbarSecondary*` (ghost), or `copiedGreen*` (success). No new families.
+3. **NEVER create a new segmented control style.** All segmented controls use `segmented*` (6 tokens).
+4. **NEVER hardcode colors.** Use `DesignTokens.*` or system colors (`.labelColor`, `.separatorColor`). No raw `NSColor(red:green:blue:alpha:)` in view files.
+5. **Token creation requires a DESIGN_SYSTEM.md update.** New tokens must be added to both `DesignTokens.swift` and `docs/design-system/DESIGN_SYSTEM.md` in the same commit.
+6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files.
+
 ## Git
 
 - Remote: `https://github.com/janaj2g-hub/vibeliner.git`
