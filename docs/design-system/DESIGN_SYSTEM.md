@@ -14,8 +14,6 @@ Canonical docs location: `docs/design-system/`
 |-------|-------|-------|-----------------|
 | `purpleLight` | #AFA9EC | Crosshair, selection border, active tool highlight, brand accent | ToolbarView, CanvasView, CaptureRowView, CrosshairView, PromptTabView, SettingsWindowController |
 | `purpleDark` | #534AB7 | Dimension label bg, settings accents | DimensionLabelView, SetupWindowController |
-| `purpleButton` | #A796EB | Copy button outline and text (legacy) | SetupWindowController |
-| `purpleButtonBg` | rgba(116, 97, 194, 0.25) | Copy button fill (legacy) | SetupWindowController |
 
 ### Red — Annotations
 
@@ -48,13 +46,6 @@ Canonical docs location: `docs/design-system/`
 | `dimOverlay` | rgba(0, 0, 0, 0.5) | Capture overlay dim | CrosshairView |
 | `dividerColor` | rgba(255, 255, 255, 0.08) | Divider (legacy) | — |
 | `chromeBorder` | rgba(175, 169, 236, 0.12) | Toolbar/canvas border | ScreenshotCanvasView, CaptureRowView |
-
-### Tooltip (Legacy / Unshipped)
-
-| Token | Value | Usage | Consuming files |
-|-------|-------|-------|-----------------|
-| `tooltipDarkBg` | rgba(28, 28, 32, 0.96) | Reserved tooltip background token | — |
-| `tooltipDarkBorder` | rgba(255, 255, 255, 0.1) | Reserved tooltip border token | — |
 
 ### Toolbar — Appearance-Aware (VIB-235)
 
@@ -397,7 +388,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourProgressBarWidth` | 16px | Progress bar segment width | TourWindowController |
 | `tourProgressBarHeight` | 3px | Progress bar segment height | TourWindowController |
 | `tourNextButtonHeight` | 34px | Next/Back button height | TourWindowController |
-| `tourNextButtonPaddingH` | 18px | Next button horizontal padding | TourWindowController |
 
 ---
 
@@ -450,8 +440,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | Token | Value | Usage | Consuming files |
 |-------|-------|-------|-----------------|
 | `tourIllustrationPadding` | 24px | Internal pane padding | TourIllustration0-7 |
-| `tourIllustrationBgTint` | rgba(0,0,0,0.08) | Pane background tint | TourIllustration0-7 |
-| `tourIllustrationGlow` | rgba(175,169,236,0.06) | Pane purple glow | TourIllustration0-7 |
 
 #### Wireframe App Mock
 
@@ -516,7 +504,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourPromptSheetLineHeight` | 17.85px | Prompt sheet line height (1.7x) | TourPromptSheet |
 | `tourPromptSheetColor` | rgba(255,255,255,0.68) | Prompt sheet text color | TourPromptSheet |
 | `tourPromptSheetDim` | rgba(255,255,255,0.3) | Prompt sheet dim text | TourPromptSheet |
-| `tourPromptSheetNumber` | #F87171 | Prompt sheet number color | TourPromptSheet |
 
 #### Tour Title Pill
 
@@ -626,7 +613,6 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourChipBorder` | rgba(255,255,255,0.06) | Chip border | TourIllustration5 |
 | `tourChipFont` | System 10px semibold | Chip font | TourIllustration5 |
 | `tourChipPaddingH` | 8px | Chip horizontal padding | TourIllustration5 |
-| `tourChipPaddingV` | 3px | Chip vertical padding | TourIllustration5 |
 
 #### Filmstrip Cell
 
@@ -661,10 +647,8 @@ The Line tool reuses Arrow's tokens (`red`, `strokeWidth`, `badgeDiameter`) but 
 | `tourAddCellBorder` | rgba(175,169,236,0.3) | Add cell dashed border | TourIllustration6 |
 | `tourAddCellBg` | rgba(175,169,236,0.04) | Add cell background | TourIllustration6 |
 | `tourAddCellDashWidth` | 2px | Add cell dash width | TourIllustration6 |
-| `tourAddCellMinHeight` | 70px | Add cell minimum height | TourIllustration6 |
 | `tourAddCellPlusSize` | 22px | Add cell plus icon size | TourIllustration6 |
 | `tourAddCellPlusBg` | rgba(175,169,236,0.16) | Add cell plus icon background | TourIllustration6 |
-| `tourAddCellLabelFont` | System 10px semibold | Add cell label font | TourIllustration6 |
 
 #### Editor Frame
 

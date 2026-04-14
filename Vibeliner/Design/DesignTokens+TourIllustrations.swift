@@ -6,11 +6,6 @@ extension DesignTokens {
 
     // -- Illustration pane --
     static let tourIllustrationPadding: CGFloat = 24
-    static let tourIllustrationBgTint = tourIllustrationPaneBg
-    static let tourIllustrationGlow = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.06),
-        light: NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.05)
-    )
 
     // -- Wireframe app mock --
     static let tourWireframeBgTop = NSColor(red: 246/255, green: 248/255, blue: 252/255, alpha: 1)
@@ -90,7 +85,6 @@ extension DesignTokens {
         dark: NSColor(white: 1, alpha: 0.3),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.3)
     )
-    static let tourPromptSheetNumber = NSColor(red: 248/255, green: 113/255, blue: 113/255, alpha: 1)
 
     // -- Tour title pill --
     static let tourTitlePillHeight: CGFloat = 22
@@ -212,7 +206,6 @@ extension DesignTokens {
     )
     static let tourChipFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
     static let tourChipPaddingH: CGFloat = 8
-    static let tourChipPaddingV: CGFloat = 3
 
     // -- Filmstrip cell (steps 6, 7) --
     static let tourFilmstripCellRadius: CGFloat = 6
@@ -241,10 +234,8 @@ extension DesignTokens {
     static let tourAddCellBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.3)
     static let tourAddCellBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.04)
     static let tourAddCellDashWidth: CGFloat = 2
-    static let tourAddCellMinHeight: CGFloat = 70
     static let tourAddCellPlusSize: CGFloat = 22
     static let tourAddCellPlusBg = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-    static let tourAddCellLabelFont = NSFont.systemFont(ofSize: 10, weight: .semibold)
 
     // -- Editor frame (steps 3, 7, 8) --
     static let tourEditorFrameBg = NSColor(name: nil) { appearance in

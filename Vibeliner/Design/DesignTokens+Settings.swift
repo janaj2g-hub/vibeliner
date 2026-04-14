@@ -165,15 +165,6 @@ extension DesignTokens {
         rolePresetColors.first { $0.hex.lowercased() == hex.lowercased() }?.color ?? roleObservedBorder
     }
 
-    /// Look up a border NSColor for an ImageRole, using ConfigManager roles
-    static func roleBorderColor(forRoleName name: String) -> NSColor {
-        let roles = ConfigManager.shared.roles
-        guard let role = roles.first(where: { $0.name.lowercased() == name.lowercased() }) else {
-            return roleObservedBorder
-        }
-        return roleColor(forHex: role.colorHex)
-    }
-
     /// Generate a semi-transparent background color for a role pill from its hex (VIB-335: 0.85 alpha)
     static func roleBgColor(forHex hex: String) -> NSColor {
         let border = roleColor(forHex: hex)
