@@ -204,7 +204,7 @@ final class SetupHarnessSurfaceView: NSView {
 
     private func drawBadge(in rect: CGRect, index: Int, state: PanelState) {
         let path = NSBezierPath(ovalIn: rect)
-        path.lineWidth = 2
+        path.lineWidth = 1
         switch state {
         case .done:
             DesignTokens.setupGreenBadgeBg.setFill()

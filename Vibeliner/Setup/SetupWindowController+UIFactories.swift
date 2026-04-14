@@ -14,11 +14,11 @@ extension SetupWindowController {
         let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2, borderWidth: 2)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2)
             let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2, borderWidth: 2)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2)
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
@@ -26,8 +26,7 @@ extension SetupWindowController {
                 view,
                 background: DesignTokens.pillButtonBg,
                 border: DesignTokens.pillButtonBorder,
-                cornerRadius: size / 2,
-                borderWidth: 2
+                cornerRadius: size / 2
             )
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.pillButtonText, in: badgeRect)
             view.addSubview(numLabel)
@@ -180,7 +179,7 @@ extension SetupWindowController {
 
         let groupH: CGFloat = 28
         let group = NSView(frame: NSRect(x: 0, y: 0, width: totalW, height: groupH))
-        SettingsUI.styleSurface(group, background: DesignTokens.setupFieldBg, border: DesignTokens.setupFieldBorder, cornerRadius: groupH / 2)
+        SettingsUI.styleSurface(group, background: .clear, cornerRadius: groupH / 2)
 
         var x = innerPad
         hint.frame.origin = NSPoint(x: x, y: (groupH - hint.frame.height) / 2)
