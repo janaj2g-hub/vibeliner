@@ -115,11 +115,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     private func setupMenuBarIcon() {
         statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.squareLength)
 
-        // VIB-175: Create normal (template) and highlighted (non-template, always white) icons
-        normalIcon = createCrosshairImage()
+        // VIB-175/456: Pin icon (ring + stake) replaces crosshair
+        normalIcon = createPinImage()
         normalIcon?.isTemplate = true
 
-        highlightedIcon = createCrosshairImage(color: .white)
+        highlightedIcon = createPinImage(color: .white)
         highlightedIcon?.isTemplate = false  // Won't adapt to menu bar — stays white/bright
 
         if let button = statusItem?.button {
@@ -152,57 +152,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
 
-    private func createCrosshairImage(color: NSColor? = nil) -> NSImage {
+    // VIB-456: Pin icon (ring + stake, no number) for menu bar
+    private func createPinImage(color: NSColor? = nil) -> NSImage {
         let size: CGFloat = 18
-        return NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
-            let center = NSPoint(x: size / 2, y: size / 2)
-            let radius: CGFloat = 6
-            let tickLength: CGFloat = 4
+        let image = NSImage(size: NSSize(width: size, height: size), flipped: false) { _ in
+            let cx: CGFloat = size / 2       // 9
+            let ringCenterY: CGFloat = 11    // upper portion (flipped=false → higher Y = higher on screen)
+            let ringRadius: CGFloat = 5
             let lineWidth: CGFloat = 1.5
 
             (color ?? .black).setStroke()
 
-            // Circle
-            let circlePath = NSBezierPath(
+            // Open ring
+            let ring = NSBezierPath(
                 ovalIn: NSRect(
-                    x: center.x - radius,
-                    y: center.y - radius,
-                    width: radius * 2,
-                    height: radius * 2
+                    x: cx - ringRadius,
+                    y: ringCenterY - ringRadius,
+                    width: ringRadius * 2,
+                    height: ringRadius * 2
                 )
             )
-            circlePath.lineWidth = lineWidth
-            circlePath.stroke()
+            ring.lineWidth = lineWidth
+            ring.stroke()
 
-            // Top tick
-            let top = NSBezierPath()
-            top.move(to: NSPoint(x: center.x, y: center.y + radius))
-            top.line(to: NSPoint(x: center.x, y: center.y + radius + tickLength))
-            top.lineWidth = lineWidth
-            top.stroke()
-
-            // Bottom tick
-            let bottom = NSBezierPath()
-            bottom.move(to: NSPoint(x: center.x, y: center.y - radius))
-            bottom.line(to: NSPoint(x: center.x, y: center.y - radius - tickLength))
-            bottom.lineWidth = lineWidth
-            bottom.stroke()
-
-            // Right tick
-            let right = NSBezierPath()
-            right.move(to: NSPoint(x: center.x + radius, y: center.y))
-            right.line(to: NSPoint(x: center.x + radius + tickLength, y: center.y))
-            right.lineWidth = lineWidth
-            right.stroke()
-
-            // Left tick
-            let left = NSBezierPath()
-            left.move(to: NSPoint(x: center.x - radius, y: center.y))
-            left.line(to: NSPoint(x: center.x - radius - tickLength, y: center.y))
-            left.lineWidth = lineWidth
-            left.stroke()
+            // Stake below ring
+            let stake = NSBezierPath()
+            stake.move(to: NSPoint(x: cx, y: ringCenterY - ringRadius))
+            stake.line(to: NSPoint(x: cx, y: 2))
+            stake.lineWidth = lineWidth
+            stake.lineCapStyle = .round
+            stake.stroke()
 
             return true
         }
+        return image
     }
 }
