@@ -45,8 +45,11 @@ def generate_with_sips():
 import AppKit
 import CoreText
 
-let width = 600
-let height = 400
+// VIB-347 attempt 8: Image dimensions EXACTLY match Finder content area.
+// Finder bounds {200,200,700,550} = 500x350 window. Title bar ~22px.
+// Content area = 500x328. Image at this logical size → @2x = 1000x656px.
+let width = 500
+let height = 328
 let size = NSSize(width: width, height: height)
 let w = CGFloat(width)
 let h = CGFloat(height)
@@ -54,17 +57,21 @@ let h = CGFloat(height)
 let image = NSImage(size: size)
 image.lockFocus()
 
-// Background
-// VIB-347 attempt 6: Light gray #F0F0F0 — Finder renders dark labels, always readable
+// Background — light gray #F0F0F0
 NSColor(red: 240/255, green: 240/255, blue: 240/255, alpha: 1).setFill()
 NSRect(origin: .zero, size: size).fill()
 
-// ── Top area: wordmark + subtitle (header above icons) ──
+// ── Coordinate system (verified with debug grid) ──
+// NSImage origin = bottom-left (flipped=false)
+// Finder icon at {250, 200} → NSImage {250, h-200} = {250, 128}
+// Icon is 80px, so icon top edge in Finder = y=160, NSImage = h-160 = 168
+// Text should center between Finder y=0 (top) and y=160 (icon top)
+// Midpoint = Finder y=80 → NSImage y = h - 80 = 248
 
 let fontURL = URL(fileURLWithPath: "Vibeliner/Resources/Jersey25-Regular.ttf")
 CTFontManagerRegisterFontsForURL(fontURL as CFURL, .process, nil)
-let logoFont = NSFont(name: "Jersey25-Regular", size: 52)
-    ?? NSFont.monospacedSystemFont(ofSize: 52, weight: .bold)
+let logoFont = NSFont(name: "Jersey25-Regular", size: 48)
+    ?? NSFont.monospacedSystemFont(ofSize: 48, weight: .bold)
 
 let logoAttrs: [NSAttributedString.Key: Any] = [
     .font: logoFont,
@@ -72,9 +79,9 @@ let logoAttrs: [NSAttributedString.Key: Any] = [
 ]
 let logoStr = NSAttributedString(string: "vibeliner", attributes: logoAttrs)
 let logoSize = logoStr.size()
-// Center wordmark between window top (~h-45 accounting for title bar) and icon top (~h-180).
-// Midpoint of that gap ≈ h-112. Place logo so its center lands there.
-let logoY = h - 112 - logoSize.height / 2
+
+// Place wordmark so its vertical center is at the midpoint (NSImage y=248)
+let logoY = 248 - logoSize.height / 2
 logoStr.draw(at: NSPoint(x: (w - logoSize.width) / 2, y: logoY))
 
 let subFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
@@ -85,9 +92,7 @@ let subAttrs: [NSAttributedString.Key: Any] = [
 ]
 let subStr = NSAttributedString(string: "SCREENSHOT \u{00B7} ANNOTATE \u{00B7} PROMPT", attributes: subAttrs)
 let subSize = subStr.size()
-subStr.draw(at: NSPoint(x: (w - subSize.width) / 2, y: logoY - 22))
-
-// VIB-347 attempt 5: Clean background — wordmark + tagline only, no arrow/instructions
+subStr.draw(at: NSPoint(x: (w - subSize.width) / 2, y: logoY - 20))
 
 image.unlockFocus()
 
