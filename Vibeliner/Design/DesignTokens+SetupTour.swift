@@ -221,7 +221,6 @@ extension DesignTokens {
     static let tourProgressBarWidth: CGFloat = 16
     static let tourProgressBarHeight: CGFloat = 3
     static let tourNextButtonHeight: CGFloat = 34
-    static let tourNextButtonPaddingH: CGFloat = 18
 
     // MARK: - Tour Window Fonts
 

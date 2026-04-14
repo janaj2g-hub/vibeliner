@@ -21,12 +21,6 @@ enum DesignTokens {
     /// #534AB7 — dimension label bg, settings accents
     static let purpleDark = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
 
-    /// #a796eb — copy button outline and text
-    static let purpleButton = NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
-
-    /// rgba(116, 97, 194, 0.25) — copy button fill
-    static let purpleButtonBg = NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.25)
-
     /// #EF4444 — all annotation marks
     static let red = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0)
 
@@ -41,12 +35,6 @@ enum DesignTokens {
 
     /// Note text color: #7f1d1d
     static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
-
-    /// Tooltip dark bg: rgba(28, 28, 32, 0.96) — from toolbar prototype
-    static let tooltipDarkBg = NSColor(red: 28/255, green: 28/255, blue: 32/255, alpha: 0.96)
-
-    /// Tooltip dark border: rgba(255, 255, 255, 0.1)
-    static let tooltipDarkBorder = NSColor(white: 1.0, alpha: 0.1)
 
     /// Copy success green: rgba(22, 163, 74, 0.5) — border
     static let copiedGreenBorder = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.5)
