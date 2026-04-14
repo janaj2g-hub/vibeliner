@@ -72,8 +72,9 @@ let logoAttrs: [NSAttributedString.Key: Any] = [
 ]
 let logoStr = NSAttributedString(string: "vibeliner", attributes: logoAttrs)
 let logoSize = logoStr.size()
-// Top portion — flipped=false so higher Y = higher on screen
-let logoY = h - 70 - logoSize.height
+// Center wordmark between window top (~h-45 accounting for title bar) and icon top (~h-180).
+// Midpoint of that gap ≈ h-112. Place logo so its center lands there.
+let logoY = h - 112 - logoSize.height / 2
 logoStr.draw(at: NSPoint(x: (w - logoSize.width) / 2, y: logoY))
 
 let subFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
