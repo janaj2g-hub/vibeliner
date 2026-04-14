@@ -90,8 +90,8 @@ enum SettingsUI {
     static func styleSegmentedTrackSurface(_ view: NSView) {
         styleSurface(
             view,
-            background: DesignTokens.settingsSegmentedTrack,
-            border: DesignTokens.settingsSegmentedBorder,
+            background: DesignTokens.segmentedTrack,
+            border: DesignTokens.segmentedTrackBorder,
             cornerRadius: DesignTokens.settingsSegmentedHeight / 2
         )
     }
@@ -99,8 +99,8 @@ enum SettingsUI {
     static func styleSegmentedHighlightSurface(_ view: NSView) {
         styleSurface(
             view,
-            background: DesignTokens.settingsSegmentedActive,
-            border: DesignTokens.settingsSegmentedActiveBorder,
+            background: DesignTokens.segmentedActiveFill,
+            border: DesignTokens.segmentedActiveBorder,
             cornerRadius: (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
         )
     }

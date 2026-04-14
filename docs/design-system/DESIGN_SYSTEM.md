@@ -55,6 +55,17 @@ Canonical docs location: `docs/design-system/`
 | `pillButtonPrimaryHoverBg` | rgba(175,169,236,0.22) | #6055C4 | Primary CTA hover fill | TourWindowController |
 | `pillButtonPrimaryHoverBorder` | rgba(175,169,236,0.48) | #6055C4 | Primary CTA hover border | TourWindowController |
 
+### Universal Segmented Control (VIB-441)
+
+| Token | Dark value | Light value | Usage | Consuming files |
+|-------|-----------|-------------|-------|-----------------|
+| `segmentedTrack` | rgba(255,255,255,0.03) | rgba(15,23,42,0.04) | Track background | ToolbarButtons, SettingsControls, TourMiniToolbar |
+| `segmentedTrackBorder` | rgba(255,255,255,0.08) | rgba(15,23,42,0.08) | Track border | SettingsUI |
+| `segmentedActiveFill` | rgba(175,169,236,0.16) | rgba(175,169,236,0.14) | Active segment fill | ToolbarButtons, SettingsUI, TourMiniToolbar |
+| `segmentedActiveBorder` | rgba(175,169,236,0.20) | rgba(114,103,221,0.18) | Active segment border | SettingsUI |
+| `segmentedActiveText` | #AFA9EC | #7267DD | Active segment text (= pillButtonText) | SettingsControls |
+| `segmentedInactiveText` | rgba(255,255,255,0.58) | rgba(15,23,42,0.58) | Inactive segment text | ToolbarButtons, SettingsControls, TourMiniToolbar |
+
 ### Chrome — Floating UI (Legacy Static Dark)
 
 | Token | Value | Usage | Consuming files |
@@ -99,14 +110,6 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `addImageBg` | rgba(175,169,236,0.14) | rgba(83,74,183,0.08) | Add image button bg | TourMiniToolbar |
 | `addImageBorder` | rgba(175,169,236,0.22) | rgba(83,74,183,0.15) | Add image button border | TourMiniToolbar |
 
-### Toggle — Appearance-Aware
-
-| Token | Dark value | Light value | Usage | Consuming files |
-|-------|-----------|-------------|-------|-----------------|
-| `toolbarToggleBg` | rgba(255,255,255,0.06) | rgba(0,0,0,0.08) | Toggle container bg | ToolbarView |
-| `toolbarToggleActiveBg` | rgba(175,169,236,0.25) | rgba(83,74,183,0.22) | Active segment bg | ToolbarView |
-| `toolbarToggleInactiveText` | rgba(255,255,255,0.3) | rgba(0,0,0,0.40) | Inactive segment text | ToolbarView |
-
 ### Status Pill — Appearance-Aware
 
 | Token | Dark value | Light value | Usage | Consuming files |
@@ -122,12 +125,6 @@ Used by "+ Add image" and "New capture" — subtle outlined style, secondary to 
 | `settingsFieldSurface` | rgba(255,255,255,0.06) | #EEF0F6 | Input field bg | SettingsUI |
 | `settingsFrameSurface` | rgba(255,255,255,0.02) | rgba(15,23,42,0.02) | Framed section bg | SettingsUI |
 | `settingsPreviewSurface` | #15161A | #F8FAFC | Preview panel bg | SettingsUI |
-| `settingsSegmentedTrack` | rgba(255,255,255,0.03) | rgba(15,23,42,0.04) | Segmented control track | SettingsUI |
-| `settingsSegmentedBorder` | rgba(255,255,255,0.08) | rgba(15,23,42,0.08) | Segmented control track border | SettingsUI |
-| `settingsSegmentedActive` | rgba(175,169,236,0.16) | rgba(175,169,236,0.14) | Segmented active fill | SettingsUI |
-| `settingsSegmentedActiveBorder` | rgba(175,169,236,0.20) | rgba(114,103,221,0.18) | Segmented active border | SettingsUI |
-| `settingsSegmentedInactiveText` | rgba(255,255,255,0.58) | rgba(15,23,42,0.58) | Segmented inactive title color | SettingsUI |
-| `settingsSegmentedActiveText` | #AFA9EC | #7267DD | Segmented active title color | SettingsUI |
 | `settingsFieldBorder` | rgba(255,255,255,0.12) | rgba(15,23,42,0.12) | Field border | SettingsUI |
 
 ### Shared Appearance Surfaces (VIB-412)
