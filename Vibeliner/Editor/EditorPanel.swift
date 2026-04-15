@@ -288,6 +288,23 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             return false
         }
 
+        // VIB-460: Delete/Backspace is intentionally ABOVE the KeyEventGuard gate.
+        // The isEditingNote check above already confirmed no note is being edited.
+        // When a title pill is actively being edited, AppKit routes backspace to
+        // the field editor directly — it never reaches this code path.
+        // Keeping this above the guard prevents stale field editors (a recurring
+        // bug: VIB-311, VIB-435, VIB-449, VIB-454) from blocking annotation deletion.
+        if event.keyCode == 51 || event.keyCode == 117 { // Delete/Backspace
+            if annotationStore.selectedAnnotation != nil {
+                deleteSelectedAnnotation()
+                return true
+            } else if isFilmstripMode, images.count > 1 {
+                removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
+                return true
+            }
+            return false
+        }
+
         // VIB-326: Don't swallow keys when ANY text field is first responder
         // (covers title pill fields, search fields, etc. beyond annotation notes)
         guard KeyEventGuard.shouldHandleShortcut(in: self) else { return false }
@@ -314,17 +331,6 @@ final class EditorPanel: NSPanel, ToolbarDelegate {
             }
             // Priority 4: No-op — editor stays open
             return true
-        } else if keyCode == 51 || keyCode == 117 { // Delete/Backspace
-            // VIB-435: Call shared delete method directly (same path as trash button).
-            // VIB-326: Only consume the event when an action is actually performed.
-            if annotationStore.selectedAnnotation != nil {
-                deleteSelectedAnnotation()
-                return true
-            } else if isFilmstripMode, images.count > 1 {
-                removeImageAtIndex(filmstripView?.selectedIndex ?? 0)
-                return true
-            }
-            return false
         } else if flags.isEmpty {
             if let tool = AnnotationToolType.tool(forShortcutKeyCode: keyCode) {
                 toolbarView.selectTool(tool)
