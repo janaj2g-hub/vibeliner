@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vibeliner Tutorial Tour — v4</title>
+  <style>
+    :root {
+      --bg-top: #111118;
+      --bg-bottom: #0c0c12;
+      --surface-window: #1a1a22;
+      --surface-title: #1e1e28;
+      --surface-elevated: rgba(24, 24, 30, 0.97);
+      --border-soft: rgba(255, 255, 255, 0.07);
+      --border-faint: rgba(255, 255, 255, 0.04);
+      --text-primary: rgba(255, 255, 255, 0.92);
+      --text-secondary: rgba(255, 255, 255, 0.58);
+      --text-dim: rgba(255, 255, 255, 0.34);
+      --purple-light: #afa9ec;
+      --purple-mid: #8b82d6;
+      --purple-dark: #534ab7;
+      --purple-fill: rgba(175, 169, 236, 0.14);
+      --purple-fill-strong: rgba(175, 169, 236, 0.22);
+      --red: #ef4444;
+      --red-fill: rgba(239, 68, 68, 0.06);
+      --red-note-bg: rgba(255, 248, 248, 0.92);
+      --red-note-border: rgba(239, 68, 68, 0.18);
+      --green: #22c55e;
+      --green-fill: rgba(34, 197, 94, 0.14);
+      --green-border: rgba(74, 222, 128, 0.34);
+      --blue-light: #93c5fd;
+      --dark-chrome: rgba(30, 30, 30, 0.92);
+      --dark-chrome-border: rgba(255, 255, 255, 0.06);
+      --shadow-window: 0 40px 100px rgba(0, 0, 0, 0.5);
+      --shadow-floating: 0 20px 50px rgba(0, 0, 0, 0.35);
+      --font-ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", system-ui, sans-serif;
+      --font-mono: "SF Mono", SFMono-Regular, ui-monospace, Menlo, Monaco, monospace;
+      --transition: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    body.light-mode {
+      --bg-top: #ededf3;
+      --bg-bottom: #e0e2eb;
+      --surface-window: #f5f6fa;
+      --surface-title: #fafaff;
+      --surface-elevated: rgba(248, 248, 254, 0.98);
+      --border-soft: rgba(15, 23, 42, 0.08);
+      --border-faint: rgba(15, 23, 42, 0.05);
+      --text-primary: rgba(15, 23, 42, 0.92);
+      --text-secondary: rgba(15, 23, 42, 0.58);
+      --text-dim: rgba(15, 23, 42, 0.36);
+      --purple-fill: rgba(83, 74, 183, 0.10);
+      --purple-fill-strong: rgba(83, 74, 183, 0.16);
+      --shadow-window: 0 32px 80px rgba(20, 22, 36, 0.18);
+      --shadow-floating: 0 16px 40px rgba(20, 22, 36, 0.14);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; }
+
+    body {
+      font-family: var(--font-ui);
+      color: var(--text-primary);
+      background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .shell { max-width: 1320px; margin: 0 auto; padding: 24px 20px 40px; }
+
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+
+    .top-bar-label { font-size: 11px; font-weight: 600; color: var(--text-dim); letter-spacing: 0.05em; text-transform: uppercase; }
+
+    .theme-toggle { display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid var(--border-soft); }
+    body.light-mode .theme-toggle { background: rgba(15,23,42,0.04); }
+    .theme-toggle button { appearance: none; border: 0; background: transparent; color: var(--text-dim); border-radius: 999px; padding: 6px 14px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all var(--transition); }
+    .theme-toggle button.active { background: var(--purple-fill-strong); color: var(--purple-light); }
+    body.light-mode .theme-toggle button.active { background: var(--purple-dark); color: #fff; box-shadow: 0 4px 12px rgba(83,74,183,0.18); }
+
+    .mac-window { border-radius: 10px; background: var(--surface-window); border: 1px solid var(--border-soft); box-shadow: var(--shadow-window); overflow: hidden; }
+    .mac-titlebar { position: relative; height: 52px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border-faint); background: var(--surface-title); }
+    .traffic-lights { position: absolute; left: 16px; display: flex; gap: 8px; }
+    .traffic-lights span { width: 12px; height: 12px; border-radius: 50%; }
+    .traffic-lights span:nth-child(1) { background: #ff5f57; }
+    .traffic-lights span:nth-child(2) { background: #febc2e; }
+    .traffic-lights span:nth-child(3) { background: #28c840; }
+    .mac-titlebar-text { font-size: 13px; font-weight: 500; color: var(--text-secondary); letter-spacing: -0.01em; }
+
+    .stage { position: relative; min-height: 780px; background: linear-gradient(180deg, #3a4255 0%, #2a3040 100%); overflow: hidden; }
+    body.light-mode .stage { background: linear-gradient(180deg, #d0d8e6 0%, #b8c2d2 100%); }
+
+    .stage-menubar { height: 25px; padding: 0 12px; display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 500; color: rgba(255,255,255,0.78); background: rgba(10,10,14,0.55); backdrop-filter: blur(20px); }
+    body.light-mode .stage-menubar { color: rgba(15,23,42,0.82); background: rgba(255,255,255,0.45); }
+    .stage-menubar-left, .stage-menubar-right { display: flex; align-items: center; gap: 14px; }
+    .stage-menubar-right { gap: 10px; }
+
+    .vibe-icon { width: 14px; height: 14px; position: relative; }
+    .vibe-icon::before, .vibe-icon::after { content: ""; position: absolute; background: rgba(175,169,236,0.85); }
+    .vibe-icon::before { width: 1.5px; height: 10px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+    .vibe-icon::after { width: 10px; height: 1.5px; left: 50%; top: 50%; transform: translate(-50%,-50%); }
+
+    .ghost-window { position: absolute; left: 50%; top: 100px; transform: translateX(-50%); width: min(900px,80%); height: 520px; border-radius: 8px; background: rgba(22,22,28,0.4); border: 1px solid rgba(255,255,255,0.04); }
+    body.light-mode .ghost-window { background: rgba(255,255,255,0.3); border-color: rgba(255,255,255,0.5); }
+
+    .popover { position: absolute; right: 48px; top: 50px; width: 210px; border-radius: 8px; background: var(--dark-chrome); border: 1px solid var(--dark-chrome-border); box-shadow: var(--shadow-floating); padding: 5px; z-index: 3; backdrop-filter: blur(16px); }
+    body.light-mode .popover { background: rgba(255,255,255,0.94); border-color: rgba(15,23,42,0.08); }
+    .popover-row { height: 30px; border-radius: 5px; padding: 0 10px; display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-primary); cursor: default; }
+    .popover-row .shortcut { font-size: 11px; color: var(--text-dim); }
+    .popover-row.highlight { background: rgba(175,169,236,0.16); color: var(--purple-light); }
+    body.light-mode .popover-row.highlight { color: var(--purple-dark); background: rgba(83,74,183,0.1); }
+    .popover-divider { height: 1px; margin: 4px 6px; background: rgba(255,255,255,0.06); }
+    body.light-mode .popover-divider { background: rgba(15,23,42,0.06); }
+
+    /* Tour window */
+    .tour-window { position: absolute; left: 50%; top: 32px; transform: translateX(-50%); width: min(880px, calc(100% - 48px)); height: calc(100% - 56px); display: flex; flex-direction: column; border-radius: 10px; background: var(--surface-elevated); border: 1px solid var(--border-soft); box-shadow: 0 24px 80px rgba(0,0,0,0.5); overflow: hidden; z-index: 5; transition: opacity 220ms ease, transform 220ms ease; }
+    body.light-mode .tour-window { box-shadow: 0 24px 80px rgba(20,22,36,0.18); }
+    .tour-window.hidden { opacity: 0; transform: translateX(-50%) translateY(16px) scale(0.98); pointer-events: none; }
+    .tour-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; border-bottom: 1px solid var(--border-faint); background: rgba(255,255,255,0.015); }
+    body.light-mode .tour-header { background: rgba(15,23,42,0.015); }
+    .tour-header-title { font-size: 13px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
+    .tour-exit { appearance: none; border: 1px solid var(--border-soft); background: transparent; color: var(--text-dim); border-radius: 999px; padding: 5px 14px; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; transition: all var(--transition); }
+    .tour-exit:hover { color: var(--text-secondary); border-color: rgba(255,255,255,0.12); }
+
+    .tour-body { display: grid; grid-template-columns: 1.3fr 0.7fr; flex: 1; min-height: 0; }
+    .illustration-pane { position: relative; border-right: 1px solid var(--border-faint); overflow: hidden; background: radial-gradient(ellipse at 30% 20%, rgba(175,169,236,0.06), transparent 50%), rgba(0,0,0,0.08); }
+    body.light-mode .illustration-pane { background: radial-gradient(ellipse at 30% 20%, rgba(83,74,183,0.05), transparent 50%), rgba(15,23,42,0.02); }
+
+    .slide { display: none; position: absolute; inset: 0; padding: 24px; }
+    .slide.active { display: flex; align-items: center; justify-content: center; animation: slideIn 300ms cubic-bezier(0.16,1,0.3,1); }
+    @keyframes slideIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+    .text-pane { padding: 36px 32px; display: flex; flex-direction: column; justify-content: center; gap: 16px; }
+    .step-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 600; color: var(--purple-light); letter-spacing: 0.01em; }
+    body.light-mode .step-badge { color: var(--purple-dark); }
+    .step-badge::before { content: ""; width: 14px; height: 2px; background: var(--purple-light); border-radius: 1px; opacity: 0.5; }
+    body.light-mode .step-badge::before { background: var(--purple-dark); }
+    .step-title { font-size: 22px; font-weight: 700; line-height: 1.15; letter-spacing: -0.025em; }
+    .step-copy { font-size: 14px; line-height: 1.65; color: var(--text-secondary); max-width: 300px; }
+
+    .tour-footer { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-top: 1px solid var(--border-faint); background: rgba(255,255,255,0.015); }
+    body.light-mode .tour-footer { background: rgba(15,23,42,0.015); }
+    .progress-group { display: flex; align-items: center; gap: 10px; }
+    .progress-text { font-size: 11px; color: var(--text-dim); font-weight: 600; font-variant-numeric: tabular-nums; }
+    .progress-bars { display: flex; gap: 3px; }
+    .progress-bars span { width: 16px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.06); transition: background var(--transition); }
+    body.light-mode .progress-bars span { background: rgba(15,23,42,0.07); }
+    .progress-bars span.active { background: var(--purple-light); }
+    body.light-mode .progress-bars span.active { background: var(--purple-dark); }
+
+    .nav-buttons { display: flex; gap: 8px; }
+    .btn { appearance: none; border: 0; height: 34px; padding: 0 18px; border-radius: 999px; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; transition: all var(--transition); letter-spacing: -0.01em; white-space: nowrap; }
+    .btn-ghost { color: var(--text-dim); background: transparent; border: 1px solid var(--border-soft); }
+    .btn-ghost:hover { color: var(--text-secondary); border-color: rgba(255,255,255,0.12); }
+    .btn-primary { color: var(--purple-light); background: rgba(175,169,236,0.16); border: 1px solid rgba(175,169,236,0.36); }
+    body.light-mode .btn-primary { color: #fff; background: var(--purple-dark); border-color: var(--purple-dark); box-shadow: 0 4px 14px rgba(83,74,183,0.2); }
+    .btn-primary:hover { background: rgba(175,169,236,0.22); border-color: rgba(175,169,236,0.48); }
+    body.light-mode .btn-primary:hover { background: #6055c4; border-color: #6055c4; }
+    .btn-final { color: #fff; background: var(--green-fill); border: 1px solid var(--green-border); }
+    .btn-final:hover { background: rgba(34,197,94,0.2); }
+
+    .reopen-toast { position: absolute; right: 40px; bottom: 32px; display: inline-flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: 999px; background: var(--dark-chrome); border: 1px solid var(--dark-chrome-border); box-shadow: var(--shadow-floating); backdrop-filter: blur(16px); z-index: 2; }
+    .reopen-toast[hidden] { display: none; }
+    body.light-mode .reopen-toast { background: rgba(255,255,255,0.94); border-color: rgba(15,23,42,0.08); }
+    .reopen-label { font-size: 12px; color: var(--text-dim); }
+    .reopen-btn { appearance: none; border: 1px solid rgba(175,169,236,0.32); border-radius: 999px; background: var(--purple-fill); color: var(--purple-light); padding: 0 12px; height: 28px; font: inherit; font-size: 11px; font-weight: 700; cursor: pointer; transition: all var(--transition); }
+    body.light-mode .reopen-btn { color: var(--purple-dark); border-color: rgba(83,74,183,0.3); }
+    .reopen-btn:hover { background: var(--purple-fill-strong); }
+
+    /* ======== SHARED ILLUSTRATION COMPONENTS ======== */
+    .app-mock { width: 100%; max-width: 480px; border-radius: 8px; overflow: hidden; background: linear-gradient(180deg, #f6f8fc 0%, #eef1f7 100%); box-shadow: 0 20px 60px rgba(0,0,0,0.25), 0 0 0 1px rgba(0,0,0,0.08); }
+    .app-mock-topbar { height: 36px; padding: 0 12px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.8); border-bottom: 1px solid rgba(0,0,0,0.05); }
+    .app-mock-brand { display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 700; color: #263041; }
+    .app-mock-brand-icon { width: 16px; height: 16px; border-radius: 4px; background: linear-gradient(135deg, var(--purple-dark) 0%, var(--purple-mid) 100%); }
+    .app-mock-nav-pills { display: flex; gap: 6px; }
+    .app-mock-nav-pills span { height: 8px; border-radius: 999px; background: rgba(15,23,42,0.07); }
+    .app-mock-body { display: grid; grid-template-columns: 100px 1fr; min-height: 200px; }
+    .app-mock-sidebar { padding: 14px 10px; display: flex; flex-direction: column; gap: 8px; background: rgba(245,247,252,0.9); border-right: 1px solid rgba(0,0,0,0.04); }
+    .sidebar-item { height: 14px; border-radius: 999px; background: rgba(15,23,42,0.07); }
+    .sidebar-item.active { background: rgba(83,74,183,0.16); }
+    .app-mock-main { padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .mock-heading { width: 120px; height: 14px; border-radius: 999px; background: rgba(83,74,183,0.14); }
+    .card-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .mock-card { height: 64px; border-radius: 6px; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.04); padding: 10px; display: flex; flex-direction: column; gap: 6px; }
+    .mock-card.error { border-color: rgba(239,68,68,0.2); background: rgba(255,245,245,0.9); }
+    .mock-card-line { height: 7px; border-radius: 999px; background: rgba(15,23,42,0.08); }
+    .mock-card-line.short { width: 60%; }
+    .mock-table { border-radius: 6px; overflow: hidden; background: rgba(255,255,255,0.8); border: 1px solid rgba(0,0,0,0.04); }
+    .mock-table-head, .mock-table-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 8px 10px; }
+    .mock-table-head { background: rgba(240,242,248,0.9); }
+    .mock-table-row { border-top: 1px solid rgba(0,0,0,0.04); }
+    .mock-table-row.error { background: rgba(255,235,235,0.6); }
+    .mock-table-cell { height: 7px; border-radius: 999px; background: rgba(15,23,42,0.07); }
+
+    /* Annotation marks */
+    .ann-badge { position: absolute; width: 18px; height: 18px; border-radius: 50%; background: var(--red); color: #fff; display: grid; place-items: center; font-size: 9px; font-weight: 700; box-shadow: 0 4px 12px rgba(239,68,68,0.35); z-index: 3; }
+    .ann-note { position: absolute; padding: 5px 10px; border-radius: 13px; background: var(--red-note-bg); border: 1px solid var(--red-note-border); color: #7f1d1d; font-size: 11px; font-weight: 600; line-height: 1.3; box-shadow: 0 6px 20px rgba(239,68,68,0.08); white-space: nowrap; z-index: 3; }
+    .ann-arrow { position: absolute; height: 2.5px; background: var(--red); transform-origin: left center; z-index: 2; }
+    .ann-arrow::after { content: ""; position: absolute; right: -1px; top: 50%; width: 10px; height: 10px; border-top: 2.5px solid var(--red); border-right: 2.5px solid var(--red); transform: translateY(-50%) rotate(45deg); }
+    .ann-rect { position: absolute; border: 2.5px solid var(--red); border-radius: 3px; background: var(--red-fill); z-index: 2; }
+    .ann-circle { position: absolute; border: 2.5px solid var(--red); border-radius: 50%; background: var(--red-fill); z-index: 2; }
+    .ann-stake { position: absolute; width: 2px; height: 10px; background: var(--red); z-index: 2; }
+
+    /* Mini toolbar — always dark chrome */
+    .mini-toolbar { display: inline-flex; align-items: center; gap: 4px; padding: 5px 8px; border-radius: 999px; background: rgba(30,30,30,0.92); border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 8px 30px rgba(0,0,0,0.3); flex-shrink: 0; }
+    .mini-tool-btn { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; border: 0; background: transparent; color: rgba(255,255,255,0.5); cursor: default; flex-shrink: 0; }
+    .mini-tool-btn.active { background: rgba(175,169,236,0.22); color: #afa9ec; }
+    .mini-tool-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .mini-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.08); margin: 0 2px; flex-shrink: 0; }
+    .mini-copy-btn { height: 26px; padding: 0 10px; border-radius: 999px; border: 1.5px solid rgba(167,150,235,0.5); background: rgba(116,97,194,0.2); color: #afa9ec; font-size: 10px; font-weight: 700; font-family: var(--font-ui); cursor: default; white-space: nowrap; flex-shrink: 0; display: inline-flex; align-items: center; }
+    .mini-toggle { display: inline-flex; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; flex-shrink: 0; }
+    .mini-toggle span { padding: 4px 10px; font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.34); }
+    .mini-toggle span.active { background: rgba(175,169,236,0.22); color: #afa9ec; border-radius: 999px; }
+
+    .prompt-sheet { border-radius: 6px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); padding: 14px 16px; font-family: var(--font-mono); font-size: 10.5px; line-height: 1.7; color: rgba(255,255,255,0.68); white-space: pre-line; }
+    body.light-mode .prompt-sheet { background: rgba(15,23,42,0.04); border-color: rgba(15,23,42,0.06); color: rgba(15,23,42,0.64); }
+    .prompt-sheet .num { color: #f87171; font-weight: 700; }
+    .prompt-sheet .dim { color: rgba(255,255,255,0.3); }
+    body.light-mode .prompt-sheet .dim { color: rgba(15,23,42,0.3); }
+
+    .output-card { border-radius: 6px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); padding: 10px; display: flex; flex-direction: column; gap: 8px; }
+    body.light-mode .output-card { border-color: rgba(15,23,42,0.06); background: rgba(15,23,42,0.025); }
+    .output-label { display: inline-flex; align-items: center; padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.06); font-size: 10px; font-weight: 700; color: var(--text-secondary); align-self: start; }
+    body.light-mode .output-label { background: rgba(15,23,42,0.05); border-color: rgba(15,23,42,0.06); }
+
+    .llm-panel { border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.025); padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+    body.light-mode .llm-panel { border-color: rgba(15,23,42,0.06); background: rgba(15,23,42,0.025); }
+    .llm-header { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: var(--text-primary); }
+    .llm-dot { width: 7px; height: 7px; border-radius: 50%; background: linear-gradient(135deg, #afa9ec, #534ab7); box-shadow: 0 0 0 4px rgba(175,169,236,0.12); }
+    .llm-bubble { max-width: 240px; padding: 10px 12px; border-radius: 12px 12px 12px 4px; background: rgba(255,255,255,0.05); font-size: 11px; line-height: 1.5; color: var(--text-secondary); }
+    body.light-mode .llm-bubble { background: rgba(15,23,42,0.04); }
+    .llm-composer { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); }
+    body.light-mode .llm-composer { background: rgba(15,23,42,0.03); border-color: rgba(15,23,42,0.06); }
+    .llm-composer-thumb { width: 36px; height: 28px; border-radius: 4px; background: linear-gradient(180deg, #f6f8fc 0%, #eef1f7 100%); position: relative; flex-shrink: 0; }
+    .llm-composer-thumb::after { content: "1"; position: absolute; right: 3px; bottom: 3px; width: 12px; height: 12px; border-radius: 50%; background: #ef4444; color: #fff; font-size: 7px; font-weight: 700; display: grid; place-items: center; }
+    .llm-composer-lines { flex: 1; display: flex; flex-direction: column; gap: 5px; }
+    .llm-composer-lines span { height: 6px; border-radius: 999px; background: rgba(255,255,255,0.07); }
+    body.light-mode .llm-composer-lines span { background: rgba(15,23,42,0.07); }
+    .llm-composer-lines span:last-child { width: 60%; }
+    .llm-send { width: 24px; height: 24px; border-radius: 50%; background: rgba(175,169,236,0.2); flex-shrink: 0; position: relative; }
+    .llm-send::before { content: ""; position: absolute; left: 8px; top: 6px; width: 7px; height: 7px; border-top: 2px solid #afa9ec; border-right: 2px solid #afa9ec; transform: rotate(45deg); }
+
+    .flow-arrow { width: 2px; background: rgba(175,169,236,0.5); position: relative; justify-self: center; }
+    .flow-arrow::after { content: ""; position: absolute; left: 50%; bottom: -1px; width: 10px; height: 10px; border-right: 2px solid rgba(175,169,236,0.5); border-bottom: 2px solid rgba(175,169,236,0.5); transform: translateX(-50%) rotate(45deg); }
+
+    .kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 26px; padding: 0 8px; border-radius: 6px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-bottom-width: 2px; font-family: var(--font-mono); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.85); }
+    body.light-mode .kbd { background: rgba(15,23,42,0.06); border-color: rgba(15,23,42,0.1); color: rgba(15,23,42,0.85); }
+
+    .spotlight { position: absolute; border-radius: 999px; box-shadow: 0 0 0 1.5px rgba(175,169,236,0.5), 0 0 0 8px rgba(175,169,236,0.08); pointer-events: none; z-index: 4; animation: spotlightPulse 2s ease-in-out infinite; }
+    @keyframes spotlightPulse { 0%,100% { box-shadow: 0 0 0 1.5px rgba(175,169,236,0.5), 0 0 0 8px rgba(175,169,236,0.08); } 50% { box-shadow: 0 0 0 1.5px rgba(175,169,236,0.6), 0 0 0 14px rgba(175,169,236,0.05); } }
+
+    .mini-screenshot { border-radius: 4px; overflow: hidden; background: linear-gradient(180deg, #f6f8fc 0%, #eef1f7 100%); box-shadow: 0 4px 16px rgba(0,0,0,0.12); position: relative; }
+    .mini-screenshot-bar { height: 18px; background: rgba(255,255,255,0.7); display: flex; align-items: center; padding: 0 6px; gap: 4px; }
+    .mini-screenshot-bar span { width: 5px; height: 5px; border-radius: 50%; background: rgba(15,23,42,0.15); }
+    .mini-screenshot-body { height: 80px; display: grid; grid-template-columns: 30px 1fr; }
+    .mini-screenshot-rail { background: rgba(245,247,252,0.9); padding: 6px 4px; display: flex; flex-direction: column; gap: 4px; }
+    .mini-screenshot-rail span { height: 6px; border-radius: 999px; background: rgba(15,23,42,0.07); }
+    .mini-screenshot-content { padding: 8px; display: flex; flex-direction: column; gap: 4px; position: relative; }
+    .mini-screenshot-content span { height: 6px; border-radius: 999px; background: rgba(15,23,42,0.06); }
+    .mini-screenshot-content span.accent { background: rgba(83,74,183,0.12); width: 50%; }
+    .mini-badge { position: absolute; width: 14px; height: 14px; border-radius: 50%; background: #ef4444; color: #fff; display: grid; place-items: center; font-size: 7px; font-weight: 700; z-index: 2; }
+    .mini-rect { position: absolute; border: 1.5px solid #ef4444; border-radius: 2px; background: rgba(239,68,68,0.06); z-index: 1; }
+    .annotation-hint { font-size: 10px; color: var(--text-dim); line-height: 1.4; padding-top: 4px; }
+
+    /* ======== SLIDE LAYOUTS ======== */
+    .s0-layout { width: 100%; display: grid; gap: 16px; }
+    .s0-llm-strip { padding: 14px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.025); }
+    body.light-mode .s0-llm-strip { border-color: rgba(15,23,42,0.05); background: rgba(15,23,42,0.025); }
+    .s0-llm-strip .llm-header { margin-bottom: 6px; }
+    .s0-chat-text { font-family: var(--font-mono); font-size: 10.5px; line-height: 1.6; color: rgba(255,255,255,0.55); padding: 8px 0 0; }
+    body.light-mode .s0-chat-text { color: rgba(15,23,42,0.5); }
+
+    .s1-layout { width: 100%; display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: start; }
+    .s1-screenshot-card .app-mock { max-width: 100%; }
+    .s1-screenshot-card .app-mock-body { min-height: 140px; }
+
+    .s2-layout { width: 100%; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .s2-editor { width: 100%; border-radius: 8px; background: rgba(20,20,24,0.9); border: 1px solid rgba(255,255,255,0.05); overflow: visible; position: relative; }
+    body.light-mode .s2-editor { background: rgba(248,248,254,0.96); border-color: rgba(15,23,42,0.08); }
+    .s2-editor-head { padding: 10px 14px; display: flex; align-items: center; justify-content: center; border-bottom: 1px solid rgba(255,255,255,0.04); font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.58); }
+    body.light-mode .s2-editor-head { border-color: rgba(15,23,42,0.05); color: rgba(15,23,42,0.58); }
+    .s2-toolbar-wrap { position: relative; display: flex; justify-content: center; padding: 14px 12px 4px; overflow: visible; }
+    .s2-canvas { padding: 8px 16px 16px; position: relative; }
+
+    .s3-layout { width: 100%; display: grid; grid-template-rows: auto auto auto; gap: 12px; }
+    .s3-source { position: relative; }
+    .s3-source .app-mock { max-width: 100%; }
+    .s3-source .app-mock-body { min-height: 130px; }
+    .s3-arrow-row { display: flex; justify-content: center; gap: 100px; }
+    .s3-outputs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+    .s4-layout { width: 100%; display: grid; gap: 12px; }
+    .s4-assets { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* Step 5 — IDE vs App: clear hierarchy */
+    .s5-layout { width: 100%; display: flex; flex-direction: column; gap: 18px; align-items: center; }
+    .s5-section-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); align-self: start; padding-left: 2px; }
+    .s5-mode-row { width: 100%; display: grid; grid-template-columns: auto 1fr; gap: 14px; align-items: center; }
+    .s5-mode-card { border-radius: 8px; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.025); padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+    body.light-mode .s5-mode-card { border-color: rgba(15,23,42,0.06); background: rgba(15,23,42,0.025); }
+    .s5-mode-label { font-size: 12px; font-weight: 700; color: var(--purple-light); }
+    body.light-mode .s5-mode-label { color: var(--purple-dark); }
+    .s5-mode-desc { font-size: 11px; line-height: 1.5; color: var(--text-dim); }
+    .s5-mode-examples { display: flex; gap: 4px; flex-wrap: wrap; }
+    .s5-example-chip { padding: 3px 8px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.06); font-size: 10px; font-weight: 600; color: var(--text-dim); }
+    body.light-mode .s5-example-chip { background: rgba(15,23,42,0.04); border-color: rgba(15,23,42,0.06); }
+    .s5-sep { width: 100%; height: 1px; background: var(--border-faint); }
+
+    /* Step 6 & 7 — Add Image */
+    .s6-layout { width: 100%; display: flex; flex-direction: column; gap: 14px; align-items: center; }
+    .s6-editor { width: 100%; border-radius: 8px; background: rgba(20,20,24,0.9); border: 1px solid rgba(255,255,255,0.05); overflow: hidden; position: relative; }
+    body.light-mode .s6-editor { background: rgba(248,248,254,0.96); border-color: rgba(15,23,42,0.08); }
+    .filmstrip-row { display: grid; gap: 10px; padding: 14px; }
+    .filmstrip-cell { border-radius: 6px; overflow: hidden; position: relative; background: linear-gradient(180deg, #f6f8fc 0%, #eef1f7 100%); box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
+    .filmstrip-cell-bar { height: 16px; background: rgba(255,255,255,0.7); display: flex; align-items: center; padding: 0 5px; gap: 3px; }
+    .filmstrip-cell-bar span { width: 4px; height: 4px; border-radius: 50%; background: rgba(15,23,42,0.12); }
+    .filmstrip-cell-body { height: 50px; padding: 6px; display: flex; flex-direction: column; gap: 3px; }
+    .filmstrip-cell-body span { height: 4px; border-radius: 999px; background: rgba(15,23,42,0.06); }
+    .filmstrip-cell-body span.accent { background: rgba(83,74,183,0.12); width: 45%; }
+
+    /* Title pill above filmstrip cell */
+    .title-pill { height: 22px; padding: 0 4px 0 8px; display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; font-size: 9px; font-weight: 600; color: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); position: absolute; top: -11px; left: 50%; transform: translateX(-50%); z-index: 2; white-space: nowrap; }
+    .title-pill.observed { background: rgba(175,169,236,0.85); }
+    .title-pill.expected { background: rgba(34,197,94,0.85); }
+    .title-pill.reference { background: rgba(59,130,246,0.85); }
+    .title-pill .role-tag { padding: 2px 6px; border-radius: 999px; background: rgba(255,255,255,0.2); font-size: 8px; font-weight: 700; }
+
+    .add-image-cell { border-radius: 6px; border: 2px dashed rgba(175,169,236,0.3); background: rgba(175,169,236,0.04); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 70px; cursor: default; }
+    .add-image-cell .plus { width: 22px; height: 22px; border-radius: 50%; background: rgba(175,169,236,0.16); color: var(--purple-light); display: grid; place-items: center; font-size: 14px; font-weight: 600; }
+    body.light-mode .add-image-cell .plus { color: var(--purple-dark); }
+    .add-image-cell .label { font-size: 10px; font-weight: 600; color: var(--purple-light); }
+    body.light-mode .add-image-cell .label { color: var(--purple-dark); }
+
+    /* Step 8 — Done */
+    .s8-layout { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px; height: 100%; }
+
+    /* Full-width done state */
+    .tour-body.done-mode .illustration-pane { grid-column: 1 / -1; border-right: 0; }
+    .tour-body.done-mode .text-pane { display: none; }
+    .s8-checkmark { width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--green); display: grid; place-items: center; color: var(--green); font-size: 26px; animation: checkPop 400ms cubic-bezier(0.34,1.56,0.64,1); }
+    @keyframes checkPop { from { transform: scale(0.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .s8-heading { font-size: 26px; font-weight: 700; letter-spacing: -0.035em; }
+    .s8-body { font-size: 14px; line-height: 1.6; color: var(--text-secondary); max-width: 360px; }
+    .s8-hotkey-row { display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+    .s8-hotkey-label { font-size: 12px; color: var(--text-dim); margin-left: 6px; }
+
+    @media (max-width: 900px) {
+      .tour-body { grid-template-columns: 1fr; }
+      .illustration-pane { min-height: 380px; border-right: 0; border-bottom: 1px solid var(--border-faint); }
+      .text-pane { padding: 24px 24px 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="top-bar">
+      <span class="top-bar-label">VIB-229 · Tutorial prototype</span>
+      <div class="theme-toggle">
+        <button class="active" data-theme="dark">Dark</button>
+        <button data-theme="light">Light</button>
+      </div>
+    </div>
+
+    <div class="mac-window">
+      <div class="mac-titlebar">
+        <div class="traffic-lights"><span></span><span></span><span></span></div>
+        <span class="mac-titlebar-text">Vibeliner</span>
+      </div>
+
+      <div class="stage">
+        <div class="stage-menubar">
+          <div class="stage-menubar-left"><span style="font-weight:700"></span><span>Finder</span><span>File</span><span>Edit</span><span>View</span></div>
+          <div class="stage-menubar-right"><span class="vibe-icon"></span><span>Mon 2:34 PM</span></div>
+        </div>
+        <div class="ghost-window"></div>
+        <div class="popover">
+          <div class="popover-row">Capture Now <span class="shortcut">⌘⇧6</span></div>
+          <div class="popover-row">Recent Captures <span style="color:var(--text-dim)">›</span></div>
+          <div class="popover-row">Open Captures</div>
+          <div class="popover-row">Settings <span class="shortcut">⌘,</span></div>
+          <div class="popover-row highlight" data-open-tour>Take a tour</div>
+          <div class="popover-divider"></div>
+          <div class="popover-row" style="color:var(--text-secondary)">Quit Vibeliner <span class="shortcut">⌘Q</span></div>
+        </div>
+
+        <div class="tour-window" data-tour>
+          <div class="tour-header">
+            <span class="tour-header-title">Vibeliner Overview</span>
+            <button class="tour-exit" data-skip>Exit tour</button>
+          </div>
+          <div class="tour-body">
+            <div class="illustration-pane">
+
+              <!-- SLIDE 0: Visual bugs are hard to explain -->
+              <div class="slide active" data-slide="0">
+                <div class="s0-layout">
+                  <div class="s0-app">
+                    <div class="app-mock">
+                      <div class="app-mock-topbar"><div class="app-mock-brand"><div class="app-mock-brand-icon"></div>Dashflow</div><div class="app-mock-nav-pills"><span style="width:60px"></span><span style="width:44px"></span><span style="width:28px"></span></div></div>
+                      <div class="app-mock-body">
+                        <div class="app-mock-sidebar"><div class="sidebar-item active"></div><div class="sidebar-item"></div><div class="sidebar-item"></div></div>
+                        <div class="app-mock-main"><div class="mock-heading"></div>
+                          <div class="card-row"><div class="mock-card error"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div></div>
+                          <div class="mock-table"><div class="mock-table-head"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div><div class="mock-table-row error"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div><div class="mock-table-row"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="s0-llm-strip">
+                    <div class="llm-header"><span class="llm-dot"></span> LLM</div>
+                    <div class="s0-chat-text">Can you fix this layout? The padding feels off on the first card and the table row below feels cramped. It's hard to point to the exact spots that need work…</div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 1: Two outputs -->
+              <div class="slide" data-slide="1">
+                <div class="s1-layout">
+                  <div class="output-card s1-screenshot-card">
+                    <div class="output-label">screenshot.png</div>
+                    <div class="app-mock" style="box-shadow:0 8px 30px rgba(0,0,0,0.2);">
+                      <div class="app-mock-topbar"><div class="app-mock-brand"><div class="app-mock-brand-icon"></div>Dashflow</div><div class="app-mock-nav-pills"><span style="width:40px"></span><span style="width:28px"></span></div></div>
+                      <div class="app-mock-body">
+                        <div class="app-mock-sidebar"><div class="sidebar-item active"></div><div class="sidebar-item"></div><div class="sidebar-item"></div></div>
+                        <div class="app-mock-main" style="position:relative;"><div class="mock-heading"></div>
+                          <div class="card-row"><div class="mock-card error"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div></div>
+                          <div class="ann-badge" style="top:18px;left:8px;">1</div>
+                          <div class="ann-badge" style="top:82px;left:30px;">2</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="output-card">
+                    <div class="output-label">prompt.txt</div>
+                    <div class="prompt-sheet"><span class="dim">This is a screenshot of my app.</span>
+<span class="dim">View it at ./screenshot.png</span>
+
+<span class="dim">Numbered pins point to issues.</span>
+<span class="dim">Fix each issue:</span>
+
+<span class="num">1</span>  [pin] padding too tight
+<span class="num">2</span>  [arrow] row spacing cramped
+
+<span class="dim">Make the changes and verify.</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 2: Annotate — 4 tools shown -->
+              <div class="slide" data-slide="2">
+                <div class="s2-layout">
+                  <div class="s2-editor">
+                    <div class="s2-editor-head">Vibeliner</div>
+                    <div class="s2-toolbar-wrap">
+                      <div class="mini-toolbar">
+                        <button class="mini-tool-btn" title="Close"><svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></button>
+                        <div class="mini-divider"></div>
+                        <button class="mini-tool-btn active" title="Pin"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="4.5"/><line x1="8" y1="9.5" x2="8" y2="15"/></svg></button>
+                        <button class="mini-tool-btn" title="Arrow"><svg viewBox="0 0 16 16"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="8,3 13,3 13,8"/></svg></button>
+                        <button class="mini-tool-btn" title="Rect"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/></svg></button>
+                        <button class="mini-tool-btn" title="Circle"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></button>
+                        <button class="mini-tool-btn" title="Freehand"><svg viewBox="0 0 16 16"><path d="M2 11 Q5 4 9 9 Q12 14 14 5"/></svg></button>
+                        <div class="mini-divider"></div>
+                        <div class="mini-toggle"><span>IDE</span><span class="active">App</span></div>
+                        <div class="mini-divider"></div>
+                        <div class="mini-copy-btn">Copy Prompt</div>
+                        <div class="mini-copy-btn">Copy Image</div>
+                      </div>
+                    </div>
+                    <div class="s2-canvas">
+                      <div class="app-mock" style="max-width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                        <div class="app-mock-topbar"><div class="app-mock-brand"><div class="app-mock-brand-icon"></div>Dashflow</div><div class="app-mock-nav-pills"><span style="width:40px"></span><span style="width:28px"></span></div></div>
+                        <div class="app-mock-body" style="position:relative;">
+                          <div class="app-mock-sidebar"><div class="sidebar-item active"></div><div class="sidebar-item"></div><div class="sidebar-item"></div></div>
+                          <div class="app-mock-main" style="position:relative;"><div class="mock-heading"></div>
+                            <div class="card-row">
+                              <div class="mock-card error"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div>
+                              <div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div>
+                              <div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div>
+                            </div>
+                            <div class="mock-table"><div class="mock-table-head"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div><div class="mock-table-row error"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div><div class="mock-table-row"><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div><div class="mock-table-cell"></div></div></div>
+                            <!-- 4 annotation tools in use: pin, arrow, rect, circle -->
+                            <div class="ann-badge" style="top:10px;left:4px;">1</div>
+                            <div class="ann-stake" style="top:28px;left:12px;"></div>
+                            <div class="ann-note" style="top:4px;left:28px;">Padding too tight</div>
+                            <div class="ann-arrow" style="top:46px;left:100px;width:70px;transform:rotate(12deg);"></div>
+                            <div class="ann-badge" style="top:38px;left:96px;">2</div>
+                            <div class="ann-note" style="top:32px;left:120px;">Wrong border radius</div>
+                            <div class="ann-rect" style="top:0px;left:0px;width:92px;height:58px;"></div>
+                            <div class="ann-badge" style="top:56px;left:88px;">3</div>
+                            <div class="ann-note" style="top:56px;left:108px;">Needs more height</div>
+                            <div class="ann-circle" style="top:72px;left:8px;width:36px;height:36px;"></div>
+                            <div class="ann-badge" style="top:78px;left:42px;">4</div>
+                            <div class="ann-note" style="top:78px;left:62px;">Spacing cramped</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 3: Marks become instructions -->
+              <div class="slide" data-slide="3">
+                <div class="s3-layout">
+                  <div class="s3-source">
+                    <div class="app-mock" style="max-width:100%;box-shadow:0 8px 24px rgba(0,0,0,0.15);">
+                      <div class="app-mock-topbar"><div class="app-mock-brand"><div class="app-mock-brand-icon"></div>Dashflow</div><div class="app-mock-nav-pills"><span style="width:40px"></span><span style="width:28px"></span></div></div>
+                      <div class="app-mock-body" style="min-height:130px;position:relative;">
+                        <div class="app-mock-sidebar"><div class="sidebar-item active"></div><div class="sidebar-item"></div></div>
+                        <div class="app-mock-main" style="position:relative;"><div class="mock-heading"></div>
+                          <div class="card-row"><div class="mock-card error"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div><div class="mock-card"><div class="mock-card-line"></div><div class="mock-card-line short"></div></div></div>
+                          <div class="ann-badge" style="top:14px;left:4px;">1</div>
+                          <div class="ann-note" style="top:8px;left:28px;">Padding too tight</div>
+                          <div class="ann-rect" style="top:2px;left:0px;width:92px;height:58px;"></div>
+                          <div class="ann-badge" style="top:64px;left:4px;">2</div>
+                          <div class="ann-note" style="top:58px;left:28px;">Row spacing cramped</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="s3-arrow-row"><div class="flow-arrow" style="height:28px;"></div><div class="flow-arrow" style="height:28px;"></div></div>
+                  <div class="s3-outputs">
+                    <div class="output-card">
+                      <div class="output-label">screenshot.png</div>
+                      <div class="mini-screenshot">
+                        <div class="mini-screenshot-bar"><span></span><span></span><span></span></div>
+                        <div class="mini-screenshot-body"><div class="mini-screenshot-rail"><span></span><span></span><span></span></div><div class="mini-screenshot-content"><span class="accent"></span><span></span><span></span><span></span><div class="mini-rect" style="top:4px;left:0;width:48px;height:30px;"></div></div></div>
+                        <div class="mini-badge" style="top:30px;right:52px;">1</div>
+                        <div class="mini-badge" style="top:60px;right:40px;">2</div>
+                      </div>
+                      <div class="annotation-hint">Badges and marks baked in.<br>Notes are not in the image.</div>
+                    </div>
+                    <div class="output-card">
+                      <div class="output-label">prompt.txt</div>
+                      <div class="prompt-sheet" style="font-size:10px;"><span class="num">1</span>  [pin] padding too tight
+<span class="num">2</span>  [rect] row spacing cramped
+
+<span class="dim">Fix each issue.</span></div>
+                      <div class="annotation-hint">Notes become numbered<br>prompt lines automatically.</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 4: Paste into AI -->
+              <div class="slide" data-slide="4">
+                <div class="s4-layout">
+                  <div class="s4-assets">
+                    <div class="output-card">
+                      <div class="output-label">screenshot.png</div>
+                      <div class="mini-screenshot">
+                        <div class="mini-screenshot-bar"><span></span><span></span><span></span></div>
+                        <div class="mini-screenshot-body"><div class="mini-screenshot-rail"><span></span><span></span><span></span></div><div class="mini-screenshot-content"><span class="accent"></span><span></span><span></span><span></span><div class="mini-rect" style="top:4px;left:0;width:48px;height:30px;"></div></div></div>
+                        <div class="mini-badge" style="top:30px;right:52px;">1</div>
+                        <div class="mini-badge" style="top:60px;right:40px;">2</div>
+                      </div>
+                    </div>
+                    <div class="output-card">
+                      <div class="output-label">prompt.txt</div>
+                      <div class="prompt-sheet" style="font-size:10px;"><span class="num">1</span>  [pin] padding too tight
+<span class="num">2</span>  [rect] row spacing cramped</div>
+                    </div>
+                  </div>
+                  <div class="flow-arrow" style="height:28px;justify-self:center;"></div>
+                  <div class="llm-panel">
+                    <div class="llm-header"><span class="llm-dot"></span> Your AI tool</div>
+                    <div class="llm-bubble">The model sees each numbered badge on the image and reads the matching note in the prompt. No guessing required.</div>
+                    <div class="llm-composer">
+                      <div class="llm-composer-thumb"></div>
+                      <div class="llm-composer-lines"><span></span><span></span><span></span></div>
+                      <div class="llm-send"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 5: IDE vs App — redesigned hierarchy -->
+              <div class="slide" data-slide="5">
+                <div class="s5-layout">
+                  <div class="s5-section-label">Terminal tools</div>
+                  <div class="s5-mode-row">
+                    <div class="mini-toolbar">
+                      <div class="mini-toggle"><span class="active">IDE</span><span>App</span></div>
+                      <div class="mini-divider"></div>
+                      <div class="mini-copy-btn">Copy Prompt</div>
+                    </div>
+                    <div class="s5-mode-card">
+                      <div class="s5-mode-label">IDE mode</div>
+                      <div class="s5-mode-desc">One paste. The prompt includes the file path so the AI reads the screenshot from your disk.</div>
+                      <div class="s5-mode-examples"><span class="s5-example-chip">Claude Code</span><span class="s5-example-chip">Codex</span><span class="s5-example-chip">Terminal</span></div>
+                    </div>
+                  </div>
+                  <div class="s5-sep"></div>
+                  <div class="s5-section-label">Chat tools</div>
+                  <div class="s5-mode-row">
+                    <div class="mini-toolbar">
+                      <div class="mini-toggle"><span>IDE</span><span class="active">App</span></div>
+                      <div class="mini-divider"></div>
+                      <div class="mini-copy-btn">Copy Prompt</div>
+                      <div class="mini-copy-btn">Copy Image</div>
+                    </div>
+                    <div class="s5-mode-card">
+                      <div class="s5-mode-label">App mode</div>
+                      <div class="s5-mode-desc">Two pastes. Copy the prompt and the image separately into the chat window.</div>
+                      <div class="s5-mode-examples"><span class="s5-example-chip">Claude.ai</span><span class="s5-example-chip">ChatGPT</span><span class="s5-example-chip">Gemini</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 6: Add more images -->
+              <div class="slide" data-slide="6">
+                <div class="s6-layout">
+                  <div class="s6-editor">
+                    <div class="s2-editor-head">Vibeliner</div>
+                    <div style="display:flex;justify-content:center;padding:10px 12px 4px;">
+                      <div class="mini-toolbar">
+                        <button class="mini-tool-btn"><svg viewBox="0 0 10 10"><line x1="2" y1="2" x2="8" y2="8"/><line x1="8" y1="2" x2="2" y2="8"/></svg></button>
+                        <div class="mini-divider"></div>
+                        <button class="mini-tool-btn active"><svg viewBox="0 0 16 16"><circle cx="8" cy="5" r="4.5"/><line x1="8" y1="9.5" x2="8" y2="15"/></svg></button>
+                        <button class="mini-tool-btn"><svg viewBox="0 0 16 16"><line x1="3" y1="13" x2="13" y2="3"/><polyline points="8,3 13,3 13,8"/></svg></button>
+                        <button class="mini-tool-btn"><svg viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.5"/></svg></button>
+                        <button class="mini-tool-btn"><svg viewBox="0 0 16 16"><circle cx="8" cy="8" r="6"/></svg></button>
+                        <button class="mini-tool-btn"><svg viewBox="0 0 16 16"><path d="M2 11 Q5 4 9 9 Q12 14 14 5"/></svg></button>
+                        <div class="mini-divider"></div>
+                        <div class="mini-copy-btn" style="background:rgba(175,169,236,0.14);border-color:rgba(175,169,236,0.22);">+ Add image</div>
+                      </div>
+                    </div>
+                    <div class="filmstrip-row" style="grid-template-columns:1fr 1fr 1fr;padding-top:22px;">
+                      <div style="position:relative;">
+                        <div class="title-pill observed">Image 1 <span class="role-tag">Observed</span></div>
+                        <div class="filmstrip-cell">
+                          <div class="filmstrip-cell-bar"><span></span><span></span><span></span></div>
+                          <div class="filmstrip-cell-body"><span class="accent"></span><span></span><span></span><span></span></div>
+                          <div class="mini-badge" style="top:24px;right:14px;">1</div>
+                        </div>
+                      </div>
+                      <div style="position:relative;">
+                        <div class="title-pill expected">Image 2 <span class="role-tag">Expected</span></div>
+                        <div class="filmstrip-cell">
+                          <div class="filmstrip-cell-bar"><span></span><span></span><span></span></div>
+                          <div class="filmstrip-cell-body"><span class="accent"></span><span></span><span></span><span></span></div>
+                        </div>
+                      </div>
+                      <div class="add-image-cell">
+                        <div class="plus">+</div>
+                        <div class="label">Add image</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- SLIDE 7: Roles label each image -->
+              <div class="slide" data-slide="7">
+                <div class="s6-layout">
+                  <div style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding-top:8px;">
+                    <div style="position:relative;">
+                      <div class="title-pill observed" style="position:relative;top:auto;left:auto;transform:none;margin:0 auto 8px;">Image 1 <span class="role-tag">Observed</span></div>
+                      <div class="filmstrip-cell" style="box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+                        <div class="filmstrip-cell-bar"><span></span><span></span><span></span></div>
+                        <div class="filmstrip-cell-body" style="height:70px;"><span class="accent"></span><span></span><span></span><span></span><span></span></div>
+                        <div class="mini-badge" style="top:26px;right:12px;">1</div>
+                        <div class="mini-badge" style="top:48px;right:24px;">2</div>
+                      </div>
+                    </div>
+                    <div style="position:relative;">
+                      <div class="title-pill expected" style="position:relative;top:auto;left:auto;transform:none;margin:0 auto 8px;">Image 2 <span class="role-tag">Expected</span></div>
+                      <div class="filmstrip-cell" style="box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+                        <div class="filmstrip-cell-bar"><span></span><span></span><span></span></div>
+                        <div class="filmstrip-cell-body" style="height:70px;"><span class="accent"></span><span></span><span></span><span></span><span></span></div>
+                      </div>
+                    </div>
+                    <div style="position:relative;">
+                      <div class="title-pill reference" style="position:relative;top:auto;left:auto;transform:none;margin:0 auto 8px;">Mockup <span class="role-tag">Reference</span></div>
+                      <div class="filmstrip-cell" style="box-shadow:0 6px 20px rgba(0,0,0,0.15);">
+                        <div class="filmstrip-cell-bar"><span></span><span></span><span></span></div>
+                        <div class="filmstrip-cell-body" style="height:70px;"><span class="accent"></span><span></span><span></span><span></span><span></span></div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="prompt-sheet" style="width:100%;font-size:10px;margin-top:4px;"><span class="dim">Images:</span>
+<span class="dim">  Image 1 (Observed) — ./image_1.png</span>
+<span class="dim">  Image 2 (Expected) — ./image_2.png</span>
+<span class="dim">  Mockup (Reference) — ./image_3.png</span>
+
+<span class="num">1</span>  [pin] padding too tight
+<span class="num">2</span>  [rect] row spacing cramped
+
+<span class="dim">Fix each issue to match the expected.</span></div>
+                </div>
+              </div>
+
+              <!-- SLIDE 8: Done -->
+              <div class="slide" data-slide="8">
+                <div class="s8-layout">
+                  <div class="s8-checkmark">✓</div>
+                  <div class="s8-heading">You're all set</div>
+                  <div class="s8-body">Capture what you see. Annotate what matters. Copy the result. Paste it into your AI tool. That's the whole workflow.</div>
+                  <div class="s8-hotkey-row">
+                    <span class="kbd">⌘</span>
+                    <span class="kbd">⇧</span>
+                    <span class="kbd">6</span>
+                    <span class="s8-hotkey-label">to capture anytime</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <div class="text-pane">
+              <div class="step-badge" data-step-label>Step 1 of 9</div>
+              <h2 class="step-title" data-title></h2>
+              <p class="step-copy" data-copy></p>
+            </div>
+          </div>
+
+          <div class="tour-footer">
+            <div class="progress-group">
+              <span class="progress-text" data-progress-text>1 / 9</span>
+              <div class="progress-bars" data-progress-bars>
+                <span class="active"></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+              </div>
+            </div>
+            <div class="nav-buttons">
+              <button class="btn btn-ghost" data-back style="visibility:hidden">Back</button>
+              <button class="btn btn-primary" data-next>Next</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="reopen-toast" data-reopen hidden>
+          <span class="reopen-label">Tour closed</span>
+          <button class="reopen-btn" data-reopen-btn>Reopen tour</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STEPS = [
+      {
+        title: "Visual bugs are hard to describe",
+        copy: "You see a broken layout. You open your AI tool. Now you have to explain it in words. \"The padding feels off\" is vague. The AI guesses. You go back and forth. Vibeliner lets you point instead of describe.",
+        btn: "Next"
+      },
+      {
+        title: "Screenshots become LLM ready prompts",
+        copy: "Every capture produces two files. A screenshot with numbered badges burned into the image, and a prompt.txt built from your notes. Together they give the AI everything it needs to understand and act.",
+        btn: "Next"
+      },
+      {
+        title: "Point at what you see",
+        copy: "Five tools in the floating toolbar. Pin a spot, draw an arrow, highlight with a rectangle or circle, sketch with freehand. Each mark gets a number and a note that becomes part of the prompt.",
+        btn: "Next"
+      },
+      {
+        title: "Marks become instructions",
+        copy: "Badges stay burned into the exported screenshot. Your note text becomes numbered lines in the prompt. The AI sees badge #1 on the image and reads the matching instruction in the text.",
+        btn: "Next"
+      },
+      {
+        title: "Give your AI the full picture",
+        copy: "Paste the marked screenshot and the generated prompt into your AI tool. It sees the numbered badges, reads the notes, and knows exactly what to fix. No guessing, no back and forth.",
+        btn: "Next"
+      },
+      {
+        title: "One paste or two",
+        copy: "IDE mode is for terminal tools like Claude Code and Codex. One paste: the prompt includes the file path so the AI reads the image from disk. App mode is for chat tools like Claude.ai and ChatGPT. Two pastes: prompt and image go in separately.",
+        btn: "Next"
+      },
+      {
+        title: "Add more screenshots",
+        copy: "Click \"+ Add image\" in the toolbar to capture additional screenshots into the same session. Vibeliner arranges them side by side in a filmstrip so you can annotate across multiple views at once.",
+        btn: "Next"
+      },
+      {
+        title: "Label what each image shows",
+        copy: "Each image gets a title and a role. Observed is what you see now. Expected is what it should look like. Reference is a mockup or design file. These labels carry into the prompt so the AI knows which image is which.",
+        btn: "Next"
+      },
+      {
+        title: "You're all set",
+        copy: "Capture what you see. Annotate what matters. Copy the result. Paste it into your AI tool. That's the whole workflow. Press ⌘⇧6 anytime to start.",
+        btn: "Got it"
+      }
+    ];
+
+    let current = 0;
+    const tourEl = document.querySelector("[data-tour]");
+    const reopenEl = document.querySelector("[data-reopen]");
+    const slides = document.querySelectorAll("[data-slide]");
+    const bars = document.querySelectorAll("[data-progress-bars] span");
+    const progressText = document.querySelector("[data-progress-text]");
+    const stepLabel = document.querySelector("[data-step-label]");
+    const titleEl = document.querySelector("[data-title]");
+    const copyEl = document.querySelector("[data-copy]");
+    const backBtn = document.querySelector("[data-back]");
+    const nextBtn = document.querySelector("[data-next]");
+
+    function render(i) {
+      current = i;
+      const s = STEPS[i];
+      slides.forEach((el, idx) => el.classList.toggle("active", idx === i));
+      bars.forEach((el, idx) => el.classList.toggle("active", idx <= i));
+      progressText.textContent = `${i + 1} / ${STEPS.length}`;
+      stepLabel.textContent = `Step ${i + 1} of ${STEPS.length}`;
+      titleEl.textContent = s.title;
+      copyEl.textContent = s.copy;
+      backBtn.style.visibility = i === 0 ? "hidden" : "visible";
+      nextBtn.textContent = s.btn;
+      nextBtn.className = i === STEPS.length - 1 ? "btn btn-final" : "btn btn-primary";
+      document.querySelector(".tour-body").classList.toggle("done-mode", i === STEPS.length - 1);
+    }
+
+    function openTour(i = 0) { tourEl.classList.remove("hidden"); reopenEl.hidden = true; render(i); }
+    function closeTour() { tourEl.classList.add("hidden"); reopenEl.hidden = false; }
+
+    backBtn.addEventListener("click", () => { if (current > 0) render(current - 1); });
+    nextBtn.addEventListener("click", () => { if (current < STEPS.length - 1) render(current + 1); else closeTour(); });
+    document.querySelector("[data-skip]").addEventListener("click", closeTour);
+    document.querySelector("[data-reopen-btn]").addEventListener("click", () => openTour(current));
+    document.querySelector("[data-open-tour]").addEventListener("click", () => openTour(0));
+
+    document.querySelectorAll("[data-theme]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const theme = btn.dataset.theme;
+        document.body.classList.toggle("light-mode", theme === "light");
+        document.querySelectorAll("[data-theme]").forEach(b => b.classList.toggle("active", b.dataset.theme === theme));
+      });
+    });
+
+    openTour(0);
+  </script>
+</body>
+</html>

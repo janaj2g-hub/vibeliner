@@ -3,26 +3,53 @@
 <plist version="1.0">
 <dict>
 	<key>files</key>
-	<dict/>
+	<dict>
+		<key>Resources/AppIcon.icns</key>
+		<data>
+		8rVwQHoLBbtJ6hyqQ5g5TDmp6d0=
+		</data>
+		<key>Resources/Assets.car</key>
+		<data>
+		0I7/pOI0zDUK950RjIyETtQS/Z8=
+		</data>
+		<key>Resources/Jersey25-Regular.ttf</key>
+		<data>
+		yXtL7eDhFdkXKmNJDktWafArFys=
+		</data>
+		<key>Resources/PrivacyInfo.xcprivacy</key>
+		<data>
+		kQcWqdP7RnTQVBS440ZlsW1sfWM=
+		</data>
+	</dict>
 	<key>files2</key>
 	<dict>
-		<key>MacOS/Vibeliner.debug.dylib</key>
+		<key>Resources/AppIcon.icns</key>
 		<dict>
-			<key>cdhash</key>
+			<key>hash2</key>
 			<data>
-			UhHsos3fKYbrRjf1mYAgG64izRM=
+			5VbvmcL4rHuBkde96WlGfZ5tgbIlzOy1BiMwd9utr5o=
 			</data>
-			<key>requirement</key>
-			<string>cdhash H"5211eca2cddf2986eb4637f59980201bae22cd13"</string>
 		</dict>
-		<key>MacOS/__preview.dylib</key>
+		<key>Resources/Assets.car</key>
 		<dict>
-			<key>cdhash</key>
+			<key>hash2</key>
 			<data>
-			319JWwPBokK9x+OhNnd22XceDW4=
+			ZOYtqoS8oPE0ipS2BD68bjH7Mo9Q17C4Hw4yM2jrI4o=
 			</data>
-			<key>requirement</key>
-			<string>cdhash H"df5f495b03c1a242bdc7e3a1367776d9771e0d6e"</string>
+		</dict>
+		<key>Resources/Jersey25-Regular.ttf</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			TUrN2Jp0jpVIBBowRtlVNsUA4ae+kZfGru99mA9503A=
+			</data>
+		</dict>
+		<key>Resources/PrivacyInfo.xcprivacy</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			KK6ED4MuhqtqnIHPb8cfWyBNWUg3lUp71Ljt0Z0jTYc=
+			</data>
 		</dict>
 	</dict>
 	<key>rules</key>

@@ -1,0 +1,1 @@
+- [Setup shares app tokens](feedback_setup_tokens.md) — Setup window should use standard tokens, not its own family

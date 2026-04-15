@@ -1,0 +1,105 @@
+
+<h2 class="sr-only">Refined A3 about page with version number moved between links and tagline</h2>
+
+<link href="https://fonts.googleapis.com/css2?family=Jersey+25&display=swap" rel="stylesheet">
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+.wrap { max-width: 620px; margin: 0 auto; padding: 0.5rem 0; }
+.modes { display: grid; grid-template-columns: 1fr 1fr; border: 0.5px solid var(--color-border-tertiary); border-radius: 12px; overflow: hidden; }
+.mc { position: relative; }
+.ml { position: absolute; top: 8px; right: 10px; font-size: 8px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.35; z-index: 1; }
+.dk { background: #18181c; }
+.dk .ml { color: #888; }
+.lt { background: #f6f6fa; }
+.lt .ml { color: #666; }
+.ab {
+  padding: 32px 24px 28px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 380px;
+  font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+.logo { font-family: 'Jersey 25', cursive; font-size: 52px; color: #EF4444; line-height: 1; margin-bottom: 6px; }
+.subtitle { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.5px; text-transform: uppercase; }
+.links { display: flex; gap: 16px; font-family: var(--font-mono); font-size: 10.5px; }
+.links a { text-decoration: none; }
+.ver { font-family: var(--font-mono); font-size: 9px; }
+.footer-line { font-family: var(--font-mono); font-size: 9px; display: flex; align-items: center; }
+.typed-text { overflow: hidden; white-space: nowrap; display: inline; }
+.cursor {
+  display: inline-block;
+  width: 6px;
+  height: 11px;
+  vertical-align: text-bottom;
+  margin-left: 1px;
+}
+.cursor.blink { animation: blink 1s step-end infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+</style>
+
+<div class="wrap">
+  <div class="modes">
+    <div class="mc dk"><span class="ml">dark</span>
+      <div class="ab">
+        <div class="logo">vibeliner</div>
+        <div class="subtitle" style="color: rgba(255,255,255,0.22); margin-bottom: 24px;">screenshot · annotate · prompt</div>
+        <div class="links" style="margin-bottom: 28px;">
+          <a style="color: #AFA9EC;">github</a>
+          <a style="color: #AFA9EC;">issues</a>
+          <a style="color: #AFA9EC;">docs</a>
+        </div>
+        <div class="ver" style="color: rgba(255,255,255,0.16); margin-bottom: 10px;">v1.0.0</div>
+        <div class="footer-line" style="color: rgba(255,255,255,0.18);">
+          <span class="typed-text" id="typed-dk"></span><span class="cursor" id="cur-dk" style="background: rgba(255,255,255,0.35);"></span>
+        </div>
+      </div>
+    </div>
+    <div class="mc lt"><span class="ml">light</span>
+      <div class="ab">
+        <div class="logo">vibeliner</div>
+        <div class="subtitle" style="color: rgba(0,0,0,0.32); margin-bottom: 24px;">screenshot · annotate · prompt</div>
+        <div class="links" style="margin-bottom: 28px;">
+          <a style="color: #534AB7;">github</a>
+          <a style="color: #534AB7;">issues</a>
+          <a style="color: #534AB7;">docs</a>
+        </div>
+        <div class="ver" style="color: rgba(0,0,0,0.3); margin-bottom: 10px;">v1.0.0</div>
+        <div class="footer-line" style="color: rgba(0,0,0,0.35);">
+          <span class="typed-text" id="typed-lt"></span><span class="cursor" id="cur-lt" style="background: rgba(0,0,0,0.3);"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  var heartHtml = '<span style="color:#EF4444;">\u2764</span>';
+  var fullText = 'made with <3 for AI creators';
+  var targets = [
+    { el: document.getElementById('typed-dk'), cur: document.getElementById('cur-dk') },
+    { el: document.getElementById('typed-lt'), cur: document.getElementById('cur-lt') }
+  ];
+  var i = 0;
+  var delay = 600;
+
+  function type() {
+    if (i > fullText.length) {
+      targets.forEach(function(t) { t.cur.classList.add('blink'); });
+      return;
+    }
+    var slice = fullText.substring(0, i);
+    var rendered = slice.replace('<3', heartHtml);
+    targets.forEach(function(t) { t.el.innerHTML = rendered; });
+    i++;
+    var d = (i <= 1) ? delay : (40 + Math.random() * 40);
+    if (fullText[i - 1] === ' ') d = 60 + Math.random() * 30;
+    setTimeout(type, d);
+  }
+
+  setTimeout(type, delay);
+})();
+</script>
