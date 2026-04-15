@@ -245,9 +245,11 @@ extension CanvasView {
     func updateSuppressedGhostState() {
         let isDrawingToolActive = activeTool?.toolType.isDrawingTool == true
         let isHoveringAnnotation = (shapeHoveredId != nil || pillHoveredId != nil)
+        // VIB-470: Suppress ghost when an annotation is selected (manipulation mode).
+        let isAnnotationSelected = (marksLayer.selectedId != nil)
         let shouldSuppressGhost = isPointerInsideCanvas
             && isDrawingToolActive
-            && isHoveringAnnotation
+            && (isHoveringAnnotation || isAnnotationSelected)
             && !(activeTool?.isActivelyDrawing == true)
         marksLayer.suppressGhost = shouldSuppressGhost
     }

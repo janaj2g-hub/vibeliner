@@ -65,6 +65,8 @@ final class CanvasView: NSView, NotePillDelegate {
         ) { [weak self] _ in
             self?.marksLayer.needsDisplay = true
             self?.refreshNotePills()
+            // VIB-470: Recalculate ghost/cursor on selection changes.
+            self?.refreshInteractionState()
         }
     }
 
