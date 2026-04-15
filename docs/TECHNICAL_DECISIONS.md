@@ -35,6 +35,10 @@ This document records architectural decisions and failed approaches. Claude Code
 **Decision:** The annotation canvas has two overlapping NSViews — MarksLayer with `clipsToBounds = true` and NotesLayer with `clipsToBounds = false`.
 **Why:** Annotation marks (shapes, lines, badges) should clip at the screenshot edge for a clean look. But note pills should be readable even when placed near the edge — they overflow beyond the canvas. Two layers with different clipping behavior solve this cleanly.
 
+### Backspace/Delete structural fix (VIB-460)
+**Decision:** Move the Delete/Backspace handler in `handleKeyEvent` above the `KeyEventGuard.shouldHandleShortcut` gate, rather than patching individual call sites to clear stale first responders.
+**Why:** Backspace/Delete failing to delete selected annotations has recurred 5 times (VIB-102, VIB-311, VIB-435, VIB-449, VIB-454). The root cause is always the same: a stale NSTextView field editor (from note pill editing, title pill editing, etc.) is left as first responder, and `KeyEventGuard.shouldHandleShortcut` returns false because it detects a text responder. Previous fixes patched individual code paths to resign the field editor, but each new text field or interaction path reintroduces the bug. The structural fix is safe because: (1) the `isEditingNote` early-return at the top of `handleKeyEvent` already handles the case where a note is actively being edited, and (2) when a title pill field editor is actively focused, AppKit routes Backspace to the field editor directly via the key monitor's `routeTextOwnedKeyEvent` — it never reaches the delete branch. The `KeyEventGuard` gate still protects all other shortcuts (tool switching, undo/redo, etc.).
+
 ---
 
 ## Failed approaches
