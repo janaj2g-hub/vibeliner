@@ -21,6 +21,7 @@
 		D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */ = {isa = PBXBuildFile; fileRef = D100000100000000000000A4 /* DesignTokens+TourIllustrations.swift */; };
 		A10000010000000000000003 /* ConfigManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000004 /* ConfigManager.swift */; };
 		A10000010000000000000004 /* CapturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000005 /* CapturesManager.swift */; };
+		F7B00KMG02000000 /* BookmarkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B00KMG01000000 /* BookmarkManager.swift */; };
 		A10000010000000000000005 /* HotkeyManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000006 /* HotkeyManager.swift */; };
 		A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000007 /* CaptureOverlayWindow.swift */; };
 		A10000010000000000000007 /* CrosshairView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000008 /* CrosshairView.swift */; };
@@ -135,6 +136,7 @@
 		A20000010000000000000003 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A20000010000000000000004 /* ConfigManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConfigManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000005 /* CapturesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturesManager.swift; sourceTree = "<group>"; };
+		F7B00KMG01000000 /* BookmarkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookmarkManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000006 /* HotkeyManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyManager.swift; sourceTree = "<group>"; };
 		A20000010000000000000036 /* HotkeyCapturePanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HotkeyCapturePanel.swift; sourceTree = "<group>"; };
 		A20000010000000000000007 /* CaptureOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureOverlayWindow.swift; sourceTree = "<group>"; };
@@ -377,6 +379,7 @@
 			children = (
 				A20000010000000000000004 /* ConfigManager.swift */,
 				A20000010000000000000005 /* CapturesManager.swift */,
+				F7B00KMG01000000 /* BookmarkManager.swift */,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -643,6 +646,7 @@
 				D100000100000000000000B4 /* DesignTokens+TourIllustrations.swift in Sources */,
 				A10000010000000000000003 /* ConfigManager.swift in Sources */,
 				A10000010000000000000004 /* CapturesManager.swift in Sources */,
+				F7B00KMG02000000 /* BookmarkManager.swift in Sources */,
 				A10000010000000000000005 /* HotkeyManager.swift in Sources */,
 				A10000010000000000000034 /* HotkeyCapturePanel.swift in Sources */,
 				A10000010000000000000006 /* CaptureOverlayWindow.swift in Sources */,

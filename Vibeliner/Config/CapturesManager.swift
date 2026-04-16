@@ -22,19 +22,23 @@ final class CapturesManager {
     }
 
     func ensureBaseFolder() {
-        let path = baseFolderURL.path
-        if !fileManager.fileExists(atPath: path) {
-            try? fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
+        BookmarkManager.shared.withBookmarkAccess { _ in
+            let path = baseFolderURL.path
+            if !fileManager.fileExists(atPath: path) {
+                try? fileManager.createDirectory(atPath: path, withIntermediateDirectories: true)
+            }
         }
     }
 
-    func createCaptureFolder() -> URL {
-        let formatter = DateFormatter()
-        formatter.dateFormat = Self.folderDateFormat
-        let folderName = formatter.string(from: Date())
-        let folderURL = baseFolderURL.appendingPathComponent(folderName)
-        try? fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
-        return folderURL
+    func createCaptureFolder() -> URL? {
+        return BookmarkManager.shared.withBookmarkAccess { _ in
+            let formatter = DateFormatter()
+            formatter.dateFormat = Self.folderDateFormat
+            let folderName = formatter.string(from: Date())
+            let folderURL = baseFolderURL.appendingPathComponent(folderName)
+            try? fileManager.createDirectory(at: folderURL, withIntermediateDirectories: true)
+            return folderURL
+        }
     }
 
     // VIB-183: Cached results for async usage
@@ -66,49 +70,51 @@ final class CapturesManager {
     }
 
     func listRecentCaptures(limit: Int = 10) -> [CaptureInfo] {
-        guard let contents = try? fileManager.contentsOfDirectory(
-            at: baseFolderURL,
-            includingPropertiesForKeys: [.isDirectoryKey],
-            options: [.skipsHiddenFiles]
-        ) else {
-            return []
-        }
-
-        let formatter = DateFormatter()
-        formatter.dateFormat = Self.folderDateFormat
-
-        var captures: [CaptureInfo] = []
-
-        for url in contents {
-            guard let resourceValues = try? url.resourceValues(forKeys: [.isDirectoryKey]),
-                  resourceValues.isDirectory == true else {
-                continue
+        return BookmarkManager.shared.withBookmarkAccess { _ in
+            guard let contents = try? fileManager.contentsOfDirectory(
+                at: baseFolderURL,
+                includingPropertiesForKeys: [.isDirectoryKey],
+                options: [.skipsHiddenFiles]
+            ) else {
+                return []
             }
 
-            let folderName = url.lastPathComponent
-            guard let date = formatter.date(from: folderName) else {
-                continue
+            let formatter = DateFormatter()
+            formatter.dateFormat = Self.folderDateFormat
+
+            var captures: [CaptureInfo] = []
+
+            for url in contents {
+                guard let resourceValues = try? url.resourceValues(forKeys: [.isDirectoryKey]),
+                      resourceValues.isDirectory == true else {
+                    continue
+                }
+
+                let folderName = url.lastPathComponent
+                guard let date = formatter.date(from: folderName) else {
+                    continue
+                }
+
+                let screenshotURL = CaptureSession.resolvedAnnotatedImageURL(in: url)
+                let promptURL = url.appendingPathComponent(CaptureSession.promptFilename)
+                let noteCount = countNotes(in: promptURL)
+
+                captures.append(CaptureInfo(
+                    folderURL: url,
+                    timestamp: date,
+                    screenshotURL: screenshotURL,
+                    promptURL: promptURL,
+                    noteCount: noteCount
+                ))
             }
 
-            let screenshotURL = CaptureSession.resolvedAnnotatedImageURL(in: url)
-            let promptURL = url.appendingPathComponent(CaptureSession.promptFilename)
-            let noteCount = countNotes(in: promptURL)
+            captures.sort { $0.timestamp > $1.timestamp }
 
-            captures.append(CaptureInfo(
-                folderURL: url,
-                timestamp: date,
-                screenshotURL: screenshotURL,
-                promptURL: promptURL,
-                noteCount: noteCount
-            ))
-        }
-
-        captures.sort { $0.timestamp > $1.timestamp }
-
-        if captures.count > limit {
-            return Array(captures.prefix(limit))
-        }
-        return captures
+            if captures.count > limit {
+                return Array(captures.prefix(limit))
+            }
+            return captures
+        } ?? []
     }
 
     private func countNotes(in promptURL: URL) -> Int {

@@ -132,14 +132,16 @@ final class CaptureSession {
     }
 
     static func saveAnnotatedImage(_ image: NSImage, to folder: URL) {
-        let fileURL = annotatedImageURL(in: folder)
-        let tempURL = folder.appendingPathComponent(".\(annotatedImageFilename).tmp")
-        _ = image.savePNG(to: tempURL)
-        try? FileManager.default.removeItem(at: fileURL)
-        try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+        BookmarkManager.shared.withBookmarkAccess { _ in
+            let fileURL = annotatedImageURL(in: folder)
+            let tempURL = folder.appendingPathComponent(".\(annotatedImageFilename).tmp")
+            _ = image.savePNG(to: tempURL)
+            try? FileManager.default.removeItem(at: fileURL)
+            try? FileManager.default.moveItem(at: tempURL, to: fileURL)
 
-        let legacyURL = folder.appendingPathComponent(legacyAnnotatedImageFilename)
-        try? FileManager.default.removeItem(at: legacyURL)
+            let legacyURL = folder.appendingPathComponent(legacyAnnotatedImageFilename)
+            try? FileManager.default.removeItem(at: legacyURL)
+        }
     }
 
     // MARK: - Disk persistence

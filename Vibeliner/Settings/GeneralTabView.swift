@@ -178,6 +178,7 @@ final class GeneralTabView: NSView {
             guard response == .OK, let url = panel.url else { return }
             ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
+            BookmarkManager.shared.saveBookmark(for: url)
             self?.folderPathLabel.stringValue = url.path
         }
     }

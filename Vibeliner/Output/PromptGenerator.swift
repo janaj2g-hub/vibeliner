@@ -115,11 +115,13 @@ final class PromptGenerator {
             mode: .savedFile,
             captureSession: captureSession
         )
-        let fileURL = folderURL.appendingPathComponent(CaptureSession.promptFilename)
-        let tempURL = folderURL.appendingPathComponent(".\(CaptureSession.promptFilename).tmp")
-        try? prompt.write(to: tempURL, atomically: true, encoding: .utf8)
-        try? FileManager.default.removeItem(at: fileURL)
-        try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+        BookmarkManager.shared.withBookmarkAccess { _ in
+            let fileURL = folderURL.appendingPathComponent(CaptureSession.promptFilename)
+            let tempURL = folderURL.appendingPathComponent(".\(CaptureSession.promptFilename).tmp")
+            try? prompt.write(to: tempURL, atomically: true, encoding: .utf8)
+            try? FileManager.default.removeItem(at: fileURL)
+            try? FileManager.default.moveItem(at: tempURL, to: fileURL)
+        }
     }
 
     static func clipboardPrompt(annotations: [Annotation], captureFolder: URL, captureSession: CaptureSession? = nil) -> String {

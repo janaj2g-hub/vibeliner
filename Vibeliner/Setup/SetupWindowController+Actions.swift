@@ -170,6 +170,7 @@ extension SetupWindowController {
             self.folderPath = url.path
             ConfigManager.shared.capturesFolder = url.path
             ConfigManager.shared.save()
+            BookmarkManager.shared.saveBookmark(for: url)
             // VIB-303: Folder is now step 1
             self.completeStep1()
         }
