@@ -36,46 +36,15 @@ final class ScreenCapture {
             [.bestResolution]
         ) else {
             #if DEBUG
-            print("Vibeliner: CGWindowListCreateImage failed, attempting fallback")
+            print("Vibeliner: CGWindowListCreateImage failed")
             #endif
-            return captureWithFallback(rect: rect)
+            return nil
         }
 
         // Set image display size to POINT dimensions (not pixel dimensions).
         // CGWindowListCreateImage with .bestResolution returns 2x pixels on Retina,
         // but NSImage should display at point size.
         let image = NSImage(cgImage: cgImage, size: NSSize(width: rect.width, height: rect.height))
-        return image
-    }
-
-    private static func captureWithFallback(rect: NSRect) -> NSImage? {
-        let tempURL = FileManager.default.temporaryDirectory.appendingPathComponent("vibeliner_capture_\(ProcessInfo.processInfo.globallyUniqueString).png")
-
-        let x = Int(rect.origin.x)
-        let y = Int(rect.origin.y)
-        let w = Int(rect.width)
-        let h = Int(rect.height)
-
-        let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/sbin/screencapture")
-        process.arguments = ["-R", "\(x),\(y),\(w),\(h)", "-t", "png", tempURL.path]
-
-        do {
-            try process.run()
-            process.waitUntilExit()
-        } catch {
-            #if DEBUG
-            print("Vibeliner: screencapture fallback failed: \(error)")
-            #endif
-            return nil
-        }
-
-        guard process.terminationStatus == 0,
-              let image = NSImage(contentsOf: tempURL) else {
-            return nil
-        }
-
-        try? FileManager.default.removeItem(at: tempURL)
         return image
     }
 }

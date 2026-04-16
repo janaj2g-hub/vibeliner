@@ -64,13 +64,6 @@ final class ConfigManager {
             .appendingPathComponent("config.toml")
     }
 
-    /// Legacy config path inside the captures folder (pre-VIB-301).
-    /// Used only for one-time migration.
-    private var legacyConfigFileURL: URL {
-        let path = (capturesFolder as NSString).expandingTildeInPath
-        return URL(fileURLWithPath: path).appendingPathComponent("config.toml")
-    }
-
     private init() {}
 
     func load() {
@@ -112,18 +105,6 @@ final class ConfigManager {
             if let contents = try? String(contentsOfFile: configPath, encoding: .utf8) {
                 parseToml(contents)
             }
-            return
-        }
-
-        // Migration: check for legacy config inside the default captures folder.
-        let legacyPath = legacyConfigFileURL.path
-        if fileManager.fileExists(atPath: legacyPath),
-           let legacyContents = try? String(contentsOfFile: legacyPath, encoding: .utf8) {
-            parseToml(legacyContents)
-            // Save to new stable location so future launches use it.
-            saveInternal()
-            // Remove legacy file to avoid stale copies.
-            try? fileManager.removeItem(atPath: legacyPath)
             return
         }
 
