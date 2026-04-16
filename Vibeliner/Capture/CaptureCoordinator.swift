@@ -93,7 +93,6 @@ final class CaptureCoordinator {
                 print("Vibeliner: Failed to create capture folder — bookmark access unavailable")
                 #endif
                 self.cleanupAfterCapture()
-                completion(image)
                 return
             }
             CaptureSession.saveAnnotatedImage(image, to: folderURL)
