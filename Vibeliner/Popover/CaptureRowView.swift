@@ -128,7 +128,9 @@ final class CaptureRowView: PopoverHoverSurfaceView {
     override func mouseExited(with event: NSEvent) { isHovered = false }
 
     override func mouseDown(with event: NSEvent) {
-        NSWorkspace.shared.selectFile(capture.screenshotURL.path, inFileViewerRootedAtPath: capture.folderURL.path)
+        BookmarkManager.shared.withBookmarkAccess { _ in
+            NSWorkspace.shared.selectFile(capture.screenshotURL.path, inFileViewerRootedAtPath: capture.folderURL.path)
+        }
     }
 
     private func relativeTime(from date: Date) -> String {

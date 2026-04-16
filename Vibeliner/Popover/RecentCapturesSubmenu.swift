@@ -126,7 +126,9 @@ final class OpenFolderRowView: PopoverHoverSurfaceView {
     override func mouseEntered(with event: NSEvent) { isSurfaceHovered = true }
     override func mouseExited(with event: NSEvent) { isSurfaceHovered = false }
     override func mouseDown(with event: NSEvent) {
-        let url = URL(fileURLWithPath: ConfigManager.shared.expandedCapturesFolder)
-        NSWorkspace.shared.open(url)
+        BookmarkManager.shared.withBookmarkAccess { _ in
+            let url = URL(fileURLWithPath: ConfigManager.shared.expandedCapturesFolder)
+            NSWorkspace.shared.open(url)
+        }
     }
 }
