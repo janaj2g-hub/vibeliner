@@ -88,7 +88,14 @@ final class CaptureCoordinator {
                 return
             }
 
-            let folderURL = CapturesManager.shared.createCaptureFolder()
+            guard let folderURL = CapturesManager.shared.createCaptureFolder() else {
+                #if DEBUG
+                print("Vibeliner: Failed to create capture folder — bookmark access unavailable")
+                #endif
+                self.cleanupAfterCapture()
+                completion(image)
+                return
+            }
             CaptureSession.saveAnnotatedImage(image, to: folderURL)
 
             if FileManager.default.fileExists(atPath: CaptureSession.annotatedImageURL(in: folderURL).path) {
