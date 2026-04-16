@@ -53,16 +53,18 @@ private func scheduleSave() {
         let size = canvasSize
         isDirty = false
         DispatchQueue.global(qos: .userInitiated).async {
-            if sessionSnapshot.isMultiImage {
-                if let composite = CompositeStitcher.stitch(images: sessionSnapshot.images, annotations: annotations, canvasSize: size) {
-                    CaptureSession.saveAnnotatedImage(composite, to: folder)
+            BookmarkManager.shared.withBookmarkAccess { _ in
+                if sessionSnapshot.isMultiImage {
+                    if let composite = CompositeStitcher.stitch(images: sessionSnapshot.images, annotations: annotations, canvasSize: size) {
+                        CaptureSession.saveAnnotatedImage(composite, to: folder)
+                    }
+                } else if let image = sessionSnapshot.primaryImage?.sourceImage {
+                    ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
                 }
-            } else if let image = sessionSnapshot.primaryImage?.sourceImage {
-                ScreenshotExporter.saveExportedScreenshot(to: folder, original: image, annotations: annotations, canvasSize: size)
+                PromptGenerator.savePromptFile(to: folder, annotations: annotations, captureSession: sessionSnapshot)
+                // VIB-183: Invalidate captures cache so next submenu open shows the new capture
+                CapturesManager.shared.invalidateCache()
             }
-            PromptGenerator.savePromptFile(to: folder, annotations: annotations, captureSession: sessionSnapshot)
-            // VIB-183: Invalidate captures cache so next submenu open shows the new capture
-            CapturesManager.shared.invalidateCache()
         }
     }
 }
