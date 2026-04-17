@@ -1,5 +1,771 @@
 {#
-  Component macros — populated in VIB-482.
-  Each macro renders a single component preview: pill-button, segmented-control,
-  note-pill, etc. Called from design-system.html.j2.
+  Component macros for the Vibeliner design system HTML.
+  Imported as `c` by design-system.html.j2.
+
+  These macros rely on CSS classes defined in the main template — do NOT
+  duplicate CSS here. Every macro produces visually complete output and
+  relies on real CSS :hover states (no fake "hover variant" cards).
 #}
+
+{# ============================================================ swatch
+
+  Fixed-height swatch card with five regions:
+
+    1. Title (44px) — centered monospace token name, divider below.
+    2. Preview (64px) — split 50/50. Left half: dark surface #1e1e1e with
+       the token's dark value on top. Right half: light surface #f5f5f7
+       with the light value on top. Static tokens use the same color on
+       both halves. Alias tokens show "→ targetToken" spanning the row.
+       Text tokens in the pill-button family render a real "Copy Prompt"
+       mini pill using the surrounding bg/border tokens plus the token's
+       own color as text.
+    3. Value (56px) — DARK / LIGHT labels + rgba strings in matching
+       halves. Static tokens: single full-width STATIC cell. Alias: ALIAS
+       cell with target name. Divider below.
+    4. Used-by footer (flex: 1) — "Used by:" label on its own line, file
+       list wrapping inline; a small JS pass at the bottom of the page
+       appends "+N more" only when the available height overflows.
+
+  The card has a fixed minimum height; the page-level Both/Light/Dark
+  swatch toggle uses CSS to hide/show halves without reflowing the card.
+#}
+{%- set _text_pill_tokens = {
+  'pillButtonText': ('pillButtonBg', 'pillButtonBorder'),
+  'pillButtonHoverText': ('pillButtonHoverBg', 'pillButtonHoverBorder'),
+  'pillButtonPrimaryText': ('pillButtonPrimaryBg', 'pillButtonPrimaryBorder'),
+} -%}
+
+{% macro _text_pill_halves(token, bg_name, border_name) -%}
+  {%- set bg = all_tokens.get(bg_name) if all_tokens else None -%}
+  {%- set border = all_tokens.get(border_name) if all_tokens else None -%}
+  {%- set bg_dark = (bg.dark | resolve_rgba) if bg else '' -%}
+  {%- set bg_light = (bg.light | resolve_rgba) if bg else '' -%}
+  {%- set br_dark = (border.dark | resolve_rgba) if border else '' -%}
+  {%- set br_light = (border.light | resolve_rgba) if border else '' -%}
+  {%- set tx_dark = token.dark | resolve_rgba -%}
+  {%- set tx_light = token.light | resolve_rgba -%}
+  <div class="ds-swatch-half ds-swatch-half--dark">
+    <div class="ds-text-pill" style="background: {{ bg_dark or 'transparent' }}; border-color: {{ br_dark or 'transparent' }}; color: {{ tx_dark or 'inherit' }};">Copy Prompt</div>
+  </div>
+  <div class="ds-swatch-half ds-swatch-half--light">
+    <div class="ds-text-pill" style="background: {{ bg_light or 'transparent' }}; border-color: {{ br_light or 'transparent' }}; color: {{ tx_light or 'inherit' }};">Copy Prompt</div>
+  </div>
+{%- endmacro %}
+
+{% macro _usage_footer(files) -%}
+  <div class="ds-swatch-usage">
+    <div class="ds-swatch-usage-label">Used by:</div>
+    {% if files %}
+      <div class="ds-swatch-usage-list" data-total="{{ files | length }}" title="{{ files | join(', ') }}">
+      {%- for f in files -%}<span class="ds-swatch-file">{{ f }}</span>{%- endfor -%}
+      </div>
+    {% else %}
+      <div class="ds-swatch-usage-list ds-swatch-usage-empty">(none)</div>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro swatch(name, token, mode=None) -%}
+  {%- set is_alias = token.kind == 'alias' -%}
+  {%- set is_dynamic = token.kind == 'dynamic' -%}
+  {%- set pill_pair = _text_pill_tokens.get(name) -%}
+  <div class="ds-swatch{% if is_alias %} ds-swatch--alias{% endif %}">
+    <div class="ds-swatch-title">{{ name }}</div>
+
+    {# --- Preview row (64px) --- #}
+    {% if is_alias %}
+      <div class="ds-swatch-preview ds-swatch-preview--alias">
+        <div class="ds-swatch-alias-target">→ <code>{{ token.target or '?' }}</code></div>
+      </div>
+    {% elif pill_pair %}
+      <div class="ds-swatch-preview">
+        {{ _text_pill_halves(token, pill_pair[0], pill_pair[1]) }}
+      </div>
+    {% elif is_dynamic %}
+      {%- set d_rgba = (token.dark | resolve_rgba) or 'transparent' -%}
+      {%- set l_rgba = (token.light | resolve_rgba) or 'transparent' -%}
+      <div class="ds-swatch-preview">
+        <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ d_rgba }};"></div></div>
+        <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ l_rgba }};"></div></div>
+      </div>
+    {% else %}
+      {%- set fill = token.rgba or token.raw -%}
+      <div class="ds-swatch-preview">
+        <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+        <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+      </div>
+    {% endif %}
+
+    {# --- Value row (56px) --- #}
+    {% if is_alias %}
+      <div class="ds-swatch-values ds-swatch-values--single">
+        <span class="ds-swatch-label">Alias</span>
+        <code>{{ token.target or '?' }}</code>
+      </div>
+    {% elif is_dynamic %}
+      {%- set d_val = (token.dark | resolve_rgba) or '—' -%}
+      {%- set l_val = (token.light | resolve_rgba) or '—' -%}
+      <div class="ds-swatch-values">
+        <div class="ds-swatch-value-half ds-swatch-value-half--dark">
+          <span class="ds-swatch-label">Dark</span>
+          <code>{{ d_val }}</code>
+        </div>
+        <div class="ds-swatch-value-half ds-swatch-value-half--light">
+          <span class="ds-swatch-label">Light</span>
+          <code>{{ l_val }}</code>
+        </div>
+      </div>
+    {% else %}
+      <div class="ds-swatch-values ds-swatch-values--single">
+        <span class="ds-swatch-label">Static</span>
+        <code>{% if token.hex %}{{ token.hex }} · {% endif %}{{ token.rgba or token.raw }}</code>
+      </div>
+    {% endif %}
+
+    {# --- Used-by footer --- #}
+    {{ _usage_footer(token.consumed_by) }}
+  </div>
+{%- endmacro %}
+
+{# ==================================================== consumed_by line #}
+{% macro consumed_by(files, truncate=3) -%}
+  Used by: {% if not files -%}
+    <em>(none)</em>
+  {%- else -%}
+    <span title="{{ files | join(', ') }}">{{ files | truncate_list(truncate) }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{# ==================================================== pill button base #}
+{% macro pill_button(label='Copy Prompt', variant='default', forced='') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--{{ variant }}{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
+{%- endmacro %}
+
+{% macro pill_button_group() -%}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ pill_button('Copy Prompt', 'default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ pill_button('Copy Prompt', 'default', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ pill_button('Copy Prompt', 'default', 'active') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Copied</span>
+      {{ pill_button('Copied ✓', 'copied') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{% macro pill_button_primary(label='Next', forced='') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--primary{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
+{%- endmacro %}
+
+{% macro pill_button_primary_group() -%}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ pill_button_primary('Get started') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ pill_button_primary('Get started', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ pill_button_primary('Get started', 'active') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ==================================================== secondary button #}
+{% macro secondary_button(label='+ Add image', forced='') -%}
+  <button type="button" class="ds-secondary-btn{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
+{%- endmacro %}
+
+{% macro secondary_button_group() -%}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ secondary_button('+ Add image') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ secondary_button('+ Add image', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ secondary_button('+ Add image', 'active') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# =================================================== segmented control #}
+{% macro segmented_control(items=['IDE', 'App'], active=0, variant='default') -%}
+  <div class="ds-segmented ds-segmented--{{ variant }}" role="group">
+    {% for item in items %}
+      <button type="button" class="ds-segmented-item{% if loop.index0 == active %} active{% endif %}">{{ item }}</button>
+    {% endfor %}
+  </div>
+{%- endmacro %}
+
+{% macro segmented_control_group() -%}
+  <div class="ds-preview-stack">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Toolbar variant · IDE selected</span>
+      {{ segmented_control(items=['IDE', 'App'], active=0, variant='default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Settings variant · Preamble selected</span>
+      {{ segmented_control(items=['Preamble', 'Tools', 'Footer', 'Multi-image'], active=0, variant='primary') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover + active states (forced) on inactive items</span>
+      <div class="ds-segmented ds-segmented--default" role="group">
+        <button type="button" class="ds-segmented-item">Default</button>
+        <button type="button" class="ds-segmented-item is-hover">Hover</button>
+        <button type="button" class="ds-segmented-item is-active">Active</button>
+        <button type="button" class="ds-segmented-item active">Selected</button>
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ========================================================== note pill #}
+{% macro note_pill(text='Fix this padding', state='default') -%}
+  <span class="ds-note-pill ds-note-pill--{{ state }}">{{ text }}</span>
+{%- endmacro %}
+
+{% macro note_pill_group() -%}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ note_pill('Fix padding', 'default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ note_pill('Fix padding', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Selected</span>
+      {{ note_pill('Fix padding', 'selected') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Editing</span>
+      {{ note_pill('Fix padding', 'editing') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ======================================================== status pill #}
+{% macro status_pill(text='3 notes · 1024×768', mode='dark') -%}
+  <span class="ds-status-pill ds-status-pill--{{ mode }}"><code>{{ text }}</code></span>
+{%- endmacro %}
+
+{% macro status_pill_group() -%}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Dark variant</span>
+      {{ status_pill('3 notes · 1024×768', 'dark') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Light variant</span>
+      {{ status_pill('1 note · 640×480', 'light') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ======================================================== tool button #}
+{#
+  Tool icons adapted from Vibeliner/Editor/ToolbarIcons.swift, 15×15 viewBox.
+  Stroke width 1.4 (pin ring) / 1.5 (others) — mirrors the runtime.
+#}
+{% macro tool_icon(tool) -%}
+  <svg viewBox="0 0 15 15" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {%- if tool == 'pin' -%}
+    <circle cx="7.5" cy="5" r="3.8" stroke-width="1.4"/>
+    <line x1="7.5" y1="9" x2="7.5" y2="14" stroke-width="1.5"/>
+  {%- elif tool == 'arrow' -%}
+    <path d="M 2 13 L 13 2 M 8 2 L 13 2 L 13 7" stroke-width="1.4"/>
+  {%- elif tool == 'line' -%}
+    <path d="M 2 13 L 13 2" stroke-width="1.4"/>
+  {%- elif tool == 'rectangle' -%}
+    <rect x="1.25" y="1.25" width="12.5" height="12.5" rx="2" ry="2" stroke-width="1.5"/>
+  {%- elif tool == 'circle' -%}
+    <ellipse cx="7.5" cy="7.5" rx="6.25" ry="6.25" stroke-width="1.5"/>
+  {%- elif tool == 'freehand' -%}
+    <path d="M 1 7.5 Q 3 1 7.5 7.5 T 14 7.5" stroke-width="1.5"/>
+  {%- elif tool == 'select' -%}
+    <path d="M 3 2 L 12 7.5 L 8 8.5 L 10.5 13 L 9 13.8 L 6.5 9.3 L 3.5 12.3 Z" fill="currentColor" stroke-width="0.5"/>
+  {%- endif -%}
+  </svg>
+{%- endmacro %}
+
+{% macro tool_button(tool='pin', forced='') -%}
+  <button type="button" class="ds-tool-btn{% if forced %} is-{{ forced }}{% endif %}" aria-label="{{ tool }}">
+    {{ tool_icon(tool) }}
+  </button>
+{%- endmacro %}
+
+{% macro tool_button_group() -%}
+  <div class="ds-preview-states ds-preview-states--dark">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default · all 7 tools</span>
+      <div style="display: inline-flex; gap: 2px; padding: 4px; background: rgba(30,30,30,0.0); border-radius: 20px;">
+      {% for t in ['select', 'pin', 'arrow', 'line', 'rectangle', 'circle', 'freehand'] %}
+        {{ tool_button(t) }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ tool_button('pin', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active (selected tool)</span>
+      {{ tool_button('arrow', 'active') }}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ========================================================= font sample #}
+{% macro font_sample(name, token) -%}
+  {%- set is_mono = 'monospaced' in (token.raw or '') -%}
+  {%- set weight_num = {'ultralight': 100, 'thin': 200, 'light': 300, 'regular': 400, 'medium': 500, 'semibold': 600, 'bold': 700, 'heavy': 800, 'black': 900}.get(token.weight, 400) -%}
+  <div class="ds-font-sample">
+    <div class="ds-font-specimen" style="font-family: {{ 'ui-monospace, \"SF Mono\", Menlo, Consolas, monospace' if is_mono else '-apple-system, BlinkMacSystemFont, \"SF Pro Display\", \"Segoe UI\", sans-serif' }}; font-size: {{ token.size or 14 }}px; font-weight: {{ weight_num }};">{{ token | sample_text }}</div>
+    <div class="ds-font-meta">
+      <code>{{ name }}</code> — {{ 'monospace' if is_mono else 'system' }} · {{ token.size }}px · {{ token.weight }} ({{ weight_num }})
+      {% if token.description %}<br><span style="text-transform: none; letter-spacing: 0;">{{ token.description }}</span>{% endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ===================================================== dimension unit #}
+{#
+  Compute the display unit for a dimension token. YAML `unit_override` wins
+  over the parser's mechanical unit (pt for CGFloat, int for Int). Int
+  tokens get a blank label unless explicitly overridden — integer counts
+  like `freehandMinPoints` read better with an explicit "points" suffix.
+#}
+{% macro dim_unit(token) -%}
+  {%- if token.unit_override -%}{{ token.unit_override }}
+  {%- elif token.unit == 'int' -%}
+  {%- else -%}{{ token.unit }}{%- endif -%}
+{%- endmacro %}
+
+{# =================================================== dimension singleton #}
+{% macro dimension_singleton(name, token) -%}
+  <div class="ds-dim-card">
+    <div>
+      <div class="ds-dim-value">{{ token.value }}{%- set u = dim_unit(token) | trim -%}{%- if u %}<span class="ds-dim-unit">{{ u }}</span>{%- endif -%}</div>
+    </div>
+    <div>
+      <div class="ds-dim-name">{{ name }}</div>
+      {% if token.description %}<div class="ds-dim-desc">{{ token.description }}</div>{% endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ==================================================== dimension group =====
+
+  One full-width row per composition group. Left half: an illustration panel
+  split dark/light (follows the page-level Both/Light/Dark toggle via
+  .ds-illus-half--dark / .ds-illus-half--light classes — mirrors the swatch
+  pattern). Right half: metadata panel with title, description, a two-col
+  token list (name + value), and a "Used by" footer.
+
+  The SVG illustrations below all draw at real scale inside a generous
+  viewBox. Callouts use `currentColor` so the dark-half uses #888 and the
+  light-half uses #666 via CSS, staying legible on each surface.
+#}
+{% macro dimension_group(gid, title, description, tokens, used_by) -%}
+  <div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark">{{ _illus(gid) }}</div>
+      <div class="ds-illus-half ds-illus-half--light">{{ _illus(gid) }}</div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">{{ title }}</h4>
+      <p class="ds-dim-description">{{ description }}</p>
+      <div class="ds-dim-tokens">
+      {% for name, token in tokens %}
+        <div class="ds-dim-token-row">
+          <code>{{ name }}</code>
+          <span class="ds-dim-token-value">{{ token.value }}{%- set u = dim_unit(token) | trim -%}{%- if u %}<span class="ds-dim-unit-inline"> {{ u }}</span>{%- endif -%}</span>
+        </div>
+      {% endfor %}
+      </div>
+      <div class="ds-dim-used-by">Used by: {{ used_by | join(', ') }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- Illustration dispatcher ---------------------------------------------- #}
+{% macro _illus(gid) -%}
+  {%- if gid == 'badge' -%}{{ illus_badge() }}
+  {%- elif gid == 'crosshair' -%}{{ illus_crosshair() }}
+  {%- elif gid == 'arrow' -%}{{ illus_arrow() }}
+  {%- elif gid == 'note-pill' -%}{{ illus_note_pill() }}
+  {%- elif gid == 'dimension-label' -%}{{ illus_dimension_label() }}
+  {%- elif gid == 'freehand' -%}{{ illus_freehand() }}
+  {%- elif gid == 'shape-primitives' -%}{{ illus_shape_primitives() }}
+  {%- elif gid == 'toolbar' -%}{{ illus_toolbar() }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# ---------------------------------------------------------------------------
+   Callout drawing rules — applied to every illustration below:
+     1. viewBox is wide enough to hold the longest label at 10px monospace
+        (~6 SVG units per char). Default viewBox 0 0 480 220.
+     2. Every leader line exits its shape at 0°, 90°, 180°, or 270°. If a
+        callout can't land in one cardinal pass, it elbows 90° — never
+        diagonal.
+     3. Labels are placed in distinct quadrants with ≥ 20 SVG-unit vertical
+        separation on the same side. Shared layout: shape centered around
+        x=110 y=110; labels land in a column at x=260+, stacked at y=50 /
+        y=85 / y=130 / y=175 as needed.
+     4. Non-spatial tokens (opacity, min-counts) are NOT drawn with
+        dimension lines. Opacity reads visually from the shape's actual
+        transparency; counts live in the sidebar token list.
+     5. Dimension-callout style: stroke-width 0.5, dash "2 2", 4-unit
+        perpendicular ticks at segment ends. Labels at 10px monospace with
+        a 4-unit gap from the leader terminus.
+  --------------------------------------------------------------------------- #}
+
+{# --- Badge: leader-only labels for diameter and font-size. The badge is
+      a small shape — a dimension bracket adds scaffolding that the shape
+      can't really host. Clean leaders read better. #}
+{% macro illus_badge() -%}
+<svg viewBox="0 0 480 220" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Badge enlarged for illustrative presence; glyph scaled to match. -->
+  <circle cx="120" cy="110" r="38" fill="#EF4444"/>
+  <text x="120" y="125" font-family="-apple-system, sans-serif" font-size="38" font-weight="600" fill="white" text-anchor="middle">1</text>
+  <!-- Label 1 — badgeDiameter. Leader exits the badge's right edge and
+       runs straight to the label column. -->
+  <line x1="158" y1="90" x2="256" y2="90" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="93" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">18 pt · badgeDiameter</text>
+  <!-- Label 2 — badgeFont. Leader exits the bottom of the badge, elbows
+       RIGHT to the label column. -->
+  <line x1="120" y1="148" x2="120" y2="170" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="120" y1="170" x2="256" y2="170" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="173" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">9 pt semibold · badgeFont</text>
+</svg>
+{%- endmacro %}
+
+{# --- Crosshair: real-scale ("actual size") reference on the left + a 4×
+      zoomed version on the right with leader-only labels. The real shape
+      is 2.3pt × 20pt — too small for dimension-line grammar (brackets +
+      ticks would crowd into a few pixels), so the zoomed version hosts
+      the labels and the real-scale one anchors truth.
+      Opacity stays sidebar-only (visible via the shape's 0.85 alpha). #}
+{% macro illus_crosshair() -%}
+<svg viewBox="0 0 480 220" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Real-scale crosshair: the honest view of what the user actually sees. -->
+  <g opacity="0.85" stroke="#AFA9EC" stroke-width="2.3" stroke-linecap="round">
+    <line x1="70" y1="100" x2="70" y2="120"/>
+    <line x1="60" y1="110" x2="80" y2="110"/>
+  </g>
+  <text x="70" y="142" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.55" text-anchor="middle">actual size</text>
+  <!-- Scale bridge between the real and zoomed views -->
+  <line x1="98" y1="110" x2="148" y2="110" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="123" y="103" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.7" text-anchor="middle">shown 4×</text>
+  <!-- Zoomed crosshair: 4× scale so labels have breathing room. -->
+  <g opacity="0.85" stroke="#AFA9EC" stroke-width="9.2" stroke-linecap="round">
+    <line x1="200" y1="70" x2="200" y2="150"/>
+    <line x1="160" y1="110" x2="240" y2="110"/>
+  </g>
+  <!-- Label 1 — thickness. Leader starts at the top-right edge of the
+       vertical arm, exits UP then elbows RIGHT to the label column. -->
+  <line x1="205" y1="66" x2="205" y2="50" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="205" y1="50" x2="256" y2="50" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="53" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.3 pt · crosshairThickness</text>
+  <!-- Label 2 — tick length. Leader starts at the right end of the
+       horizontal arm and goes RIGHT. Single segment, no elbow. -->
+  <line x1="245" y1="110" x2="256" y2="110" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="113" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · crosshairTickLength (arm length)</text>
+</svg>
+{%- endmacro %}
+
+{# --- Arrow: open chevron (two separate stroked arms). Shaft strokeWidth,
+      chevronLength, and chevronAngle (as an arc — no dim line).
+      Shaft runs from (60, 180) to (200, 60). Chevron arms are each 12
+      units long, splayed ±28° off the shaft's back-pointing direction
+      — matches the Swift arrowChevronAngle semantic ("28° off each arm
+      from shaft"), giving a visible V. Arc annotation sweeps between
+      the two arms at the tip. #}
+{% macro illus_arrow() -%}
+<svg viewBox="0 0 480 240" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <g stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" fill="none">
+    <!-- Main shaft -->
+    <line x1="60" y1="180" x2="200" y2="60"/>
+    <!-- Chevron arm 1 (rotated +28° from shaft-back direction): tip to (188.3, 62.5) -->
+    <line x1="200" y1="60" x2="188.3" y2="62.5"/>
+    <!-- Chevron arm 2 (rotated -28°): tip to (195.5, 71.1) -->
+    <line x1="200" y1="60" x2="195.5" y2="71.1"/>
+  </g>
+  <!-- Callout 1 — strokeWidth (2.5 pt). Leader UP from a point just above
+       the shaft near its midpoint, then RIGHT to the label column. -->
+  <line x1="130" y1="123" x2="130" y2="100" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="130" y1="100" x2="256" y2="100" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="103" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth (shared)</text>
+  <!-- Callout 2 — arrowChevronLength (12 pt). Dim line along arm 1,
+       projected to horizontal for a cardinal read. Arm 1 end is at (188.3, 62.5);
+       tip is (200, 60). Leader exits UP from the mid-arm, elbow RIGHT. -->
+  <line x1="194.2" y1="61.3" x2="194.2" y2="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="194.2" y1="40" x2="256" y2="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="43" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">12 pt · arrowChevronLength</text>
+  <!-- Callout 3 — arrowChevronAngle (28°). Arc between the two chevron
+       arms at the tip. The label sits adjacent to the arc; no dashed leader. -->
+  <path d="M 192.6 62.0 A 9 9 0 0 1 197.1 68.4" fill="none" stroke="currentColor" stroke-width="0.5"/>
+  <text x="210" y="78" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">28° · arrowChevronAngle</text>
+</svg>
+{%- endmacro %}
+
+{# --- Note pill: height (bracket hugs right edge) + cornerRadius ---------- #}
+{% macro illus_note_pill() -%}
+<svg viewBox="0 0 480 200" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 26pt tall, 13pt corner radius pill -->
+  <rect x="40" y="87" width="140" height="26" rx="13" ry="13"
+        fill="rgba(255, 248, 248, 0.92)" stroke="rgba(239,68,68,0.35)" stroke-width="1"/>
+  <text x="58" y="104.5" font-family="-apple-system, sans-serif" font-size="12" fill="#7f1d1d">Fix padding</text>
+  <!-- Callout 1 — noteHeight (26 pt). Dimension bracket sits immediately
+       outside the pill's right edge; tick ends touch the pill's top and
+       bottom edges. -->
+  <line x1="184" y1="87" x2="184" y2="113" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="180" y1="87" x2="188" y2="87" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="180" y1="113" x2="188" y2="113" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="188" y1="100" x2="256" y2="100" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="103" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">26 pt · noteHeight</text>
+  <!-- Callout 2 — noteCornerRadius (13 pt). Leader from left-cap top UP then RIGHT. -->
+  <line x1="53" y1="87" x2="53" y2="60" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="53" y1="60" x2="256" y2="60" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="260" y="63" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">13 pt · noteCornerRadius</text>
+</svg>
+{%- endmacro %}
+
+{# --- Dimension label: a large dashed selection window with the label pill
+      attached underneath its bottom-right corner, matching the app's real
+      capture behavior. Only one callout on the illustration —
+      dimensionLabelHeight — so the visual reads cleanly. cornerRadius,
+      gap, and paddingH live in the sidebar token list. ---------------- #}
+{% macro illus_dimension_label() -%}
+<svg viewBox="0 0 480 200" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Selection window: noticeably bigger than the pill so it reads as
+       a framed capture area, not a second UI element of similar weight.
+       ~2.7× the pill width, ~3.8× the pill height. -->
+  <rect x="40" y="20" width="220" height="100" fill="none" stroke="#AFA9EC" stroke-width="1" stroke-dasharray="3 2"/>
+  <!-- Dimension label pill — attached at the selection's bottom-right
+       corner (right edge of pill aligned with right edge of selection;
+       10pt gap below the selection, staying implicit in the layout). -->
+  <rect x="178" y="130" width="82" height="24" rx="5" ry="5" fill="#534AB7"/>
+  <text x="219" y="146.5" font-family="ui-monospace, monospace" font-size="11" fill="white" text-anchor="middle">45 × 28</text>
+  <!-- Callout — dimensionLabelHeight (24 pt). Compact bracket immediately
+       outside the pill's right edge, short dashed leader to the label. -->
+  <line x1="264" y1="130" x2="264" y2="154" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="260" y1="130" x2="268" y2="130" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="260" y1="154" x2="268" y2="154" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="268" y1="142" x2="296" y2="142" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="300" y="145" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">24 pt · dimensionLabelHeight</text>
+</svg>
+{%- endmacro %}
+
+{# --- Freehand: strokeWidth + sampleInterval (horizontal dim between two
+      adjacent dots on a flat stretch of the curve) + minPoints (a small
+      "min 3" bracket tethered to the first three dots — no abstract ticks). #}
+{% macro illus_freehand() -%}
+<svg viewBox="0 0 480 220" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Freehand curve at 2.5 stroke. Sample dots are placed explicitly at
+       known positions so the callouts attach to real coordinates. -->
+  {# Curve chosen to give a flat stretch in the middle (dots 4,5) and a
+     rolling start (dots 0,1,2). #}
+  <path d="M 60 100 C 110 60, 160 60, 200 80 S 260 120, 300 100"
+        stroke="#EF4444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  {# Sample dots — deliberate positions, approximating an evenly-sampled curve. #}
+  {% set dots = [(60, 100), (82, 78), (108, 66), (140, 64), (170, 70), (200, 80), (232, 96), (260, 108), (288, 106)] %}
+  {% for x, y in dots %}
+    <circle cx="{{ x }}" cy="{{ y }}" r="1.6" fill="currentColor" opacity="0.7"/>
+  {% endfor %}
+  <!-- Callout 1 — strokeWidth (2.5 pt, shared). Leader from a point just above
+       the curve midpoint UP then RIGHT. -->
+  <line x1="200" y1="70" x2="200" y2="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="200" y1="40" x2="316" y2="40" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="320" y="43" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth (shared)</text>
+  <!-- Callout 2 — freehandSampleInterval (3 pt). Horizontal dim line between
+       dots 3 (140, 64) and 4 (170, 70) — the flatter upper stretch. Placed
+       ABOVE the curve so it reads without overlapping the curve itself. -->
+  <line x1="140" y1="60" x2="140" y2="44" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="170" y1="66" x2="170" y2="44" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="140" y1="48" x2="170" y2="48" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="140" y1="44" x2="140" y2="52" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="170" y1="44" x2="170" y2="52" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="170" y1="48" x2="200" y2="48" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="200" y1="48" x2="200" y2="70" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="172" y="38" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · sampleInterval</text>
+  <!-- Callout 3 — freehandMinPoints. Bracket spans EXACTLY the first three
+       sample dots: from dot 0 (x=60) to dot 2 (x=108), sitting below the
+       curve. Short "min 3" label underneath. No dimension-line ticks — it's
+       a spanning bracket, not a measured length. -->
+  <line x1="60"  y1="108" x2="60"  y2="150" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="108" y1="74"  x2="108" y2="150" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="60"  y1="150" x2="108" y2="150" stroke="currentColor" stroke-width="0.5"/>
+  <text x="62" y="165" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">min 3 · freehandMinPoints</text>
+</svg>
+{%- endmacro %}
+
+{# --- Shape primitives: strokeWidth + rectCornerRadius + minimumSelectionSize #}
+{% macro illus_shape_primitives() -%}
+<svg viewBox="0 0 480 240" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Three primitives in a row at real scale, 2.5 stroke -->
+  <line x1="40" y1="60" x2="100" y2="60" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+  <rect x="130" y="44" width="50" height="34" rx="3" ry="3" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <circle cx="225" cy="61" r="18" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- minimumSelectionSize reference: dashed 10x10 square at lower left -->
+  <rect x="50" y="140" width="10" height="10" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2" fill="rgba(175,169,236,0.14)"/>
+  <!-- Callout 1 — strokeWidth (2.5 pt). Leader from circle's right UP then RIGHT. -->
+  <line x1="245" y1="61" x2="245" y2="32" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="245" y1="32" x2="276" y2="32" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="280" y="35" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth (shared)</text>
+  <!-- Callout 2 — rectCornerRadius (3 pt). Leader from top-right corner UP then RIGHT. -->
+  <line x1="177" y1="44" x2="177" y2="100" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="177" y1="100" x2="276" y2="100" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="280" y="103" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · rectCornerRadius</text>
+  <!-- Callout 3 — minimumSelectionSize (10 pt). Horizontal dim line below the reference square. -->
+  <line x1="50" y1="150" x2="50" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="60" y1="150" x2="60" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="50" y1="168" x2="60" y2="168" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="50" y1="164" x2="50" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="60" y1="164" x2="60" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="60" y1="168" x2="276" y2="168" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="280" y="171" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">≥ 10 pt · minimumSelectionSize</text>
+</svg>
+{%- endmacro %}
+
+{# --- Toolbar: cornerRadius + toolButtonSize + toolbarHeight + toolButtonGap.
+      All four callouts use short cardinal paths, each landing in a distinct
+      quadrant. -------------------------------------------------------- #}
+{% macro illus_toolbar() -%}
+<svg viewBox="0 0 520 260" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Toolbar: 40pt tall, 20pt corner radius. -->
+  <rect x="40" y="120" width="220" height="40" rx="20" ry="20"
+        fill="rgba(30,30,30,0.92)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <!-- Six tool buttons (30pt diameter, 2pt gap). Middle one highlighted. -->
+  {% for i in range(6) %}
+    {% set cx = 62 + i * 32 %}
+    <circle cx="{{ cx }}" cy="140" r="15" fill="{{ 'rgba(175,169,236,0.2)' if i == 2 else 'transparent' }}"/>
+  {% endfor %}
+  <!-- Callout 1 — toolbarCornerRadius (20 pt). Short leader UP from the
+       top-left corner, then RIGHT a little, then to the label column. -->
+  <line x1="60" y1="120" x2="60" y2="88" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <line x1="60" y1="88" x2="296" y2="88" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="300" y="91" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">20 pt · toolbarCornerRadius</text>
+  <!-- Callout 2 — toolButtonSize (30 pt). Short UP from the first button's top,
+       then RIGHT. No big horizontal hop across the illustration. -->
+  <line x1="47" y1="125" x2="47" y2="108" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="77" y1="125" x2="77" y2="108" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="47" y1="112" x2="77" y2="112" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="47" y1="108" x2="47" y2="116" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="77" y1="108" x2="77" y2="116" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="77" y1="112" x2="296" y2="112" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="300" y="115" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">30 pt · toolButtonSize</text>
+  <!-- Callout 3 — toolbarHeight (40 pt). Compact right-side bracket, ticks
+       touching the pill edges, very short dashed leader to label. -->
+  <line x1="268" y1="120" x2="268" y2="160" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="264" y1="120" x2="272" y2="120" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="264" y1="160" x2="272" y2="160" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="272" y1="140" x2="296" y2="140" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="300" y="143" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">40 pt · toolbarHeight</text>
+  <!-- Callout 4 — toolButtonGap (2 pt). Dim line between first two buttons;
+       straight-down short leader to a label just below the toolbar. -->
+  <line x1="77" y1="156" x2="77" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="79" y1="156" x2="79" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="73" y1="172" x2="83" y2="172" stroke="currentColor" stroke-width="0.5"/>
+  <line x1="78" y1="172" x2="78" y2="186" stroke="currentColor" stroke-width="0.5" stroke-dasharray="2 2"/>
+  <text x="78" y="199" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2 pt · toolButtonGap</text>
+</svg>
+{%- endmacro %}
+
+{# =================================================== composed surfaces #}
+{#
+  For the Surfaces section we dispatch a family-specific mini composition
+  when we have one; otherwise fall back to a dual-bar swatch.
+#}
+{% macro surface_sample(name, token) -%}
+  {%- set fam = token.family -%}
+  {%- if fam == 'toolbar' and name == 'toolbarBg' -%}
+    {{ surface_toolbar() }}
+  {%- elif fam == 'status-pill' and name == 'statusPillBg' -%}
+    {{ surface_status_pill() }}
+  {%- elif fam == 'settings-field' and name == 'settingsFieldSurface' -%}
+    {{ surface_settings_field() }}
+  {%- elif fam == 'settings-field' and name == 'settingsFrameSurface' -%}
+    {{ surface_settings_frame() }}
+  {%- elif fam == 'settings-field' and name == 'settingsPreviewSurface' -%}
+    {{ surface_preview() }}
+  {%- elif fam == 'setup-window' and name == 'setupFieldBg' -%}
+    {{ surface_setup_field() }}
+  {%- else -%}
+    {{ swatch(name, token, mode='dual') }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro surface_toolbar() -%}
+  <div class="ds-surface-demo ds-surface-demo--toolbar">
+    <div class="ds-mini-toolbar">
+      {{ tool_button('select', 'default') }}
+      {{ tool_button('pin', 'default') }}
+      {{ tool_button('arrow', 'default') }}
+      <span class="ds-mini-divider"></span>
+      {{ pill_button('Copy Prompt') }}
+    </div>
+    <div class="ds-surface-caption"><code>toolbarBg</code> · floating editor toolbar</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_status_pill() -%}
+  <div class="ds-surface-demo ds-surface-demo--screenshot">
+    {{ status_pill('3 notes · 1024×768', 'dark') }}
+    <div class="ds-surface-caption"><code>statusPillBg</code> · under the editor</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_settings_field() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-field">
+      <code>/Users/jon/captures</code>
+      {{ pill_button('Change') }}
+    </div>
+    <div class="ds-surface-caption"><code>settingsFieldSurface</code> · path field in General</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_settings_frame() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-frame">
+      <div class="ds-mini-frame-title">Hotkey</div>
+      <div class="ds-mini-frame-body">⌘ ⇧ 6 — Capture</div>
+    </div>
+    <div class="ds-surface-caption"><code>settingsFrameSurface</code> · framed sections</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_preview() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-preview"><code>&gt; A note I wrote about padding.</code></div>
+    <div class="ds-surface-caption"><code>settingsPreviewSurface</code> · prompt preview</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_setup_field() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-kbd-row">
+      <kbd>⌘</kbd><kbd>⇧</kbd><kbd>6</kbd>
+    </div>
+    <div class="ds-surface-caption"><code>setupFieldBg</code> · shortcut display</div>
+  </div>
+{%- endmacro %}

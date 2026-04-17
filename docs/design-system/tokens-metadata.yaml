@@ -18,7 +18,7 @@ sections:
     title: Surfaces
     intro: Composed surfaces combining multiple tokens.
 
-# Token presentation metadata. Generated from DesignTokens*.swift by VIB-475.
+# Token presentation metadata. Generated from DesignTokens*.swift.
 # Tour illustration tokens are excluded (quarantined).
 tokens:
 
@@ -892,23 +892,28 @@ tokens:
   arrowChevronAngle:
     section: dimensions
     family: annotation
+    dimension_group: arrow
     description: 28 degrees arrow chevron angle
     consumed_by:
       - Annotations/Renderers/ArrowRenderer.swift
+    unit_override: °
     rendering:
       mode: single
   arrowChevronLength:
     section: dimensions
     family: annotation
+    dimension_group: arrow
     description: 12px arrow chevron arm length
     consumed_by:
       - Annotations/Renderers/ArrowRenderer.swift
       - Tour/Illustrations/AnnotationMarkViews.swift
+    unit_override: pt
     rendering:
       mode: single
   badgeDiameter:
     section: dimensions
     family: annotation
+    dimension_group: badge
     description: 18px badge diameter (radius 9)
     consumed_by:
       - Annotations/Renderers/ArrowRenderer.swift
@@ -923,38 +928,46 @@ tokens:
       - Tour/Illustrations/AnnotationMarkViews.swift
       - Tour/Illustrations/TourIllustration2.swift
       - Tour/Illustrations/TourIllustration3.swift
+    unit_override: pt
     rendering:
       mode: single
   crosshairOpacity:
     section: dimensions
     family: annotation
+    dimension_group: crosshair
     description: 0.85 crosshair opacity
     consumed_by:
       - Capture/CrosshairView.swift
       - Tour/Illustrations/TourIllustration1.swift
+    unit_override: α
     rendering:
       mode: single
   crosshairThickness:
     section: dimensions
     family: annotation
+    dimension_group: crosshair
     description: 2.3px crosshair line thickness
     consumed_by:
       - Capture/CrosshairView.swift
       - Tour/Illustrations/TourIllustration1.swift
+    unit_override: pt
     rendering:
       mode: single
   crosshairTickLength:
     section: dimensions
     family: annotation
+    dimension_group: crosshair
     description: 10px crosshair tick length
     consumed_by:
       - Capture/CrosshairView.swift
       - Tour/Illustrations/TourIllustration1.swift
+    unit_override: pt
     rendering:
       mode: single
   dimensionLabelCornerRadius:
     section: dimensions
     family: annotation
+    dimension_group: dimension-label
     description: 5px dimension label corner radius
     consumed_by:
       - Capture/DimensionLabelView.swift
@@ -964,6 +977,7 @@ tokens:
   dimensionLabelGap:
     section: dimensions
     family: annotation
+    dimension_group: dimension-label
     description: 10px gap below selection to dimension label
     consumed_by:
       - Capture/DimensionLabelView.swift
@@ -973,6 +987,7 @@ tokens:
   dimensionLabelHeight:
     section: dimensions
     family: annotation
+    dimension_group: dimension-label
     description: 24px dimension label height
     consumed_by:
       - Capture/DimensionLabelView.swift
@@ -982,6 +997,7 @@ tokens:
   dimensionLabelPaddingH:
     section: dimensions
     family: annotation
+    dimension_group: dimension-label
     description: 10px dimension label horizontal padding
     consumed_by:
       - Capture/DimensionLabelView.swift
@@ -991,22 +1007,27 @@ tokens:
   freehandMinPoints:
     section: dimensions
     family: annotation
+    dimension_group: freehand
     description: 3 minimum points for freehand
     consumed_by:
       - Annotations/Tools/FreehandTool.swift
+    unit_override: points
     rendering:
       mode: single
   freehandSampleInterval:
     section: dimensions
     family: annotation
+    dimension_group: freehand
     description: 3px freehand sample interval
     consumed_by:
       - Annotations/Tools/FreehandTool.swift
+    unit_override: pt
     rendering:
       mode: single
   minimumSelectionSize:
     section: dimensions
     family: annotation
+    dimension_group: shape-primitives
     description: 10px minimum selection size
     consumed_by:
       - Capture/CaptureCoordinator.swift
@@ -1015,6 +1036,7 @@ tokens:
   noteCornerRadius:
     section: dimensions
     family: annotation
+    dimension_group: note-pill
     description: 13px note pill corner radius
     consumed_by:
       - Annotations/Renderers/NotePillRenderer.swift
@@ -1025,6 +1047,7 @@ tokens:
   noteHeight:
     section: dimensions
     family: annotation
+    dimension_group: note-pill
     description: 26px note pill height
     consumed_by:
       - Annotations/Renderers/NotePillRenderer.swift
@@ -1036,6 +1059,7 @@ tokens:
   rectCornerRadius:
     section: dimensions
     family: annotation
+    dimension_group: shape-primitives
     description: 3px rectangle corner radius
     consumed_by:
       - Annotations/Renderers/RectangleRenderer.swift
@@ -1074,6 +1098,7 @@ tokens:
   strokeWidth:
     section: dimensions
     family: annotation
+    dimension_group: shape-primitives
     description: 2.5px stroke width for all annotation tools
     consumed_by:
       - Annotations/Renderers/ArrowRenderer.swift
@@ -1105,6 +1130,7 @@ tokens:
   toolButtonSize:
     section: dimensions
     family: toolbar
+    dimension_group: toolbar
     description: 30px tool button size
     consumed_by:
       - Editor/ToolButton.swift
@@ -1114,6 +1140,7 @@ tokens:
   toolbarCornerRadius:
     section: dimensions
     family: toolbar
+    dimension_group: toolbar
     description: 20px toolbar corner radius
     consumed_by:
       - Editor/ToolbarView.swift
@@ -1122,6 +1149,7 @@ tokens:
   toolbarHeight:
     section: dimensions
     family: toolbar
+    dimension_group: toolbar
     description: 40px toolbar height
     consumed_by:
       - Editor/EditorPanel+Filmstrip.swift
@@ -1133,6 +1161,7 @@ tokens:
   toolbarToolButtonGap:
     section: dimensions
     family: toolbar
+    dimension_group: toolbar
     description: 2px visual separation between adjacent tool buttons
     consumed_by:
       - Editor/ToolbarView.swift
