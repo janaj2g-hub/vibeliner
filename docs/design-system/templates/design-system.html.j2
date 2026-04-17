@@ -135,27 +135,8 @@ body.light .ds-header {
 }
 .ds-header-title .ds-mark { color: var(--ds-accent); }
 
-/* --- Header toggles (Show swatches / Theme chrome) ----------------------- */
-.ds-header-toggles {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-.ds-toggle-group {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.ds-toggle-label {
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ds-fg-dim);
-}
-.ds-mode-toggle,
-.ds-swatch-toggle {
+/* --- Mode toggle (segmented-control styling) ----------------------------- */
+.ds-mode-toggle {
   display: inline-flex;
   gap: 2px;
   padding: 2px;
@@ -163,8 +144,7 @@ body.light .ds-header {
   border: 1px solid var(--ds-border);
   border-radius: 999px;
 }
-.ds-mode-toggle button,
-.ds-swatch-toggle button {
+.ds-mode-toggle button {
   appearance: none;
   background: transparent;
   border: 0;
@@ -177,10 +157,8 @@ body.light .ds-header {
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.ds-mode-toggle button:hover,
-.ds-swatch-toggle button:hover { color: var(--ds-fg); }
-.ds-mode-toggle button.active,
-.ds-swatch-toggle button.active {
+.ds-mode-toggle button:hover { color: var(--ds-fg); }
+.ds-mode-toggle button.active {
   background: var(--ds-accent-soft);
   color: var(--ds-accent);
   box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
@@ -642,7 +620,38 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
   border: 1px solid var(--ds-border);
   border-radius: 10px;
 }
-/* Pill button family (default + hover via CSS :hover) */
+
+/* Explicit-state demos: Default / Hover / Active shown side by side.
+   Each cell forces the state via .is-hover / .is-active while the live
+   :hover pseudo-class still works so users can still interact. */
+.ds-preview-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-preview-states--dark {
+  background: #1e1e1e;
+  color: rgba(255,255,255,0.8);
+}
+.ds-state-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ds-state-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-preview-states--dark .ds-state-label { color: rgba(255,255,255,0.45); }
+/* Pill button family — default/hover/active states via real CSS + .is-* forced classes */
 .ds-pill-btn {
   appearance: none;
   font: inherit;
@@ -651,7 +660,7 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
   padding: 6px 14px;
   border-radius: 999px;
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
   line-height: 1;
 }
 .ds-pill-btn--default {
@@ -659,16 +668,34 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
   border: 1.5px solid var(--ds-pill-border);
   color: var(--ds-pill-text);
 }
-.ds-pill-btn--default:hover {
+.ds-pill-btn--default:hover,
+.ds-pill-btn--default.is-hover {
   background: rgba(83, 74, 183, 0.16);
   border-color: rgba(83, 74, 183, 0.65);
   color: var(--ds-accent);
 }
 body.dark .ds-pill-btn--default:hover,
-body:not(.light):not(.dark) .ds-pill-btn--default:hover {
+body.dark .ds-pill-btn--default.is-hover,
+body:not(.light):not(.dark) .ds-pill-btn--default:hover,
+body:not(.light):not(.dark) .ds-pill-btn--default.is-hover {
   background: rgba(116, 97, 194, 0.35);
   border-color: #C4B8F5;
   color: #C4B8F5;
+}
+.ds-pill-btn--default:active,
+.ds-pill-btn--default.is-active {
+  background: rgba(83, 74, 183, 0.22);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-pill-btn--default:active,
+body.dark .ds-pill-btn--default.is-active,
+body:not(.light):not(.dark) .ds-pill-btn--default:active,
+body:not(.light):not(.dark) .ds-pill-btn--default.is-active {
+  background: rgba(116, 97, 194, 0.50);
+  border-color: #D4C8FF;
+  color: #D4C8FF;
 }
 .ds-pill-btn--copied {
   background: rgba(22, 163, 74, 0.12);
@@ -686,7 +713,27 @@ body:not(.light):not(.dark) .ds-pill-btn--primary {
   color: #AFA9EC;
   border-color: rgba(175, 169, 236, 0.36);
 }
-.ds-pill-btn--primary:hover { filter: brightness(1.05); }
+.ds-pill-btn--primary:hover,
+.ds-pill-btn--primary.is-hover { filter: brightness(1.05); }
+body.dark .ds-pill-btn--primary:hover,
+body.dark .ds-pill-btn--primary.is-hover,
+body:not(.light):not(.dark) .ds-pill-btn--primary:hover,
+body:not(.light):not(.dark) .ds-pill-btn--primary.is-hover {
+  background: rgba(175, 169, 236, 0.22);
+  border-color: rgba(175, 169, 236, 0.48);
+}
+.ds-pill-btn--primary:active,
+.ds-pill-btn--primary.is-active {
+  filter: brightness(0.95);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-pill-btn--primary:active,
+body.dark .ds-pill-btn--primary.is-active,
+body:not(.light):not(.dark) .ds-pill-btn--primary:active,
+body:not(.light):not(.dark) .ds-pill-btn--primary.is-active {
+  background: rgba(175, 169, 236, 0.34);
+  border-color: rgba(175, 169, 236, 0.60);
+}
 
 /* Secondary (ghost) pill */
 .ds-secondary-btn {
@@ -700,23 +747,41 @@ body:not(.light):not(.dark) .ds-pill-btn--primary {
   border: 1.5px solid rgba(15, 23, 42, 0.15);
   color: rgba(15, 23, 42, 0.65);
   cursor: pointer;
-  transition: all 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
 }
 body.dark .ds-secondary-btn,
 body:not(.light):not(.dark) .ds-secondary-btn {
   border-color: rgba(255,255,255,0.20);
   color: rgba(255,255,255,0.60);
 }
-.ds-secondary-btn:hover {
+.ds-secondary-btn:hover,
+.ds-secondary-btn.is-hover {
   border-color: rgba(15, 23, 42, 0.25);
   color: rgba(15, 23, 42, 0.75);
   background: rgba(15, 23, 42, 0.04);
 }
 body.dark .ds-secondary-btn:hover,
-body:not(.light):not(.dark) .ds-secondary-btn:hover {
+body.dark .ds-secondary-btn.is-hover,
+body:not(.light):not(.dark) .ds-secondary-btn:hover,
+body:not(.light):not(.dark) .ds-secondary-btn.is-hover {
   border-color: rgba(255,255,255,0.35);
   color: rgba(255,255,255,0.80);
   background: rgba(255,255,255,0.05);
+}
+.ds-secondary-btn:active,
+.ds-secondary-btn.is-active {
+  border-color: rgba(15, 23, 42, 0.35);
+  color: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.08);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-secondary-btn:active,
+body.dark .ds-secondary-btn.is-active,
+body:not(.light):not(.dark) .ds-secondary-btn:active,
+body:not(.light):not(.dark) .ds-secondary-btn.is-active {
+  border-color: rgba(255,255,255,0.50);
+  color: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.10);
 }
 
 /* Segmented control */
@@ -748,7 +813,14 @@ body:not(.light):not(.dark) .ds-secondary-btn:hover {
   padding: 5px 16px;
   border-radius: 9px;
 }
-.ds-segmented-item:hover { color: var(--ds-fg); }
+.ds-segmented-item:hover,
+.ds-segmented-item.is-hover { color: var(--ds-fg); background: var(--ds-surface-hover); }
+.ds-segmented-item:active,
+.ds-segmented-item.is-active {
+  color: var(--ds-fg);
+  background: var(--ds-accent-soft);
+  transform: scale(0.98);
+}
 .ds-segmented-item.active {
   background: var(--ds-accent-soft);
   color: var(--ds-accent);
@@ -806,11 +878,19 @@ body:not(.light):not(.dark) .ds-secondary-btn:hover {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.12s ease;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
 }
-.ds-tool-btn:hover {
+.ds-tool-btn:hover,
+.ds-tool-btn.is-hover {
   background: rgba(255,255,255,0.08);
   color: rgba(255,255,255,0.80);
+}
+.ds-tool-btn:active,
+.ds-tool-btn.is-active,
+.ds-tool-btn--active {
+  background: rgba(175, 169, 236, 0.20);
+  color: #AFA9EC;
+  transform: scale(0.96);
 }
 .ds-preview-row--dark .ds-mini-divider { background: rgba(255,255,255,0.12); }
 
@@ -921,23 +1001,10 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     </button>
     <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Design System</div>
   </div>
-  <div class="ds-header-toggles">
-    <div class="ds-toggle-group">
-      <span class="ds-toggle-label">Show</span>
-      <div class="ds-swatch-toggle" role="group" aria-label="Swatch mode">
-        <button data-swatch-mode="both" class="active" type="button">Both</button>
-        <button data-swatch-mode="light" type="button">Light</button>
-        <button data-swatch-mode="dark" type="button">Dark</button>
-      </div>
-    </div>
-    <div class="ds-toggle-group">
-      <span class="ds-toggle-label">Theme</span>
-      <div class="ds-mode-toggle" role="group" aria-label="Color mode">
-        <button data-mode="system" class="active" type="button">System</button>
-        <button data-mode="light" type="button">Light</button>
-        <button data-mode="dark" type="button">Dark</button>
-      </div>
-    </div>
+  <div class="ds-mode-toggle" role="group" aria-label="Color mode">
+    <button data-mode="both" class="active" type="button">Both</button>
+    <button data-mode="light" type="button">Light</button>
+    <button data-mode="dark" type="button">Dark</button>
   </div>
 </header>
 
@@ -1112,17 +1179,24 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
    fails silently (no sidebar, private browsing, old Safari), the others run. */
 
 (function modeToggle() {
+  /* Single Both/Light/Dark selector controls BOTH the page chrome AND
+     what swatches show:
+       both  → page follows system preference; swatches show dark+light halves
+       light → page forced light; swatches collapse to light half only
+       dark  → page forced dark; swatches collapse to dark half only
+  */
   var KEY = 'vibeliner-design-system-mode';
   var toggle = document.querySelector('.ds-mode-toggle');
   if (!toggle) return;
   function apply(mode) {
-    document.body.classList.remove('light', 'dark');
-    if (mode === 'light' || mode === 'dark') document.body.classList.add(mode);
+    document.body.classList.remove('light', 'dark', 'swatch-mode-light', 'swatch-mode-dark');
+    if (mode === 'light') document.body.classList.add('light', 'swatch-mode-light');
+    else if (mode === 'dark') document.body.classList.add('dark', 'swatch-mode-dark');
     toggle.querySelectorAll('[data-mode]').forEach(function (btn) {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
   }
-  function getSaved() { try { return localStorage.getItem(KEY) || 'system'; } catch (e) { return 'system'; } }
+  function getSaved() { try { return localStorage.getItem(KEY) || 'both'; } catch (e) { return 'both'; } }
   function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
   toggle.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-mode]');
@@ -1131,7 +1205,7 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     apply(btn.dataset.mode);
   });
   var mq = window.matchMedia('(prefers-color-scheme: dark)');
-  var onChange = function () { if (getSaved() === 'system') apply('system'); };
+  var onChange = function () { if (getSaved() === 'both') apply('both'); };
   if (mq.addEventListener) mq.addEventListener('change', onChange);
   else if (mq.addListener) mq.addListener(onChange);
   apply(getSaved());
@@ -1168,29 +1242,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
       document.body.classList.toggle('ds-sidebar-open');
     });
   }
-})();
-
-(function swatchMode() {
-  var KEY = 'vibeliner-design-system-swatch-mode';
-  var toggle = document.querySelector('.ds-swatch-toggle');
-  if (!toggle) return;
-  function apply(mode) {
-    document.body.classList.remove('swatch-mode-light', 'swatch-mode-dark');
-    if (mode === 'light') document.body.classList.add('swatch-mode-light');
-    else if (mode === 'dark') document.body.classList.add('swatch-mode-dark');
-    toggle.querySelectorAll('[data-swatch-mode]').forEach(function (btn) {
-      btn.classList.toggle('active', btn.dataset.swatchMode === mode);
-    });
-  }
-  function getSaved() { try { return localStorage.getItem(KEY) || 'both'; } catch (e) { return 'both'; } }
-  function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
-  toggle.addEventListener('click', function (e) {
-    var btn = e.target.closest('[data-swatch-mode]');
-    if (!btn) return;
-    save(btn.dataset.swatchMode);
-    apply(btn.dataset.swatchMode);
-  });
-  apply(getSaved());
 })();
 
 (function usageOverflow() {

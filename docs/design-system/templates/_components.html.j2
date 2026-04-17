@@ -137,38 +137,71 @@
 {%- endmacro %}
 
 {# ==================================================== pill button base #}
-{% macro pill_button(label='Copy Prompt', variant='default') -%}
-  <button type="button" class="ds-pill-btn ds-pill-btn--{{ variant }}">{{ label }}</button>
+{% macro pill_button(label='Copy Prompt', variant='default', forced='') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--{{ variant }}{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
 {%- endmacro %}
 
 {% macro pill_button_group() -%}
-  <div class="ds-preview-row">
-    {{ pill_button('Copy Prompt', 'default') }}
-    {{ pill_button('Copy Prompt', 'default') }}
-    {{ pill_button('Copied ✓', 'copied') }}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ pill_button('Copy Prompt', 'default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ pill_button('Copy Prompt', 'default', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ pill_button('Copy Prompt', 'default', 'active') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Copied</span>
+      {{ pill_button('Copied ✓', 'copied') }}
+    </div>
   </div>
 {%- endmacro %}
 
-{% macro pill_button_primary(label='Next', variant='default') -%}
-  <button type="button" class="ds-pill-btn ds-pill-btn--primary">{{ label }}</button>
+{% macro pill_button_primary(label='Next', forced='') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--primary{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
 {%- endmacro %}
 
 {% macro pill_button_primary_group() -%}
-  <div class="ds-preview-row">
-    {{ pill_button_primary('Next') }}
-    {{ pill_button_primary('Get started') }}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ pill_button_primary('Get started') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ pill_button_primary('Get started', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ pill_button_primary('Get started', 'active') }}
+    </div>
   </div>
 {%- endmacro %}
 
 {# ==================================================== secondary button #}
-{% macro secondary_button(label='+ Add image') -%}
-  <button type="button" class="ds-secondary-btn">{{ label }}</button>
+{% macro secondary_button(label='+ Add image', forced='') -%}
+  <button type="button" class="ds-secondary-btn{% if forced %} is-{{ forced }}{% endif %}">{{ label }}</button>
 {%- endmacro %}
 
 {% macro secondary_button_group() -%}
-  <div class="ds-preview-row">
-    {{ secondary_button('+ Add image') }}
-    {{ secondary_button('New capture') }}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ secondary_button('+ Add image') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ secondary_button('+ Add image', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active</span>
+      {{ secondary_button('+ Add image', 'active') }}
+    </div>
   </div>
 {%- endmacro %}
 
@@ -183,8 +216,23 @@
 
 {% macro segmented_control_group() -%}
   <div class="ds-preview-stack">
-    {{ segmented_control(items=['IDE', 'App'], active=0, variant='default') }}
-    {{ segmented_control(items=['Preamble', 'Tools', 'Footer', 'Multi-image'], active=0, variant='primary') }}
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Toolbar variant · IDE selected</span>
+      {{ segmented_control(items=['IDE', 'App'], active=0, variant='default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Settings variant · Preamble selected</span>
+      {{ segmented_control(items=['Preamble', 'Tools', 'Footer', 'Multi-image'], active=0, variant='primary') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover + active states (forced) on inactive items</span>
+      <div class="ds-segmented ds-segmented--default" role="group">
+        <button type="button" class="ds-segmented-item">Default</button>
+        <button type="button" class="ds-segmented-item is-hover">Hover</button>
+        <button type="button" class="ds-segmented-item is-active">Active</button>
+        <button type="button" class="ds-segmented-item active">Selected</button>
+      </div>
+    </div>
   </div>
 {%- endmacro %}
 
@@ -194,11 +242,23 @@
 {%- endmacro %}
 
 {% macro note_pill_group() -%}
-  <div class="ds-preview-row">
-    {{ note_pill('Default state', 'default') }}
-    {{ note_pill('Hover me', 'hover') }}
-    {{ note_pill('Selected', 'selected') }}
-    {{ note_pill('Editing…', 'editing') }}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default</span>
+      {{ note_pill('Fix padding', 'default') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ note_pill('Fix padding', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Selected</span>
+      {{ note_pill('Fix padding', 'selected') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Editing</span>
+      {{ note_pill('Fix padding', 'editing') }}
+    </div>
   </div>
 {%- endmacro %}
 
@@ -208,9 +268,15 @@
 {%- endmacro %}
 
 {% macro status_pill_group() -%}
-  <div class="ds-preview-row">
-    {{ status_pill('3 notes · 1024×768', 'dark') }}
-    {{ status_pill('1 note · 640×480', 'light') }}
+  <div class="ds-preview-states">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Dark variant</span>
+      {{ status_pill('3 notes · 1024×768', 'dark') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Light variant</span>
+      {{ status_pill('1 note · 640×480', 'light') }}
+    </div>
   </div>
 {%- endmacro %}
 
@@ -240,17 +306,30 @@
   </svg>
 {%- endmacro %}
 
-{% macro tool_button(tool='pin', state='default') -%}
-  <button type="button" class="ds-tool-btn ds-tool-btn--{{ state }}" aria-label="{{ tool }}">
+{% macro tool_button(tool='pin', forced='') -%}
+  <button type="button" class="ds-tool-btn{% if forced %} is-{{ forced }}{% endif %}" aria-label="{{ tool }}">
     {{ tool_icon(tool) }}
   </button>
 {%- endmacro %}
 
 {% macro tool_button_group() -%}
-  <div class="ds-preview-row ds-preview-row--dark">
-    {% for t in ['select', 'pin', 'arrow', 'line', 'rectangle', 'circle', 'freehand'] %}
-      {{ tool_button(t, 'default') }}
-    {% endfor %}
+  <div class="ds-preview-states ds-preview-states--dark">
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Default · all 7 tools</span>
+      <div style="display: inline-flex; gap: 2px; padding: 4px; background: rgba(30,30,30,0.0); border-radius: 20px;">
+      {% for t in ['select', 'pin', 'arrow', 'line', 'rectangle', 'circle', 'freehand'] %}
+        {{ tool_button(t) }}
+      {% endfor %}
+      </div>
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Hover</span>
+      {{ tool_button('pin', 'hover') }}
+    </div>
+    <div class="ds-state-demo">
+      <span class="ds-state-label">Active (selected tool)</span>
+      {{ tool_button('arrow', 'active') }}
+    </div>
   </div>
 {%- endmacro %}
 
