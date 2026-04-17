@@ -9,57 +9,121 @@
 
 {# ============================================================ swatch
 
-  One bar (~40px tall) at the top of each card:
+  Fixed-height swatch card with five regions:
 
-    - Appearance-aware / dynamic token → split down the middle.
-      Left half: dark surface (#1e1e1e) with the token's DARK value layered
-      on top, so any alpha reads honestly. Right half: light surface
-      (#f5f5f7) with the LIGHT value layered on top. The bar does NOT
-      react to the page mode toggle — both halves are always visible.
+    1. Title (44px) — centered monospace token name, divider below.
+    2. Preview (64px) — split 50/50. Left half: dark surface #1e1e1e with
+       the token's dark value on top. Right half: light surface #f5f5f7
+       with the light value on top. Static tokens use the same color on
+       both halves. Alias tokens show "→ targetToken" spanning the row.
+       Text tokens in the pill-button family render a real "Copy Prompt"
+       mini pill using the surrounding bg/border tokens plus the token's
+       own color as text.
+    3. Value (56px) — DARK / LIGHT labels + rgba strings in matching
+       halves. Static tokens: single full-width STATIC cell. Alias: ALIAS
+       cell with target name. Divider below.
+    4. Used-by footer (flex: 1) — "Used by:" label on its own line, file
+       list wrapping inline; a small JS pass at the bottom of the page
+       appends "+N more" only when the available height overflows.
 
-    - Static color (no dark/light variant) → one full-width bar with the
-      color layered over BOTH surface halves so you can still see how the
-      color reads on light and dark.
-
-    - Alias → single bar showing "→ targetToken".
-
-  Followed by: token name, one row per value (dark / light or a single
-  "value" line for static colors), and a "Used by" line that's ALWAYS
-  present — "(none)" if the consumed_by list is empty.
-
-  `mode` arg is kept for compatibility but no longer varies rendering
-  between dual/triple — there is only one design.
+  The card has a fixed minimum height; the page-level Both/Light/Dark
+  swatch toggle uses CSS to hide/show halves without reflowing the card.
 #}
-{% macro swatch(name, token, mode=None) -%}
-  <div class="ds-swatch">
-    <div class="ds-swatch-bar">
-    {%- if token.kind == 'alias' -%}
-      <div class="ds-swatch-alias">→ <code>{{ token.target or '?' }}</code></div>
-    {%- elif token.kind == 'dynamic' -%}
-      <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
-      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-    {%- else -%}
-      {%- set fill = token.rgba or token.raw -%}
-      <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-    {%- endif -%}
-    </div>
-    <div class="ds-swatch-meta">
-      <div class="ds-swatch-name">{{ name }}</div>
-      <div class="ds-swatch-values">
-      {%- if token.kind == 'alias' -%}
-        <div class="ds-swatch-row"><span class="ds-swatch-label">alias</span><code>{{ token.target or '?' }}</code></div>
-      {%- elif token.kind == 'dynamic' -%}
-        <div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>{{ (token.dark.rgba if token.dark else '—') or '—' }}</code></div>
-        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>{{ (token.light.rgba if token.light else '—') or '—' }}</code></div>
-      {%- else -%}
-        <div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>{{ token.rgba or token.raw }}</code></div>
-        {%- if token.hex %}<div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>{{ token.hex }}</code></div>{% endif -%}
-      {%- endif -%}
+{%- set _text_pill_tokens = {
+  'pillButtonText': ('pillButtonBg', 'pillButtonBorder'),
+  'pillButtonHoverText': ('pillButtonHoverBg', 'pillButtonHoverBorder'),
+  'pillButtonPrimaryText': ('pillButtonPrimaryBg', 'pillButtonPrimaryBorder'),
+} -%}
+
+{% macro _text_pill_halves(token, bg_name, border_name) -%}
+  {%- set bg = all_tokens.get(bg_name) if all_tokens else None -%}
+  {%- set border = all_tokens.get(border_name) if all_tokens else None -%}
+  {%- set bg_dark = (bg.dark | resolve_rgba) if bg else '' -%}
+  {%- set bg_light = (bg.light | resolve_rgba) if bg else '' -%}
+  {%- set br_dark = (border.dark | resolve_rgba) if border else '' -%}
+  {%- set br_light = (border.light | resolve_rgba) if border else '' -%}
+  {%- set tx_dark = token.dark | resolve_rgba -%}
+  {%- set tx_light = token.light | resolve_rgba -%}
+  <div class="ds-swatch-half ds-swatch-half--dark">
+    <div class="ds-text-pill" style="background: {{ bg_dark or 'transparent' }}; border-color: {{ br_dark or 'transparent' }}; color: {{ tx_dark or 'inherit' }};">Copy Prompt</div>
+  </div>
+  <div class="ds-swatch-half ds-swatch-half--light">
+    <div class="ds-text-pill" style="background: {{ bg_light or 'transparent' }}; border-color: {{ br_light or 'transparent' }}; color: {{ tx_light or 'inherit' }};">Copy Prompt</div>
+  </div>
+{%- endmacro %}
+
+{% macro _usage_footer(files) -%}
+  <div class="ds-swatch-usage">
+    <div class="ds-swatch-usage-label">Used by:</div>
+    {% if files %}
+      <div class="ds-swatch-usage-list" data-total="{{ files | length }}" title="{{ files | join(', ') }}">
+      {%- for f in files -%}<span class="ds-swatch-file">{{ f }}</span>{%- endfor -%}
       </div>
-      {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
-      <div class="ds-swatch-usage">{{ consumed_by(token.consumed_by) }}</div>
-    </div>
+    {% else %}
+      <div class="ds-swatch-usage-list ds-swatch-usage-empty">(none)</div>
+    {% endif %}
+  </div>
+{%- endmacro %}
+
+{% macro swatch(name, token, mode=None) -%}
+  {%- set is_alias = token.kind == 'alias' -%}
+  {%- set is_dynamic = token.kind == 'dynamic' -%}
+  {%- set pill_pair = _text_pill_tokens.get(name) -%}
+  <div class="ds-swatch{% if is_alias %} ds-swatch--alias{% endif %}">
+    <div class="ds-swatch-title">{{ name }}</div>
+
+    {# --- Preview row (64px) --- #}
+    {% if is_alias %}
+      <div class="ds-swatch-preview ds-swatch-preview--alias">
+        <div class="ds-swatch-alias-target">→ <code>{{ token.target or '?' }}</code></div>
+      </div>
+    {% elif pill_pair %}
+      <div class="ds-swatch-preview">
+        {{ _text_pill_halves(token, pill_pair[0], pill_pair[1]) }}
+      </div>
+    {% elif is_dynamic %}
+      {%- set d_rgba = (token.dark | resolve_rgba) or 'transparent' -%}
+      {%- set l_rgba = (token.light | resolve_rgba) or 'transparent' -%}
+      <div class="ds-swatch-preview">
+        <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ d_rgba }};"></div></div>
+        <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ l_rgba }};"></div></div>
+      </div>
+    {% else %}
+      {%- set fill = token.rgba or token.raw -%}
+      <div class="ds-swatch-preview">
+        <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+        <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+      </div>
+    {% endif %}
+
+    {# --- Value row (56px) --- #}
+    {% if is_alias %}
+      <div class="ds-swatch-values ds-swatch-values--single">
+        <span class="ds-swatch-label">Alias</span>
+        <code>{{ token.target or '?' }}</code>
+      </div>
+    {% elif is_dynamic %}
+      {%- set d_val = (token.dark | resolve_rgba) or '—' -%}
+      {%- set l_val = (token.light | resolve_rgba) or '—' -%}
+      <div class="ds-swatch-values">
+        <div class="ds-swatch-value-half ds-swatch-value-half--dark">
+          <span class="ds-swatch-label">Dark</span>
+          <code>{{ d_val }}</code>
+        </div>
+        <div class="ds-swatch-value-half ds-swatch-value-half--light">
+          <span class="ds-swatch-label">Light</span>
+          <code>{{ l_val }}</code>
+        </div>
+      </div>
+    {% else %}
+      <div class="ds-swatch-values ds-swatch-values--single">
+        <span class="ds-swatch-label">Static</span>
+        <code>{% if token.hex %}{{ token.hex }} · {% endif %}{{ token.rgba or token.raw }}</code>
+      </div>
+    {% endif %}
+
+    {# --- Used-by footer --- #}
+    {{ _usage_footer(token.consumed_by) }}
   </div>
 {%- endmacro %}
 

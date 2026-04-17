@@ -1,4 +1,4 @@
-{% import "_components.html.j2" as c %}
+{% import "_components.html.j2" as c with context %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -135,8 +135,27 @@ body.light .ds-header {
 }
 .ds-header-title .ds-mark { color: var(--ds-accent); }
 
-/* --- Mode toggle (segmented-control styling, static HTML) ---------------- */
-.ds-mode-toggle {
+/* --- Header toggles (Show swatches / Theme chrome) ----------------------- */
+.ds-header-toggles {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.ds-toggle-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ds-toggle-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-mode-toggle,
+.ds-swatch-toggle {
   display: inline-flex;
   gap: 2px;
   padding: 2px;
@@ -144,7 +163,8 @@ body.light .ds-header {
   border: 1px solid var(--ds-border);
   border-radius: 999px;
 }
-.ds-mode-toggle button {
+.ds-mode-toggle button,
+.ds-swatch-toggle button {
   appearance: none;
   background: transparent;
   border: 0;
@@ -157,8 +177,10 @@ body.light .ds-header {
   cursor: pointer;
   transition: background 0.12s ease, color 0.12s ease;
 }
-.ds-mode-toggle button:hover { color: var(--ds-fg); }
-.ds-mode-toggle button.active {
+.ds-mode-toggle button:hover,
+.ds-swatch-toggle button:hover { color: var(--ds-fg); }
+.ds-mode-toggle button.active,
+.ds-swatch-toggle button.active {
   background: var(--ds-accent-soft);
   color: var(--ds-accent);
   box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
@@ -358,10 +380,8 @@ body.light .ds-header {
 }
 
 /* --- Swatch card --------------------------------------------------------
-   One bar at the top of each card, split down the middle: left half shows
-   the token layered over a dark surface, right half over a light surface.
-   Both halves are always visible at once — not reactive to the page mode
-   toggle — so transparent tokens read honestly against both contexts.
+   Fixed five-region layout. Page-level Both/Light/Dark toggle hides one
+   half via body class; card dimensions never shift.
 */
 .ds-swatch {
   background: var(--ds-surface);
@@ -370,77 +390,164 @@ body.light .ds-header {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  min-height: 280px;
 }
-.ds-swatch-bar {
+
+/* Title row — 44px */
+.ds-swatch-title {
+  height: 44px;
+  flex: 0 0 44px;
   display: flex;
-  height: 40px;
-  position: relative;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  font-family: var(--ds-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ds-fg);
+  text-align: center;
+  border-bottom: 1px solid var(--ds-divider);
+  word-break: break-all;
+  line-height: 1.25;
+}
+
+/* Preview row — 64px */
+.ds-swatch-preview {
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
 }
 .ds-swatch-half {
-  position: relative;
   flex: 1;
+  position: relative;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .ds-swatch-half--dark { background: var(--ds-bar-dark); }
 .ds-swatch-half--light { background: var(--ds-bar-light); }
-.ds-swatch-fill {
-  position: absolute;
-  inset: 0;
+.ds-swatch-fill { position: absolute; inset: 0; }
+
+/* Text-pill preview (pillButtonText / pillButtonHoverText / pillButtonPrimaryText) */
+.ds-text-pill {
+  position: relative;
+  z-index: 1;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  font-family: var(--ds-system);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
 }
-.ds-swatch-alias {
+
+/* Alias preview — full-width target pointer */
+.ds-swatch-preview--alias { background: var(--ds-bg-muted); }
+.ds-swatch-alias-target {
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: var(--ds-mono);
-  font-size: 12px;
+  font-size: 12.5px;
   color: var(--ds-fg-muted);
-  background: var(--ds-bg-muted);
+  letter-spacing: 0.01em;
 }
-.ds-swatch-alias code { color: var(--ds-fg); margin-left: 4px; }
-.ds-swatch-meta {
-  padding: 12px 14px 14px;
+.ds-swatch-alias-target code { color: var(--ds-fg); margin-left: 6px; }
+
+/* Value row — 56px */
+.ds-swatch-values {
+  height: 56px;
+  flex: 0 0 56px;
+  display: flex;
   border-top: 1px solid var(--ds-divider);
+  border-bottom: 1px solid var(--ds-divider);
+}
+.ds-swatch-value-half {
+  flex: 1;
+  padding: 8px 12px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+  min-width: 0;
 }
-.ds-swatch-name {
-  font-family: var(--ds-mono);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--ds-fg);
-  word-break: break-all;
-}
-.ds-swatch-values { display: flex; flex-direction: column; gap: 2px; }
-.ds-swatch-row {
+.ds-swatch-value-half--dark + .ds-swatch-value-half--light { border-left: 1px solid var(--ds-divider); }
+.ds-swatch-values--single {
+  height: 56px;
+  flex: 0 0 56px;
+  border-top: 1px solid var(--ds-divider);
+  border-bottom: 1px solid var(--ds-divider);
+  padding: 8px 12px;
   display: flex;
-  gap: 8px;
-  align-items: baseline;
-  font-family: var(--ds-mono);
-  font-size: 11px;
-  line-height: 1.4;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
 }
 .ds-swatch-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   color: var(--ds-fg-dim);
-  min-width: 40px;
-  text-transform: lowercase;
-  font-size: 10px;
-  letter-spacing: 0.02em;
 }
-.ds-swatch-row code { color: var(--ds-fg-muted); font-size: 11px; }
-.ds-swatch-desc {
-  font-size: 12px;
+.ds-swatch-values code,
+.ds-swatch-values--single code {
+  font-family: var(--ds-mono);
+  font-size: 10.5px;
+  color: var(--ds-fg-muted);
+  line-height: 1.3;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Used-by footer — fills remaining */
+.ds-swatch-usage {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+.ds-swatch-usage-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-usage-list {
+  flex: 1;
+  font-family: var(--ds-mono);
+  font-size: 10.5px;
   color: var(--ds-fg-muted);
   line-height: 1.45;
-  margin-top: 2px;
+  overflow: hidden;
+  word-break: break-word;
 }
-.ds-swatch-usage {
-  font-size: 11px;
+.ds-swatch-file + .ds-swatch-file::before { content: ', '; color: var(--ds-fg-dim); }
+.ds-swatch-more {
   color: var(--ds-fg-dim);
-  margin-top: 4px;
 }
-.ds-swatch-usage em { font-style: italic; color: var(--ds-fg-dim); }
+.ds-swatch-more::before { content: ' '; }
+.ds-swatch-usage-empty { color: var(--ds-fg-dim); font-style: italic; }
+
+/* Page-level Both/Light/Dark swatch toggle */
+body.swatch-mode-light .ds-swatch-half--dark,
+body.swatch-mode-light .ds-swatch-value-half--dark { display: none; }
+body.swatch-mode-dark .ds-swatch-half--light,
+body.swatch-mode-dark .ds-swatch-value-half--light { display: none; }
+/* When one half is hidden, the other's border-left becomes redundant */
+body.swatch-mode-light .ds-swatch-value-half--light,
+body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
 
 /* --- Typography specimens ----------------------------------------------- */
 .ds-font-list { display: flex; flex-direction: column; gap: 24px; }
@@ -814,10 +921,23 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     </button>
     <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Design System</div>
   </div>
-  <div class="ds-mode-toggle" role="group" aria-label="Color mode">
-    <button data-mode="system" class="active" type="button">System</button>
-    <button data-mode="light" type="button">Light</button>
-    <button data-mode="dark" type="button">Dark</button>
+  <div class="ds-header-toggles">
+    <div class="ds-toggle-group">
+      <span class="ds-toggle-label">Show</span>
+      <div class="ds-swatch-toggle" role="group" aria-label="Swatch mode">
+        <button data-swatch-mode="both" class="active" type="button">Both</button>
+        <button data-swatch-mode="light" type="button">Light</button>
+        <button data-swatch-mode="dark" type="button">Dark</button>
+      </div>
+    </div>
+    <div class="ds-toggle-group">
+      <span class="ds-toggle-label">Theme</span>
+      <div class="ds-mode-toggle" role="group" aria-label="Color mode">
+        <button data-mode="system" class="active" type="button">System</button>
+        <button data-mode="light" type="button">Light</button>
+        <button data-mode="dark" type="button">Dark</button>
+      </div>
+    </div>
   </div>
 </header>
 
@@ -1048,6 +1168,70 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
       document.body.classList.toggle('ds-sidebar-open');
     });
   }
+})();
+
+(function swatchMode() {
+  var KEY = 'vibeliner-design-system-swatch-mode';
+  var toggle = document.querySelector('.ds-swatch-toggle');
+  if (!toggle) return;
+  function apply(mode) {
+    document.body.classList.remove('swatch-mode-light', 'swatch-mode-dark');
+    if (mode === 'light') document.body.classList.add('swatch-mode-light');
+    else if (mode === 'dark') document.body.classList.add('swatch-mode-dark');
+    toggle.querySelectorAll('[data-swatch-mode]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.swatchMode === mode);
+    });
+  }
+  function getSaved() { try { return localStorage.getItem(KEY) || 'both'; } catch (e) { return 'both'; } }
+  function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
+  toggle.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-swatch-mode]');
+    if (!btn) return;
+    save(btn.dataset.swatchMode);
+    apply(btn.dataset.swatchMode);
+  });
+  apply(getSaved());
+})();
+
+(function usageOverflow() {
+  /* Walk every .ds-swatch-usage-list; if its content overflows, progressively
+     hide trailing <span.ds-swatch-file> until it fits, then append "+N more". */
+  function trim(list) {
+    if (list.classList.contains('ds-swatch-usage-empty')) return;
+    // Remove any previous "+N more" so re-runs idempotent.
+    var prev = list.querySelector('.ds-swatch-more');
+    if (prev) prev.remove();
+    var files = Array.prototype.slice.call(list.querySelectorAll('.ds-swatch-file'));
+    files.forEach(function (f) { f.style.display = ''; });
+    if (list.scrollHeight <= list.clientHeight + 1) return;
+    var hidden = 0;
+    for (var i = files.length - 1; i >= 0; i--) {
+      files[i].style.display = 'none';
+      hidden++;
+      if (list.scrollHeight <= list.clientHeight + 1) break;
+    }
+    if (hidden === 0) return;
+    var more = document.createElement('span');
+    more.className = 'ds-swatch-more';
+    more.textContent = '+' + hidden + ' more';
+    list.appendChild(more);
+    // If "+N more" pushed us over, hide one more file.
+    while (list.scrollHeight > list.clientHeight + 1 && hidden < files.length) {
+      for (var j = files.length - 1; j >= 0; j--) {
+        if (files[j].style.display !== 'none') { files[j].style.display = 'none'; hidden++; break; }
+      }
+      more.textContent = '+' + hidden + ' more';
+    }
+  }
+  var lists = document.querySelectorAll('.ds-swatch-usage-list');
+  function run() { lists.forEach(trim); }
+  run();
+  // Re-run on window resize (card widths change → wrap changes).
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(run, 120);
+  });
 })();
 
 (function sectionCollapse() {

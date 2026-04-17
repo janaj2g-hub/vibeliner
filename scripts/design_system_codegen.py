@@ -107,6 +107,32 @@ def _filter_sample_text(token: dict[str, Any]) -> str:
     return "The quick brown fox jumps over the lazy dog"
 
 
+def _make_resolve_rgba(all_tokens: dict[str, dict[str, Any]]):
+    """Factory for a Jinja filter that resolves a color leaf (dict) to an
+    rgba string, following identifier-aliases one hop through all_tokens.
+
+    A "leaf" is the dict produced by the parser for a single color side
+    (dark or light) — it has either `rgba` directly, or only `alias` (when
+    the Swift source was a bare identifier like `dark: purpleLight`).
+    """
+    def _resolve(leaf: Any) -> str:
+        if not isinstance(leaf, dict):
+            return ""
+        if leaf.get("rgba"):
+            return leaf["rgba"]
+        alias = leaf.get("alias") or leaf.get("raw")
+        if alias and alias in all_tokens:
+            target = all_tokens[alias]
+            # Follow one more hop: target may itself be static (direct rgba) or dynamic.
+            if target.get("rgba"):
+                return target["rgba"]
+            # Fall back to dark side if target is dynamic.
+            if target.get("dark") and target["dark"].get("rgba"):
+                return target["dark"]["rgba"]
+        return ""
+    return _resolve
+
+
 # --- Loading / merging --------------------------------------------------------
 
 
@@ -232,6 +258,7 @@ def _render(
     env.filters["truncate_list"] = _filter_truncate_list
     env.filters["format_value"] = _filter_format_value
     env.filters["sample_text"] = _filter_sample_text
+    env.filters["resolve_rgba"] = _make_resolve_rgba(context.get("all_tokens") or {})
     template = env.get_template(template_path.name)
     return template.render(**context)
 
@@ -280,6 +307,7 @@ def main(argv: list[str] | None = None) -> int:
     context: dict[str, Any] = {
         "sections": metadata.get("sections") or [],
         "tokens_by_section": tokens_by_section,
+        "all_tokens": swift_tokens,  # for macros needing cross-token lookups (e.g. pill preview)
         "token_count": len(swift_tokens),
         "yaml_token_count": len(metadata.get("tokens") or {}),
         "source_files": source_files,
