@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner Tour Design</title>
+<style>
+/* ==========================================================================
+   Vibeliner Design System — doc chrome
+   Chrome intentionally uses Vibeliner's own tokens where practical.
+   ========================================================================== */
+
+/* --- Tokens: doc theme (light default, dark via body.dark / system media) - */
+:root {
+  /* Typography */
+  --ds-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --ds-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces (light default) */
+  --ds-bg: #fafbfc;
+  --ds-bg-muted: #f2f3f5;
+  --ds-surface: #ffffff;
+  --ds-surface-hover: #f6f7f9;
+  --ds-border: rgba(15, 23, 42, 0.10);
+  --ds-border-strong: rgba(15, 23, 42, 0.18);
+  --ds-divider: rgba(15, 23, 42, 0.08);
+
+  /* Foreground */
+  --ds-fg: #0f172a;
+  --ds-fg-muted: rgba(15, 23, 42, 0.64);
+  --ds-fg-dim: rgba(15, 23, 42, 0.42);
+
+  /* Brand — Vibeliner purple */
+  --ds-accent: #534AB7;                 /* purpleDark */
+  --ds-accent-soft: rgba(83, 74, 183, 0.08);
+  --ds-accent-strong: rgba(83, 74, 183, 0.22);
+
+  /* Chrome tokens (mirroring Vibeliner runtime) */
+  --ds-chrome-border: rgba(175, 169, 236, 0.22);
+  --ds-pill-border: rgba(83, 74, 183, 0.42);
+  --ds-pill-bg: rgba(83, 74, 183, 0.08);
+  --ds-pill-text: #534AB7;
+
+  /* Swatch reference backgrounds (single bar split dark/light) */
+  --ds-bar-dark: #1e1e1e;               /* toolbarBg dark */
+  --ds-bar-light: #f5f5f7;              /* toolbarBg light (approx) */
+}
+
+/* Dark mode — explicit override via body.dark */
+body.dark {
+  --ds-bg: #0b0d12;
+  --ds-bg-muted: #12141b;
+  --ds-surface: #15181f;
+  --ds-surface-hover: #1a1e27;
+  --ds-border: rgba(255, 255, 255, 0.08);
+  --ds-border-strong: rgba(255, 255, 255, 0.16);
+  --ds-divider: rgba(255, 255, 255, 0.06);
+  --ds-fg: rgba(255, 255, 255, 0.92);
+  --ds-fg-muted: rgba(255, 255, 255, 0.62);
+  --ds-fg-dim: rgba(255, 255, 255, 0.38);
+  --ds-accent: #AFA9EC;                 /* purpleLight */
+  --ds-accent-soft: rgba(175, 169, 236, 0.10);
+  --ds-accent-strong: rgba(175, 169, 236, 0.28);
+  --ds-pill-border: rgba(175, 169, 236, 0.44);
+  --ds-pill-bg: rgba(116, 97, 194, 0.18);
+  --ds-pill-text: #AFA9EC;
+}
+
+/* System mode — follow OS when neither .light nor .dark is on body */
+@media (prefers-color-scheme: dark) {
+  body:not(.light):not(.dark) {
+    --ds-bg: #0b0d12;
+    --ds-bg-muted: #12141b;
+    --ds-surface: #15181f;
+    --ds-surface-hover: #1a1e27;
+    --ds-border: rgba(255, 255, 255, 0.08);
+    --ds-border-strong: rgba(255, 255, 255, 0.16);
+    --ds-divider: rgba(255, 255, 255, 0.06);
+    --ds-fg: rgba(255, 255, 255, 0.92);
+    --ds-fg-muted: rgba(255, 255, 255, 0.62);
+    --ds-fg-dim: rgba(255, 255, 255, 0.38);
+    --ds-accent: #AFA9EC;
+    --ds-accent-soft: rgba(175, 169, 236, 0.10);
+    --ds-accent-strong: rgba(175, 169, 236, 0.28);
+    --ds-pill-border: rgba(175, 169, 236, 0.44);
+    --ds-pill-bg: rgba(116, 97, 194, 0.18);
+    --ds-pill-text: #AFA9EC;
+  }
+}
+
+/* --- Reset / base --------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ds-bg);
+  color: var(--ds-fg);
+  font-family: var(--ds-system);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+code, pre { font-family: var(--ds-mono); font-size: 0.88em; }
+a { color: var(--ds-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- Sticky header ------------------------------------------------------- */
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 32px;
+  background: rgba(var(--ds-surface-rgb, 255, 255, 255), 0.88);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--ds-divider);
+}
+body.dark .ds-header,
+body:not(.light):not(.dark) .ds-header {
+  background: rgba(11, 13, 18, 0.72);
+}
+body.light .ds-header {
+  background: rgba(250, 251, 252, 0.82);
+}
+.ds-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ds-header-title .ds-mark { color: var(--ds-accent); }
+
+/* --- Mode toggle (segmented-control styling) ----------------------------- */
+.ds-mode-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+}
+.ds-mode-toggle button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-mode-toggle button:hover { color: var(--ds-fg); }
+.ds-mode-toggle button.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+/* --- Hamburger (CSS only; JS in VIB-483) --------------------------------- */
+.ds-hamburger {
+  display: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-right: 12px;
+}
+.ds-hamburger-icon, .ds-hamburger-icon::before, .ds-hamburger-icon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: relative;
+}
+.ds-hamburger-icon::before, .ds-hamburger-icon::after { content: ""; position: absolute; left: 0; }
+.ds-hamburger-icon::before { top: -6px; }
+.ds-hamburger-icon::after { top: 6px; }
+
+/* --- Layout grid: sidebar + main ---------------------------------------- */
+.ds-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ds-sidebar {
+  position: sticky;
+  top: 56px;
+  align-self: start;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 32px 24px 32px 0;
+  border-right: 1px solid var(--ds-divider);
+}
+.ds-sidebar-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+  margin: 0 0 8px 12px;
+}
+.ds-sidebar-nav { list-style: none; padding: 0; margin: 0 0 24px; }
+.ds-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-sidebar-nav a:hover { background: var(--ds-surface-hover); color: var(--ds-fg); text-decoration: none; }
+.ds-sidebar-nav a.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-weight: 500;
+}
+.ds-sidebar-nav .ds-count {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-sidebar-nav a.active .ds-count { color: var(--ds-accent); opacity: 0.75; }
+
+.ds-sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.ds-sidebar-footer a { color: var(--ds-fg-muted); }
+.ds-sidebar-footer a:hover { color: var(--ds-accent); text-decoration: none; }
+
+/* --- Main column -------------------------------------------------------- */
+.ds-main {
+  padding: 48px 32px 80px 48px;
+  min-width: 0;
+}
+
+/* --- Hero --------------------------------------------------------------- */
+.ds-hero { max-width: 720px; margin-bottom: 96px; }
+.ds-hero h1 {
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+  color: var(--ds-fg);
+}
+.ds-hero-intro {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
+.ds-hero-intro code {
+  color: var(--ds-fg);
+  background: var(--ds-bg-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.ds-hero-stats {
+  display: flex;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-dim);
+}
+.ds-hero-stat strong {
+  display: block;
+  color: var(--ds-fg);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+/* --- Section containers ------------------------------------------------- */
+.ds-section { margin: 0 0 96px; scroll-margin-top: 80px; }
+.ds-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 12px;
+  color: var(--ds-fg);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.ds-section h2 .ds-section-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-section-intro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  max-width: 640px;
+  margin: 0 0 40px;
+}
+.ds-section.collapsed > :not(h2) { display: none; }
+.ds-section > h2 { cursor: pointer; user-select: none; }
+.ds-section > h2::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--ds-fg-dim);
+  transition: transform 0.2s ease;
+}
+.ds-section.collapsed > h2::after { transform: rotate(-90deg); }
+
+.ds-family {
+  margin: 0 0 48px;
+  padding: 0 0 32px;
+  border-bottom: 1px solid var(--ds-divider);
+}
+.ds-family:last-child { border-bottom: 0; padding-bottom: 0; }
+.ds-family h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-fg-muted);
+  margin: 0 0 18px;
+}
+.ds-family-meta { font-size: 12px; color: var(--ds-fg-dim); margin-left: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* --- Grid layouts ------------------------------------------------------- */
+.ds-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.ds-grid-narrow {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* --- Swatch card --------------------------------------------------------
+   Fixed five-region layout. Page-level Both/Light/Dark toggle hides one
+   half via body class; card dimensions never shift.
+*/
+.ds-swatch {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 280px;
+}
+
+/* Title row — 44px */
+.ds-swatch-title {
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 12px;
+  font-family: var(--ds-mono);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ds-fg);
+  text-align: center;
+  border-bottom: 1px solid var(--ds-divider);
+  word-break: break-all;
+  line-height: 1.25;
+}
+
+/* Preview row — 64px */
+.ds-swatch-preview {
+  height: 64px;
+  flex: 0 0 64px;
+  display: flex;
+}
+.ds-swatch-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.ds-swatch-half--dark { background: var(--ds-bar-dark); }
+.ds-swatch-half--light { background: var(--ds-bar-light); }
+.ds-swatch-fill { position: absolute; inset: 0; }
+
+/* Text-pill preview (pillButtonText / pillButtonHoverText / pillButtonPrimaryText) */
+.ds-text-pill {
+  position: relative;
+  z-index: 1;
+  padding: 5px 14px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  font-family: var(--ds-system);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* Alias preview — full-width target pointer */
+.ds-swatch-preview--alias { background: var(--ds-bg-muted); }
+.ds-swatch-alias-target {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ds-mono);
+  font-size: 12.5px;
+  color: var(--ds-fg-muted);
+  letter-spacing: 0.01em;
+}
+.ds-swatch-alias-target code { color: var(--ds-fg); margin-left: 6px; }
+
+/* Value row — 56px */
+.ds-swatch-values {
+  height: 56px;
+  flex: 0 0 56px;
+  display: flex;
+  border-top: 1px solid var(--ds-divider);
+  border-bottom: 1px solid var(--ds-divider);
+}
+.ds-swatch-value-half {
+  flex: 1;
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+  min-width: 0;
+}
+.ds-swatch-value-half--dark + .ds-swatch-value-half--light { border-left: 1px solid var(--ds-divider); }
+.ds-swatch-values--single {
+  height: 56px;
+  flex: 0 0 56px;
+  border-top: 1px solid var(--ds-divider);
+  border-bottom: 1px solid var(--ds-divider);
+  padding: 8px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  text-align: center;
+}
+.ds-swatch-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-values code,
+.ds-swatch-values--single code {
+  font-family: var(--ds-mono);
+  font-size: 10.5px;
+  color: var(--ds-fg-muted);
+  line-height: 1.3;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
+
+/* Used-by footer — fills remaining */
+.ds-swatch-usage {
+  flex: 1;
+  min-height: 0;
+  padding: 10px 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow: hidden;
+}
+.ds-swatch-usage-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-usage-list {
+  flex: 1;
+  font-family: var(--ds-mono);
+  font-size: 10.5px;
+  color: var(--ds-fg-muted);
+  line-height: 1.45;
+  overflow: hidden;
+  word-break: break-word;
+}
+.ds-swatch-file + .ds-swatch-file::before { content: ', '; color: var(--ds-fg-dim); }
+.ds-swatch-more {
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-more::before { content: ' '; }
+.ds-swatch-usage-empty { color: var(--ds-fg-dim); font-style: italic; }
+
+/* Page-level Both/Light/Dark toggle — applies to swatches AND dimension
+   illustration halves. The same body class hides one side everywhere. */
+body.swatch-mode-light .ds-swatch-half--dark,
+body.swatch-mode-light .ds-swatch-value-half--dark,
+body.swatch-mode-light .ds-illus-half--dark { display: none; }
+body.swatch-mode-dark .ds-swatch-half--light,
+body.swatch-mode-dark .ds-swatch-value-half--light,
+body.swatch-mode-dark .ds-illus-half--light { display: none; }
+/* When one half is hidden, the other's border-left becomes redundant */
+body.swatch-mode-light .ds-swatch-value-half--light,
+body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
+
+/* --- Typography specimens ----------------------------------------------- */
+.ds-font-list { display: flex; flex-direction: column; gap: 24px; }
+.ds-font-sample {
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-font-specimen {
+  color: var(--ds-fg);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.ds-font-meta {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  padding-top: 10px;
+  border-top: 1px solid var(--ds-divider);
+}
+.ds-font-meta code { color: var(--ds-fg-muted); }
+
+/* --- Dimension group cards (full-width composition preview + metadata) -- */
+.ds-dim-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+.ds-dim-group {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ds-dim-illus-panel {
+  display: flex;
+  min-height: 200px;
+}
+.ds-illus-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  min-width: 0; /* allow SVGs to shrink-fit in grid cells */
+}
+.ds-illus-half--dark { background: #1e1e1e; color: #888; }
+.ds-illus-half--light { background: #f5f5f7; color: #666; }
+.ds-illus-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+.ds-dim-meta {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid var(--ds-divider);
+  min-width: 0;
+}
+.ds-dim-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ds-fg);
+  letter-spacing: -0.005em;
+}
+.ds-dim-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  line-height: 1.55;
+}
+.ds-dim-tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--ds-bg-muted);
+  border-radius: 6px;
+}
+.ds-dim-token-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--ds-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.ds-dim-token-row code { color: var(--ds-fg); }
+.ds-dim-token-value { color: var(--ds-fg-muted); }
+.ds-dim-unit-inline { color: var(--ds-fg-dim); font-size: 10.5px; }
+.ds-dim-used-by {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--ds-divider);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Singleton cards (unchanged shape, still a numeric grid) */
+.ds-dim-singletons-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-fg);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ds-dim-singletons-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-dim-singletons-intro {
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
+.ds-dim-card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+}
+.ds-dim-value {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ds-fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.ds-dim-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+.ds-dim-name {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-muted);
+  margin-top: 14px;
+  word-break: break-all;
+}
+.ds-dim-desc { font-size: 11px; color: var(--ds-fg-dim); margin-top: 4px; line-height: 1.4; }
+
+/* Narrow screens: stack illustration above metadata */
+@media (max-width: 780px) {
+  .ds-dim-group { grid-template-columns: 1fr; }
+  .ds-dim-meta { border-left: 0; border-top: 1px solid var(--ds-divider); }
+}
+
+/* --- Footer ------------------------------------------------------------- */
+.ds-footer {
+  margin-top: 120px;
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.ds-footer a { color: var(--ds-fg-muted); }
+.ds-footer code { color: var(--ds-fg-muted); font-size: 10px; }
+
+/* --- Component previews ------------------------------------------------- */
+.ds-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-preview-row--dark { background: #1e1e1e; color: rgba(255,255,255,0.8); }
+.ds-preview-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+
+/* Explicit-state demos: Default / Hover / Active shown side by side.
+   Each cell forces the state via .is-hover / .is-active while the live
+   :hover pseudo-class still works so users can still interact. */
+.ds-preview-states {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-preview-states--dark {
+  background: #1e1e1e;
+  color: rgba(255,255,255,0.8);
+}
+.ds-state-demo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+.ds-state-label {
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+}
+.ds-preview-states--dark .ds-state-label { color: rgba(255,255,255,0.45); }
+/* Pill button family — default/hover/active states via real CSS + .is-* forced classes */
+.ds-pill-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+  line-height: 1;
+}
+.ds-pill-btn--default {
+  background: var(--ds-pill-bg);
+  border: 1.5px solid var(--ds-pill-border);
+  color: var(--ds-pill-text);
+}
+.ds-pill-btn--default:hover,
+.ds-pill-btn--default.is-hover {
+  background: rgba(83, 74, 183, 0.16);
+  border-color: rgba(83, 74, 183, 0.65);
+  color: var(--ds-accent);
+}
+body.dark .ds-pill-btn--default:hover,
+body.dark .ds-pill-btn--default.is-hover,
+body:not(.light):not(.dark) .ds-pill-btn--default:hover,
+body:not(.light):not(.dark) .ds-pill-btn--default.is-hover {
+  background: rgba(116, 97, 194, 0.35);
+  border-color: #C4B8F5;
+  color: #C4B8F5;
+}
+.ds-pill-btn--default:active,
+.ds-pill-btn--default.is-active {
+  background: rgba(83, 74, 183, 0.22);
+  border-color: var(--ds-accent);
+  color: var(--ds-accent);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-pill-btn--default:active,
+body.dark .ds-pill-btn--default.is-active,
+body:not(.light):not(.dark) .ds-pill-btn--default:active,
+body:not(.light):not(.dark) .ds-pill-btn--default.is-active {
+  background: rgba(116, 97, 194, 0.50);
+  border-color: #D4C8FF;
+  color: #D4C8FF;
+}
+.ds-pill-btn--copied {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1.5px solid rgba(22, 163, 74, 0.5);
+  color: rgba(22, 163, 74, 0.9);
+}
+.ds-pill-btn--primary {
+  background: var(--ds-accent);
+  color: white;
+  border: 1.5px solid var(--ds-accent);
+}
+body.dark .ds-pill-btn--primary,
+body:not(.light):not(.dark) .ds-pill-btn--primary {
+  background: rgba(175, 169, 236, 0.16);
+  color: #AFA9EC;
+  border-color: rgba(175, 169, 236, 0.36);
+}
+.ds-pill-btn--primary:hover,
+.ds-pill-btn--primary.is-hover { filter: brightness(1.05); }
+body.dark .ds-pill-btn--primary:hover,
+body.dark .ds-pill-btn--primary.is-hover,
+body:not(.light):not(.dark) .ds-pill-btn--primary:hover,
+body:not(.light):not(.dark) .ds-pill-btn--primary.is-hover {
+  background: rgba(175, 169, 236, 0.22);
+  border-color: rgba(175, 169, 236, 0.48);
+}
+.ds-pill-btn--primary:active,
+.ds-pill-btn--primary.is-active {
+  filter: brightness(0.95);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-pill-btn--primary:active,
+body.dark .ds-pill-btn--primary.is-active,
+body:not(.light):not(.dark) .ds-pill-btn--primary:active,
+body:not(.light):not(.dark) .ds-pill-btn--primary.is-active {
+  background: rgba(175, 169, 236, 0.34);
+  border-color: rgba(175, 169, 236, 0.60);
+}
+
+/* Secondary (ghost) pill */
+.ds-secondary-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
+  color: rgba(15, 23, 42, 0.65);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease, transform 0.08s ease;
+}
+body.dark .ds-secondary-btn,
+body:not(.light):not(.dark) .ds-secondary-btn {
+  border-color: rgba(255,255,255,0.20);
+  color: rgba(255,255,255,0.60);
+}
+.ds-secondary-btn:hover,
+.ds-secondary-btn.is-hover {
+  border-color: rgba(15, 23, 42, 0.25);
+  color: rgba(15, 23, 42, 0.75);
+  background: rgba(15, 23, 42, 0.04);
+}
+body.dark .ds-secondary-btn:hover,
+body.dark .ds-secondary-btn.is-hover,
+body:not(.light):not(.dark) .ds-secondary-btn:hover,
+body:not(.light):not(.dark) .ds-secondary-btn.is-hover {
+  border-color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.05);
+}
+.ds-secondary-btn:active,
+.ds-secondary-btn.is-active {
+  border-color: rgba(15, 23, 42, 0.35);
+  color: rgba(15, 23, 42, 0.85);
+  background: rgba(15, 23, 42, 0.08);
+  transform: translateY(0.5px) scale(0.98);
+}
+body.dark .ds-secondary-btn:active,
+body.dark .ds-secondary-btn.is-active,
+body:not(.light):not(.dark) .ds-secondary-btn:active,
+body:not(.light):not(.dark) .ds-secondary-btn.is-active {
+  border-color: rgba(255,255,255,0.50);
+  color: rgba(255,255,255,0.92);
+  background: rgba(255,255,255,0.10);
+}
+
+/* Segmented control */
+.ds-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+}
+.ds-segmented--primary { padding: 3px; border-radius: 12px; }
+.ds-segmented-item {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ds-segmented--primary .ds-segmented-item {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 9px;
+}
+.ds-segmented-item:hover,
+.ds-segmented-item.is-hover { color: var(--ds-fg); background: var(--ds-surface-hover); }
+.ds-segmented-item:active,
+.ds-segmented-item.is-active {
+  color: var(--ds-fg);
+  background: var(--ds-accent-soft);
+  transform: scale(0.98);
+}
+.ds-segmented-item.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+/* Note pill (red family) */
+.ds-note-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 13px;
+  color: #7f1d1d;
+  background: rgba(255, 248, 248, 0.82);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  transition: all 0.12s ease;
+}
+.ds-note-pill--hover,
+.ds-note-pill:hover {
+  background: rgba(255, 248, 248, 0.92);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+.ds-note-pill--selected {
+  background: rgba(255, 248, 248, 0.96);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+.ds-note-pill--editing {
+  background: rgba(255, 252, 252, 0.98);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+}
+
+/* Status pill */
+.ds-status-pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: var(--ds-mono);
+  font-size: 10px;
+}
+.ds-status-pill--dark { background: rgba(30,30,30,0.88); color: white; }
+.ds-status-pill--light { background: rgba(255,255,255,0.85); color: rgba(0,0,0,0.70); border: 1px solid rgba(0,0,0,0.06); }
+
+/* Tool button */
+.ds-tool-btn {
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.12s ease, color 0.12s ease, transform 0.08s ease;
+}
+.ds-tool-btn:hover,
+.ds-tool-btn.is-hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.80);
+}
+.ds-tool-btn:active,
+.ds-tool-btn.is-active,
+.ds-tool-btn--active {
+  background: rgba(175, 169, 236, 0.20);
+  color: #AFA9EC;
+  transform: scale(0.96);
+}
+.ds-preview-row--dark .ds-mini-divider { background: rgba(255,255,255,0.12); }
+
+/* Surface composed demos */
+.ds-surface-demo {
+  padding: 16px 18px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ds-surface-demo--toolbar { background: linear-gradient(135deg, #d7d9de, #a4a8b0); padding: 20px; }
+.ds-surface-demo--screenshot { background: linear-gradient(135deg, #d7d9de, #6c707a); padding: 20px; }
+.ds-surface-caption { font-size: 11px; color: var(--ds-fg-dim); font-family: var(--ds-mono); }
+.ds-surface-caption code { color: var(--ds-fg-muted); }
+
+.ds-mini-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(30,30,30,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.8);
+}
+.ds-mini-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.12); margin: 0 4px; }
+.ds-mini-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+}
+.ds-mini-field code { color: var(--ds-fg); flex: 1; }
+.ds-mini-frame {
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.02);
+  border-radius: 18px;
+}
+.ds-mini-frame-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.ds-mini-frame-body { font-size: 12px; color: var(--ds-fg-muted); font-family: var(--ds-mono); }
+.ds-mini-preview {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+}
+body.dark .ds-mini-preview,
+body:not(.light):not(.dark) .ds-mini-preview {
+  background: #15161a;
+  color: rgba(255,255,255,0.8);
+}
+.ds-mini-kbd-row { display: flex; gap: 4px; }
+.ds-mini-kbd-row kbd {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 6px;
+}
+body.dark .ds-mini-kbd-row kbd,
+body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.55);
+}
+
+
+/* --- Responsive --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .ds-layout { grid-template-columns: 1fr; padding: 0 20px; }
+  .ds-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 260px;
+    background: var(--ds-bg);
+    border-right: 1px solid var(--ds-border);
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    padding: 24px 20px 24px 24px;
+    z-index: 90;
+  }
+  body.ds-sidebar-open .ds-sidebar { transform: translateX(0); }
+  .ds-main { padding: 32px 0 64px; }
+  .ds-hero h1 { font-size: 36px; }
+  .ds-hamburger { display: inline-flex; }
+}
+
+/* Default active state for mode toggle (VIB-483 overrides with localStorage) */
+</style>
+</head>
+<body>
+
+<header class="ds-header">
+  <div style="display: flex; align-items: center;">
+    <button class="ds-hamburger" type="button" aria-label="Toggle sidebar">
+      <span class="ds-hamburger-icon"></span>
+    </button>
+    <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Tour Design</div>
+  </div>
+  <div class="ds-mode-toggle" role="group" aria-label="Color mode">
+    <button data-mode="both" class="active" type="button">Both</button>
+    <button data-mode="light" type="button">Light</button>
+    <button data-mode="dark" type="button">Dark</button>
+  </div>
+</header>
+
+<div class="ds-layout">
+
+  <aside class="ds-sidebar">
+    <p class="ds-sidebar-section-label">Contents</p>
+    <ul class="ds-sidebar-nav">
+      <li><a href="#chrome"><span>Tour Window Chrome</span><span class="ds-count">34</span></a></li>
+      <li><a href="#illustrations"><span>Tour Illustration Tokens</span><span class="ds-count">157</span></a></li>
+      <li><a href="#mocks"><span>Tour Window Mocks</span><span class="ds-count">3</span></a></li>
+    </ul>
+    <div class="ds-sidebar-footer">
+      <a href="design-system.html">← Back to main</a>
+    </div>
+  </aside>
+
+  <main class="ds-main">
+
+    <div class="ds-hero">
+      <h1>Tour Design · quarantined.</h1>
+      <p class="ds-hero-intro">
+        These tokens are scoped to the product tour only. They are <strong>not</strong> for
+        general use elsewhere in the app. Quarantined per <code>Design_System_Rules.md</code>
+        section 6 — if you need a new token for real UI, add it to
+        <code>Vibeliner/Design/DesignTokens.swift</code>, not here.
+      </p>
+      <div class="ds-hero-stats">
+        <div class="ds-hero-stat"><strong>34</strong>chrome tokens</div>
+        <div class="ds-hero-stat"><strong>157</strong>illustration tokens</div>
+        <div class="ds-hero-stat"><strong>191</strong>total</div>
+      </div>
+    </div>
+
+
+    <section id="chrome" class="ds-section">
+      <h2>Tour Window Chrome <span class="ds-section-count">34</span></h2>
+      <p class="ds-section-intro">Tokens from <code>DesignTokens+SetupTour.swift</code> with a <code>tour*</code> prefix. These paint the tour window itself — container, header, body type, footer buttons, progress bars.</p>
+      <div class="ds-grid"><div class="ds-swatch"><div class="ds-swatch-title">tourBarDivider</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.05);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.04)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.05)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour chrome divider/border-faint</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourBarOverlay</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.015);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.015);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.015)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.015)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour header/footer overlay</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourDoneButtonBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.14);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.14);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#22C55E · rgba(34,197,94,0.14)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Done action background</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourDoneButtonBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(74,222,128,0.34);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(74,222,128,0.34);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#4ADE80 · rgba(74,222,128,0.34)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Done action border</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourDoneButtonHoverBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.2);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.2);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#22C55E · rgba(34,197,94,0.2)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Done action hover background</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourDoneButtonText</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>rgba(255,255,255,1.0)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Done action text</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourGhostButtonBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.07);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.07)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.08)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Exit/ghost button border</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourGhostButtonHoverBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.12)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.12)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Exit/ghost button hover border</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourIllustrationPaneBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.02);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(0,0,0,0.08)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.02)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour illustration pane background fill</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourProgressActive</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(175,169,236,1)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(83,74,183,1)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour progress active</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourProgressInactive</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.07)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour progress inactive</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourTextDim</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.34);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.36);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.34)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.36)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour text dim</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourTextPrimary</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.92);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.92);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.92)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.92)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour text primary</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourTextSecondary</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.58);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.58);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.58)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.58)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour text secondary</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWindowBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(24,24,30,0.97);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(248,248,254,0.98);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(24,24,30,0.97)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(248,248,254,0.98)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour window surface — dark: rgba(24,24,30,0.97), light: rgba(248,248,254,0.98)</div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWindowBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.07);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.07)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.08)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+SetupTour.swift</div></div><div class="ds-swatch-desc">Tour window border</div></div></div><div class="ds-font-list" style="margin-top: 32px;"><div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 14.0px; font-weight: 400;">The quick brown fox</div><div class="ds-font-meta"><code>tourBodyFont</code> — system · 14.0px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 600;">The quick brown fox</div><div class="ds-font-meta"><code>tourButtonFont</code> — system · 13.0px · semibold (600)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 26.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourDoneTitleFont</code> — system · 26.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 600;">The quick brown fox</div><div class="ds-font-meta"><code>tourExitFont</code> — system · 11.0px · semibold (600)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 600;">The quick brown fox</div><div class="ds-font-meta"><code>tourHeaderFont</code> — system · 13.0px · semibold (600)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 500;">The quick brown fox</div><div class="ds-font-meta"><code>tourProgressFont</code> — system · 11.0px · medium (500)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 500;">The quick brown fox</div><div class="ds-font-meta"><code>tourStepBadgeFont</code> — system · 11.0px · medium (500)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 22.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourTitleFont</code> — system · 22.0px · bold (700)</div></div></div><div class="ds-grid-narrow" style="margin-top: 32px;"><div class="ds-dim-card"><div><div class="ds-dim-value">48<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFooterHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">44<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourHeaderHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">0.6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourIllustrationRatio</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">34<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourNextButtonHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourProgressBarHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourProgressBarWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">300<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTextMaxWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">700<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWindowHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWindowRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">880<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWindowWidth</div></div></div></div>
+    </section>
+
+
+    <section id="illustrations" class="ds-section">
+      <h2>Tour Illustration Tokens <span class="ds-section-count">157</span></h2>
+      <p class="ds-section-intro">Every token in <code>DesignTokens+TourIllustrations.swift</code>. These paint the fake UI inside the tour illustrations (wireframe app mocks, prompt sheets, LLM panels, filmstrip cells, mini screenshots, title pills) — they are NOT used elsewhere in the app.</p>
+      <div class="ds-grid"><div class="ds-swatch"><div class="ds-swatch-title">tourAddCellBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.04);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#AFA9EC · rgba(175,169,236,0.04)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourAddCellBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.3);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.3);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#AFA9EC · rgba(175,169,236,0.3)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourAddCellPlusBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#AFA9EC · rgba(175,169,236,0.16)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourChipBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.04);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.04)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.04)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourChipBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourEditorFrameBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(20,20,24,0.95);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(248,248,254,0.98);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(20,20,24,0.95)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(248,248,254,0.98)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourEditorFrameBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.1);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.08)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.1)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourEditorFrameShadowColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.3);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(0,0,0,0.3)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(0,0,0,0.08)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellAccent</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#534AB7 · rgba(83,74,183,0.12)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellBadgeText</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>rgba(255,255,255,1.0)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellBarBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.7)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellBgBottom</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#EEF1F7 · rgba(238,241,247,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellBgTop</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F6F8FC · rgba(246,248,252,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellDotColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.12)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellLineColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.06)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFilmstripCellShadowColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.12)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourFlowArrowColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.5);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.5);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#AFA9EC · rgba(175,169,236,0.5)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMBubbleBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.05);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.04);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.05)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.04)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMChatColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.55);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.5);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.55)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.5)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMComposerBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.03);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.04)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.03)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMComposerBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMPanelBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.025);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.025);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.025)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.025)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMPanelBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourLLMSendBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#AFA9EC · rgba(175,169,236,0.2)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotAccent</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#534AB7 · rgba(83,74,183,0.12)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotBadgeText</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>rgba(255,255,255,1.0)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotBarBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.7)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotBgBottom</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#EEF1F7 · rgba(238,241,247,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotBgTop</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F6F8FC · rgba(246,248,252,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotDotColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.15);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.15);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.15)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotLineColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.06)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotRailBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(245,247,252,0.9);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(245,247,252,0.9);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F5F7FC · rgba(245,247,252,0.9)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotRailPillColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.07)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotRectFill</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#EF4444 · rgba(239,68,68,0.06)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourMiniScreenshotShadowColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.12)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourModeCardBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.025);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.025);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.025)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.025)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourModeCardBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourOutputCardBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.025);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.03)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.025)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourOutputCardBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourOutputLabelBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.05);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.05);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.05)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.05)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourOutputLabelBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourPromptSheetBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.04);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.04)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.04)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourPromptSheetBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.06);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.06)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.06)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourPromptSheetColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.68);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.64);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.68)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.64)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourPromptSheetDim</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.3);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.3);"></div></div></div><div class="ds-swatch-values"><div class="ds-swatch-value-half ds-swatch-value-half--dark"><span class="ds-swatch-label">Dark</span><code>rgba(255,255,255,0.3)</code></div><div class="ds-swatch-value-half ds-swatch-value-half--light"><span class="ds-swatch-label">Light</span><code>rgba(15,23,42,0.3)</code></div></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourRoleTagBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.2);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.2);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.2)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourTitlePillShadowColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.15);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.15);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.15)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourTitlePillText</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>rgba(255,255,255,1.0)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeBgBottom</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(238,241,247,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#EEF1F7 · rgba(238,241,247,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeBgTop</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(246,248,252,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F6F8FC · rgba(246,248,252,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeBrandColor</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(38,48,65,1);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(38,48,65,1);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#263041 · rgba(38,48,65,1)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeCardBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.85);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.85);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.85)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeCardBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.04)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeCardErrorBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,245,245,0.9);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,245,245,0.9);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFF5F5 · rgba(255,245,245,0.9)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeCardErrorBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#EF4444 · rgba(239,68,68,0.2)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeHeading</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.14);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.14);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#534AB7 · rgba(83,74,183,0.14)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeLine</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.08)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeSidebarActive</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.16);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.16);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#534AB7 · rgba(83,74,183,0.16)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeSidebarBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(245,247,252,0.9);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(245,247,252,0.9);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F5F7FC · rgba(245,247,252,0.9)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeSidebarBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.04)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeSidebarItem</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.07)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.8)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.04)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableCell</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.07);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#0F172A · rgba(15,23,42,0.07)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableErrorBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,235,235,0.6);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,235,235,0.6);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFEBEB · rgba(255,235,235,0.6)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableHeadBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(240,242,248,0.9);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(240,242,248,0.9);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#F0F2F8 · rgba(240,242,248,0.9)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTableRowBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.04)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTopbarBg</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#FFFFFF · rgba(255,255,255,0.8)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div>
+<div class="ds-swatch"><div class="ds-swatch-title">tourWireframeTopbarBorder</div><div class="ds-swatch-preview"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div><div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div></div><div class="ds-swatch-values ds-swatch-values--single"><span class="ds-swatch-label">Static</span><code>#000000 · rgba(0,0,0,0.05)</code></div><div class="ds-swatch-usage"><div class="ds-swatch-usage-label">Source</div><div class="ds-swatch-usage-list">DesignTokens+TourIllustrations.swift</div></div></div></div><div class="ds-font-list" style="margin-top: 32px;"><div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 10.0px; font-weight: 600;">The quick brown fox</div><div class="ds-font-meta"><code>tourChipFont</code> — system · 10.0px · semibold (600)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 10.0px; font-weight: 400;">The quick brown fox</div><div class="ds-font-meta"><code>tourHintFont</code> — system · 10.0px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 400;">The quick brown fox</div><div class="ds-font-meta"><code>tourLLMBubbleFont</code> — system · 11.0px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10.5px; font-weight: 400;">1024 × 768  /captures</div><div class="ds-font-meta"><code>tourLLMChatFont</code> — monospace · 10.5px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourLLMHeaderFont</code> — system · 11.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 7.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourMiniBadgeFont</code> — system · 7.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 400;">The quick brown fox</div><div class="ds-font-meta"><code>tourModeDescFont</code> — system · 11.0px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourModeLabelFont</code> — system · 12.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 10.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourModeSectionFont</code> — system · 10.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 10.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourOutputLabelFont</code> — system · 10.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10.5px; font-weight: 400;">1024 × 768  /captures</div><div class="ds-font-meta"><code>tourPromptSheetFont</code> — monospace · 10.5px · regular (400)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 9.0px; font-weight: 600;">The quick brown fox</div><div class="ds-font-meta"><code>tourTitlePillFont</code> — system · 9.0px · semibold (600)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 8.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourTitlePillTagFont</code> — system · 8.0px · bold (700)</div></div>
+<div class="ds-font-sample"><div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 700;">The quick brown fox</div><div class="ds-font-meta"><code>tourWireframeBrandFont</code> — system · 11.0px · bold (700)</div></div></div><div class="ds-grid-narrow" style="margin-top: 32px;"><div class="ds-dim-card"><div><div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourAddCellDashWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">22<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourAddCellPlusSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourChipPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">0.45<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellAccentWidthRatio</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellBarHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">5<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellBarPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellBodyGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">50<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellBodyHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellBodyPadding</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellDotGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellDotSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellLineHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellShadowBlur</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">-4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFilmstripCellShadowYOffset</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFlowArrowChevronSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFlowArrowHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourFlowArrowWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourIllustrationPadding</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMBubbleTailSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMComposerRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMDotGlowSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">7<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMDotSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMPanelRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMSendSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMThumbHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">36<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourLLMThumbWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniBadgeSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">1.5<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniRectStroke</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">0.5<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotAccentWidthRatio</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">18<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotBarHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotBarPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">80<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotBodyHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotContentGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotContentPadding</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotDotGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">5<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotDotSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotLineHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRailGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRailPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRailPaddingV</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRailPillHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">30<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRailWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotRectRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotShadowBlur</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">-4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourMiniScreenshotShadowYOffset</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourModeCardPadding</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourModeCardRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourOutputCardPadding</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourOutputCardRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourOutputLabelGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourOutputLabelPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourOutputLabelPaddingV</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">17.85<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourPromptSheetLineHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourPromptSheetPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourPromptSheetPaddingV</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourPromptSheetRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">5<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillGap</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">22<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillPaddingLeading</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">4<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillPaddingTrailing</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillShadowBlur</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">-2<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillShadowYOffset</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillTagPaddingH</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourTitlePillTagPaddingV</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">16<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeBrandIconSize</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">64<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeCardHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeCardRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeNavPillHeight</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">100<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeSidebarWidth</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeTableRadius</div></div></div>
+<div class="ds-dim-card"><div><div class="ds-dim-value">36<span class="ds-dim-unit">pt</span></div></div><div><div class="ds-dim-name">tourWireframeTopbarHeight</div></div></div></div>
+    </section>
+
+
+    <section id="mocks" class="ds-section">
+      <h2>Tour Window Mocks <span class="ds-section-count">3</span></h2>
+      <p class="ds-section-intro">Hand-built HTML approximations of representative tour windows. Rendered at roughly 0.5× scale using the actual <code>tour*</code> chrome token values. Reference: <code>Vibeliner/Tour/TourWindowController*.swift</code>.</p>
+      
+<div class="ds-family" id="mock-typical">
+  <h3>Mock 1 — Typical tour step <span class="ds-family-meta">· 0.5× scale of the real 880×700 window</span></h3>
+  <div class="ds-tour-mock" style="width: 440px; height: 350px; background: #FFFFFF; border: 0.5px solid rgba(0,0,0,0.10); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08);">
+    <!-- Header -->
+    <div style="height: 28px; background: rgba(15,23,42,0.02); border-bottom: 0.5px solid rgba(15,23,42,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 14px;">
+      <div style="font-family: -apple-system, sans-serif; font-size: 8.5px; color: #534AB7; font-weight: 600;">◆ Vibeliner</div>
+      <div style="display: flex; gap: 3px;">
+        <div style="width: 12px; height: 3px; background: #534AB7; border-radius: 1.5px;"></div>
+        <div style="width: 12px; height: 3px; background: #534AB7; border-radius: 1.5px;"></div>
+        <div style="width: 12px; height: 3px; background: rgba(15,23,42,0.15); border-radius: 1.5px;"></div>
+        <div style="width: 12px; height: 3px; background: rgba(15,23,42,0.15); border-radius: 1.5px;"></div>
+        <div style="width: 12px; height: 3px; background: rgba(15,23,42,0.15); border-radius: 1.5px;"></div>
+      </div>
+      <div style="font-family: -apple-system, sans-serif; font-size: 7.5px; color: rgba(15,23,42,0.5);">Step 2 of 5</div>
+    </div>
+    <!-- Body: illustration left, text right -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; height: 266px;">
+      <div style="background: rgba(175,169,236,0.08); display: flex; align-items: center; justify-content: center;">
+        <!-- Fake illustration: a screenshot thumbnail -->
+        <div style="width: 110px; height: 72px; background: linear-gradient(135deg, #e6e9f2, #c9cedd); border-radius: 4px; box-shadow: 0 2px 8px rgba(0,0,0,0.12); position: relative;">
+          <div style="position: absolute; top: 6px; left: 6px; width: 60px; height: 4px; background: rgba(15,23,42,0.15); border-radius: 2px;"></div>
+          <div style="position: absolute; top: 14px; left: 6px; width: 40px; height: 4px; background: rgba(15,23,42,0.10); border-radius: 2px;"></div>
+          <div style="position: absolute; top: 32px; left: 6px; right: 6px; height: 34px; border: 1.25px solid #EF4444; border-radius: 3px;"></div>
+          <div style="position: absolute; top: 24px; left: 48px; width: 9px; height: 9px; background: #EF4444; border-radius: 50%; color: white; font-family: -apple-system, sans-serif; font-size: 6px; font-weight: 600; text-align: center; line-height: 9px;">1</div>
+        </div>
+      </div>
+      <div style="padding: 22px 26px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: -apple-system, sans-serif; font-size: 11px; font-weight: 600; color: rgba(15,23,42,0.4); text-transform: uppercase; letter-spacing: 0.05em;">02</div>
+        <div style="font-family: -apple-system, sans-serif; font-size: 15px; font-weight: 600; color: #0f172a; line-height: 1.2;">Annotate what you want fixed</div>
+        <div style="font-family: -apple-system, sans-serif; font-size: 10.5px; color: rgba(15,23,42,0.7); line-height: 1.45;">Pin, arrow, circle, or scribble on the screenshot. Add notes to explain the intent.</div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div style="height: 36px; background: rgba(15,23,42,0.02); border-top: 0.5px solid rgba(15,23,42,0.06); display: flex; align-items: center; justify-content: space-between; padding: 0 14px;">
+      <button type="button" style="font: 500 10px -apple-system; padding: 4px 10px; border-radius: 99px; background: transparent; border: 1px solid rgba(15,23,42,0.18); color: rgba(15,23,42,0.65); cursor: pointer;">Back</button>
+      <button type="button" style="font: 500 10px -apple-system; padding: 4px 14px; border-radius: 99px; background: #534AB7; color: white; border: 1px solid #534AB7; cursor: pointer;">Next →</button>
+    </div>
+  </div>
+</div>
+
+<div class="ds-family" id="mock-done">
+  <h3>Mock 2 — Done screen variant</h3>
+  <div class="ds-tour-mock" style="width: 440px; height: 350px; background: #FFFFFF; border: 0.5px solid rgba(0,0,0,0.10); border-radius: 10px; overflow: hidden; box-shadow: 0 4px 24px rgba(0,0,0,0.08); display: flex; flex-direction: column;">
+    <div style="height: 28px; background: rgba(15,23,42,0.02); border-bottom: 0.5px solid rgba(15,23,42,0.06); display: flex; align-items: center; justify-content: center;">
+      <div style="font-family: -apple-system, sans-serif; font-size: 8.5px; color: #534AB7; font-weight: 600;">◆ Vibeliner</div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px;">
+      <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(34, 197, 94, 0.12); display: flex; align-items: center; justify-content: center;">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 7"/></svg>
+      </div>
+      <div style="font-family: -apple-system, sans-serif; font-size: 18px; font-weight: 600; color: #0f172a; letter-spacing: -0.01em;">You're all set</div>
+      <div style="font-family: -apple-system, sans-serif; font-size: 10.5px; color: rgba(15,23,42,0.7); line-height: 1.45; text-align: center; max-width: 280px;">Press ⌘⇧6 anywhere to capture. Vibeliner copies the annotated screenshot + prompt to your clipboard.</div>
+    </div>
+    <div style="height: 36px; background: rgba(15,23,42,0.02); border-top: 0.5px solid rgba(15,23,42,0.06); display: flex; align-items: center; justify-content: center; padding: 0 14px;">
+      <button type="button" style="font: 600 10px -apple-system; padding: 5px 18px; border-radius: 99px; background: rgba(34, 197, 94, 0.08); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.5); cursor: pointer;">Got it</button>
+    </div>
+  </div>
+</div>
+
+<div class="ds-family" id="mock-illustration-pane">
+  <h3>Mock 3 — Illustration pane inset <span class="ds-family-meta">· shows the tour illustration tokens in their real container</span></h3>
+  <div class="ds-tour-mock" style="width: 440px; height: 220px; background: rgba(175,169,236,0.08); border: 0.5px solid rgba(175,169,236,0.22); border-radius: 10px; padding: 22px; display: flex; align-items: center; justify-content: center;">
+    <!-- Wireframe app mock at rough scale -->
+    <div style="width: 280px; height: 150px; background: linear-gradient(180deg, #F6F8FC, #EEF1F7); border-radius: 8px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden;">
+      <!-- topbar -->
+      <div style="height: 20px; background: rgba(255,255,255,0.8); border-bottom: 0.5px solid rgba(0,0,0,0.05); display: flex; align-items: center; padding: 0 8px; gap: 6px;">
+        <div style="width: 9px; height: 9px; border-radius: 50%; background: #26304199;"></div>
+        <div style="font-family: -apple-system, sans-serif; font-size: 7px; font-weight: 700; color: #263041;">app</div>
+      </div>
+      <div style="display: grid; grid-template-columns: 60px 1fr; height: 130px;">
+        <!-- sidebar -->
+        <div style="background: rgba(245,247,252,0.9); border-right: 0.5px solid rgba(0,0,0,0.04); padding: 8px 6px; display: flex; flex-direction: column; gap: 4px;">
+          <div style="height: 6px; background: rgba(83,74,183,0.16); border-radius: 2px;"></div>
+          <div style="height: 5px; background: rgba(15,23,42,0.07); border-radius: 2px;"></div>
+          <div style="height: 5px; background: rgba(15,23,42,0.07); border-radius: 2px;"></div>
+          <div style="height: 5px; background: rgba(15,23,42,0.07); border-radius: 2px;"></div>
+        </div>
+        <!-- content -->
+        <div style="padding: 8px; display: flex; flex-direction: column; gap: 6px;">
+          <div style="height: 7px; width: 50%; background: rgba(83,74,183,0.14); border-radius: 2px;"></div>
+          <div style="height: 32px; background: rgba(255,255,255,0.85); border: 0.5px solid rgba(0,0,0,0.04); border-radius: 4px; padding: 6px 8px;">
+            <div style="height: 4px; width: 80%; background: rgba(15,23,42,0.08); border-radius: 2px; margin-bottom: 3px;"></div>
+            <div style="height: 4px; width: 60%; background: rgba(15,23,42,0.08); border-radius: 2px;"></div>
+          </div>
+          <div style="height: 32px; background: rgba(255,245,245,0.9); border: 0.5px solid rgba(239,68,68,0.2); border-radius: 4px; padding: 6px 8px;">
+            <div style="height: 4px; width: 70%; background: rgba(15,23,42,0.08); border-radius: 2px; margin-bottom: 3px;"></div>
+            <div style="height: 4px; width: 50%; background: rgba(15,23,42,0.08); border-radius: 2px;"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    </section>
+
+
+    <footer class="ds-footer">
+      <div>
+        Hand-authored reference for tour-quarantined tokens. Not generated by
+        <code>scripts/design_system_codegen.py</code>.
+      </div>
+      <div>
+        <a href="design-system.html">← Back to main design system</a>
+      </div>
+    </footer>
+
+  </main>
+</div>
+<script>
+/* Vibeliner design-system — three vanilla IIFEs. Each is independent: if one
+   fails silently (no sidebar, private browsing, old Safari), the others run. */
+
+(function modeToggle() {
+  /* Single Both/Light/Dark selector controls BOTH the page chrome AND
+     what swatches show:
+       both  → page follows system preference; swatches show dark+light halves
+       light → page forced light; swatches collapse to light half only
+       dark  → page forced dark; swatches collapse to dark half only
+  */
+  var KEY = 'vibeliner-design-system-mode';
+  var toggle = document.querySelector('.ds-mode-toggle');
+  if (!toggle) return;
+  function apply(mode) {
+    document.body.classList.remove('light', 'dark', 'swatch-mode-light', 'swatch-mode-dark');
+    if (mode === 'light') document.body.classList.add('light', 'swatch-mode-light');
+    else if (mode === 'dark') document.body.classList.add('dark', 'swatch-mode-dark');
+    toggle.querySelectorAll('[data-mode]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+  }
+  function getSaved() { try { return localStorage.getItem(KEY) || 'both'; } catch (e) { return 'both'; } }
+  function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
+  toggle.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    save(btn.dataset.mode);
+    apply(btn.dataset.mode);
+  });
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  var onChange = function () { if (getSaved() === 'both') apply('both'); };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+  apply(getSaved());
+})();
+
+(function sidebar() {
+  var nav = document.querySelector('.ds-sidebar-nav');
+  if (!nav) return;
+  nav.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    e.preventDefault();
+    var target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.body.classList.remove('ds-sidebar-open');
+  });
+  var links = nav.querySelectorAll('a[href^="#"]');
+  var sections = document.querySelectorAll('section[id]');
+  if ('IntersectionObserver' in window && sections.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var id = entry.target.id;
+        links.forEach(function (l) {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+    sections.forEach(function (s) { observer.observe(s); });
+  }
+  var hamburger = document.querySelector('.ds-hamburger');
+  if (hamburger) {
+    hamburger.addEventListener('click', function () {
+      document.body.classList.toggle('ds-sidebar-open');
+    });
+  }
+})();
+
+(function usageOverflow() {
+  /* Walk every .ds-swatch-usage-list; if its content overflows, progressively
+     hide trailing <span.ds-swatch-file> until it fits, then append "+N more". */
+  function trim(list) {
+    if (list.classList.contains('ds-swatch-usage-empty')) return;
+    // Remove any previous "+N more" so re-runs idempotent.
+    var prev = list.querySelector('.ds-swatch-more');
+    if (prev) prev.remove();
+    var files = Array.prototype.slice.call(list.querySelectorAll('.ds-swatch-file'));
+    files.forEach(function (f) { f.style.display = ''; });
+    if (list.scrollHeight <= list.clientHeight + 1) return;
+    var hidden = 0;
+    for (var i = files.length - 1; i >= 0; i--) {
+      files[i].style.display = 'none';
+      hidden++;
+      if (list.scrollHeight <= list.clientHeight + 1) break;
+    }
+    if (hidden === 0) return;
+    var more = document.createElement('span');
+    more.className = 'ds-swatch-more';
+    more.textContent = '+' + hidden + ' more';
+    list.appendChild(more);
+    // If "+N more" pushed us over, hide one more file.
+    while (list.scrollHeight > list.clientHeight + 1 && hidden < files.length) {
+      for (var j = files.length - 1; j >= 0; j--) {
+        if (files[j].style.display !== 'none') { files[j].style.display = 'none'; hidden++; break; }
+      }
+      more.textContent = '+' + hidden + ' more';
+    }
+  }
+  var lists = document.querySelectorAll('.ds-swatch-usage-list');
+  function run() { lists.forEach(trim); }
+  run();
+  // Re-run on window resize (card widths change → wrap changes).
+  var t;
+  window.addEventListener('resize', function () {
+    clearTimeout(t);
+    t = setTimeout(run, 120);
+  });
+})();
+
+(function sectionCollapse() {
+  var KEY = 'vibeliner-design-system-collapsed';
+  function getSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) { return new Set(); }
+  }
+  function saveSet(set) { try { localStorage.setItem(KEY, JSON.stringify(Array.from(set))); } catch (e) {} }
+  var collapsed = getSet();
+  document.querySelectorAll('section[id] > h2').forEach(function (h2) {
+    var section = h2.parentElement;
+    if (collapsed.has(section.id)) section.classList.add('collapsed');
+    h2.addEventListener('click', function () {
+      section.classList.toggle('collapsed');
+      if (section.classList.contains('collapsed')) collapsed.add(section.id);
+      else collapsed.delete(section.id);
+      saveSet(collapsed);
+    });
+  });
+})();
+</script>
+</body>
+</html>

@@ -51,8 +51,27 @@ The codegen driver prints a warning (does **not** fail) when a Swift token is mi
 | `docs/design-system/templates/design-system.html.j2` | Main Jinja2 template | yes (via VIB-481) |
 | `docs/design-system/templates/_components.html.j2` | Component macros | yes (via VIB-482) |
 | `docs/design-system/design-system.html` | Generated HTML | **no — do not edit** |
+| `docs/design-system/tour-design.html` | Tour-specific reference (quarantined tokens) | **yes — hand-authored** |
 | `scripts/parse_design_tokens.py` | Swift → dict parser | yes |
 | `scripts/design_system_codegen.py` | Codegen driver | yes |
+
+## `tour-design.html`
+
+Tour illustration tokens (everything in `DesignTokens+TourIllustrations.swift`)
+and tour window chrome (the `tour*` prefix in `DesignTokens+SetupTour.swift`) are
+**quarantined** per `Design_System_Rules.md` — they exist only for the product
+tour and must not be used elsewhere.
+
+`tour-design.html` documents those tokens in a separate, hand-authored file so
+the main reference stays focused on tokens available for general use. It reuses
+the same CSS chrome / sidebar / mode toggle as `design-system.html` — when the
+main file's visual language changes, someone updating `tour-design.html` will
+need to re-copy the relevant CSS + JS by hand. The validation script (landing in
+VIB-477) does **not** cover this file.
+
+Don't auto-generate it. Don't add tour tokens to `tokens-metadata.yaml`. If the
+tour is substantially reworked and the hand-authored reference diverges, a
+future ticket can fold it into the codegen.
 
 ## Determinism
 
