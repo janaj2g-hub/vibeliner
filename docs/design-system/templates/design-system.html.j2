@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Vibeliner Design System (scaffolding stub)</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2em auto; padding: 0 1em; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 20px; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 4px 0; font-family: 'SF Mono', monospace; font-size: 13px; }
+  .count { color: #666; font-weight: normal; }
+  .banner { background: #ffeaa7; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
+</style>
+</head>
+<body>
+<div class="banner">
+  <strong>This is the scaffolding stub.</strong> VIB-481/482/483 will replace this template with the real design.
+</div>
+
+<h1>Vibeliner Design System</h1>
+<p>{{ token_count }} tokens loaded. {{ yaml_token_count }} in metadata.</p>
+
+{% for section in sections %}
+<h2>{{ section.title }} <span class="count">({{ tokens_by_section[section.id] | length }})</span></h2>
+{% if section.intro %}<p>{{ section.intro }}</p>{% endif %}
+<ul>
+{% for entry in tokens_by_section[section.id] %}
+  <li>
+    <strong>{{ entry[0] }}</strong>
+    — {{ entry[1].description | default('(no description)') }}
+  </li>
+{% endfor %}
+</ul>
+{% endfor %}
+
+<footer>
+  <p style="color: #666; font-size: 11px;">
+    Generated from {{ source_files | join(', ') }}.
+    Regenerate: <code>python3 scripts/design_system_codegen.py</code>
+  </p>
+</footer>
+</body>
+</html>
