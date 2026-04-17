@@ -1,0 +1,98 @@
+version: 1
+
+# Sections appear in this order in the generated HTML.
+sections:
+  - id: components
+    title: Live Components
+    intro: Interactive previews of every reusable component family.
+  - id: colors
+    title: Color Palette
+    intro: Two brand colors, one annotation color, semantic accents.
+  - id: typography
+    title: Typography
+    intro: System font at Vibeliner's sizes and weights.
+  - id: dimensions
+    title: Dimensions
+    intro: Measurements that define the app's spatial rhythm.
+  - id: surfaces
+    title: Surfaces
+    intro: Composed surfaces combining multiple tokens.
+
+# Token presentation metadata. Real population of all ~370 tokens happens in VIB-475.
+tokens:
+  pillButtonBg:
+    section: components
+    family: pill-button
+    consumed_by:
+      - ToolbarButtons.swift
+      - SettingsControls.swift
+      - SetupComponents.swift
+      - CaptureRowView.swift
+      - PromptTabView.swift
+      - AboutTabView.swift
+    description: Background fill for outlined purple pill buttons.
+    rendering:
+      mode: dual
+      preview_component: pill-button
+
+  red:
+    section: colors
+    family: red
+    description: All annotation marks (pin, arrow, line, rect, circle, freehand badges).
+    consumed_by:
+      - BadgeRenderer.swift
+      - ArrowRenderer.swift
+      - LineRenderer.swift
+      - PinRenderer.swift
+      - RectangleRenderer.swift
+      - CircleRenderer.swift
+      - FreehandRenderer.swift
+    rendering:
+      mode: triple
+
+  badgeDiameter:
+    section: dimensions
+    family: annotation
+    description: Diameter of every annotation badge circle.
+    consumed_by:
+      - BadgeRenderer.swift
+
+  badgeFont:
+    section: typography
+    family: annotation
+    description: Font for the number inside each annotation badge.
+    consumed_by:
+      - BadgeRenderer.swift
+
+  toolbarBg:
+    section: surfaces
+    family: toolbar
+    description: Toolbar background fill, appearance-aware.
+    consumed_by:
+      - ToolbarView.swift
+    rendering:
+      mode: dual
+
+# Optional explicit ordering within a section. Families not listed fall back to
+# alphabetical. This determines the order of component FAMILIES; individual
+# tokens within a family remain alphabetical unless listed explicitly.
+order:
+  components:
+    - pill-button
+    - pill-button-primary
+    - segmented-control
+    - secondary-button
+    - note-pill
+    - status-pill
+    - tool-button
+  colors:
+    - purple
+    - red
+    - copied-green
+    - chrome
+  typography: []
+  dimensions: []
+  surfaces: []
+
+# Tokens excluded from HTML rendering (still validated for existence in VIB-477).
+excluded: []

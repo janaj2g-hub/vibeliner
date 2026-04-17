@@ -2,551 +2,66 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vibeliner Design System — Visual Token Reference</title>
+<title>Vibeliner Design System (scaffolding stub)</title>
 <style>
-  :root {
-    --bg: #1e1e1e; --fg: #e0e0e0; --fg2: #888; --surface: rgba(255,255,255,0.04); --border: rgba(255,255,255,0.08);
-  }
-  .light { --bg: #f5f5f7; --fg: #1d1d1f; --fg2: #666; --surface: rgba(0,0,0,0.03); --border: rgba(0,0,0,0.08); }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif; background: var(--bg); color: var(--fg); padding: 24px; transition: background 0.2s, color 0.2s; }
-  h1 { font-size: 24px; font-weight: 700; margin-bottom: 4px; }
-  .subtitle { font-size: 13px; color: var(--fg2); margin-bottom: 24px; }
-  h2 { font-size: 18px; font-weight: 600; margin: 32px 0 16px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
-  h3 { font-size: 14px; font-weight: 600; margin: 20px 0 10px; color: var(--fg2); }
-  .toggle-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; padding: 10px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-  .toggle-bar label { font-size: 13px; font-weight: 500; cursor: pointer; }
-  .toggle-bar input { cursor: pointer; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
-  .swatch { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; background: var(--surface); }
-  .swatch-color { height: 48px; position: relative; }
-  .swatch-color.checkered { background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%); background-size: 10px 10px; background-position: 0 0, 0 5px, 5px -5px, -5px 0; }
-  .swatch-color .fill { position: absolute; inset: 0; }
-  .swatch-info { padding: 8px 10px; font-size: 11px; }
-  .swatch-name { font-weight: 600; font-size: 12px; }
-  .swatch-value { color: var(--fg2); font-family: 'SF Mono', monospace; font-size: 10px; margin-top: 2px; }
-  .dual-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 12px; }
-  .dual-swatch { border-radius: 10px; border: 1px solid var(--border); overflow: hidden; background: var(--surface); }
-  .dual-row { display: flex; }
-  .dual-half { flex: 1; height: 40px; display: flex; align-items: center; justify-content: center; font-size: 10px; font-family: 'SF Mono', monospace; position: relative; }
-  .dual-half.checkered { background-image: linear-gradient(45deg, #808080 25%, transparent 25%), linear-gradient(-45deg, #808080 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #808080 75%), linear-gradient(-45deg, transparent 75%, #808080 75%); background-size: 10px 10px; background-position: 0 0, 0 5px, 5px -5px, -5px 0; }
-  .dual-half .fill { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
-  .dual-label { font-size: 10px; color: var(--fg2); text-align: center; padding: 2px 0; }
-  .dual-info { padding: 8px 10px; font-size: 11px; }
-  .dual-name { font-weight: 600; font-size: 12px; }
-  .dual-usage { color: var(--fg2); font-size: 10px; margin-top: 2px; }
-  .font-sample { padding: 12px 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); margin-bottom: 8px; }
-  .font-label { font-size: 10px; color: var(--fg2); font-family: 'SF Mono', monospace; margin-bottom: 4px; }
-  .dim-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
-  .dim-item { padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
-  .dim-name { font-size: 11px; font-weight: 600; }
-  .dim-val { font-size: 20px; font-weight: 700; color: #AFA9EC; }
-  .dim-usage { font-size: 10px; color: var(--fg2); margin-top: 2px; }
-  .component-preview { display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; padding: 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
-  .preview-card { text-align: center; }
-  .preview-label { font-size: 10px; color: var(--fg2); margin-top: 6px; }
-
-  /* Component section styles */
-  .comp-section { margin-bottom: 20px; }
-  .comp-row { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 12px; }
-  .comp-container { border-radius: 12px; padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; min-width: 320px; flex: 1; }
-  .comp-container.dark-bg { background: rgba(30,30,30,0.95); }
-  .comp-container.light-bg { background: #f5f5f7; border: 1px solid rgba(0,0,0,0.08); }
-  .comp-container-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px; }
-  .comp-container.dark-bg .comp-container-label { color: rgba(255,255,255,0.4); }
-  .comp-container.light-bg .comp-container-label { color: rgba(0,0,0,0.4); }
-  .comp-items { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
-  .comp-item { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-  .comp-item-label { font-size: 9px; font-family: 'SF Mono', monospace; color: var(--fg2); text-align: center; max-width: 180px; }
-  .comp-token-list { font-size: 10px; font-family: 'SF Mono', monospace; color: var(--fg2); margin-top: 4px; line-height: 1.6; }
-  .comp-token-list code { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 1px 4px; font-size: 9px; }
-
-  /* Pill button renders */
-  .pill-btn { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11px; font-weight: 600; cursor: default; white-space: nowrap; }
-  /* Segmented control renders */
-  .seg-control { display: inline-flex; height: 28px; border-radius: 14px; padding: 2px; }
-  .seg-item { height: 24px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; font-size: 10px; font-weight: 600; cursor: default; white-space: nowrap; }
-
-  /* Annotation component renders */
-  .badge { width: 18px; height: 18px; border-radius: 50%; background: #EF4444; display: flex; align-items: center; justify-content: center; color: white; font-size: 9px; font-weight: 600; }
-  .note-pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; font-size: 12px; }
-  .note-default { background: rgba(255,248,248,0.82); border: 1px solid rgba(239,68,68,0.18); color: #7F1D1D; }
-  .note-hover { background: rgba(255,245,245,0.88); border: 1px solid rgba(239,68,68,0.4); color: #7F1D1D; }
-  .note-editing { background: rgba(255,245,245,0.92); border: 1.5px solid #EF4444; color: #7F1D1D; }
-  .note-prefix { color: rgba(153,27,27,0.4); font-size: 8px; font-weight: 600; }
-  .copy-btn { display: inline-flex; align-items: center; height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11px; font-weight: 500; cursor: default; }
-  .copy-copied { background: rgba(22,163,74,0.12); border: 1.5px solid rgba(22,163,74,0.5); color: rgba(22,163,74,0.8); }
-  .status-pill-d { display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border-radius: 12px; font-family: 'SF Mono', monospace; font-size: 10px; font-weight: 500; background: rgba(30,30,30,0.88); color: white; }
-  .status-pill-l { display: inline-flex; align-items: center; height: 24px; padding: 0 12px; border-radius: 12px; font-family: 'SF Mono', monospace; font-size: 10px; font-weight: 500; background: rgba(255,255,255,0.85); border: 1px solid rgba(0,0,0,0.06); color: rgba(0,0,0,0.7); }
+  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2em auto; padding: 0 1em; }
+  h1 { font-size: 28px; }
+  h2 { font-size: 20px; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }
+  ul { list-style: none; padding: 0; }
+  li { padding: 4px 0; font-family: 'SF Mono', monospace; font-size: 13px; }
+  .count { color: #666; font-weight: normal; }
+  .banner { background: #ffeaa7; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
 </style>
 </head>
 <body>
+<div class="banner">
+  <strong>This is the scaffolding stub.</strong> VIB-481/482/483 will replace this template with the real design.
+</div>
 
 <h1>Vibeliner Design System</h1>
-<p class="subtitle">Visual Token Reference — Source: <code>Vibeliner/Design/DesignTokens.swift</code> — Updated 2026-04-13 (VIB-437 consolidation)</p>
+<p>370 tokens loaded. 5 in metadata.</p>
 
-<div class="toggle-bar">
-  <label><input type="checkbox" id="modeToggle" onchange="toggleMode()"> Light mode</label>
-  <span style="font-size:11px;color:var(--fg2)">Toggle to see how tokens render against both backgrounds</span>
-</div>
+<h2>Live Components <span class="count">(1)</span></h2>
+<p>Interactive previews of every reusable component family.</p><ul>
+  <li>
+    <strong>pillButtonBg</strong>
+    — Background fill for outlined purple pill buttons.
+  </li>
+</ul>
+<h2>Color Palette <span class="count">(1)</span></h2>
+<p>Two brand colors, one annotation color, semantic accents.</p><ul>
+  <li>
+    <strong>red</strong>
+    — All annotation marks (pin, arrow, line, rect, circle, freehand badges).
+  </li>
+</ul>
+<h2>Typography <span class="count">(1)</span></h2>
+<p>System font at Vibeliner's sizes and weights.</p><ul>
+  <li>
+    <strong>badgeFont</strong>
+    — Font for the number inside each annotation badge.
+  </li>
+</ul>
+<h2>Dimensions <span class="count">(1)</span></h2>
+<p>Measurements that define the app's spatial rhythm.</p><ul>
+  <li>
+    <strong>badgeDiameter</strong>
+    — Diameter of every annotation badge circle.
+  </li>
+</ul>
+<h2>Surfaces <span class="count">(1)</span></h2>
+<p>Composed surfaces combining multiple tokens.</p><ul>
+  <li>
+    <strong>toolbarBg</strong>
+    — Toolbar background fill, appearance-aware.
+  </li>
+</ul>
 
-<!-- ================================================================== -->
-<!-- COMPONENTS SECTION — Interactive controls with live token previews  -->
-<!-- ================================================================== -->
-
-<h2>Components</h2>
-
-<!-- Pill Button (Default) -->
-<h3>Pill Button</h3>
-<div class="comp-section">
-  <div class="comp-row">
-    <div class="comp-container dark-bg">
-      <div class="comp-container-label">Dark mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(116,97,194,0.25); border:1.5px solid #A796EB; color:#A796EB;">Copy Prompt</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(116,97,194,0.35); border:1.5px solid #C4B8F5; color:#C4B8F5;">Copy Prompt</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list">
-        <code>pillButtonBorder</code> #A796EB &nbsp;
-        <code>pillButtonBg</code> rgba(116,97,194,0.25) &nbsp;
-        <code>pillButtonText</code> #A796EB<br>
-        <code>pillButtonHoverBorder</code> #C4B8F5 &nbsp;
-        <code>pillButtonHoverBg</code> rgba(116,97,194,0.35) &nbsp;
-        <code>pillButtonHoverText</code> #C4B8F5
-      </div>
-    </div>
-    <div class="comp-container light-bg">
-      <div class="comp-container-label">Light mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(83,74,183,0.08); border:1.5px solid #534AB7; color:#534AB7;">Copy Prompt</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(83,74,183,0.12); border:1.5px solid #7461C2; color:#7461C2;">Copy Prompt</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list" style="color:rgba(0,0,0,0.5)">
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonBorder</code> #534AB7 &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonBg</code> rgba(83,74,183,0.08) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonText</code> #534AB7<br>
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonHoverBorder</code> #7461C2 &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonHoverBg</code> rgba(83,74,183,0.12) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonHoverText</code> #7461C2
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Pill Button Primary -->
-<h3>Pill Button Primary</h3>
-<div class="comp-section">
-  <div class="comp-row">
-    <div class="comp-container dark-bg">
-      <div class="comp-container-label">Dark mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(175,169,236,0.16); border:1.5px solid rgba(175,169,236,0.36); color:#AFA9EC;">Next</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(175,169,236,0.22); border:1.5px solid rgba(175,169,236,0.48); color:#AFA9EC;">Next</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list">
-        <code>pillButtonPrimaryText</code> #AFA9EC &nbsp;
-        <code>pillButtonPrimaryBg</code> rgba(175,169,236,0.16) &nbsp;
-        <code>pillButtonPrimaryBorder</code> rgba(175,169,236,0.36)
-      </div>
-    </div>
-    <div class="comp-container light-bg">
-      <div class="comp-container-label">Light mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:#534AB7; border:1.5px solid #534AB7; color:white;">Next</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:#6055C4; border:1.5px solid #6055C4; color:white;">Next</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list" style="color:rgba(0,0,0,0.5)">
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonPrimaryText</code> white &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonPrimaryBg</code> #534AB7 &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">pillButtonPrimaryBorder</code> #534AB7
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Segmented Control -->
-<h3>Segmented Control</h3>
-<div class="comp-section">
-  <div class="comp-row">
-    <div class="comp-container dark-bg">
-      <div class="comp-container-label">Dark mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="seg-control" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08);">
-            <div class="seg-item" style="color:rgba(255,255,255,0.58);">One</div>
-            <div class="seg-item" style="background:rgba(175,169,236,0.16); border:1px solid rgba(175,169,236,0.20); color:#AFA9EC;">Two</div>
-            <div class="seg-item" style="color:rgba(255,255,255,0.58);">Three</div>
-          </div>
-          <div class="comp-item-label">Active: "Two"</div>
-        </div>
-      </div>
-      <div class="comp-token-list">
-        <code>segmentedTrack</code> rgba(255,255,255,0.03) &nbsp;
-        <code>segmentedTrackBorder</code> rgba(255,255,255,0.08)<br>
-        <code>segmentedActiveFill</code> rgba(175,169,236,0.16) &nbsp;
-        <code>segmentedActiveBorder</code> rgba(175,169,236,0.20)<br>
-        <code>segmentedActiveText</code> #AFA9EC &nbsp;
-        <code>segmentedInactiveText</code> rgba(255,255,255,0.58)
-      </div>
-    </div>
-    <div class="comp-container light-bg">
-      <div class="comp-container-label">Light mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="seg-control" style="background:rgba(15,23,42,0.04); border:1px solid rgba(15,23,42,0.08);">
-            <div class="seg-item" style="color:rgba(15,23,42,0.58);">One</div>
-            <div class="seg-item" style="background:rgba(175,169,236,0.14); border:1px solid rgba(114,103,221,0.18); color:#7267DD;">Two</div>
-            <div class="seg-item" style="color:rgba(15,23,42,0.58);">Three</div>
-          </div>
-          <div class="comp-item-label">Active: "Two"</div>
-        </div>
-      </div>
-      <div class="comp-token-list" style="color:rgba(0,0,0,0.5)">
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedTrack</code> rgba(15,23,42,0.04) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedTrackBorder</code> rgba(15,23,42,0.08)<br>
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedActiveFill</code> rgba(175,169,236,0.14) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedActiveBorder</code> rgba(114,103,221,0.18)<br>
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedActiveText</code> #7267DD &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">segmentedInactiveText</code> rgba(15,23,42,0.58)
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Secondary Button -->
-<h3>Secondary Button</h3>
-<div class="comp-section">
-  <div class="comp-row">
-    <div class="comp-container dark-bg">
-      <div class="comp-container-label">Dark mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:transparent; border:1.5px solid rgba(255,255,255,0.20); color:rgba(255,255,255,0.60);">+ Add image</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(255,255,255,0.05); border:1.5px solid rgba(255,255,255,0.35); color:rgba(255,255,255,0.80);">+ Add image</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list">
-        <code>toolbarSecondaryBorder</code> rgba(255,255,255,0.20) &nbsp;
-        <code>toolbarSecondaryText</code> rgba(255,255,255,0.60) &nbsp;
-        <code>toolbarSecondaryBg</code> clear
-      </div>
-    </div>
-    <div class="comp-container light-bg">
-      <div class="comp-container-label">Light mode</div>
-      <div class="comp-items">
-        <div class="comp-item">
-          <div class="pill-btn" style="background:transparent; border:1.5px solid rgba(0,0,0,0.15); color:rgba(0,0,0,0.65);">+ Add image</div>
-          <div class="comp-item-label">Default</div>
-        </div>
-        <div class="comp-item">
-          <div class="pill-btn" style="background:rgba(0,0,0,0.04); border:1.5px solid rgba(0,0,0,0.25); color:rgba(0,0,0,0.75);">+ Add image</div>
-          <div class="comp-item-label">Hover</div>
-        </div>
-      </div>
-      <div class="comp-token-list" style="color:rgba(0,0,0,0.5)">
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">toolbarSecondaryBorder</code> rgba(0,0,0,0.15) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">toolbarSecondaryText</code> rgba(0,0,0,0.65) &nbsp;
-        <code style="background:rgba(0,0,0,0.04);border-color:rgba(0,0,0,0.08)">toolbarSecondaryBg</code> clear
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ================================================================== -->
-<!-- COLOR PALETTE SECTION                                               -->
-<!-- ================================================================== -->
-
-<h2>Purple — Brand & Active States</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color" style="background:#AFA9EC"></div><div class="swatch-info"><div class="swatch-name">purpleLight</div><div class="swatch-value">#AFA9EC</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#534AB7"></div><div class="swatch-info"><div class="swatch-name">purpleDark</div><div class="swatch-value">#534AB7</div></div></div>
-</div>
-
-<h2>Red — Annotations</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color" style="background:#EF4444"></div><div class="swatch-info"><div class="swatch-name">red</div><div class="swatch-value">#EF4444</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(239,68,68,0.06)"></div></div><div class="swatch-info"><div class="swatch-name">redFill</div><div class="swatch-value">rgba(239,68,68,0.06)</div></div></div>
-</div>
-
-<h2>Red — Note Pills</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,248,248,0.82)"></div></div><div class="swatch-info"><div class="swatch-name">redNoteBg</div><div class="swatch-value">rgba(255,248,248,0.82)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(239,68,68,0.18)"></div></div><div class="swatch-info"><div class="swatch-name">redNoteBorder</div><div class="swatch-value">rgba(239,68,68,0.18)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,245,245,0.88)"></div></div><div class="swatch-info"><div class="swatch-name">noteHoverBg</div><div class="swatch-value">rgba(255,245,245,0.88)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(239,68,68,0.4)"></div></div><div class="swatch-info"><div class="swatch-name">noteHoverBorder</div><div class="swatch-value">rgba(239,68,68,0.4)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,245,245,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">noteSelectedBg</div><div class="swatch-value">rgba(255,245,245,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(239,68,68,0.5)"></div></div><div class="swatch-info"><div class="swatch-name">noteSelectedBorder</div><div class="swatch-value">rgba(239,68,68,0.5)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,245,245,0.92)"></div></div><div class="swatch-info"><div class="swatch-name">noteEditingBg</div><div class="swatch-value">rgba(255,245,245,0.92)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(153,27,27,0.4)"></div></div><div class="swatch-info"><div class="swatch-name">notePrefixColor</div><div class="swatch-value">rgba(153,27,27,0.4)</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#7F1D1D"></div><div class="swatch-info"><div class="swatch-name">noteTextColor</div><div class="swatch-value">#7F1D1D</div></div></div>
-</div>
-
-<h2>Green — Success States</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(22,163,74,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreen</div><div class="swatch-value">rgba(22,163,74,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(22,163,74,0.12)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenBg</div><div class="swatch-value">rgba(22,163,74,0.12)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(22,163,74,0.5)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenBorder</div><div class="swatch-value">rgba(22,163,74,0.5)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(22,163,74,0.8)"></div></div><div class="swatch-info"><div class="swatch-name">copiedGreenText</div><div class="swatch-value">rgba(22,163,74,0.8)</div></div></div>
-</div>
-
-<h2>Chrome & Overlay</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(0,0,0,0.5)"></div></div><div class="swatch-info"><div class="swatch-name">dimOverlay</div><div class="swatch-value">rgba(0,0,0,0.5)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.12)"></div></div><div class="swatch-info"><div class="swatch-name">chromeBorder</div><div class="swatch-value">rgba(175,169,236,0.12)</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#FF5F57"></div><div class="swatch-info"><div class="swatch-name">toolbarCloseIconHover</div><div class="swatch-value">#FF5F57</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- TOOLBAR — APPEARANCE-AWARE TOKENS                                   -->
-<!-- ================================================================== -->
-
-<h2>Toolbar — Appearance-Aware (Dark / Light)</h2>
-<div class="dual-grid">
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(30,30,30,0.92)"><span style="color:white">Dark</span></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.88)"><span style="color:black">Light</span></div></div></div><div class="dual-info"><div class="dual-name">toolbarBg</div><div class="dual-usage">Toolbar background</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.12)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(0,0,0,0.10)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarBorder</div><div class="dual-usage">Toolbar border</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#1e1e1e"><span style="color:rgba(255,255,255,0.40)">Aa</span></div><div class="dual-half" style="background:#f5f5f7"><span style="color:rgba(0,0,0,0.45)">Aa</span></div></div><div class="dual-info"><div class="dual-name">toolbarIconDefault</div><div class="dual-usage">Icon default stroke</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#1e1e1e"><span style="color:rgba(255,255,255,0.70)">Aa</span></div><div class="dual-half" style="background:#f5f5f7"><span style="color:rgba(0,0,0,0.70)">Aa</span></div></div><div class="dual-info"><div class="dual-name">toolbarIconHover</div><div class="dual-usage">Icon hover stroke</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#1e1e1e"><span style="color:#AFA9EC">IDE</span></div><div class="dual-half" style="background:#f5f5f7"><span style="color:#534AB7">IDE</span></div></div><div class="dual-info"><div class="dual-name">toolbarPurpleActive</div><div class="dual-usage">Active tool/toggle label</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(175,169,236,0.2)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(83,74,183,0.12)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarToolActiveBg</div><div class="dual-usage">Selected tool background</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,87,87,0.2)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(255,87,87,0.15)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarCloseHoverBg</div><div class="dual-usage">Close button hover</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.08)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(0,0,0,0.06)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarButtonHoverBg</div><div class="dual-usage">Tool button hover bg</div></div></div>
-</div>
-
-<h2>Add Image Button — Appearance-Aware</h2>
-<div class="dual-grid">
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(175,169,236,0.14)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(83,74,183,0.08)"></div></div></div><div class="dual-info"><div class="dual-name">addImageBg</div><div class="dual-usage">Button background</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(175,169,236,0.22)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(83,74,183,0.15)"></div></div></div><div class="dual-info"><div class="dual-name">addImageBorder</div><div class="dual-usage">Button border</div></div></div>
-</div>
-
-<h2>Secondary Toolbar Buttons — Appearance-Aware</h2>
-<div class="dual-grid">
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.20)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(0,0,0,0.15)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryBorder</div><div class="dual-usage">Secondary button border</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#1e1e1e"><span style="color:rgba(255,255,255,0.60)">Aa</span></div><div class="dual-half" style="background:#f5f5f7"><span style="color:rgba(0,0,0,0.65)">Aa</span></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryText</div><div class="dual-usage">Secondary button text</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:transparent"></div></div><div class="dual-half checkered"><div class="fill" style="background:transparent"></div></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryBg</div><div class="dual-usage">Secondary button background (transparent)</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.35)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(0,0,0,0.25)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryHoverBorder</div><div class="dual-usage">Secondary button hover border</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#1e1e1e"><span style="color:rgba(255,255,255,0.80)">Aa</span></div><div class="dual-half" style="background:#f5f5f7"><span style="color:rgba(0,0,0,0.75)">Aa</span></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryHoverText</div><div class="dual-usage">Secondary button hover text</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.05)"></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(0,0,0,0.04)"></div></div></div><div class="dual-info"><div class="dual-name">toolbarSecondaryHoverBg</div><div class="dual-usage">Secondary button hover background</div></div></div>
-</div>
-
-<h2>Status Pill — Appearance-Aware</h2>
-<div class="dual-grid">
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(30,30,30,0.88)"><span style="color:white;font-size:10px">3 notes</span></div></div><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.85);border:1px solid rgba(0,0,0,0.06)"><span style="color:rgba(0,0,0,0.7);font-size:10px">3 notes</span></div></div></div><div class="dual-info"><div class="dual-name">statusPill*</div><div class="dual-usage">Status pill (bg + text + border)</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- SETTINGS — APPEARANCE-AWARE TOKENS                                  -->
-<!-- ================================================================== -->
-
-<h2>Settings — Appearance-Aware</h2>
-<div class="dual-grid">
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half checkered"><div class="fill" style="background:rgba(255,255,255,0.06)"></div></div><div class="dual-half" style="background:#EEF0F6"></div></div><div class="dual-info"><div class="dual-name">settingsFieldSurface</div><div class="dual-usage">Input field bg</div></div></div>
-  <div class="dual-swatch"><div class="dual-row"><div class="dual-half" style="background:#15161A"></div><div class="dual-half" style="background:#F8FAFC"></div></div><div class="dual-info"><div class="dual-name">settingsPreviewSurface</div><div class="dual-usage">Preview panel bg</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- ROLE COLORS                                                         -->
-<!-- ================================================================== -->
-
-<h2>Role Colors</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color" style="background:#AFA9EC"></div><div class="swatch-info"><div class="swatch-name">roleObservedBorder</div><div class="swatch-value">#AFA9EC (purple)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(83,74,183,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">roleObservedBg</div><div class="swatch-value">rgba(83,74,183,0.85)</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#22C55E"></div><div class="swatch-info"><div class="swatch-name">roleExpectedBorder</div><div class="swatch-value">#22C55E (green)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(22,100,52,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">roleExpectedBg</div><div class="swatch-value">rgba(22,100,52,0.85)</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#3B82F6"></div><div class="swatch-info"><div class="swatch-name">roleReferenceBorder</div><div class="swatch-value">#3B82F6 (blue)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(30,70,140,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">roleReferenceBg</div><div class="swatch-value">rgba(30,70,140,0.85)</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- FILMSTRIP & TITLE PILL                                              -->
-<!-- ================================================================== -->
-
-<h2>Filmstrip &amp; Title Pill</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color" style="background:#0F172AD9"></div><div class="swatch-info"><div class="swatch-name">filmstripBg</div><div class="swatch-value">rgba(15,23,42,0.85)</div></div></div>
-  <div class="swatch"><div class="swatch-info"><div class="swatch-name">filmstripGap</div><div class="swatch-value">14px</div></div></div>
-  <div class="swatch"><div class="swatch-info"><div class="swatch-name">filmstripPadding</div><div class="swatch-value">14px</div></div></div>
-  <div class="swatch"><div class="swatch-info"><div class="swatch-name">titlePillHeight</div><div class="swatch-value">30px</div></div></div>
-  <div class="swatch"><div class="swatch-info"><div class="swatch-name">titlePillGap</div><div class="swatch-value">6px</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- GHOST PREVIEW                                                       -->
-<!-- ================================================================== -->
-
-<h2>Ghost Preview</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">ghostDotColor</div><div class="swatch-value">rgba(175,169,236,0.85)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(239,68,68,0.22)"></div></div><div class="swatch-info"><div class="swatch-name">ghostStrokeColor</div><div class="swatch-value">rgba(239,68,68,0.22)</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- SETUP WINDOW                                                        -->
-<!-- ================================================================== -->
-
-<h2>Setup Window (Appearance-Aware)</h2>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color" style="background:#22C55E"></div><div class="swatch-info"><div class="swatch-name">setupGreen</div><div class="swatch-value">#22C55E</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#16A34A"></div><div class="swatch-info"><div class="swatch-name">setupGreenText</div><div class="swatch-value">#16A34A</div></div></div>
-  <div class="swatch"><div class="swatch-color" style="background:#B45309"></div><div class="swatch-info"><div class="swatch-name">setupAmberText</div><div class="swatch-value">#B45309</div></div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- TYPOGRAPHY                                                          -->
-<!-- ================================================================== -->
-
-<h2>Typography</h2>
-<div>
-  <div class="font-sample"><div class="font-label">badgeFont — System 9px semibold</div><div style="font-size:9px;font-weight:600">1 2 3 4 5</div></div>
-  <div class="font-sample"><div class="font-label">noteTextFont — System 12px regular</div><div style="font-size:12px;font-weight:400">This button should be purple</div></div>
-  <div class="font-sample"><div class="font-label">dimensionLabelFont — Mono 11px medium</div><div style="font-size:11px;font-weight:500;font-family:'SF Mono',monospace">1024 x 768</div></div>
-  <div class="font-sample"><div class="font-label">statusPillFont — Mono 10px medium</div><div style="font-size:10px;font-weight:500;font-family:'SF Mono',monospace">3 notes . 1024x768</div></div>
-  <div class="font-sample"><div class="font-label">toolbarButtonFont — System 11px medium</div><div style="font-size:11px;font-weight:500">Copy Prompt</div></div>
-  <div class="font-sample"><div class="font-label">settingsSectionFont — System 13px medium</div><div style="font-size:13px;font-weight:500">Capture hotkey</div></div>
-  <div class="font-sample"><div class="font-label">settingsFieldFont — Mono 12px regular</div><div style="font-size:12px;font-family:'SF Mono',monospace">~/Documents/vibeliner</div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- DIMENSIONS                                                          -->
-<!-- ================================================================== -->
-
-<h2>Dimensions</h2>
-<div class="dim-grid">
-  <div class="dim-item"><div class="dim-val">18px</div><div class="dim-name">badgeDiameter</div><div class="dim-usage">Badge circle</div></div>
-  <div class="dim-item"><div class="dim-val">26px</div><div class="dim-name">noteHeight</div><div class="dim-usage">Note pill</div></div>
-  <div class="dim-item"><div class="dim-val">2.5px</div><div class="dim-name">strokeWidth</div><div class="dim-usage">Annotation strokes</div></div>
-  <div class="dim-item"><div class="dim-val">40px</div><div class="dim-name">toolbarHeight</div><div class="dim-usage">Toolbar</div></div>
-  <div class="dim-item"><div class="dim-val">20px</div><div class="dim-name">toolbarCornerRadius</div><div class="dim-usage">Toolbar corners</div></div>
-  <div class="dim-item"><div class="dim-val">30px</div><div class="dim-name">toolButtonSize</div><div class="dim-usage">Tool buttons</div></div>
-  <div class="dim-item"><div class="dim-val">28px</div><div class="dim-name">iconButtonSize</div><div class="dim-usage">Icon buttons</div></div>
-  <div class="dim-item"><div class="dim-val">24px</div><div class="dim-name">closeButtonSize</div><div class="dim-usage">Close button</div></div>
-  <div class="dim-item"><div class="dim-val">10px</div><div class="dim-name">crosshairTickLength</div><div class="dim-usage">Crosshair ticks</div></div>
-  <div class="dim-item"><div class="dim-val">32px</div><div class="dim-name">settingsFieldHeight</div><div class="dim-usage">Input fields</div></div>
-  <div class="dim-item"><div class="dim-val">28px</div><div class="dim-name">settingsPillHeight</div><div class="dim-usage">Pill buttons</div></div>
-  <div class="dim-item"><div class="dim-val">3px</div><div class="dim-name">ghostDotRadius</div><div class="dim-usage">Ghost anchor</div></div>
-</div>
-
-<!-- ================================================================== -->
-<!-- COMPONENT PREVIEWS — Annotation elements                            -->
-<!-- ================================================================== -->
-
-<h2>Component Previews</h2>
-
-<h3>Annotation Badge + Note Pill States</h3>
-<div class="component-preview" style="background:#888">
-  <div class="preview-card"><div class="badge">1</div><div class="preview-label">Badge</div></div>
-  <div class="preview-card"><div class="note-pill note-default"><span class="note-prefix">1.</span> Default note</div><div class="preview-label">Default</div></div>
-  <div class="preview-card"><div class="note-pill note-hover"><span class="note-prefix">2.</span> Hover note</div><div class="preview-label">Hover</div></div>
-  <div class="preview-card"><div class="note-pill note-editing"><span class="note-prefix">3.</span> Editing note</div><div class="preview-label">Editing</div></div>
-</div>
-
-<h3>Pill Button States (Dark)</h3>
-<div class="component-preview" style="background:rgba(30,30,30,0.95)">
-  <div class="preview-card"><div class="copy-btn" style="background:rgba(116,97,194,0.25);border:1.5px solid #A796EB;color:#A796EB">Copy Prompt</div><div class="preview-label" style="color:#888">pillButton* (Default)</div></div>
-  <div class="preview-card"><div class="copy-btn" style="background:rgba(116,97,194,0.35);border:1.5px solid #C4B8F5;color:#C4B8F5">Copy Prompt</div><div class="preview-label" style="color:#888">pillButtonHover* (Hover)</div></div>
-  <div class="preview-card"><div class="copy-btn copy-copied">Copied</div><div class="preview-label" style="color:#888">copiedGreen* (Copied)</div></div>
-</div>
-
-<h3>Status Pill</h3>
-<div class="component-preview">
-  <div class="preview-card"><div class="status-pill-d">3 notes . 1024x768</div><div class="preview-label">Dark</div></div>
-  <div class="preview-card"><div class="status-pill-l">3 notes . 1024x768</div><div class="preview-label">Light</div></div>
-</div>
-
-<h3>Segmented Control</h3>
-<div class="component-preview">
-  <div class="preview-card">
-    <div class="seg-control" style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);">
-      <div class="seg-item" style="background:rgba(175,169,236,0.16);border:1px solid rgba(175,169,236,0.20);color:#AFA9EC;">IDE</div>
-      <div class="seg-item" style="color:rgba(255,255,255,0.58);">App</div>
-    </div>
-    <div class="preview-label">Dark — segmented*</div>
-  </div>
-  <div class="preview-card">
-    <div class="seg-control" style="background:rgba(15,23,42,0.04);border:1px solid rgba(15,23,42,0.08);">
-      <div class="seg-item" style="background:rgba(175,169,236,0.14);border:1px solid rgba(114,103,221,0.18);color:#7267DD;">IDE</div>
-      <div class="seg-item" style="color:rgba(15,23,42,0.58);">App</div>
-    </div>
-    <div class="preview-label">Light — segmented*</div>
-  </div>
-</div>
-
-<!-- ================================================================== -->
-<!-- TOUR ILLUSTRATION COLORS                                            -->
-<!-- ================================================================== -->
-
-<h2>Tour Illustration Colors</h2>
-
-<h3>Wireframe App Mock</h3>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color"><div class="fill" style="background:linear-gradient(#f6f8fc,#eef1f7)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeBg</div><div class="swatch-value">#F6F8FC -> #EEF1F7</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.8)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeTopbarBg</div><div class="swatch-value">rgba(255,255,255,0.8)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(245,247,252,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeSidebarBg</div><div class="swatch-value">rgba(245,247,252,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.85)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeCardBg</div><div class="swatch-value">rgba(255,255,255,0.85)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,245,245,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeCardErrorBg</div><div class="swatch-value">rgba(255,245,245,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(240,242,248,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeTableHeadBg</div><div class="swatch-value">rgba(240,242,248,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,235,235,0.6)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeTableErrorBg</div><div class="swatch-value">rgba(255,235,235,0.6)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(83,74,183,0.16)"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeSidebarActive</div><div class="swatch-value">rgba(83,74,183,0.16)</div></div></div>
-  <div class="swatch"><div class="swatch-color"><div class="fill" style="background:#263041"></div></div><div class="swatch-info"><div class="swatch-name">tourWireframeBrandColor</div><div class="swatch-value">#263041</div></div></div>
-</div>
-
-<h3>Prompt Sheet / Output Card / LLM Panel</h3>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.04)"></div></div><div class="swatch-info"><div class="swatch-name">tourPromptSheetBg</div><div class="swatch-value">rgba(255,255,255,0.04)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.03)"></div></div><div class="swatch-info"><div class="swatch-name">tourOutputCardBg</div><div class="swatch-value">rgba(255,255,255,0.03)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.025)"></div></div><div class="swatch-info"><div class="swatch-name">tourLLMPanelBg</div><div class="swatch-value">rgba(255,255,255,0.025)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.68)"></div></div><div class="swatch-info"><div class="swatch-name">tourPromptSheetColor</div><div class="swatch-value">rgba(255,255,255,0.68)</div></div></div>
-  <div class="swatch"><div class="swatch-color"><div class="fill" style="background:#f87171"></div></div><div class="swatch-info"><div class="swatch-name">tourPromptSheetNumber</div><div class="swatch-value">#F87171</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.3)"></div></div><div class="swatch-info"><div class="swatch-name">tourPromptSheetDim</div><div class="swatch-value">rgba(255,255,255,0.3)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.05)"></div></div><div class="swatch-info"><div class="swatch-name">tourLLMBubbleBg</div><div class="swatch-value">rgba(255,255,255,0.05)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.2)"></div></div><div class="swatch-info"><div class="swatch-name">tourLLMSendBg</div><div class="swatch-value">rgba(175,169,236,0.2)</div></div></div>
-</div>
-
-<h3>Flow Arrow / Mode Card / Chips / Filmstrip</h3>
-<div class="grid">
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.5)"></div></div><div class="swatch-info"><div class="swatch-name">tourFlowArrowColor</div><div class="swatch-value">rgba(175,169,236,0.5)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.025)"></div></div><div class="swatch-info"><div class="swatch-name">tourModeCardBg</div><div class="swatch-value">rgba(255,255,255,0.025)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.04)"></div></div><div class="swatch-info"><div class="swatch-name">tourChipBg</div><div class="swatch-value">rgba(255,255,255,0.04)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.3)"></div></div><div class="swatch-info"><div class="swatch-name">tourAddCellBorder</div><div class="swatch-value">rgba(175,169,236,0.3)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.04)"></div></div><div class="swatch-info"><div class="swatch-name">tourAddCellBg</div><div class="swatch-value">rgba(175,169,236,0.04)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(175,169,236,0.16)"></div></div><div class="swatch-info"><div class="swatch-name">tourAddCellPlusBg</div><div class="swatch-value">rgba(175,169,236,0.16)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(20,20,24,0.9)"></div></div><div class="swatch-info"><div class="swatch-name">tourEditorFrameBg</div><div class="swatch-value">rgba(20,20,24,0.9)</div></div></div>
-  <div class="swatch"><div class="swatch-color checkered"><div class="fill" style="background:rgba(255,255,255,0.2)"></div></div><div class="swatch-info"><div class="swatch-name">tourRoleTagBg</div><div class="swatch-value">rgba(255,255,255,0.2)</div></div></div>
-</div>
-
-<script>
-function toggleMode() {
-  document.body.classList.toggle('light', document.getElementById('modeToggle').checked);
-}
-</script>
+<footer>
+  <p style="color: #666; font-size: 11px;">
+    Generated from DesignTokens+Layout.swift, DesignTokens+Settings.swift, DesignTokens+SetupTour.swift, DesignTokens+TourIllustrations.swift, DesignTokens.swift.
+    Regenerate: <code>python3 scripts/design_system_codegen.py</code>
+  </p>
+</footer>
 </body>
 </html>
