@@ -319,7 +319,15 @@ body.light .ds-header {
   margin: 0 0 40px;
 }
 .ds-section.collapsed > :not(h2) { display: none; }
-.ds-section > h2 { cursor: default; } /* VIB-483 will add cursor: pointer via JS */
+.ds-section > h2 { cursor: pointer; user-select: none; }
+.ds-section > h2::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 14px;
+  color: var(--ds-fg-dim);
+  transition: transform 0.2s ease;
+}
+.ds-section.collapsed > h2::after { transform: rotate(-90deg); }
 
 .ds-family {
   margin: 0 0 48px;
@@ -2420,6 +2428,88 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
   </main>
 </div>
 
+<script>
+/* Vibeliner design-system — three vanilla IIFEs. Each is independent: if one
+   fails silently (no sidebar, private browsing, old Safari), the others run. */
+
+(function modeToggle() {
+  var KEY = 'vibeliner-design-system-mode';
+  var toggle = document.querySelector('.ds-mode-toggle');
+  if (!toggle) return;
+  function apply(mode) {
+    document.body.classList.remove('light', 'dark');
+    if (mode === 'light' || mode === 'dark') document.body.classList.add(mode);
+    toggle.querySelectorAll('[data-mode]').forEach(function (btn) {
+      btn.classList.toggle('active', btn.dataset.mode === mode);
+    });
+  }
+  function getSaved() { try { return localStorage.getItem(KEY) || 'system'; } catch (e) { return 'system'; } }
+  function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
+  toggle.addEventListener('click', function (e) {
+    var btn = e.target.closest('[data-mode]');
+    if (!btn) return;
+    save(btn.dataset.mode);
+    apply(btn.dataset.mode);
+  });
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+  var onChange = function () { if (getSaved() === 'system') apply('system'); };
+  if (mq.addEventListener) mq.addEventListener('change', onChange);
+  else if (mq.addListener) mq.addListener(onChange);
+  apply(getSaved());
+})();
+
+(function sidebar() {
+  var nav = document.querySelector('.ds-sidebar-nav');
+  if (!nav) return;
+  nav.addEventListener('click', function (e) {
+    var link = e.target.closest('a[href^="#"]');
+    if (!link) return;
+    e.preventDefault();
+    var target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.body.classList.remove('ds-sidebar-open');
+  });
+  var links = nav.querySelectorAll('a[href^="#"]');
+  var sections = document.querySelectorAll('section[id]');
+  if ('IntersectionObserver' in window && sections.length) {
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        var id = entry.target.id;
+        links.forEach(function (l) {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      });
+    }, { rootMargin: '-40% 0px -40% 0px' });
+    sections.forEach(function (s) { observer.observe(s); });
+  }
+  var hamburger = document.querySelector('.ds-hamburger');
+  if (hamburger) {
+    hamburger.addEventListener('click', function () {
+      document.body.classList.toggle('ds-sidebar-open');
+    });
+  }
+})();
+
+(function sectionCollapse() {
+  var KEY = 'vibeliner-design-system-collapsed';
+  function getSet() {
+    try { return new Set(JSON.parse(localStorage.getItem(KEY) || '[]')); } catch (e) { return new Set(); }
+  }
+  function saveSet(set) { try { localStorage.setItem(KEY, JSON.stringify(Array.from(set))); } catch (e) {} }
+  var collapsed = getSet();
+  document.querySelectorAll('section[id] > h2').forEach(function (h2) {
+    var section = h2.parentElement;
+    if (collapsed.has(section.id)) section.classList.add('collapsed');
+    h2.addEventListener('click', function () {
+      section.classList.toggle('collapsed');
+      if (section.classList.contains('collapsed')) collapsed.add(section.id);
+      else collapsed.delete(section.id);
+      saveSet(collapsed);
+    });
+  });
+})();
+</script>
 
 </body>
 </html>
