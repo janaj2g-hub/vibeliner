@@ -6,7 +6,7 @@
 
 **Two reference files to read together:**
 - This file → what token to use for each property
-- `docs/prototypes/vibeliner-tutorial-v4.html` → what the layout should look like (HTML structure + CSS)
+- `docs/design-system/vibeliner-tutorial-v4.html` → what the layout should look like (HTML structure + CSS)
 
 ---
 

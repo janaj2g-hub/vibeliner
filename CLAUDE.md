@@ -4,7 +4,7 @@ Read this file first before any task.
 
 ## What this is
 
-Vibeliner is a native macOS menu bar app that captures, annotates, and packages screenshots for AI coding tools. The full product spec is in `docs/VIBELINER_PRD.md`.
+Vibeliner is a native macOS menu bar app that captures, annotates, and packages screenshots for AI coding tools. The full product spec is in `docs/specs/VIBELINER_PRD.md`.
 
 ## Tech stack
 
@@ -286,6 +286,6 @@ These rules are mandatory for every ticket that touches UI.
 
 ## Reference docs
 
-- `docs/VIBELINER_PRD.md` — master product spec (all 13 locked product definitions)
-- `docs/TECHNICAL_DECISIONS.md` — failed approaches, architectural decisions
+- `docs/specs/VIBELINER_PRD.md` — master product spec (all 13 locked product definitions)
+- `docs/specs/TECHNICAL_DECISIONS.md` — failed approaches, architectural decisions
 - `CLAUDE.md` — this file (Claude Code instructions)

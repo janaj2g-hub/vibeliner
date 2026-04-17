@@ -22,7 +22,7 @@ Your outputs are tickets and prompts. Claude Code's outputs are code and commits
 * **Run:** `open dist/Vibeliner.app` (the Vibeliner scheme copies the built app here on every successful build)
 * **Team:** Vibe Liner (key: `VIB`)
 * **Project:** Vibeliner (ID: `119cde1b-8a20-4bc7-ab7c-4898087e924c`)
-* **Key files:** `docs/VIBELINER_PRD.md`, `docs/TECHNICAL_DECISIONS.md`, `CLAUDE.md`, `AGENTS.md`
+* **Key files:** `docs/specs/VIBELINER_PRD.md`, `docs/specs/TECHNICAL_DECISIONS.md`, `CLAUDE.md`, `AGENTS.md`
 * **Remote:** `https://github.com/janaj2g-hub/vibeliner.git`
 
 ---
@@ -286,7 +286,7 @@ When a ticket fails and moves to Fix Failed:
 
 * **Attempt 2:** The new prompt MUST include a debug-first phase. Instruct Claude Code to investigate the actual state (print values, check file contents, verify assumptions) before changing code.
 * **Attempt 3+:** MUST use a fundamentally different approach. Same strategy failed twice = try something else entirely. Document what the previous approaches were and why they failed.
-* Always reference `docs/TECHNICAL_DECISIONS.md` for previously failed approaches.
+* Always reference `docs/specs/TECHNICAL_DECISIONS.md` for previously failed approaches.
 
 ---
 
@@ -303,7 +303,7 @@ The ticket **description** is context (problem, design, constraints). The **comm
 
 **Context:** [What this ticket does and why, referencing the parent Story if applicable]
 
-**Reference:** Read `CLAUDE.md` for project conventions. Read `docs/VIBELINER_PRD.md` for product spec. Read `docs/TECHNICAL_DECISIONS.md` before trying a new approach.
+**Reference:** Read `CLAUDE.md` for project conventions. Read `docs/specs/VIBELINER_PRD.md` for product spec. Read `docs/specs/TECHNICAL_DECISIONS.md` before trying a new approach.
 
 **Tasks:**
 1. [Specific task with exact file path]
@@ -353,7 +353,7 @@ When the user describes a problem or idea:
 
 1. Search existing Linear issues for duplicates
 2. Check `CLAUDE.md` for project conventions that might affect the approach
-3. Check `docs/TECHNICAL_DECISIONS.md` for previously failed approaches
+3. Check `docs/specs/TECHNICAL_DECISIONS.md` for previously failed approaches
 4. If the issue spans multiple subsystems → create separate tickets (one per subsystem)
 5. Group related tickets under a Story if 3+ sub-issues emerge
 6. Post prompt as comment, move to Prompt Ready

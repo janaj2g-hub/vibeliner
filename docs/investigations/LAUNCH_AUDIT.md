@@ -49,7 +49,7 @@
 
 ### 2.1 PRD coverage
 
-The PRD (`docs/VIBELINER_PRD.md`) defines 12 product areas. Status:
+The PRD (`docs/specs/VIBELINER_PRD.md`) defines 12 product areas. Status:
 
 | Area | Status |
 |---|---|
