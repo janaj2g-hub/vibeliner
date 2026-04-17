@@ -41,10 +41,9 @@
   --ds-pill-bg: rgba(83, 74, 183, 0.08);
   --ds-pill-text: #534AB7;
 
-  /* Triple-bar swatch reference backgrounds */
+  /* Swatch reference backgrounds (single bar split dark/light) */
   --ds-bar-dark: #1e1e1e;               /* toolbarBg dark */
   --ds-bar-light: #f5f5f7;              /* toolbarBg light (approx) */
-  --ds-bar-screenshot: linear-gradient(135deg, #d7d9de 0%, #a4a8b0 55%, #6c707a 100%);
 }
 
 /* Dark mode — explicit override via body.dark */
@@ -357,7 +356,12 @@ body.light .ds-header {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-/* --- Swatch card -------------------------------------------------------- */
+/* --- Swatch card --------------------------------------------------------
+   One bar at the top of each card, split down the middle: left half shows
+   the token layered over a dark surface, right half over a light surface.
+   Both halves are always visible at once — not reactive to the page mode
+   toggle — so transparent tokens read honestly against both contexts.
+*/
 .ds-swatch {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
@@ -366,37 +370,64 @@ body.light .ds-header {
   display: flex;
   flex-direction: column;
 }
-.ds-swatch-bars { display: flex; flex-direction: column; }
 .ds-swatch-bar {
-  height: 22px;
+  display: flex;
+  height: 40px;
   position: relative;
 }
-.ds-swatch-bar[data-role="dark"] { background: var(--ds-bar-dark); }
-.ds-swatch-bar[data-role="light"] { background: var(--ds-bar-light); }
-.ds-swatch-bar[data-role="screenshot"] { background: var(--ds-bar-screenshot); }
+.ds-swatch-half {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+.ds-swatch-half--dark { background: var(--ds-bar-dark); }
+.ds-swatch-half--light { background: var(--ds-bar-light); }
 .ds-swatch-fill {
   position: absolute;
-  inset: 4px 10px;
-  border-radius: 4px;
+  inset: 0;
 }
+.ds-swatch-alias {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+  background: var(--ds-bg-muted);
+}
+.ds-swatch-alias code { color: var(--ds-fg); margin-left: 4px; }
 .ds-swatch-meta {
   padding: 12px 14px 14px;
   border-top: 1px solid var(--ds-divider);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .ds-swatch-name {
   font-family: var(--ds-mono);
   font-size: 12px;
+  font-weight: 600;
   color: var(--ds-fg);
   word-break: break-all;
 }
-.ds-swatch-value {
+.ds-swatch-values { display: flex; flex-direction: column; gap: 2px; }
+.ds-swatch-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
   font-family: var(--ds-mono);
   font-size: 11px;
-  color: var(--ds-fg-dim);
+  line-height: 1.4;
 }
+.ds-swatch-label {
+  color: var(--ds-fg-dim);
+  min-width: 40px;
+  text-transform: lowercase;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.ds-swatch-row code { color: var(--ds-fg-muted); font-size: 11px; }
 .ds-swatch-desc {
   font-size: 12px;
   color: var(--ds-fg-muted);
@@ -408,6 +439,7 @@ body.light .ds-header {
   color: var(--ds-fg-dim);
   margin-top: 4px;
 }
+.ds-swatch-usage em { font-style: italic; color: var(--ds-fg-dim); }
 
 /* --- Typography specimens ----------------------------------------------- */
 .ds-font-list { display: flex; flex-direction: column; gap: 24px; }
@@ -502,12 +534,6 @@ body.light .ds-header {
   border: 1px solid var(--ds-border);
   border-radius: 10px;
 }
-.ds-preview-caption {
-  font-size: 11px;
-  color: var(--ds-fg-dim);
-  margin: 8px 0 0;
-}
-
 /* Pill button family (default + hover via CSS :hover) */
 .ds-pill-btn {
   appearance: none;
@@ -753,19 +779,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
   color: rgba(255,255,255,0.55);
 }
 
-/* Alias swatch: target pointer instead of color fill */
-.ds-swatch-fill-alias {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--ds-mono);
-  font-size: 11px;
-  color: var(--ds-fg-muted);
-  position: absolute;
-  inset: 4px 10px;
-  background: var(--ds-bg-muted);
-  border-radius: 4px;
-}
 
 /* --- Responsive --------------------------------------------------------- */
 @media (max-width: 900px) {
@@ -890,62 +903,67 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <button type="button" class="ds-pill-btn ds-pill-btn--default">Copy Prompt</button>
     <button type="button" class="ds-pill-btn ds-pill-btn--copied">Copied ✓</button>
   </div>
-  <p class="ds-preview-caption">Hover the middle button to see the real hover state transition.</p>
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(116,97,194,0.25);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(116,97,194,0.25);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonBg</div>
-      <div class="ds-swatch-value">dark rgba(116,97,194,0.25) · light rgba(83,74,183,0.08)</div>
-<div class="ds-swatch-desc">Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +4 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(116,97,194,0.25)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.08)</code></div></div>
+<div class="ds-swatch-desc">Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +4 more</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(167,150,235,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(167,150,235,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonBorder</div>
-      <div class="ds-swatch-value">dark rgba(167,150,235,1) · light rgba(83,74,183,1)</div>
-<div class="ds-swatch-desc">Pill button border — dark: #A796EB, light: #534AB7</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +4 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(167,150,235,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,1)</code></div></div>
+<div class="ds-swatch-desc">Pill button border — dark: #A796EB, light: #534AB7</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +4 more</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(116,97,194,0.35);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(116,97,194,0.35);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(116,97,194,0.35) · light rgba(83,74,183,0.12)</div>
-<div class="ds-swatch-desc">Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(116,97,194,0.35)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.12)</code></div></div>
+<div class="ds-swatch-desc">Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(196,184,245,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(116,97,194,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(196,184,245,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(116,97,194,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonHoverBorder</div>
-      <div class="ds-swatch-value">dark rgba(196,184,245,1) · light rgba(116,97,194,1)</div>
-<div class="ds-swatch-desc">Pill button hover border — dark: #C4B8F5, light: #7461C2</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(196,184,245,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(116,97,194,1)</code></div></div>
+<div class="ds-swatch-desc">Pill button hover border — dark: #C4B8F5, light: #7461C2</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(196,184,245,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(116,97,194,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(196,184,245,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(116,97,194,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonHoverText</div>
-      <div class="ds-swatch-value">dark rgba(196,184,245,1) · light rgba(116,97,194,1)</div>
-<div class="ds-swatch-desc">Pill button hover text — dark: #C4B8F5, light: #7461C2</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(196,184,245,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(116,97,194,1)</code></div></div>
+<div class="ds-swatch-desc">Pill button hover text — dark: #C4B8F5, light: #7461C2</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(167,150,235,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(167,150,235,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonText</div>
-      <div class="ds-swatch-value">dark rgba(167,150,235,1) · light rgba(83,74,183,1)</div>
-<div class="ds-swatch-desc">Pill button text — dark: #A796EB, light: #534AB7</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/PromptTabCustomViews.swift, Settings/PromptTabView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +6 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(167,150,235,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,1)</code></div></div>
+<div class="ds-swatch-desc">Pill button text — dark: #A796EB, light: #534AB7</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Settings/PromptTabCustomViews.swift, Settings/PromptTabView.swift, Settings/SettingsControls.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+UIFactories.swift, Tour/Illustrations/TourMiniToolbar.swift">App/HarnessPreviewSurfaces.swift, Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift · +6 more</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -956,53 +974,57 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <button type="button" class="ds-pill-btn ds-pill-btn--primary">Next</button>
     <button type="button" class="ds-pill-btn ds-pill-btn--primary">Get started</button>
   </div>
-  <p class="ds-preview-caption">Solid purple CTA used in tour and setup.</p>
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: ;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: ;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonPrimaryBg</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.16) · light ?</div>
-<div class="ds-swatch-desc">Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)</div><div class="ds-swatch-usage">Used by <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.16)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>—</code></div></div>
+<div class="ds-swatch-desc">Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.36);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: ;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.36);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: ;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonPrimaryBorder</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.36) · light ?</div>
-<div class="ds-swatch-desc">Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7</div><div class="ds-swatch-usage">Used by <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.36)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>—</code></div></div>
+<div class="ds-swatch-desc">Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.22);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(96,85,196,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.22);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(96,85,196,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonPrimaryHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.22) · light rgba(96,85,196,1)</div>
-<div class="ds-swatch-desc">Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4</div><div class="ds-swatch-usage">Used by <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.22)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(96,85,196,1)</code></div></div>
+<div class="ds-swatch-desc">Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.48);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(96,85,196,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.48);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(96,85,196,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonPrimaryHoverBorder</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.48) · light rgba(96,85,196,1)</div>
-<div class="ds-swatch-desc">Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4</div><div class="ds-swatch-usage">Used by <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.48)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(96,85,196,1)</code></div></div>
+<div class="ds-swatch-desc">Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: ;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: ;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">pillButtonPrimaryText</div>
-      <div class="ds-swatch-value">dark ? · light rgba(255,255,255,1.0)</div>
-<div class="ds-swatch-desc">Primary pill button text — dark: #AFA9EC, light: white (solid CTA)</div><div class="ds-swatch-usage">Used by <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>—</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(255,255,255,1.0)</code></div></div>
+<div class="ds-swatch-desc">Primary pill button text — dark: #AFA9EC, light: white (solid CTA)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/TourWindowController+Content.swift">Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1024,58 +1046,62 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(114,103,221,0.18);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(114,103,221,0.18);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedActiveBorder</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.2) · light rgba(114,103,221,0.18)</div>
-<div class="ds-swatch-desc">Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)</div><div class="ds-swatch-usage">Used by <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.2)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(114,103,221,0.18)</code></div></div>
+<div class="ds-swatch-desc">Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.14);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.16);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.14);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedActiveFill</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.16) · light rgba(175,169,236,0.14)</div>
-<div class="ds-swatch-desc">Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.16)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(175,169,236,0.14)</code></div></div>
+<div class="ds-swatch-desc">Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: pillButtonText;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: pillButtonText;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-alias">→ <code>pillButtonText</code></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedActiveText</div>
-      <div class="ds-swatch-value">alias → pillButtonText</div>
-<div class="ds-swatch-desc">Segmented active text — dark: #AFA9EC, light: #7267DD</div><div class="ds-swatch-usage">Used by <span title="Settings/SettingsControls.swift">Settings/SettingsControls.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">alias</span><code>pillButtonText</code></div></div>
+<div class="ds-swatch-desc">Segmented active text — dark: #AFA9EC, light: #7267DD</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/SettingsControls.swift">Settings/SettingsControls.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.58);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.58);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.58);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.58);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedInactiveText</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.58) · light rgba(15,23,42,0.58)</div>
-<div class="ds-swatch-desc">Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.58)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(15,23,42,0.58)</code></div></div>
+<div class="ds-swatch-desc">Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.04);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.04);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedTrack</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.03) · light rgba(15,23,42,0.04)</div>
-<div class="ds-swatch-desc">Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Settings/SettingsUI.swift · +1 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.03)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(15,23,42,0.04)</code></div></div>
+<div class="ds-swatch-desc">Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Settings/SettingsUI.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarButtons.swift, Settings/SettingsControls.swift, Settings/SettingsUI.swift · +1 more</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">segmentedTrackBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(15,23,42,0.08)</div>
-<div class="ds-swatch-desc">Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)</div><div class="ds-swatch-usage">Used by <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.08)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(15,23,42,0.08)</code></div></div>
+<div class="ds-swatch-desc">Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1089,58 +1115,63 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryBg</div>
-      <div class="ds-swatch-value">rgba(0,0,0,0.0)</div>
-<div class="ds-swatch-desc">Secondary button bg — transparent</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(0,0,0,0.0)</code></div></div>
+<div class="ds-swatch-desc">Secondary button bg — transparent</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.2);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.15);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.2);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.15);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.2) · light rgba(0,0,0,0.15)</div>
-<div class="ds-swatch-desc">Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.2)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.15)</code></div></div>
+<div class="ds-swatch-desc">Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.05);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.05);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.04);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.05) · light rgba(0,0,0,0.04)</div>
-<div class="ds-swatch-desc">Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.05)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.04)</code></div></div>
+<div class="ds-swatch-desc">Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.35);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.25);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.35);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.25);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryHoverBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.35) · light rgba(0,0,0,0.25)</div>
-<div class="ds-swatch-desc">Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.35)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.25)</code></div></div>
+<div class="ds-swatch-desc">Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.75);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.8);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.75);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryHoverText</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.8) · light rgba(0,0,0,0.75)</div>
-<div class="ds-swatch-desc">Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.8)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.75)</code></div></div>
+<div class="ds-swatch-desc">Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.6);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.65);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.6);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.65);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarSecondaryText</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.6) · light rgba(0,0,0,0.65)</div>
-<div class="ds-swatch-desc">Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.6)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.65)</code></div></div>
+<div class="ds-swatch-desc">Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift">Editor/ToolbarButtons.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1156,94 +1187,94 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(180,180,180,0.22);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(180,180,180,0.22);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(180,180,180,0.22);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(180,180,180,0.22);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteBorderDefault</div>
-      <div class="ds-swatch-value">#B4B4B4 · rgba(180,180,180,0.22)</div>
-<div class="ds-swatch-desc">Editor note pill border — resting</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(180,180,180,0.22)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#B4B4B4</code></div></div>
+<div class="ds-swatch-desc">Editor note pill border — resting</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.45);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.45);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.45);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.45);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteBorderHover</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.45)</div>
-<div class="ds-swatch-desc">Editor note pill border — hover</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.45)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor note pill border — hover</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.55);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.55);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.55);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.55);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteBorderSelected</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.55)</div>
-<div class="ds-swatch-desc">Editor note pill border — selected</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.55)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor note pill border — selected</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.72);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.72);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.72);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.72);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteSurfaceDefault</div>
-      <div class="ds-swatch-value">#FFF4F4 · rgba(255,244,244,0.72)</div>
-<div class="ds-swatch-desc">Editor note pill surface — resting</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,244,244,0.72)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FFF4F4</code></div></div>
+<div class="ds-swatch-desc">Editor note pill surface — resting</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,250,250,0.96);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,250,250,0.96);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,250,250,0.96);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,250,250,0.96);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteSurfaceEditing</div>
-      <div class="ds-swatch-value">#FFFAFA · rgba(255,250,250,0.96)</div>
-<div class="ds-swatch-desc">Editor note pill surface — editing</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift, Editor/CanvasView+NoteEditing.swift">Annotations/Renderers/NotePillView.swift, Editor/CanvasView+NoteEditing.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,250,250,0.96)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FFFAFA</code></div></div>
+<div class="ds-swatch-desc">Editor note pill surface — editing</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift, Editor/CanvasView+NoteEditing.swift">Annotations/Renderers/NotePillView.swift, Editor/CanvasView+NoteEditing.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.8);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.8);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.8);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.8);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteSurfaceHover</div>
-      <div class="ds-swatch-value">#FFF4F4 · rgba(255,244,244,0.8)</div>
-<div class="ds-swatch-desc">Editor note pill surface — hover</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,244,244,0.8)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FFF4F4</code></div></div>
+<div class="ds-swatch-desc">Editor note pill surface — hover</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.88);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.88);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.88);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,244,244,0.88);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorNoteSurfaceSelected</div>
-      <div class="ds-swatch-value">#FFF4F4 · rgba(255,244,244,0.88)</div>
-<div class="ds-swatch-desc">Editor note pill surface — selected</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,244,244,0.88)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FFF4F4</code></div></div>
+<div class="ds-swatch-desc">Editor note pill surface — selected</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillView.swift">Annotations/Renderers/NotePillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(127,29,29,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(127,29,29,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(127,29,29,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(127,29,29,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">noteTextColor</div>
-      <div class="ds-swatch-value">#7F1D1D · rgba(127,29,29,1)</div>
-<div class="ds-swatch-desc">Note text color: #7f1d1d</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/NotePillRenderer.swift, Annotations/Renderers/NotePillView.swift, Tour/Illustrations/AnnotationMarkViews.swift">Annotations/Renderers/NotePillRenderer.swift, Annotations/Renderers/NotePillView.swift, Tour/Illustrations/AnnotationMarkViews.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(127,29,29,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#7F1D1D</code></div></div>
+<div class="ds-swatch-desc">Note text color: #7f1d1d</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/NotePillRenderer.swift, Annotations/Renderers/NotePillView.swift, Tour/Illustrations/AnnotationMarkViews.swift">Annotations/Renderers/NotePillRenderer.swift, Annotations/Renderers/NotePillView.swift, Tour/Illustrations/AnnotationMarkViews.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,248,248,0.82);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,248,248,0.82);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,248,248,0.82);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,248,248,0.82);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">redNoteBg</div>
-      <div class="ds-swatch-value">#FFF8F8 · rgba(255,248,248,0.82)</div>
-<div class="ds-swatch-desc">Note pill default: rgba(255, 248, 248, 0.82)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/AnnotationMarkViews.swift">Tour/Illustrations/AnnotationMarkViews.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,248,248,0.82)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FFF8F8</code></div></div>
+<div class="ds-swatch-desc">Note pill default: rgba(255, 248, 248, 0.82)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/AnnotationMarkViews.swift">Tour/Illustrations/AnnotationMarkViews.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.18);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.18);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.18);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.18);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">redNoteBorder</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.18)</div>
-<div class="ds-swatch-desc">Note pill default border: rgba(239, 68, 68, 0.18)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/AnnotationMarkViews.swift">Tour/Illustrations/AnnotationMarkViews.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.18)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Note pill default border: rgba(239, 68, 68, 0.18)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/AnnotationMarkViews.swift">Tour/Illustrations/AnnotationMarkViews.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1257,31 +1288,34 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(30,30,30,0.88);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.85);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(30,30,30,0.88);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.85);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">statusPillBg</div>
-      <div class="ds-swatch-value">dark rgba(30,30,30,0.88) · light rgba(255,255,255,0.85)</div>
-<div class="ds-swatch-desc">Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)</div><div class="ds-swatch-usage">Used by <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(30,30,30,0.88)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(255,255,255,0.85)</code></div></div>
+<div class="ds-swatch-desc">Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.0);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">statusPillBorder</div>
-      <div class="ds-swatch-value">dark rgba(0,0,0,0.0) · light rgba(0,0,0,0.06)</div>
-<div class="ds-swatch-desc">Status pill border — dark: clear, light: rgba(0,0,0,0.06)</div><div class="ds-swatch-usage">Used by <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(0,0,0,0.0)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.06)</code></div></div>
+<div class="ds-swatch-desc">Status pill border — dark: clear, light: rgba(0,0,0,0.06)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,1.0);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">statusPillTextColor</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,1.0) · light rgba(0,0,0,0.7)</div>
-<div class="ds-swatch-desc">Status pill text — dark: white, light: rgba(0,0,0,0.70)</div><div class="ds-swatch-usage">Used by <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,1.0)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.7)</code></div></div>
+<div class="ds-swatch-desc">Status pill text — dark: white, light: rgba(0,0,0,0.70)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1292,22 +1326,24 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.14);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.14);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">addImageBg</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.14) · light rgba(83,74,183,0.08)</div>
-<div class="ds-swatch-desc">Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourMiniToolbar.swift">Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.14)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.08)</code></div></div>
+<div class="ds-swatch-desc">Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourMiniToolbar.swift">Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.22);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.15);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.22);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.15);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">addImageBorder</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.22) · light rgba(83,74,183,0.15)</div>
-<div class="ds-swatch-desc">Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourMiniToolbar.swift">Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.22)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.15)</code></div></div>
+<div class="ds-swatch-desc">Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourMiniToolbar.swift">Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1323,40 +1359,40 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorAnnotationHoverFill</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.08)</div>
-<div class="ds-swatch-desc">Editor annotation hover fill halo</div><div class="ds-swatch-usage">Used by <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.08)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor annotation hover fill halo</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.2);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorAnnotationHoverShadow</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.2)</div>
-<div class="ds-swatch-desc">Editor annotation hover shadow glow</div><div class="ds-swatch-usage">Used by <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.2)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor annotation hover shadow glow</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.14);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.14);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.14);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.14);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorAnnotationHoverShapeFill</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.14)</div>
-<div class="ds-swatch-desc">Editor annotation hover fill for shapes</div><div class="ds-swatch-usage">Used by <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.14)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor annotation hover fill for shapes</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.3);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.3);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.3);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.3);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">editorAnnotationHoverStroke</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.3)</div>
-<div class="ds-swatch-desc">Editor annotation hover outline/shadow accent</div><div class="ds-swatch-usage">Used by <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.3)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Editor annotation hover outline/shadow accent</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/MarksLayerView.swift">Editor/MarksLayerView.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1367,40 +1403,40 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
             <div class="ds-grid" style="margin-top: 20px;">
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.9);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.9);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.9);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.9);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">copiedGreen</div>
-      <div class="ds-swatch-value">#16A34A · rgba(22,163,74,0.9)</div>
-<div class="ds-swatch-desc">rgba(22, 163, 74, 0.9) — copied state green</div><div class="ds-swatch-usage">Used by <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,163,74,0.9)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#16A34A</code></div></div>
+<div class="ds-swatch-desc">rgba(22, 163, 74, 0.9) — copied state green</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/StatusPillView.swift">Editor/StatusPillView.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.12);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.12);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">copiedGreenBg</div>
-      <div class="ds-swatch-value">#16A34A · rgba(22,163,74,0.12)</div>
-<div class="ds-swatch-desc">Copy success bg: rgba(22, 163, 74, 0.12)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,163,74,0.12)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#16A34A</code></div></div>
+<div class="ds-swatch-desc">Copy success bg: rgba(22, 163, 74, 0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.5);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.5);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.5);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.5);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">copiedGreenBorder</div>
-      <div class="ds-swatch-value">#16A34A · rgba(22,163,74,0.5)</div>
-<div class="ds-swatch-desc">Copy success green: rgba(22, 163, 74, 0.5) — border</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,163,74,0.5)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#16A34A</code></div></div>
+<div class="ds-swatch-desc">Copy success green: rgba(22, 163, 74, 0.5) — border</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
               <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.8);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.8);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.8);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,0.8);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">copiedGreenText</div>
-      <div class="ds-swatch-value">#16A34A · rgba(22,163,74,0.8)</div>
-<div class="ds-swatch-desc">Copy success text: rgba(22, 163, 74, 0.8)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,163,74,0.8)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#16A34A</code></div></div>
+<div class="ds-swatch-desc">Copy success text: rgba(22, 163, 74, 0.8)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift">Editor/ToolbarButtons.swift, Popover/CaptureRowView.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div>
             </div>
           </div>
@@ -1431,7 +1467,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <svg viewBox="0 0 15 15" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M 1 7.5 Q 3 1 7.5 7.5 T 14 7.5" stroke-width="1.5"/></svg>
   </button>
   </div>
-  <p class="ds-preview-caption">Hover any tool to see the icon-hover state. Seven tools, one circular button family.</p>
       </div>
     </section>
 
@@ -1444,189 +1479,193 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
       </p>
       <div class="ds-grid">
 <div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">purpleDark</div>
-      <div class="ds-swatch-value">#534AB7 · rgba(83,74,183,1)</div>
-<div class="ds-swatch-desc">#534AB7 — dimension label bg, settings accents</div><div class="ds-swatch-usage">Used by <span title="Capture/DimensionLabelView.swift, Settings/AboutTabView.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourIllustration0.swift, Tour/Illustrations/TourIllustration1.swift, Tour/Illustrations/WireframeAppMock.swift">Capture/DimensionLabelView.swift, Settings/AboutTabView.swift, Settings/SettingsControls.swift · +3 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(83,74,183,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#534AB7</code></div></div>
+<div class="ds-swatch-desc">#534AB7 — dimension label bg, settings accents</div>      <div class="ds-swatch-usage">Used by: <span title="Capture/DimensionLabelView.swift, Settings/AboutTabView.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourIllustration0.swift, Tour/Illustrations/TourIllustration1.swift, Tour/Illustrations/WireframeAppMock.swift">Capture/DimensionLabelView.swift, Settings/AboutTabView.swift, Settings/SettingsControls.swift · +3 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">purpleLight</div>
-      <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,1)</div>
-<div class="ds-swatch-desc">#AFA9EC — crosshair, selection border, active tool highlight</div><div class="ds-swatch-usage">Used by <span title="App/EditorHarnessSurfaceView.swift, Capture/CrosshairView.swift, Editor/MarksLayerView.swift, Settings/AboutTabView.swift, Settings/PromptTabView+State.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourIllustration0.swift, Tour/Illustrations/TourIllustration1.swift, Tour/Illustrations/TourIllustration4.swift, Tour/Illustrations/TourIllustration5.swift, Tour/Illustrations/TourIllustration6.swift, Tour/Illustrations/WireframeAppMock.swift">App/EditorHarnessSurfaceView.swift, Capture/CrosshairView.swift, Editor/MarksLayerView.swift · +9 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(175,169,236,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#AFA9EC</code></div></div>
+<div class="ds-swatch-desc">#AFA9EC — crosshair, selection border, active tool highlight</div>      <div class="ds-swatch-usage">Used by: <span title="App/EditorHarnessSurfaceView.swift, Capture/CrosshairView.swift, Editor/MarksLayerView.swift, Settings/AboutTabView.swift, Settings/PromptTabView+State.swift, Settings/SettingsControls.swift, Tour/Illustrations/TourIllustration0.swift, Tour/Illustrations/TourIllustration1.swift, Tour/Illustrations/TourIllustration4.swift, Tour/Illustrations/TourIllustration5.swift, Tour/Illustrations/TourIllustration6.swift, Tour/Illustrations/WireframeAppMock.swift">App/EditorHarnessSurfaceView.swift, Capture/CrosshairView.swift, Editor/MarksLayerView.swift · +9 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">red</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,1)</div>
-<div class="ds-swatch-desc">#EF4444 — all annotation marks</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/ArrowRenderer.swift, Annotations/Renderers/BadgeRenderer.swift, Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/FreehandRenderer.swift, Annotations/Renderers/LineRenderer.swift, Annotations/Renderers/NotePillView.swift, Annotations/Renderers/PinRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, App/EditorHarnessSurfaceView.swift, Editor/CanvasView+NoteEditing.swift, Editor/MarksLayerView.swift, Editor/ToolButton.swift, Settings/AboutTabView.swift, Tour/Illustrations/AnnotationMarkViews.swift, Tour/Illustrations/TourFilmstripCell.swift, Tour/Illustrations/TourMiniScreenshot.swift, Tour/Illustrations/TourPromptSheet.swift">Annotations/Renderers/ArrowRenderer.swift, Annotations/Renderers/BadgeRenderer.swift, Annotations/Renderers/CircleRenderer.swift · +14 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">#EF4444 — all annotation marks</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/ArrowRenderer.swift, Annotations/Renderers/BadgeRenderer.swift, Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/FreehandRenderer.swift, Annotations/Renderers/LineRenderer.swift, Annotations/Renderers/NotePillView.swift, Annotations/Renderers/PinRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, App/EditorHarnessSurfaceView.swift, Editor/CanvasView+NoteEditing.swift, Editor/MarksLayerView.swift, Editor/ToolButton.swift, Settings/AboutTabView.swift, Tour/Illustrations/AnnotationMarkViews.swift, Tour/Illustrations/TourFilmstripCell.swift, Tour/Illustrations/TourMiniScreenshot.swift, Tour/Illustrations/TourPromptSheet.swift">Annotations/Renderers/ArrowRenderer.swift, Annotations/Renderers/BadgeRenderer.swift, Annotations/Renderers/CircleRenderer.swift · +14 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">redFill</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.06)</div>
-<div class="ds-swatch-desc">rgba(239, 68, 68, 0.06) — shape fills</div><div class="ds-swatch-usage">Used by <span title="Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, Tour/Illustrations/AnnotationMarkViews.swift">Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, Tour/Illustrations/AnnotationMarkViews.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.06)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">rgba(239, 68, 68, 0.06) — shape fills</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, Tour/Illustrations/AnnotationMarkViews.swift">Annotations/Renderers/CircleRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, Tour/Illustrations/AnnotationMarkViews.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">chromeBorder</div>
-      <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,0.12)</div>
-<div class="ds-swatch-desc">rgba(175, 169, 236, 0.12) — toolbar/canvas border</div><div class="ds-swatch-usage">Used by <span title="Editor/ScreenshotCanvasView.swift">Editor/ScreenshotCanvasView.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(175,169,236,0.12)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#AFA9EC</code></div></div>
+<div class="ds-swatch-desc">rgba(175, 169, 236, 0.12) — toolbar/canvas border</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ScreenshotCanvasView.swift">Editor/ScreenshotCanvasView.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">dimOverlay</div>
-      <div class="ds-swatch-value">#000000 · rgba(0,0,0,0.5)</div>
-<div class="ds-swatch-desc">rgba(0, 0, 0, 0.5) — capture overlay dim</div><div class="ds-swatch-usage">Used by <span title="Capture/CrosshairView.swift, Tour/Illustrations/TourIllustration1.swift">Capture/CrosshairView.swift, Tour/Illustrations/TourIllustration1.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(0,0,0,0.5)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#000000</code></div></div>
+<div class="ds-swatch-desc">rgba(0, 0, 0, 0.5) — capture overlay dim</div>      <div class="ds-swatch-usage">Used by: <span title="Capture/CrosshairView.swift, Tour/Illustrations/TourIllustration1.swift">Capture/CrosshairView.swift, Tour/Illustrations/TourIllustration1.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">dividerColor</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.08)</div>
-<div class="ds-swatch-desc">Divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourIllustration4.swift">Tour/Illustrations/TourIllustration4.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.08)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.08)</code></div></div>
+<div class="ds-swatch-desc">Divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourIllustration4.swift">Tour/Illustrations/TourIllustration4.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleExpectedBg</div>
-      <div class="ds-swatch-value">#166434 · rgba(22,100,52,0.85)</div>
-<div class="ds-swatch-desc">Role expected background — green tint (VIB-335: 0.85 alpha for readability)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,100,52,0.85)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#166434</code></div></div>
+<div class="ds-swatch-desc">Role expected background — green tint (VIB-335: 0.85 alpha for readability)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleExpectedBorder</div>
-      <div class="ds-swatch-value">#22C55E · rgba(34,197,94,1)</div>
-<div class="ds-swatch-desc">Role expected border: #22C55E (green)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(34,197,94,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#22C55E</code></div></div>
+<div class="ds-swatch-desc">Role expected border: #22C55E (green)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleGrayBorder</div>
-      <div class="ds-swatch-value">#6B7280 · rgba(107,114,128,1)</div>
-<div class="ds-swatch-desc">Role gray border: #6B7280</div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(107,114,128,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#6B7280</code></div></div>
+<div class="ds-swatch-desc">Role gray border: #6B7280</div>      <div class="ds-swatch-usage">Used by: <em>(none)</em></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleObservedBg</div>
-      <div class="ds-swatch-value">#534AB7 · rgba(83,74,183,0.85)</div>
-<div class="ds-swatch-desc">Role observed background — purple tint (VIB-335: 0.85 alpha for readability)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(83,74,183,0.85)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#534AB7</code></div></div>
+<div class="ds-swatch-desc">Role observed background — purple tint (VIB-335: 0.85 alpha for readability)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleObservedBorder</div>
-      <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,1)</div>
-<div class="ds-swatch-desc">Role observed border: #AFA9EC (purple)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(175,169,236,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#AFA9EC</code></div></div>
+<div class="ds-swatch-desc">Role observed border: #AFA9EC (purple)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleOrangeBorder</div>
-      <div class="ds-swatch-value">#F97316 · rgba(249,115,22,1)</div>
-<div class="ds-swatch-desc">Role orange border: #F97316</div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(249,115,22,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#F97316</code></div></div>
+<div class="ds-swatch-desc">Role orange border: #F97316</div>      <div class="ds-swatch-usage">Used by: <em>(none)</em></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">rolePinkBorder</div>
-      <div class="ds-swatch-value">#EC4899 · rgba(236,72,153,1)</div>
-<div class="ds-swatch-desc">Role pink border: #EC4899</div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(236,72,153,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EC4899</code></div></div>
+<div class="ds-swatch-desc">Role pink border: #EC4899</div>      <div class="ds-swatch-usage">Used by: <em>(none)</em></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleReferenceBg</div>
-      <div class="ds-swatch-value">#1E468C · rgba(30,70,140,0.85)</div>
-<div class="ds-swatch-desc">Role reference background — blue tint (VIB-335: 0.85 alpha for readability)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(30,70,140,0.85)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#1E468C</code></div></div>
+<div class="ds-swatch-desc">Role reference background — blue tint (VIB-335: 0.85 alpha for readability)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleReferenceBorder</div>
-      <div class="ds-swatch-value">#3B82F6 · rgba(59,130,246,1)</div>
-<div class="ds-swatch-desc">Role reference border: #3B82F6 (blue)</div><div class="ds-swatch-usage">Used by <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(59,130,246,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#3B82F6</code></div></div>
+<div class="ds-swatch-desc">Role reference border: #3B82F6 (blue)</div>      <div class="ds-swatch-usage">Used by: <span title="Tour/Illustrations/TourTitlePill.swift">Tour/Illustrations/TourTitlePill.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.22);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.82);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.22);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.82);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleSwatchInnerBorder</div>
-      <div class="ds-swatch-value">dark rgba(0,0,0,0.22) · light rgba(255,255,255,0.82)</div>
-<div class="ds-swatch-desc">Role swatch inner contrast border</div><div class="ds-swatch-usage">Used by <span title="Settings/PromptTabCustomViews.swift">Settings/PromptTabCustomViews.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(0,0,0,0.22)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(255,255,255,0.82)</code></div></div>
+<div class="ds-swatch-desc">Role swatch inner contrast border</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/PromptTabCustomViews.swift">Settings/PromptTabCustomViews.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.16);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.16);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.16);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.16);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleSwatchOutline</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.16) · light rgba(15,23,42,0.16)</div>
-<div class="ds-swatch-desc">Role swatch outer outline for light and dark mode visibility</div><div class="ds-swatch-usage">Used by <span title="Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift">Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.16)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(15,23,42,0.16)</code></div></div>
+<div class="ds-swatch-desc">Role swatch outer outline for light and dark mode visibility</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift">Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.92);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.78);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.92);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.78);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleSwatchSelectedRing</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.92) · light rgba(83,74,183,0.78)</div>
-<div class="ds-swatch-desc">Role swatch selected ring</div><div class="ds-swatch-usage">Used by <span title="Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift">Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.92)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.78)</code></div></div>
+<div class="ds-swatch-desc">Role swatch selected ring</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift">Settings/PromptTabCustomViews.swift, Settings/PromptTabView+State.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleTealBorder</div>
-      <div class="ds-swatch-value">#14B8A6 · rgba(20,184,166,1)</div>
-<div class="ds-swatch-desc">Role teal border: #14B8A6</div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(20,184,166,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#14B8A6</code></div></div>
+<div class="ds-swatch-desc">Role teal border: #14B8A6</div>      <div class="ds-swatch-usage">Used by: <em>(none)</em></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">roleYellowBorder</div>
-      <div class="ds-swatch-value">#EAB308 · rgba(234,179,8,1)</div>
-<div class="ds-swatch-desc">Role yellow border: #EAB308</div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(234,179,8,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EAB308</code></div></div>
+<div class="ds-swatch-desc">Role yellow border: #EAB308</div>      <div class="ds-swatch-usage">Used by: <em>(none)</em></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">ghostDotColor</div>
-      <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,0.85)</div>
-<div class="ds-swatch-desc">Ghost anchor dot color: #AFA9EC at 85%</div><div class="ds-swatch-usage">Used by <span title="Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/FreehandTool.swift, Annotations/Tools/LineTool.swift, Annotations/Tools/PinTool.swift, Annotations/Tools/RectangleTool.swift">Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/FreehandTool.swift · +3 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(175,169,236,0.85)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#AFA9EC</code></div></div>
+<div class="ds-swatch-desc">Ghost anchor dot color: #AFA9EC at 85%</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/FreehandTool.swift, Annotations/Tools/LineTool.swift, Annotations/Tools/PinTool.swift, Annotations/Tools/RectangleTool.swift">Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/FreehandTool.swift · +3 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">ghostStrokeColor</div>
-      <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.22)</div>
-<div class="ds-swatch-desc">Ghost silhouette stroke color: #EF4444 at 22%</div><div class="ds-swatch-usage">Used by <span title="Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/LineTool.swift, Annotations/Tools/PinTool.swift, Annotations/Tools/RectangleTool.swift">Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/LineTool.swift · +2 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(239,68,68,0.22)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#EF4444</code></div></div>
+<div class="ds-swatch-desc">Ghost silhouette stroke color: #EF4444 at 22%</div>      <div class="ds-swatch-usage">Used by: <span title="Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/LineTool.swift, Annotations/Tools/PinTool.swift, Annotations/Tools/RectangleTool.swift">Annotations/Tools/ArrowTool.swift, Annotations/Tools/CircleTool.swift, Annotations/Tools/LineTool.swift · +2 more</span></div>
+    </div>
   </div>      </div>
     </section>
 
@@ -2158,93 +2197,103 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     </div>
     <div class="ds-surface-caption"><code>toolbarBg</code> · floating editor toolbar</div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(0,0,0,0.1)</div>
-<div class="ds-swatch-desc">Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.12)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.1)</code></div></div>
+<div class="ds-swatch-desc">Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarButtonHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.06)</div>
-<div class="ds-swatch-desc">Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift, Popover/CaptureRowView.swift, Popover/PopoverWindow.swift">Editor/ToolButton.swift, Popover/CaptureRowView.swift, Popover/PopoverWindow.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.08)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.06)</code></div></div>
+<div class="ds-swatch-desc">Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift, Popover/CaptureRowView.swift, Popover/PopoverWindow.swift">Editor/ToolButton.swift, Popover/CaptureRowView.swift, Popover/PopoverWindow.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.2);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.2);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarCloseHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(255,87,87,0.2) · light rgba(255,87,87,0.15)</div>
-<div class="ds-swatch-desc">Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,87,87,0.2)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(255,87,87,0.15)</code></div></div>
+<div class="ds-swatch-desc">Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarCloseIconHover</div>
-      <div class="ds-swatch-value">#FF5F57 · rgba(255,95,87,1)</div>
-<div class="ds-swatch-desc">Toolbar close icon hover — dark: #FF5F57, light: #FF5F57 (same)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(255,95,87,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#FF5F57</code></div></div>
+<div class="ds-swatch-desc">Toolbar close icon hover — dark: #FF5F57, light: #FF5F57 (same)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarDivider</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.12)</div>
-<div class="ds-swatch-desc">Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.08)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.12)</code></div></div>
+<div class="ds-swatch-desc">Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolbarView.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.4);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.45);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.4);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.45);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarIconDefault</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.4) · light rgba(0,0,0,0.45)</div>
-<div class="ds-swatch-desc">Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.4)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.45)</code></div></div>
+<div class="ds-swatch-desc">Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarIconHover</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.7) · light rgba(0,0,0,0.7)</div>
-<div class="ds-swatch-desc">Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.7)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.7)</code></div></div>
+<div class="ds-swatch-desc">Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarPurpleActive</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,1) · light rgba(83,74,183,1)</div>
-<div class="ds-swatch-desc">Toolbar purple active — dark: #AFA9EC, light: #534AB7</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift, Editor/ToolbarButtons.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Editor/ToolbarButtons.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,1)</code></div></div>
+<div class="ds-swatch-desc">Toolbar purple active — dark: #AFA9EC, light: #534AB7</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift, Editor/ToolbarButtons.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Editor/ToolbarButtons.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarToolActiveBg</div>
-      <div class="ds-swatch-value">dark rgba(175,169,236,0.2) · light rgba(83,74,183,0.12)</div>
-<div class="ds-swatch-desc">Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(175,169,236,0.2)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(83,74,183,0.12)</code></div></div>
+<div class="ds-swatch-desc">Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift">Editor/ToolButton.swift, Tour/Illustrations/TourMiniToolbar.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">toolbarTrashHoverBg</div>
-      <div class="ds-swatch-value">dark rgba(255,87,87,0.15) · light rgba(255,87,87,0.12)</div>
-<div class="ds-swatch-desc">Toolbar trash hover bg — dark: rgba(255,87,87,0.15), light: rgba(255,87,87,0.12)</div><div class="ds-swatch-usage">Used by <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,87,87,0.15)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(255,87,87,0.12)</code></div></div>
+<div class="ds-swatch-desc">Toolbar trash hover bg — dark: rgba(255,87,87,0.15), light: rgba(255,87,87,0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Editor/ToolButton.swift">Editor/ToolButton.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">settingsFieldBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(15,23,42,0.12)</div>
-<div class="ds-swatch-desc">Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)</div><div class="ds-swatch-usage">Used by <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.12)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(15,23,42,0.12)</code></div></div>
+<div class="ds-swatch-desc">Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)</div>      <div class="ds-swatch-usage">Used by: <span title="Settings/SettingsUI.swift">Settings/SettingsUI.swift</span></div>
+    </div>
   </div><div class="ds-surface-demo">
     <div class="ds-mini-field">
       <code>/Users/jon/captures</code>
@@ -2261,154 +2310,159 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <div class="ds-mini-preview"><code>&gt; A note I wrote about padding.</code></div>
     <div class="ds-surface-caption"><code>settingsPreviewSurface</code> · prompt preview</div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupAmberText</div>
-      <div class="ds-swatch-value">#B45309 · rgba(180,83,9,1)</div>
-<div class="ds-swatch-desc">#b45309 — amber status text</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupWindowController+UIFactories.swift">Setup/SetupWindowController+UIFactories.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(180,83,9,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#B45309</code></div></div>
+<div class="ds-swatch-desc">#b45309 — amber status text</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupWindowController+UIFactories.swift">Setup/SetupWindowController+UIFactories.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupBorder</div>
-      <div class="ds-swatch-value">NSColor.separatorColor</div>
-<div class="ds-swatch-desc">Setup dividers and borders</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.separatorColor</code></div></div>
+<div class="ds-swatch-desc">Setup dividers and borders</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift</span></div>
+    </div>
   </div><div class="ds-surface-demo">
     <div class="ds-mini-kbd-row">
       <kbd>⌘</kbd><kbd>⇧</kbd><kbd>6</kbd>
     </div>
     <div class="ds-surface-caption"><code>setupFieldBg</code> · shortcut display</div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupFieldBorder</div>
-      <div class="ds-swatch-value">NSColor.separatorColor</div>
-<div class="ds-swatch-desc">Setup field border</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift">Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.separatorColor</code></div></div>
+<div class="ds-swatch-desc">Setup field border</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift">Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,34,34,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(240,240,240,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,34,34,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(240,240,240,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupFooterBg</div>
-      <div class="ds-swatch-value">dark rgba(34,34,34,1) · light rgba(240,240,240,1)</div>
-<div class="ds-swatch-desc">Setup footer background — slightly different from window bg</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(34,34,34,1)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(240,240,240,1)</code></div></div>
+<div class="ds-swatch-desc">Setup footer background — slightly different from window bg</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Actions.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGrayBg</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.03) · light rgba(0,0,0,0.03)</div>
-<div class="ds-swatch-desc">Setup locked badge bg</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.03)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.03)</code></div></div>
+<div class="ds-swatch-desc">Setup locked badge bg</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGrayText</div>
-      <div class="ds-swatch-value">NSColor.tertiaryLabelColor</div>
-<div class="ds-swatch-desc">Setup locked badge/gray status text</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.tertiaryLabelColor</code></div></div>
+<div class="ds-swatch-desc">Setup locked badge/gray status text</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGreen</div>
-      <div class="ds-swatch-value">#22C55E · rgba(34,197,94,1)</div>
-<div class="ds-swatch-desc">#22c55e — badge done border/text</div><div class="ds-swatch-usage">Used by <span title="App/EditorHarnessSurfaceView.swift, App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/EditorHarnessSurfaceView.swift, App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(34,197,94,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#22C55E</code></div></div>
+<div class="ds-swatch-desc">#22c55e — badge done border/text</div>      <div class="ds-swatch-usage">Used by: <span title="App/EditorHarnessSurfaceView.swift, App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/EditorHarnessSurfaceView.swift, App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGreenBadgeBg</div>
-      <div class="ds-swatch-value">#22C55E · rgba(34,197,94,0.1)</div>
-<div class="ds-swatch-desc">rgba(34, 197, 94, 0.1) — badge done fill</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(34,197,94,0.1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#22C55E</code></div></div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.1) — badge done fill</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+UIFactories.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGreenBg</div>
-      <div class="ds-swatch-value">#22C55E · rgba(34,197,94,0.08)</div>
-<div class="ds-swatch-desc">rgba(34, 197, 94, 0.08) — green button fill</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupComponents.swift">Setup/SetupComponents.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(34,197,94,0.08)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#22C55E</code></div></div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.08) — green button fill</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupComponents.swift">Setup/SetupComponents.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGreenBorder</div>
-      <div class="ds-swatch-value">#22C55E · rgba(34,197,94,0.5)</div>
-<div class="ds-swatch-desc">rgba(34, 197, 94, 0.5) — green button border</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupComponents.swift">Setup/SetupComponents.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(34,197,94,0.5)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#22C55E</code></div></div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.5) — green button border</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupComponents.swift">Setup/SetupComponents.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupGreenText</div>
-      <div class="ds-swatch-value">#16A34A · rgba(22,163,74,1)</div>
-<div class="ds-swatch-desc">#16a34a — status text, green button text</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift · +1 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>rgba(22,163,74,1)</code></div><div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>#16A34A</code></div></div>
+<div class="ds-swatch-desc">#16a34a — status text, green button text</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift · +1 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupKbdBg</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.05)</div>
-<div class="ds-swatch-desc">Setup kbd pill bg</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.08)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.05)</code></div></div>
+<div class="ds-swatch-desc">Setup kbd pill bg</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupKbdBorder</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(0,0,0,0.1)</div>
-<div class="ds-swatch-desc">Setup kbd pill border</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.12)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.1)</code></div></div>
+<div class="ds-swatch-desc">Setup kbd pill border</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.55);"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.6);"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.55);"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.6);"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupKbdText</div>
-      <div class="ds-swatch-value">dark rgba(255,255,255,0.55) · light rgba(0,0,0,0.6)</div>
-<div class="ds-swatch-desc">Setup kbd pill text</div><div class="ds-swatch-usage">Used by <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>rgba(255,255,255,0.55)</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>rgba(0,0,0,0.6)</code></div></div>
+<div class="ds-swatch-desc">Setup kbd pill text</div>      <div class="ds-swatch-usage">Used by: <span title="Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift">Setup/SetupWindowController+UIFactories.swift, Tour/TourWindowController+Content.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupTextDim</div>
-      <div class="ds-swatch-value">NSColor.tertiaryLabelColor</div>
-<div class="ds-swatch-desc">Setup dim/helper text</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Panels.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Panels.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.tertiaryLabelColor</code></div></div>
+<div class="ds-swatch-desc">Setup dim/helper text</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Panels.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Panels.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupTextPrimary</div>
-      <div class="ds-swatch-value">NSColor.labelColor</div>
-<div class="ds-swatch-desc">Setup primary text</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.labelColor</code></div></div>
+<div class="ds-swatch-desc">Setup primary text</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController+Panels.swift</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupTextSecondary</div>
-      <div class="ds-swatch-value">NSColor.secondaryLabelColor</div>
-<div class="ds-swatch-desc">Setup secondary text</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift · +1 more</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.secondaryLabelColor</code></div></div>
+<div class="ds-swatch-desc">Setup secondary text</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift, Setup/SetupWindowController+UIFactories.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupComponents.swift, Setup/SetupWindowController+Panels.swift · +1 more</span></div>
+    </div>
   </div><div class="ds-swatch">
-    <div class="ds-swatch-bars"><div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
-</div>
+    <div class="ds-swatch-bar"><div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div></div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">setupWindowBg</div>
-      <div class="ds-swatch-value">NSColor.windowBackgroundColor</div>
-<div class="ds-swatch-desc">Setup window background — follows system</div><div class="ds-swatch-usage">Used by <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController.swift</span></div>    </div>
+      <div class="ds-swatch-values"><div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>NSColor.windowBackgroundColor</code></div></div>
+<div class="ds-swatch-desc">Setup window background — follows system</div>      <div class="ds-swatch-usage">Used by: <span title="App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController.swift">App/HarnessPreviewSurfaces.swift, Setup/SetupWindowController+Actions.swift, Setup/SetupWindowController.swift</span></div>
+    </div>
   </div>      </div>
     </section>
 

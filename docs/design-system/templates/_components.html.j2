@@ -7,39 +7,68 @@
   relies on real CSS :hover states (no fake "hover variant" cards).
 #}
 
-{# ============================================================ swatch #}
+{# ============================================================ swatch
+
+  One bar (~40px tall) at the top of each card:
+
+    - Appearance-aware / dynamic token → split down the middle.
+      Left half: dark surface (#1e1e1e) with the token's DARK value layered
+      on top, so any alpha reads honestly. Right half: light surface
+      (#f5f5f7) with the LIGHT value layered on top. The bar does NOT
+      react to the page mode toggle — both halves are always visible.
+
+    - Static color (no dark/light variant) → one full-width bar with the
+      color layered over BOTH surface halves so you can still see how the
+      color reads on light and dark.
+
+    - Alias → single bar showing "→ targetToken".
+
+  Followed by: token name, one row per value (dark / light or a single
+  "value" line for static colors), and a "Used by" line that's ALWAYS
+  present — "(none)" if the consumed_by list is empty.
+
+  `mode` arg is kept for compatibility but no longer varies rendering
+  between dual/triple — there is only one design.
+#}
 {% macro swatch(name, token, mode=None) -%}
-  {%- set m = mode or (token.rendering.mode if token.rendering else 'triple') -%}
   <div class="ds-swatch">
-    <div class="ds-swatch-bars">
-    {%- if m == 'alias' -%}
-      <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill ds-swatch-fill-alias">→ {{ token.target or '?' }}</div></div>
+    <div class="ds-swatch-bar">
+    {%- if token.kind == 'alias' -%}
+      <div class="ds-swatch-alias">→ <code>{{ token.target or '?' }}</code></div>
     {%- elif token.kind == 'dynamic' -%}
-      <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-      {% if m == 'triple' %}<div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>{% endif %}
+      <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
     {%- else -%}
       {%- set fill = token.rgba or token.raw -%}
-      <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-      {% if m == 'triple' %}<div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>{% endif %}
+      <div class="ds-swatch-half ds-swatch-half--dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+      <div class="ds-swatch-half ds-swatch-half--light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
     {%- endif -%}
     </div>
     <div class="ds-swatch-meta">
       <div class="ds-swatch-name">{{ name }}</div>
-      <div class="ds-swatch-value">{{ token | format_value }}</div>
+      <div class="ds-swatch-values">
+      {%- if token.kind == 'alias' -%}
+        <div class="ds-swatch-row"><span class="ds-swatch-label">alias</span><code>{{ token.target or '?' }}</code></div>
+      {%- elif token.kind == 'dynamic' -%}
+        <div class="ds-swatch-row"><span class="ds-swatch-label">dark</span><code>{{ (token.dark.rgba if token.dark else '—') or '—' }}</code></div>
+        <div class="ds-swatch-row"><span class="ds-swatch-label">light</span><code>{{ (token.light.rgba if token.light else '—') or '—' }}</code></div>
+      {%- else -%}
+        <div class="ds-swatch-row"><span class="ds-swatch-label">value</span><code>{{ token.rgba or token.raw }}</code></div>
+        {%- if token.hex %}<div class="ds-swatch-row"><span class="ds-swatch-label">hex</span><code>{{ token.hex }}</code></div>{% endif -%}
+      {%- endif -%}
+      </div>
       {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
-      {% if token.consumed_by %}<div class="ds-swatch-usage">{{ consumed_by(token.consumed_by) }}</div>{% endif %}
+      <div class="ds-swatch-usage">{{ consumed_by(token.consumed_by) }}</div>
     </div>
   </div>
 {%- endmacro %}
 
 {# ==================================================== consumed_by line #}
 {% macro consumed_by(files, truncate=3) -%}
-  {%- if not files -%}
-    <em>Unused</em>
+  Used by: {% if not files -%}
+    <em>(none)</em>
   {%- else -%}
-    Used by <span title="{{ files | join(', ') }}">{{ files | truncate_list(truncate) }}</span>
+    <span title="{{ files | join(', ') }}">{{ files | truncate_list(truncate) }}</span>
   {%- endif -%}
 {%- endmacro %}
 
@@ -54,7 +83,6 @@
     {{ pill_button('Copy Prompt', 'default') }}
     {{ pill_button('Copied ✓', 'copied') }}
   </div>
-  <p class="ds-preview-caption">Hover the middle button to see the real hover state transition.</p>
 {%- endmacro %}
 
 {% macro pill_button_primary(label='Next', variant='default') -%}
@@ -66,7 +94,6 @@
     {{ pill_button_primary('Next') }}
     {{ pill_button_primary('Get started') }}
   </div>
-  <p class="ds-preview-caption">Solid purple CTA used in tour and setup.</p>
 {%- endmacro %}
 
 {# ==================================================== secondary button #}
@@ -161,7 +188,6 @@
       {{ tool_button(t, 'default') }}
     {% endfor %}
   </div>
-  <p class="ds-preview-caption">Hover any tool to see the icon-hover state. Seven tools, one circular button family.</p>
 {%- endmacro %}
 
 {# ========================================================= font sample #}

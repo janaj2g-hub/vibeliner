@@ -42,10 +42,9 @@
   --ds-pill-bg: rgba(83, 74, 183, 0.08);
   --ds-pill-text: #534AB7;
 
-  /* Triple-bar swatch reference backgrounds */
+  /* Swatch reference backgrounds (single bar split dark/light) */
   --ds-bar-dark: #1e1e1e;               /* toolbarBg dark */
   --ds-bar-light: #f5f5f7;              /* toolbarBg light (approx) */
-  --ds-bar-screenshot: linear-gradient(135deg, #d7d9de 0%, #a4a8b0 55%, #6c707a 100%);
 }
 
 /* Dark mode — explicit override via body.dark */
@@ -358,7 +357,12 @@ body.light .ds-header {
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
 }
 
-/* --- Swatch card -------------------------------------------------------- */
+/* --- Swatch card --------------------------------------------------------
+   One bar at the top of each card, split down the middle: left half shows
+   the token layered over a dark surface, right half over a light surface.
+   Both halves are always visible at once — not reactive to the page mode
+   toggle — so transparent tokens read honestly against both contexts.
+*/
 .ds-swatch {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
@@ -367,37 +371,64 @@ body.light .ds-header {
   display: flex;
   flex-direction: column;
 }
-.ds-swatch-bars { display: flex; flex-direction: column; }
 .ds-swatch-bar {
-  height: 22px;
+  display: flex;
+  height: 40px;
   position: relative;
 }
-.ds-swatch-bar[data-role="dark"] { background: var(--ds-bar-dark); }
-.ds-swatch-bar[data-role="light"] { background: var(--ds-bar-light); }
-.ds-swatch-bar[data-role="screenshot"] { background: var(--ds-bar-screenshot); }
+.ds-swatch-half {
+  position: relative;
+  flex: 1;
+  overflow: hidden;
+}
+.ds-swatch-half--dark { background: var(--ds-bar-dark); }
+.ds-swatch-half--light { background: var(--ds-bar-light); }
 .ds-swatch-fill {
   position: absolute;
-  inset: 4px 10px;
-  border-radius: 4px;
+  inset: 0;
 }
+.ds-swatch-alias {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+  background: var(--ds-bg-muted);
+}
+.ds-swatch-alias code { color: var(--ds-fg); margin-left: 4px; }
 .ds-swatch-meta {
   padding: 12px 14px 14px;
   border-top: 1px solid var(--ds-divider);
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .ds-swatch-name {
   font-family: var(--ds-mono);
   font-size: 12px;
+  font-weight: 600;
   color: var(--ds-fg);
   word-break: break-all;
 }
-.ds-swatch-value {
+.ds-swatch-values { display: flex; flex-direction: column; gap: 2px; }
+.ds-swatch-row {
+  display: flex;
+  gap: 8px;
+  align-items: baseline;
   font-family: var(--ds-mono);
   font-size: 11px;
-  color: var(--ds-fg-dim);
+  line-height: 1.4;
 }
+.ds-swatch-label {
+  color: var(--ds-fg-dim);
+  min-width: 40px;
+  text-transform: lowercase;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+}
+.ds-swatch-row code { color: var(--ds-fg-muted); font-size: 11px; }
 .ds-swatch-desc {
   font-size: 12px;
   color: var(--ds-fg-muted);
@@ -409,6 +440,7 @@ body.light .ds-header {
   color: var(--ds-fg-dim);
   margin-top: 4px;
 }
+.ds-swatch-usage em { font-style: italic; color: var(--ds-fg-dim); }
 
 /* --- Typography specimens ----------------------------------------------- */
 .ds-font-list { display: flex; flex-direction: column; gap: 24px; }
@@ -503,12 +535,6 @@ body.light .ds-header {
   border: 1px solid var(--ds-border);
   border-radius: 10px;
 }
-.ds-preview-caption {
-  font-size: 11px;
-  color: var(--ds-fg-dim);
-  margin: 8px 0 0;
-}
-
 /* Pill button family (default + hover via CSS :hover) */
 .ds-pill-btn {
   appearance: none;
@@ -754,19 +780,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
   color: rgba(255,255,255,0.55);
 }
 
-/* Alias swatch: target pointer instead of color fill */
-.ds-swatch-fill-alias {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--ds-mono);
-  font-size: 11px;
-  color: var(--ds-fg-muted);
-  position: absolute;
-  inset: 4px 10px;
-  background: var(--ds-bg-muted);
-  border-radius: 4px;
-}
 
 /* --- Responsive --------------------------------------------------------- */
 @media (max-width: 900px) {
