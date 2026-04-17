@@ -517,11 +517,14 @@ body.light .ds-header {
 .ds-swatch-more::before { content: ' '; }
 .ds-swatch-usage-empty { color: var(--ds-fg-dim); font-style: italic; }
 
-/* Page-level Both/Light/Dark swatch toggle */
+/* Page-level Both/Light/Dark toggle — applies to swatches AND dimension
+   illustration halves. The same body class hides one side everywhere. */
 body.swatch-mode-light .ds-swatch-half--dark,
-body.swatch-mode-light .ds-swatch-value-half--dark { display: none; }
+body.swatch-mode-light .ds-swatch-value-half--dark,
+body.swatch-mode-light .ds-illus-half--dark { display: none; }
 body.swatch-mode-dark .ds-swatch-half--light,
-body.swatch-mode-dark .ds-swatch-value-half--light { display: none; }
+body.swatch-mode-dark .ds-swatch-value-half--light,
+body.swatch-mode-dark .ds-illus-half--light { display: none; }
 /* When one half is hidden, the other's border-left becomes redundant */
 body.swatch-mode-light .ds-swatch-value-half--light,
 body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
@@ -548,7 +551,117 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
 }
 .ds-font-meta code { color: var(--ds-fg-muted); }
 
-/* --- Dimension cards ---------------------------------------------------- */
+/* --- Dimension group cards (full-width composition preview + metadata) -- */
+.ds-dim-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+.ds-dim-group {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ds-dim-illus-panel {
+  display: flex;
+  min-height: 200px;
+}
+.ds-illus-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  min-width: 0; /* allow SVGs to shrink-fit in grid cells */
+}
+.ds-illus-half--dark { background: #1e1e1e; color: #888; }
+.ds-illus-half--light { background: #f5f5f7; color: #666; }
+.ds-illus-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+.ds-dim-meta {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid var(--ds-divider);
+  min-width: 0;
+}
+.ds-dim-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ds-fg);
+  letter-spacing: -0.005em;
+}
+.ds-dim-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  line-height: 1.55;
+}
+.ds-dim-tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--ds-bg-muted);
+  border-radius: 6px;
+}
+.ds-dim-token-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--ds-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.ds-dim-token-row code { color: var(--ds-fg); }
+.ds-dim-token-value { color: var(--ds-fg-muted); }
+.ds-dim-unit-inline { color: var(--ds-fg-dim); font-size: 10.5px; }
+.ds-dim-used-by {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--ds-divider);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Singleton cards (unchanged shape, still a numeric grid) */
+.ds-dim-singletons-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-fg);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ds-dim-singletons-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-dim-singletons-intro {
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
 .ds-dim-card {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
@@ -582,6 +695,12 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
   word-break: break-all;
 }
 .ds-dim-desc { font-size: 11px; color: var(--ds-fg-dim); margin-top: 4px; line-height: 1.4; }
+
+/* Narrow screens: stack illustration above metadata */
+@media (max-width: 780px) {
+  .ds-dim-group { grid-template-columns: 1fr; }
+  .ds-dim-meta { border-left: 0; border-top: 1px solid var(--ds-divider); }
+}
 
 /* --- Footer ------------------------------------------------------------- */
 .ds-footer {
@@ -2853,123 +2972,520 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <section id="dimensions" class="ds-section">
       <h2>Dimensions <span class="ds-section-count">54</span></h2>
       <p class="ds-section-intro">
-        Measurements that define Vibeliner's spatial rhythm — badge sizes, toolbar
-        heights, corner radii, gaps. Every number in the app resolves to one of these.
+        Measurements that define Vibeliner's spatial rhythm. These aren't isolated
+        numbers — they compose into real objects. Each group below shows the object
+        drawn at real scale with the dimensions called out; the singleton grid at
+        the bottom covers everything else.
       </p>
-      <div class="ds-grid-narrow">
+
+      <div class="ds-dim-groups">
+<div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 18pt badge centered, with the "1" glyph at badgeFont size 9 -->
+  <circle cx="95" cy="80" r="9" fill="#EF4444"/>
+  <text x="95" y="83.5" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="white" text-anchor="middle">1</text>
+  <!-- diameter callout: dashed vertical bracket, label to the right -->
+  <line x1="115" y1="71" x2="115" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="71" x2="117" y2="71" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="89" x2="117" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="115" y1="80" x2="145" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="150" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">18 pt · badgeDiameter</text>
+  <!-- subtle baseline reference -->
+  <line x1="60" y1="128" x2="240" y2="128" stroke="currentColor" stroke-width="0.4" stroke-dasharray="1 3" opacity="0.35"/>
+  <text x="60" y="142" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.55">drawn at real scale</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 18pt badge centered, with the "1" glyph at badgeFont size 9 -->
+  <circle cx="95" cy="80" r="9" fill="#EF4444"/>
+  <text x="95" y="83.5" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="white" text-anchor="middle">1</text>
+  <!-- diameter callout: dashed vertical bracket, label to the right -->
+  <line x1="115" y1="71" x2="115" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="71" x2="117" y2="71" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="89" x2="117" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="115" y1="80" x2="145" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="150" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">18 pt · badgeDiameter</text>
+  <!-- subtle baseline reference -->
+  <line x1="60" y1="128" x2="240" y2="128" stroke="currentColor" stroke-width="0.4" stroke-dasharray="1 3" opacity="0.35"/>
+  <text x="60" y="142" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.55">drawn at real scale</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Badge</h4>
+      <p class="ds-dim-description">A red circle that caps every annotation mark. Its font is sized to read clearly inside the circle at any zoom level.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>badgeDiameter</code>
+          <span class="ds-dim-token-value">18<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Annotations/Renderers/BadgeRenderer.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- The crosshair itself at real scale: 2.3pt thickness, 10pt tick length, 85% opacity -->
+  <g opacity="0.85" stroke="#AFA9EC" stroke-width="2.3" stroke-linecap="round">
+    <line x1="95" y1="60" x2="95" y2="100"/>
+    <line x1="75" y1="80" x2="115" y2="80"/>
+  </g>
+  <!-- Thickness callout -->
+  <line x1="115" y1="80" x2="165" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="170" y="48" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.3 pt · crosshairThickness</text>
+  <!-- Tick length callout -->
+  <line x1="95" y1="60" x2="155" y2="72" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="160" y="75" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · crosshairTickLength</text>
+  <!-- Opacity callout -->
+  <line x1="75" y1="80" x2="40" y2="110" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="15" y="125" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">0.85 α · crosshairOpacity</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- The crosshair itself at real scale: 2.3pt thickness, 10pt tick length, 85% opacity -->
+  <g opacity="0.85" stroke="#AFA9EC" stroke-width="2.3" stroke-linecap="round">
+    <line x1="95" y1="60" x2="95" y2="100"/>
+    <line x1="75" y1="80" x2="115" y2="80"/>
+  </g>
+  <!-- Thickness callout -->
+  <line x1="115" y1="80" x2="165" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="170" y="48" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.3 pt · crosshairThickness</text>
+  <!-- Tick length callout -->
+  <line x1="95" y1="60" x2="155" y2="72" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="160" y="75" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · crosshairTickLength</text>
+  <!-- Opacity callout -->
+  <line x1="75" y1="80" x2="40" y2="110" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="15" y="125" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">0.85 α · crosshairOpacity</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Crosshair</h4>
+      <p class="ds-dim-description">The purple aiming cross shown under the cursor during capture selection. Thickness and tick length keep it visible without overwhelming the screenshot underneath; 85% opacity lets a hint of the pixel below bleed through.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>crosshairOpacity</code>
+          <span class="ds-dim-token-value">0.85<span class="ds-dim-unit-inline"> α</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>crosshairThickness</code>
+          <span class="ds-dim-token-value">2.3<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>crosshairTickLength</code>
+          <span class="ds-dim-token-value">10<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Capture/CrosshairView.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Real-scale arrow: shaft from (40,120) to (160,40), chevron at ~28° -->
+  <g stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="40" y1="120" x2="160" y2="40"/>
+    <!-- chevron arms: 12pt long each, 28° apart from the shaft -->
+    <path d="M 160 40 L 136 40 M 160 40 L 160 64"/>
+  </g>
+  <!-- strokeWidth callout -->
+  <line x1="95" y1="78" x2="52" y2="50" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="18" y="45" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <!-- chevronLength callout -->
+  <line x1="148" y1="40" x2="180" y2="28" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="185" y="30" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">12 pt · arrowChevronLength</text>
+  <!-- chevronAngle callout -->
+  <line x1="160" y1="52" x2="220" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="225" y="80" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">28° · arrowChevronAngle</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Real-scale arrow: shaft from (40,120) to (160,40), chevron at ~28° -->
+  <g stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="40" y1="120" x2="160" y2="40"/>
+    <!-- chevron arms: 12pt long each, 28° apart from the shaft -->
+    <path d="M 160 40 L 136 40 M 160 40 L 160 64"/>
+  </g>
+  <!-- strokeWidth callout -->
+  <line x1="95" y1="78" x2="52" y2="50" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="18" y="45" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <!-- chevronLength callout -->
+  <line x1="148" y1="40" x2="180" y2="28" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="185" y="30" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">12 pt · arrowChevronLength</text>
+  <!-- chevronAngle callout -->
+  <line x1="160" y1="52" x2="220" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="225" y="80" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">28° · arrowChevronAngle</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Arrow</h4>
+      <p class="ds-dim-description">The annotation arrow: one diagonal shaft plus a chevron. Chevron length and angle keep the arrowhead visible at long shaft lengths without looking cartoonish; the shared 2.5pt strokeWidth is defined under shape-primitives.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>arrowChevronAngle</code>
+          <span class="ds-dim-token-value">28<span class="ds-dim-unit-inline"> °</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>arrowChevronLength</code>
+          <span class="ds-dim-token-value">12<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Annotations/Renderers/ArrowRenderer.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 26pt tall, 13pt corner radius pill -->
+  <rect x="40" y="67" width="128" height="26" rx="13" ry="13"
+        fill="rgba(255, 248, 248, 0.92)" stroke="rgba(239,68,68,0.35)" stroke-width="1"/>
+  <text x="56" y="84.5" font-family="-apple-system, sans-serif" font-size="12" fill="#7f1d1d">Fix padding</text>
+  <!-- height callout -->
+  <line x1="180" y1="67" x2="180" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="67" x2="182" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="93" x2="182" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="180" y1="80" x2="205" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="210" y="82.5" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">26 pt · noteHeight</text>
+  <!-- corner radius callout -->
+  <line x1="53" y1="67" x2="40" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="12" y="52" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">13 pt · noteCornerRadius</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 26pt tall, 13pt corner radius pill -->
+  <rect x="40" y="67" width="128" height="26" rx="13" ry="13"
+        fill="rgba(255, 248, 248, 0.92)" stroke="rgba(239,68,68,0.35)" stroke-width="1"/>
+  <text x="56" y="84.5" font-family="-apple-system, sans-serif" font-size="12" fill="#7f1d1d">Fix padding</text>
+  <!-- height callout -->
+  <line x1="180" y1="67" x2="180" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="67" x2="182" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="93" x2="182" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="180" y1="80" x2="205" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="210" y="82.5" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">26 pt · noteHeight</text>
+  <!-- corner radius callout -->
+  <line x1="53" y1="67" x2="40" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="12" y="52" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">13 pt · noteCornerRadius</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Note pill</h4>
+      <p class="ds-dim-description">The inline annotation chip that holds typed text. Height is tuned for one line of 12pt copy at comfortable vertical padding; corner radius is exactly half the height, so the pill is always fully rounded.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>noteCornerRadius</code>
+          <span class="ds-dim-token-value">13<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>noteHeight</code>
+          <span class="ds-dim-token-value">26<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Annotations/Renderers/NotePillRenderer.swift, Annotations/Renderers/NotePillView.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Reference selection outline + label beneath -->
+  <rect x="40" y="28" width="110" height="62" fill="none" stroke="#AFA9EC" stroke-width="1" stroke-dasharray="3 2"/>
+  <!-- the label itself: 24pt tall, 5pt corner, padding 10 on each side -->
+  <rect x="60" y="100" width="72" height="24" rx="5" ry="5" fill="#534AB7"/>
+  <text x="96" y="116.5" font-family="ui-monospace, monospace" font-size="11" fill="white" text-anchor="middle">45 × 28</text>
+  <!-- height callout -->
+  <line x1="148" y1="100" x2="148" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="100" x2="150" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="124" x2="150" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="148" y1="112" x2="175" y2="112" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="178" y="115" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">24 pt · height</text>
+  <!-- gap callout between selection bottom and label top -->
+  <line x1="46" y1="90" x2="46" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="90" x2="48" y2="90" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="100" x2="48" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="46" y1="95" x2="18" y2="82" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="76" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · gap</text>
+  <!-- padding callout on label -->
+  <line x1="60" y1="134" x2="70" y2="134" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="60" y1="132" x2="60" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="70" y1="132" x2="70" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <text x="76" y="137" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · paddingH · 5 pt · corner</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Reference selection outline + label beneath -->
+  <rect x="40" y="28" width="110" height="62" fill="none" stroke="#AFA9EC" stroke-width="1" stroke-dasharray="3 2"/>
+  <!-- the label itself: 24pt tall, 5pt corner, padding 10 on each side -->
+  <rect x="60" y="100" width="72" height="24" rx="5" ry="5" fill="#534AB7"/>
+  <text x="96" y="116.5" font-family="ui-monospace, monospace" font-size="11" fill="white" text-anchor="middle">45 × 28</text>
+  <!-- height callout -->
+  <line x1="148" y1="100" x2="148" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="100" x2="150" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="124" x2="150" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="148" y1="112" x2="175" y2="112" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="178" y="115" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">24 pt · height</text>
+  <!-- gap callout between selection bottom and label top -->
+  <line x1="46" y1="90" x2="46" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="90" x2="48" y2="90" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="100" x2="48" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="46" y1="95" x2="18" y2="82" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="76" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · gap</text>
+  <!-- padding callout on label -->
+  <line x1="60" y1="134" x2="70" y2="134" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="60" y1="132" x2="60" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="70" y1="132" x2="70" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <text x="76" y="137" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · paddingH · 5 pt · corner</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Dimension label</h4>
+      <p class="ds-dim-description">The small "45 × 28" pill shown beneath a live capture selection. Fixed height keeps vertical alignment stable; horizontal padding and gap keep the label breathing room from the selection edge.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>dimensionLabelCornerRadius</code>
+          <span class="ds-dim-token-value">5<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>dimensionLabelGap</code>
+          <span class="ds-dim-token-value">10<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>dimensionLabelHeight</code>
+          <span class="ds-dim-token-value">24<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>dimensionLabelPaddingH</code>
+          <span class="ds-dim-token-value">10<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Capture/DimensionLabelView.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <path d="M 40 100 Q 70 40 100 80 T 170 70 T 240 90"
+        stroke="#EF4444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- sample points every 3pt along (illustrative, spaced visually) -->
+    <circle cx="40.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="52.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="65.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="77.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="90.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="102.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="115.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="127.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="140.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="152.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="165.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="177.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="190.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="202.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="215.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="227.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+  <!-- sample interval callout -->
+  <line x1="65" y1="94" x2="77.5" y2="94" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="65" y1="92" x2="65" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="77.5" y1="92" x2="77.5" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="71" y1="96" x2="71" y2="120" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="30" y="135" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · freehandSampleInterval</text>
+  <!-- min-points callout -->
+  <text x="165" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 points min · freehandMinPoints</text>
+  <line x1="200" y1="45" x2="200" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- stroke callout -->
+  <line x1="240" y1="90" x2="265" y2="115" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="180" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · shared strokeWidth</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <path d="M 40 100 Q 70 40 100 80 T 170 70 T 240 90"
+        stroke="#EF4444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- sample points every 3pt along (illustrative, spaced visually) -->
+    <circle cx="40.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="52.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="65.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="77.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="90.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="102.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="115.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="127.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="140.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="152.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="165.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="177.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="190.0" cy="88" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="202.5" cy="90" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="215.0" cy="92" r="1.2" fill="currentColor" opacity="0.6"/>
+    <circle cx="227.5" cy="94" r="1.2" fill="currentColor" opacity="0.6"/>
+  <!-- sample interval callout -->
+  <line x1="65" y1="94" x2="77.5" y2="94" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="65" y1="92" x2="65" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="77.5" y1="92" x2="77.5" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="71" y1="96" x2="71" y2="120" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="30" y="135" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · freehandSampleInterval</text>
+  <!-- min-points callout -->
+  <text x="165" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 points min · freehandMinPoints</text>
+  <line x1="200" y1="45" x2="200" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- stroke callout -->
+  <line x1="240" y1="90" x2="265" y2="115" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="180" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · shared strokeWidth</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Freehand</h4>
+      <p class="ds-dim-description">The free-drawn annotation tool. Sample interval controls point density along the stroke; min points gates when a gesture becomes a real mark so accidental clicks don't register. Shares the 2.5pt strokeWidth with other shapes.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>freehandMinPoints</code>
+          <span class="ds-dim-token-value">3<span class="ds-dim-unit-inline"> points</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>freehandSampleInterval</code>
+          <span class="ds-dim-token-value">3<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Annotations/Renderers/FreehandRenderer.swift, Annotations/Tools/FreehandTool.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- line at 2.5pt -->
+  <line x1="30" y1="40" x2="90" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- rect at 2.5pt, corner 3pt -->
+  <rect x="115" y="24" width="50" height="34" rx="3" ry="3" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- circle at 2.5pt -->
+  <circle cx="210" cy="41" r="18" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- min selection: 15×15 pt reference square at bottom left -->
+  <rect x="30" y="90" width="15" height="15" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2" fill="rgba(175,169,236,0.12)"/>
+  <!-- callouts -->
+  <line x1="60" y1="40" x2="60" y2="70" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="20" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <line x1="118" y1="27" x2="115" y2="24" stroke="currentColor" stroke-width="0.6"/>
+  <text x="115" y="72" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · rectCornerRadius</text>
+  <line x1="37" y1="105" x2="80" y2="124" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="85" y="127" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">≥ 10 pt · minimumSelectionSize</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- line at 2.5pt -->
+  <line x1="30" y1="40" x2="90" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- rect at 2.5pt, corner 3pt -->
+  <rect x="115" y="24" width="50" height="34" rx="3" ry="3" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- circle at 2.5pt -->
+  <circle cx="210" cy="41" r="18" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- min selection: 15×15 pt reference square at bottom left -->
+  <rect x="30" y="90" width="15" height="15" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2" fill="rgba(175,169,236,0.12)"/>
+  <!-- callouts -->
+  <line x1="60" y1="40" x2="60" y2="70" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="20" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <line x1="118" y1="27" x2="115" y2="24" stroke="currentColor" stroke-width="0.6"/>
+  <text x="115" y="72" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · rectCornerRadius</text>
+  <line x1="37" y1="105" x2="80" y2="124" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="85" y="127" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">≥ 10 pt · minimumSelectionSize</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Shape primitives</h4>
+      <p class="ds-dim-description">The measurements shared across line, rectangle, and circle tools. strokeWidth is the single source of truth for every annotation stroke; rectCornerRadius keeps rectangles subtly rounded; minimumSelectionSize stops tiny accidental drags from turning into tokens.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>minimumSelectionSize</code>
+          <span class="ds-dim-token-value">10<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>rectCornerRadius</code>
+          <span class="ds-dim-token-value">3<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>strokeWidth</code>
+          <span class="ds-dim-token-value">2.5<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Annotations/Renderers/LineRenderer.swift, Annotations/Renderers/RectangleRenderer.swift, Annotations/Renderers/CircleRenderer.swift</div>
+    </div>
+  </div><div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Toolbar: height 40, corner radius 20 -->
+  <rect x="30" y="60" width="240" height="40" rx="20" ry="20" fill="rgba(30,30,30,0.92)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <!-- Tool buttons: 30pt circles, 2pt gap -->
+    <circle cx="52" cy="80" r="15" fill="transparent"/>
+    <circle cx="84" cy="80" r="15" fill="transparent"/>
+    <circle cx="116" cy="80" r="15" fill="rgba(175,169,236,0.2)"/>
+    <circle cx="148" cy="80" r="15" fill="transparent"/>
+    <circle cx="180" cy="80" r="15" fill="transparent"/>
+    <circle cx="212" cy="80" r="15" fill="transparent"/>
+  <!-- height callout -->
+  <line x1="285" y1="60" x2="285" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="60" x2="287" y2="60" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="100" x2="287" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <text x="215" y="130" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">40 pt · toolbarHeight</text>
+  <line x1="250" y1="118" x2="285" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- corner callout -->
+  <line x1="55" y1="62" x2="30" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">20 pt · toolbarCornerRadius</text>
+  <!-- button diameter callout -->
+  <line x1="116" y1="65" x2="146" y2="65" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="116" y1="63" x2="116" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="63" x2="146" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="131" y1="48" x2="131" y2="65" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="90" y="40" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">30 pt · toolButtonSize</text>
+  <!-- gap callout -->
+  <line x1="147" y1="95" x2="149" y2="95" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="147" y1="93" x2="147" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="149" y1="93" x2="149" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <text x="125" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2 pt · gap between tools</text>
+</svg></div>
+      <div class="ds-illus-half ds-illus-half--light"><svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Toolbar: height 40, corner radius 20 -->
+  <rect x="30" y="60" width="240" height="40" rx="20" ry="20" fill="rgba(30,30,30,0.92)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <!-- Tool buttons: 30pt circles, 2pt gap -->
+    <circle cx="52" cy="80" r="15" fill="transparent"/>
+    <circle cx="84" cy="80" r="15" fill="transparent"/>
+    <circle cx="116" cy="80" r="15" fill="rgba(175,169,236,0.2)"/>
+    <circle cx="148" cy="80" r="15" fill="transparent"/>
+    <circle cx="180" cy="80" r="15" fill="transparent"/>
+    <circle cx="212" cy="80" r="15" fill="transparent"/>
+  <!-- height callout -->
+  <line x1="285" y1="60" x2="285" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="60" x2="287" y2="60" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="100" x2="287" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <text x="215" y="130" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">40 pt · toolbarHeight</text>
+  <line x1="250" y1="118" x2="285" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- corner callout -->
+  <line x1="55" y1="62" x2="30" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">20 pt · toolbarCornerRadius</text>
+  <!-- button diameter callout -->
+  <line x1="116" y1="65" x2="146" y2="65" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="116" y1="63" x2="116" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="63" x2="146" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="131" y1="48" x2="131" y2="65" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="90" y="40" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">30 pt · toolButtonSize</text>
+  <!-- gap callout -->
+  <line x1="147" y1="95" x2="149" y2="95" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="147" y1="93" x2="147" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="149" y1="93" x2="149" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <text x="125" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2 pt · gap between tools</text>
+</svg></div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">Toolbar</h4>
+      <p class="ds-dim-description">The floating editor toolbar. Height and corner radius are set so the toolbar reads as a single capsule; button diameter fits comfortably within the height leaving a 5pt halo, and the 2pt gap gives a visual beat without looking sparse.</p>
+      <div class="ds-dim-tokens">
+        <div class="ds-dim-token-row">
+          <code>toolButtonSize</code>
+          <span class="ds-dim-token-value">30<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>toolbarCornerRadius</code>
+          <span class="ds-dim-token-value">20<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>toolbarHeight</code>
+          <span class="ds-dim-token-value">40<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+        <div class="ds-dim-token-row">
+          <code>toolbarToolButtonGap</code>
+          <span class="ds-dim-token-value">2<span class="ds-dim-unit-inline"> pt</span></span>
+        </div>
+      </div>
+      <div class="ds-dim-used-by">Used by: Editor/ToolbarView.swift, Editor/ToolButton.swift</div>
+    </div>
+  </div>      </div>
+
+        <h3 class="ds-dim-singletons-heading">Other measurements <span class="ds-dim-singletons-count">33</span></h3>
+        <p class="ds-dim-singletons-intro">
+          One-off gaps, opacities, counts, and global constants that don't belong
+          to a composition group.
+        </p>
+        <div class="ds-grid-narrow">
 <div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">arrowChevronAngle</div>
-<div class="ds-dim-desc">28 degrees arrow chevron angle</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">12<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">arrowChevronLength</div>
-<div class="ds-dim-desc">12px arrow chevron arm length</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">18<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">badgeDiameter</div>
-<div class="ds-dim-desc">18px badge diameter (radius 9)</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">0.85<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">crosshairOpacity</div>
-<div class="ds-dim-desc">0.85 crosshair opacity</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">2.3<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">crosshairThickness</div>
-<div class="ds-dim-desc">2.3px crosshair line thickness</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">crosshairTickLength</div>
-<div class="ds-dim-desc">10px crosshair tick length</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">5<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">dimensionLabelCornerRadius</div>
-<div class="ds-dim-desc">5px dimension label corner radius</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">dimensionLabelGap</div>
-<div class="ds-dim-desc">10px gap below selection to dimension label</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">dimensionLabelHeight</div>
-<div class="ds-dim-desc">24px dimension label height</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">dimensionLabelPaddingH</div>
-<div class="ds-dim-desc">10px dimension label horizontal padding</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">3<span class="ds-dim-unit">int</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">freehandMinPoints</div>
-<div class="ds-dim-desc">3 minimum points for freehand</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">freehandSampleInterval</div>
-<div class="ds-dim-desc">3px freehand sample interval</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">minimumSelectionSize</div>
-<div class="ds-dim-desc">10px minimum selection size</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">13<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">noteCornerRadius</div>
-<div class="ds-dim-desc">13px note pill corner radius</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">26<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">noteHeight</div>
-<div class="ds-dim-desc">26px note pill height</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">rectCornerRadius</div>
-<div class="ds-dim-desc">3px rectangle corner radius</div>    </div>
-  </div><div class="ds-dim-card">
     <div>
       <div class="ds-dim-value">1.5<span class="ds-dim-unit">pt</span></div>
     </div>
@@ -2992,13 +3508,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 <div class="ds-dim-desc">2px pin stake width</div>    </div>
   </div><div class="ds-dim-card">
     <div>
-      <div class="ds-dim-value">2.5<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">strokeWidth</div>
-<div class="ds-dim-desc">2.5px stroke width for all annotation tools</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
       <div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div>
     </div>
     <div>
@@ -3011,34 +3520,6 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <div>
       <div class="ds-dim-name">iconButtonSize</div>
 <div class="ds-dim-desc">28px icon button size</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">30<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">toolButtonSize</div>
-<div class="ds-dim-desc">30px tool button size</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">20<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">toolbarCornerRadius</div>
-<div class="ds-dim-desc">20px toolbar corner radius</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">40<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">toolbarHeight</div>
-<div class="ds-dim-desc">40px toolbar height</div>    </div>
-  </div><div class="ds-dim-card">
-    <div>
-      <div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div>
-    </div>
-    <div>
-      <div class="ds-dim-name">toolbarToolButtonGap</div>
-<div class="ds-dim-desc">2px visual separation between adjacent tool buttons</div>    </div>
   </div><div class="ds-dim-card">
     <div>
       <div class="ds-dim-value">12<span class="ds-dim-unit">pt</span></div>
@@ -3235,7 +3716,7 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <div>
       <div class="ds-dim-name">ghostStrokeWidth</div>
 <div class="ds-dim-desc">Ghost silhouette stroke width: 1.5px</div>    </div>
-  </div>      </div>
+  </div>        </div>
     </section>
 
     <section id="surfaces" class="ds-section">

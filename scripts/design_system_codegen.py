@@ -64,6 +64,18 @@ DEFAULT_OUTPUT = _REPO_ROOT / "docs" / "design-system" / "design-system.html"
 # Rendering modes the template knows how to handle. Unknown modes fall back to "dual".
 _KNOWN_MODES = {"dual", "triple", "single", "alias"}
 
+# Dimension groups, in display order. Matches `dimension_group` values in the YAML.
+_DIMENSION_GROUP_ORDER = (
+    "badge",
+    "crosshair",
+    "arrow",
+    "note-pill",
+    "dimension-label",
+    "freehand",
+    "shape-primitives",
+    "toolbar",
+)
+
 
 # --- Jinja filters ------------------------------------------------------------
 
@@ -304,10 +316,26 @@ def main(argv: list[str] | None = None) -> int:
     # Sorted list of source file names for deterministic template output.
     source_files = sorted({info["source_file"] for info in swift_tokens.values()})
 
+    # Pre-organize dimensions into groups + singletons for the Dimensions section.
+    # A dimension token with `dimension_group: <id>` lands in that group; anything
+    # without lands in the singleton list. Groups preserve the canonical order
+    # defined in _DIMENSION_GROUP_ORDER.
+    dim_section = tokens_by_section.get("dimensions") or []
+    dim_groups: dict[str, list[tuple[str, dict[str, Any]]]] = {gid: [] for gid in _DIMENSION_GROUP_ORDER}
+    dim_singletons: list[tuple[str, dict[str, Any]]] = []
+    for name, info in dim_section:
+        gid = info.get("dimension_group")
+        if gid and gid in dim_groups:
+            dim_groups[gid].append((name, info))
+        else:
+            dim_singletons.append((name, info))
+
     context: dict[str, Any] = {
         "sections": metadata.get("sections") or [],
         "tokens_by_section": tokens_by_section,
         "all_tokens": swift_tokens,  # for macros needing cross-token lookups (e.g. pill preview)
+        "dim_groups": dim_groups,
+        "dim_singletons": dim_singletons,
         "token_count": len(swift_tokens),
         "yaml_token_count": len(metadata.get("tokens") or {}),
         "source_files": source_files,

@@ -518,11 +518,14 @@ body.light .ds-header {
 .ds-swatch-more::before { content: ' '; }
 .ds-swatch-usage-empty { color: var(--ds-fg-dim); font-style: italic; }
 
-/* Page-level Both/Light/Dark swatch toggle */
+/* Page-level Both/Light/Dark toggle — applies to swatches AND dimension
+   illustration halves. The same body class hides one side everywhere. */
 body.swatch-mode-light .ds-swatch-half--dark,
-body.swatch-mode-light .ds-swatch-value-half--dark { display: none; }
+body.swatch-mode-light .ds-swatch-value-half--dark,
+body.swatch-mode-light .ds-illus-half--dark { display: none; }
 body.swatch-mode-dark .ds-swatch-half--light,
-body.swatch-mode-dark .ds-swatch-value-half--light { display: none; }
+body.swatch-mode-dark .ds-swatch-value-half--light,
+body.swatch-mode-dark .ds-illus-half--light { display: none; }
 /* When one half is hidden, the other's border-left becomes redundant */
 body.swatch-mode-light .ds-swatch-value-half--light,
 body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
@@ -549,7 +552,117 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
 }
 .ds-font-meta code { color: var(--ds-fg-muted); }
 
-/* --- Dimension cards ---------------------------------------------------- */
+/* --- Dimension group cards (full-width composition preview + metadata) -- */
+.ds-dim-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  margin-bottom: 56px;
+}
+.ds-dim-group {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.ds-dim-illus-panel {
+  display: flex;
+  min-height: 200px;
+}
+.ds-illus-half {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 20px;
+  min-width: 0; /* allow SVGs to shrink-fit in grid cells */
+}
+.ds-illus-half--dark { background: #1e1e1e; color: #888; }
+.ds-illus-half--light { background: #f5f5f7; color: #666; }
+.ds-illus-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  max-height: 220px;
+}
+.ds-dim-meta {
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  border-left: 1px solid var(--ds-divider);
+  min-width: 0;
+}
+.ds-dim-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ds-fg);
+  letter-spacing: -0.005em;
+}
+.ds-dim-description {
+  margin: 0;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  line-height: 1.55;
+}
+.ds-dim-tokens {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  background: var(--ds-bg-muted);
+  border-radius: 6px;
+}
+.ds-dim-token-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-family: var(--ds-mono);
+  font-size: 11.5px;
+  line-height: 1.55;
+}
+.ds-dim-token-row code { color: var(--ds-fg); }
+.ds-dim-token-value { color: var(--ds-fg-muted); }
+.ds-dim-unit-inline { color: var(--ds-fg-dim); font-size: 10.5px; }
+.ds-dim-used-by {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  margin-top: auto;
+  padding-top: 6px;
+  border-top: 1px solid var(--ds-divider);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+/* Singleton cards (unchanged shape, still a numeric grid) */
+.ds-dim-singletons-heading {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ds-fg);
+  margin: 0 0 6px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ds-dim-singletons-count {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-dim-singletons-intro {
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
 .ds-dim-card {
   background: var(--ds-surface);
   border: 1px solid var(--ds-border);
@@ -583,6 +696,12 @@ body.swatch-mode-dark .ds-swatch-value-half--dark { border-left: 0; }
   word-break: break-all;
 }
 .ds-dim-desc { font-size: 11px; color: var(--ds-fg-dim); margin-top: 4px; line-height: 1.4; }
+
+/* Narrow screens: stack illustration above metadata */
+@media (max-width: 780px) {
+  .ds-dim-group { grid-template-columns: 1fr; }
+  .ds-dim-meta { border-left: 0; border-top: 1px solid var(--ds-divider); }
+}
 
 /* --- Footer ------------------------------------------------------------- */
 .ds-footer {
@@ -1136,12 +1255,33 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <section id="dimensions" class="ds-section">
       <h2>Dimensions <span class="ds-section-count">{{ dimensions | length }}</span></h2>
       <p class="ds-section-intro">
-        Measurements that define Vibeliner's spatial rhythm — badge sizes, toolbar
-        heights, corner radii, gaps. Every number in the app resolves to one of these.
+        Measurements that define Vibeliner's spatial rhythm. These aren't isolated
+        numbers — they compose into real objects. Each group below shows the object
+        drawn at real scale with the dimensions called out; the singleton grid at
+        the bottom covers everything else.
       </p>
-      <div class="ds-grid-narrow">
-      {% for name, token in dimensions %}{{ c.dimension_card(name, token) }}{% endfor %}
+
+      <div class="ds-dim-groups">
+        {% if dim_groups['badge'] %}{{ c.dimension_group('badge', 'Badge', 'A red circle that caps every annotation mark. Its font is sized to read clearly inside the circle at any zoom level.', dim_groups['badge'], ['Annotations/Renderers/BadgeRenderer.swift']) }}{% endif %}
+        {% if dim_groups['crosshair'] %}{{ c.dimension_group('crosshair', 'Crosshair', 'The purple aiming cross shown under the cursor during capture selection. Thickness and tick length keep it visible without overwhelming the screenshot underneath; 85% opacity lets a hint of the pixel below bleed through.', dim_groups['crosshair'], ['Capture/CrosshairView.swift']) }}{% endif %}
+        {% if dim_groups['arrow'] %}{{ c.dimension_group('arrow', 'Arrow', 'The annotation arrow: one diagonal shaft plus a chevron. Chevron length and angle keep the arrowhead visible at long shaft lengths without looking cartoonish; the shared 2.5pt strokeWidth is defined under shape-primitives.', dim_groups['arrow'], ['Annotations/Renderers/ArrowRenderer.swift']) }}{% endif %}
+        {% if dim_groups['note-pill'] %}{{ c.dimension_group('note-pill', 'Note pill', 'The inline annotation chip that holds typed text. Height is tuned for one line of 12pt copy at comfortable vertical padding; corner radius is exactly half the height, so the pill is always fully rounded.', dim_groups['note-pill'], ['Annotations/Renderers/NotePillRenderer.swift', 'Annotations/Renderers/NotePillView.swift']) }}{% endif %}
+        {% if dim_groups['dimension-label'] %}{{ c.dimension_group('dimension-label', 'Dimension label', 'The small "45 × 28" pill shown beneath a live capture selection. Fixed height keeps vertical alignment stable; horizontal padding and gap keep the label breathing room from the selection edge.', dim_groups['dimension-label'], ['Capture/DimensionLabelView.swift']) }}{% endif %}
+        {% if dim_groups['freehand'] %}{{ c.dimension_group('freehand', 'Freehand', "The free-drawn annotation tool. Sample interval controls point density along the stroke; min points gates when a gesture becomes a real mark so accidental clicks don't register. Shares the 2.5pt strokeWidth with other shapes.", dim_groups['freehand'], ['Annotations/Renderers/FreehandRenderer.swift', 'Annotations/Tools/FreehandTool.swift']) }}{% endif %}
+        {% if dim_groups['shape-primitives'] %}{{ c.dimension_group('shape-primitives', 'Shape primitives', 'The measurements shared across line, rectangle, and circle tools. strokeWidth is the single source of truth for every annotation stroke; rectCornerRadius keeps rectangles subtly rounded; minimumSelectionSize stops tiny accidental drags from turning into tokens.', dim_groups['shape-primitives'], ['Annotations/Renderers/LineRenderer.swift', 'Annotations/Renderers/RectangleRenderer.swift', 'Annotations/Renderers/CircleRenderer.swift']) }}{% endif %}
+        {% if dim_groups['toolbar'] %}{{ c.dimension_group('toolbar', 'Toolbar', 'The floating editor toolbar. Height and corner radius are set so the toolbar reads as a single capsule; button diameter fits comfortably within the height leaving a 5pt halo, and the 2pt gap gives a visual beat without looking sparse.', dim_groups['toolbar'], ['Editor/ToolbarView.swift', 'Editor/ToolButton.swift']) }}{% endif %}
       </div>
+
+      {% if dim_singletons %}
+        <h3 class="ds-dim-singletons-heading">Other measurements <span class="ds-dim-singletons-count">{{ dim_singletons | length }}</span></h3>
+        <p class="ds-dim-singletons-intro">
+          One-off gaps, opacities, counts, and global constants that don't belong
+          to a composition group.
+        </p>
+        <div class="ds-grid-narrow">
+        {% for name, token in dim_singletons %}{{ c.dimension_singleton(name, token) }}{% endfor %}
+        </div>
+      {% endif %}
     </section>
 
     {# --- Surfaces ------------------------------------------------------ #}

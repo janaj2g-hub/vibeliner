@@ -346,17 +346,263 @@
   </div>
 {%- endmacro %}
 
-{# ===================================================== dimension card #}
-{% macro dimension_card(name, token) -%}
+{# ===================================================== dimension unit #}
+{#
+  Compute the display unit for a dimension token. YAML `unit_override` wins
+  over the parser's mechanical unit (pt for CGFloat, int for Int). Int
+  tokens get a blank label unless explicitly overridden — integer counts
+  like `freehandMinPoints` read better with an explicit "points" suffix.
+#}
+{% macro dim_unit(token) -%}
+  {%- if token.unit_override -%}{{ token.unit_override }}
+  {%- elif token.unit == 'int' -%}
+  {%- else -%}{{ token.unit }}{%- endif -%}
+{%- endmacro %}
+
+{# =================================================== dimension singleton #}
+{% macro dimension_singleton(name, token) -%}
   <div class="ds-dim-card">
     <div>
-      <div class="ds-dim-value">{{ token.value }}<span class="ds-dim-unit">{{ token.unit }}</span></div>
+      <div class="ds-dim-value">{{ token.value }}{%- set u = dim_unit(token) | trim -%}{%- if u %}<span class="ds-dim-unit">{{ u }}</span>{%- endif -%}</div>
     </div>
     <div>
       <div class="ds-dim-name">{{ name }}</div>
       {% if token.description %}<div class="ds-dim-desc">{{ token.description }}</div>{% endif %}
     </div>
   </div>
+{%- endmacro %}
+
+{# ==================================================== dimension group =====
+
+  One full-width row per composition group. Left half: an illustration panel
+  split dark/light (follows the page-level Both/Light/Dark toggle via
+  .ds-illus-half--dark / .ds-illus-half--light classes — mirrors the swatch
+  pattern). Right half: metadata panel with title, description, a two-col
+  token list (name + value), and a "Used by" footer.
+
+  The SVG illustrations below all draw at real scale inside a generous
+  viewBox. Callouts use `currentColor` so the dark-half uses #888 and the
+  light-half uses #666 via CSS, staying legible on each surface.
+#}
+{% macro dimension_group(gid, title, description, tokens, used_by) -%}
+  <div class="ds-dim-group">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark">{{ _illus(gid) }}</div>
+      <div class="ds-illus-half ds-illus-half--light">{{ _illus(gid) }}</div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title">{{ title }}</h4>
+      <p class="ds-dim-description">{{ description }}</p>
+      <div class="ds-dim-tokens">
+      {% for name, token in tokens %}
+        <div class="ds-dim-token-row">
+          <code>{{ name }}</code>
+          <span class="ds-dim-token-value">{{ token.value }}{%- set u = dim_unit(token) | trim -%}{%- if u %}<span class="ds-dim-unit-inline"> {{ u }}</span>{%- endif -%}</span>
+        </div>
+      {% endfor %}
+      </div>
+      <div class="ds-dim-used-by">Used by: {{ used_by | join(', ') }}</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- Illustration dispatcher ---------------------------------------------- #}
+{% macro _illus(gid) -%}
+  {%- if gid == 'badge' -%}{{ illus_badge() }}
+  {%- elif gid == 'crosshair' -%}{{ illus_crosshair() }}
+  {%- elif gid == 'arrow' -%}{{ illus_arrow() }}
+  {%- elif gid == 'note-pill' -%}{{ illus_note_pill() }}
+  {%- elif gid == 'dimension-label' -%}{{ illus_dimension_label() }}
+  {%- elif gid == 'freehand' -%}{{ illus_freehand() }}
+  {%- elif gid == 'shape-primitives' -%}{{ illus_shape_primitives() }}
+  {%- elif gid == 'toolbar' -%}{{ illus_toolbar() }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# --- Badge: 18pt circle with "1" inside, dashed callout to diameter ------ #}
+{% macro illus_badge() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 18pt badge centered, with the "1" glyph at badgeFont size 9 -->
+  <circle cx="95" cy="80" r="9" fill="#EF4444"/>
+  <text x="95" y="83.5" font-family="-apple-system, sans-serif" font-size="9" font-weight="600" fill="white" text-anchor="middle">1</text>
+  <!-- diameter callout: dashed vertical bracket, label to the right -->
+  <line x1="115" y1="71" x2="115" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="71" x2="117" y2="71" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="113" y1="89" x2="117" y2="89" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="115" y1="80" x2="145" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="150" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">18 pt · badgeDiameter</text>
+  <!-- subtle baseline reference -->
+  <line x1="60" y1="128" x2="240" y2="128" stroke="currentColor" stroke-width="0.4" stroke-dasharray="1 3" opacity="0.35"/>
+  <text x="60" y="142" font-family="ui-monospace, monospace" font-size="9" fill="currentColor" opacity="0.55">drawn at real scale</text>
+</svg>
+{%- endmacro %}
+
+{# --- Crosshair: lines crossing at 85% opacity, thickness + tick callouts - #}
+{% macro illus_crosshair() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- The crosshair itself at real scale: 2.3pt thickness, 10pt tick length, 85% opacity -->
+  <g opacity="0.85" stroke="#AFA9EC" stroke-width="2.3" stroke-linecap="round">
+    <line x1="95" y1="60" x2="95" y2="100"/>
+    <line x1="75" y1="80" x2="115" y2="80"/>
+  </g>
+  <!-- Thickness callout -->
+  <line x1="115" y1="80" x2="165" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="170" y="48" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.3 pt · crosshairThickness</text>
+  <!-- Tick length callout -->
+  <line x1="95" y1="60" x2="155" y2="72" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="160" y="75" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · crosshairTickLength</text>
+  <!-- Opacity callout -->
+  <line x1="75" y1="80" x2="40" y2="110" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="15" y="125" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">0.85 α · crosshairOpacity</text>
+</svg>
+{%- endmacro %}
+
+{# --- Arrow: diagonal shaft + chevron at 2.5pt, angle + chevron-length ---- #}
+{% macro illus_arrow() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Real-scale arrow: shaft from (40,120) to (160,40), chevron at ~28° -->
+  <g stroke="#EF4444" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="40" y1="120" x2="160" y2="40"/>
+    <!-- chevron arms: 12pt long each, 28° apart from the shaft -->
+    <path d="M 160 40 L 136 40 M 160 40 L 160 64"/>
+  </g>
+  <!-- strokeWidth callout -->
+  <line x1="95" y1="78" x2="52" y2="50" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="18" y="45" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <!-- chevronLength callout -->
+  <line x1="148" y1="40" x2="180" y2="28" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="185" y="30" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">12 pt · arrowChevronLength</text>
+  <!-- chevronAngle callout -->
+  <line x1="160" y1="52" x2="220" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="225" y="80" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">28° · arrowChevronAngle</text>
+</svg>
+{%- endmacro %}
+
+{# --- Note pill: 26pt rounded pill, corner + height callouts -------------- #}
+{% macro illus_note_pill() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- 26pt tall, 13pt corner radius pill -->
+  <rect x="40" y="67" width="128" height="26" rx="13" ry="13"
+        fill="rgba(255, 248, 248, 0.92)" stroke="rgba(239,68,68,0.35)" stroke-width="1"/>
+  <text x="56" y="84.5" font-family="-apple-system, sans-serif" font-size="12" fill="#7f1d1d">Fix padding</text>
+  <!-- height callout -->
+  <line x1="180" y1="67" x2="180" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="67" x2="182" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="178" y1="93" x2="182" y2="93" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="180" y1="80" x2="205" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="210" y="82.5" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">26 pt · noteHeight</text>
+  <!-- corner radius callout -->
+  <line x1="53" y1="67" x2="40" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="12" y="52" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">13 pt · noteCornerRadius</text>
+</svg>
+{%- endmacro %}
+
+{# --- Dimension label: small "45 × 28" pill with height/radius/gap -------- #}
+{% macro illus_dimension_label() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Reference selection outline + label beneath -->
+  <rect x="40" y="28" width="110" height="62" fill="none" stroke="#AFA9EC" stroke-width="1" stroke-dasharray="3 2"/>
+  <!-- the label itself: 24pt tall, 5pt corner, padding 10 on each side -->
+  <rect x="60" y="100" width="72" height="24" rx="5" ry="5" fill="#534AB7"/>
+  <text x="96" y="116.5" font-family="ui-monospace, monospace" font-size="11" fill="white" text-anchor="middle">45 × 28</text>
+  <!-- height callout -->
+  <line x1="148" y1="100" x2="148" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="100" x2="150" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="124" x2="150" y2="124" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="148" y1="112" x2="175" y2="112" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="178" y="115" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">24 pt · height</text>
+  <!-- gap callout between selection bottom and label top -->
+  <line x1="46" y1="90" x2="46" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="90" x2="48" y2="90" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="44" y1="100" x2="48" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="46" y1="95" x2="18" y2="82" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="76" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · gap</text>
+  <!-- padding callout on label -->
+  <line x1="60" y1="134" x2="70" y2="134" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="60" y1="132" x2="60" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="70" y1="132" x2="70" y2="136" stroke="currentColor" stroke-width="0.6"/>
+  <text x="76" y="137" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">10 pt · paddingH · 5 pt · corner</text>
+</svg>
+{%- endmacro %}
+
+{# --- Freehand: squiggle with sample dots 3pt apart, min-points callout --- #}
+{% macro illus_freehand() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <path d="M 40 100 Q 70 40 100 80 T 170 70 T 240 90"
+        stroke="#EF4444" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  <!-- sample points every 3pt along (illustrative, spaced visually) -->
+  {% for i in range(16) %}
+    {% set x = 40 + i * 12.5 %}
+    {% set y = 88 + (i % 4) * 2 %}
+    <circle cx="{{ x }}" cy="{{ y }}" r="1.2" fill="currentColor" opacity="0.6"/>
+  {% endfor %}
+  <!-- sample interval callout -->
+  <line x1="65" y1="94" x2="77.5" y2="94" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="65" y1="92" x2="65" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="77.5" y1="92" x2="77.5" y2="96" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="71" y1="96" x2="71" y2="120" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="30" y="135" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · freehandSampleInterval</text>
+  <!-- min-points callout -->
+  <text x="165" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 points min · freehandMinPoints</text>
+  <line x1="200" y1="45" x2="200" y2="76" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- stroke callout -->
+  <line x1="240" y1="90" x2="265" y2="115" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="180" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · shared strokeWidth</text>
+</svg>
+{%- endmacro %}
+
+{# --- Shape primitives: line + rect(rounded) + circle + min selection ---- #}
+{% macro illus_shape_primitives() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- line at 2.5pt -->
+  <line x1="30" y1="40" x2="90" y2="40" stroke="#EF4444" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- rect at 2.5pt, corner 3pt -->
+  <rect x="115" y="24" width="50" height="34" rx="3" ry="3" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- circle at 2.5pt -->
+  <circle cx="210" cy="41" r="18" stroke="#EF4444" stroke-width="2.5" fill="none"/>
+  <!-- min selection: 15×15 pt reference square at bottom left -->
+  <rect x="30" y="90" width="15" height="15" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2" fill="rgba(175,169,236,0.12)"/>
+  <!-- callouts -->
+  <line x1="60" y1="40" x2="60" y2="70" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="20" y="82" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2.5 pt · strokeWidth</text>
+  <line x1="118" y1="27" x2="115" y2="24" stroke="currentColor" stroke-width="0.6"/>
+  <text x="115" y="72" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">3 pt · rectCornerRadius</text>
+  <line x1="37" y1="105" x2="80" y2="124" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="85" y="127" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">≥ 10 pt · minimumSelectionSize</text>
+</svg>
+{%- endmacro %}
+
+{# --- Toolbar: mini rounded-rect toolbar with tool buttons, measurements - #}
+{% macro illus_toolbar() -%}
+<svg viewBox="0 0 300 160" width="100%" preserveAspectRatio="xMidYMid meet" class="ds-illus-svg">
+  <!-- Toolbar: height 40, corner radius 20 -->
+  <rect x="30" y="60" width="240" height="40" rx="20" ry="20" fill="rgba(30,30,30,0.92)" stroke="rgba(255,255,255,0.12)" stroke-width="0.8"/>
+  <!-- Tool buttons: 30pt circles, 2pt gap -->
+  {% for i in range(6) %}
+    {% set cx = 52 + i * 32 %}
+    <circle cx="{{ cx }}" cy="80" r="15" fill="{{ 'rgba(175,169,236,0.2)' if i == 2 else 'transparent' }}"/>
+  {% endfor %}
+  <!-- height callout -->
+  <line x1="285" y1="60" x2="285" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="60" x2="287" y2="60" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="283" y1="100" x2="287" y2="100" stroke="currentColor" stroke-width="0.6"/>
+  <text x="215" y="130" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">40 pt · toolbarHeight</text>
+  <line x1="250" y1="118" x2="285" y2="80" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <!-- corner callout -->
+  <line x1="55" y1="62" x2="30" y2="48" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="2" y="42" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">20 pt · toolbarCornerRadius</text>
+  <!-- button diameter callout -->
+  <line x1="116" y1="65" x2="146" y2="65" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="116" y1="63" x2="116" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="146" y1="63" x2="146" y2="67" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="131" y1="48" x2="131" y2="65" stroke="currentColor" stroke-width="0.6" stroke-dasharray="2 2"/>
+  <text x="90" y="40" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">30 pt · toolButtonSize</text>
+  <!-- gap callout -->
+  <line x1="147" y1="95" x2="149" y2="95" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="147" y1="93" x2="147" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <line x1="149" y1="93" x2="149" y2="97" stroke="currentColor" stroke-width="0.6"/>
+  <text x="125" y="150" font-family="ui-monospace, monospace" font-size="10" fill="currentColor">2 pt · gap between tools</text>
+</svg>
 {%- endmacro %}
 
 {# =================================================== composed surfaces #}
