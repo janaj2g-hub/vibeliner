@@ -43,7 +43,7 @@ Spot a visual bug, press a hotkey, and draw numbered annotations directly on you
 
 ## Documentation
 
-- Product requirements: [`docs/VIBELINER_PRD.md`](docs/VIBELINER_PRD.md)
+- Product requirements: [`docs/specs/VIBELINER_PRD.md`](docs/specs/VIBELINER_PRD.md)
 - Design system: [`docs/design-system/`](docs/design-system/)
 
 ## Requirements

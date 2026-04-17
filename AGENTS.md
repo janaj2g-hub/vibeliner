@@ -4,7 +4,7 @@ Short reference for any AI coding agent working on this project. For full detail
 
 ## What this is
 
-Vibeliner is a native macOS menu bar app that captures, annotates, and packages screenshots for AI coding tools. The full product spec is in `docs/VIBELINER_PRD.md`.
+Vibeliner is a native macOS menu bar app that captures, annotates, and packages screenshots for AI coding tools. The full product spec is in `docs/specs/VIBELINER_PRD.md`.
 
 ## Tech stack
 
@@ -75,8 +75,8 @@ Every line from the prompt's `Verification` section must be included with `Pass`
 - Captures save under the configured captures folder (default: `~/Documents/vibeliner/YYYY-MM-DD_HHMMSS/`) with `screenshot.png` and `prompt.txt`
 - Built app is `dist/Vibeliner.app`
 - Canonical design-system docs live in `docs/design-system/`
-- Read `docs/TECHNICAL_DECISIONS.md` before trying a new approach — check if it already failed
-- Read `docs/VIBELINER_PRD.md` for the complete product spec
+- Read `docs/specs/TECHNICAL_DECISIONS.md` before trying a new approach — check if it already failed
+- Read `docs/specs/VIBELINER_PRD.md` for the complete product spec
 - Use `NotificationCenter` for change propagation, not Combine
 - Use singleton managers where the project expects them, such as `ConfigManager.shared`, `CapturesManager.shared`, and `HotkeyManager.shared`
 - Do not use `ScreenCaptureKit`; use `CGWindowListCreateImage` with `screencapture -R` as fallback

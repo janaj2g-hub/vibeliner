@@ -8,7 +8,7 @@ This document lists which Claude.ai project files need updating to match the cur
 
 ### 1. System Instructions (Claude.ai project settings)
 
-**Status:** Replace with `docs/CLAUDE_AI_SYSTEM_INSTRUCTIONS.md`
+**Status:** Replace with `docs/ai-instructions/CLAUDE_AI_SYSTEM_INSTRUCTIONS.md`
 
 **What changed:**
 - Annotation tools: now 6 (added Line tool with shortcut 7, prompt tag `[line]`)
@@ -49,7 +49,7 @@ This document lists which Claude.ai project files need updating to match the cur
 
 **Potential changes:**
 - Design tokens section should reference 6 annotation tools
-- Prompt template should mention reading `docs/TECHNICAL_DECISIONS.md`
+- Prompt template should mention reading `docs/specs/TECHNICAL_DECISIONS.md`
 
 ### 6. VERIFICATION_RULES.md (if used as a project file)
 
@@ -64,10 +64,10 @@ This document lists which Claude.ai project files need updating to match the cur
 | `CLAUDE.md` | Fixed file tree (added 8 missing files), counts updated to 6 tools/renderers |
 | `AGENTS.md` | No changes needed (doesn't enumerate tools) |
 | `README.md` | Already updated in VIB-402 (6 tools) |
-| `docs/VIBELINER_PRD.md` | Added Line to Sections 4, 5, 8 |
+| `docs/specs/VIBELINER_PRD.md` | Added Line to Sections 4, 5, 8 |
 | `docs/design-system/DESIGN_SYSTEM.md` | Added 31 undocumented tokens, removed 2 phantoms, added Line Tool section |
 | `docs/design-system/Design_Tester.html` | Already updated in VIB-402 (Line tool button) |
-| `docs/TECHNICAL_DECISIONS.md` | No changes needed |
+| `docs/specs/TECHNICAL_DECISIONS.md` | No changes needed |
 | `docs/investigations/` | Consolidated: moved SCALABILITY_AUDIT.md and tour-audit.md from root |
-| `docs/CLAUDE_AI_SYSTEM_INSTRUCTIONS.md` | **New** — drop-in replacement for Claude.ai system instructions |
-| `docs/CLAUDE_AI_PROJECT_FILES.md` | **New** — this file |
+| `docs/ai-instructions/CLAUDE_AI_SYSTEM_INSTRUCTIONS.md` | **New** — drop-in replacement for Claude.ai system instructions |
+| `docs/ai-instructions/CLAUDE_AI_PROJECT_FILES.md` | **New** — this file |
