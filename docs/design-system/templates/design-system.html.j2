@@ -2,43 +2,769 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vibeliner Design System (scaffolding stub)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner Design System</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2em auto; padding: 0 1em; }
-  h1 { font-size: 28px; }
-  h2 { font-size: 20px; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }
-  ul { list-style: none; padding: 0; }
-  li { padding: 4px 0; font-family: 'SF Mono', monospace; font-size: 13px; }
-  .count { color: #666; font-weight: normal; }
-  .banner { background: #ffeaa7; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
+/* ==========================================================================
+   Vibeliner Design System — doc chrome
+   Chrome intentionally uses Vibeliner's own tokens where practical.
+   ========================================================================== */
+
+/* --- Tokens: doc theme (light default, dark via body.dark / system media) - */
+:root {
+  /* Typography */
+  --ds-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --ds-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces (light default) */
+  --ds-bg: #fafbfc;
+  --ds-bg-muted: #f2f3f5;
+  --ds-surface: #ffffff;
+  --ds-surface-hover: #f6f7f9;
+  --ds-border: rgba(15, 23, 42, 0.10);
+  --ds-border-strong: rgba(15, 23, 42, 0.18);
+  --ds-divider: rgba(15, 23, 42, 0.08);
+
+  /* Foreground */
+  --ds-fg: #0f172a;
+  --ds-fg-muted: rgba(15, 23, 42, 0.64);
+  --ds-fg-dim: rgba(15, 23, 42, 0.42);
+
+  /* Brand — Vibeliner purple */
+  --ds-accent: #534AB7;                 /* purpleDark */
+  --ds-accent-soft: rgba(83, 74, 183, 0.08);
+  --ds-accent-strong: rgba(83, 74, 183, 0.22);
+
+  /* Chrome tokens (mirroring Vibeliner runtime) */
+  --ds-chrome-border: rgba(175, 169, 236, 0.22);
+  --ds-pill-border: rgba(83, 74, 183, 0.42);
+  --ds-pill-bg: rgba(83, 74, 183, 0.08);
+  --ds-pill-text: #534AB7;
+
+  /* Triple-bar swatch reference backgrounds */
+  --ds-bar-dark: #1e1e1e;               /* toolbarBg dark */
+  --ds-bar-light: #f5f5f7;              /* toolbarBg light (approx) */
+  --ds-bar-screenshot: linear-gradient(135deg, #d7d9de 0%, #a4a8b0 55%, #6c707a 100%);
+}
+
+/* Dark mode — explicit override via body.dark */
+body.dark {
+  --ds-bg: #0b0d12;
+  --ds-bg-muted: #12141b;
+  --ds-surface: #15181f;
+  --ds-surface-hover: #1a1e27;
+  --ds-border: rgba(255, 255, 255, 0.08);
+  --ds-border-strong: rgba(255, 255, 255, 0.16);
+  --ds-divider: rgba(255, 255, 255, 0.06);
+  --ds-fg: rgba(255, 255, 255, 0.92);
+  --ds-fg-muted: rgba(255, 255, 255, 0.62);
+  --ds-fg-dim: rgba(255, 255, 255, 0.38);
+  --ds-accent: #AFA9EC;                 /* purpleLight */
+  --ds-accent-soft: rgba(175, 169, 236, 0.10);
+  --ds-accent-strong: rgba(175, 169, 236, 0.28);
+  --ds-pill-border: rgba(175, 169, 236, 0.44);
+  --ds-pill-bg: rgba(116, 97, 194, 0.18);
+  --ds-pill-text: #AFA9EC;
+}
+
+/* System mode — follow OS when neither .light nor .dark is on body */
+@media (prefers-color-scheme: dark) {
+  body:not(.light):not(.dark) {
+    --ds-bg: #0b0d12;
+    --ds-bg-muted: #12141b;
+    --ds-surface: #15181f;
+    --ds-surface-hover: #1a1e27;
+    --ds-border: rgba(255, 255, 255, 0.08);
+    --ds-border-strong: rgba(255, 255, 255, 0.16);
+    --ds-divider: rgba(255, 255, 255, 0.06);
+    --ds-fg: rgba(255, 255, 255, 0.92);
+    --ds-fg-muted: rgba(255, 255, 255, 0.62);
+    --ds-fg-dim: rgba(255, 255, 255, 0.38);
+    --ds-accent: #AFA9EC;
+    --ds-accent-soft: rgba(175, 169, 236, 0.10);
+    --ds-accent-strong: rgba(175, 169, 236, 0.28);
+    --ds-pill-border: rgba(175, 169, 236, 0.44);
+    --ds-pill-bg: rgba(116, 97, 194, 0.18);
+    --ds-pill-text: #AFA9EC;
+  }
+}
+
+/* --- Reset / base --------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ds-bg);
+  color: var(--ds-fg);
+  font-family: var(--ds-system);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+code, pre { font-family: var(--ds-mono); font-size: 0.88em; }
+a { color: var(--ds-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- Sticky header ------------------------------------------------------- */
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 32px;
+  background: rgba(var(--ds-surface-rgb, 255, 255, 255), 0.88);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--ds-divider);
+}
+body.dark .ds-header,
+body:not(.light):not(.dark) .ds-header {
+  background: rgba(11, 13, 18, 0.72);
+}
+body.light .ds-header {
+  background: rgba(250, 251, 252, 0.82);
+}
+.ds-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ds-header-title .ds-mark { color: var(--ds-accent); }
+
+/* --- Mode toggle (segmented-control styling, static HTML) ---------------- */
+.ds-mode-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+}
+.ds-mode-toggle button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-mode-toggle button:hover { color: var(--ds-fg); }
+.ds-mode-toggle button.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+/* --- Hamburger (CSS only; JS in VIB-483) --------------------------------- */
+.ds-hamburger {
+  display: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-right: 12px;
+}
+.ds-hamburger-icon, .ds-hamburger-icon::before, .ds-hamburger-icon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: relative;
+}
+.ds-hamburger-icon::before, .ds-hamburger-icon::after { content: ""; position: absolute; left: 0; }
+.ds-hamburger-icon::before { top: -6px; }
+.ds-hamburger-icon::after { top: 6px; }
+
+/* --- Layout grid: sidebar + main ---------------------------------------- */
+.ds-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ds-sidebar {
+  position: sticky;
+  top: 56px;
+  align-self: start;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 32px 24px 32px 0;
+  border-right: 1px solid var(--ds-divider);
+}
+.ds-sidebar-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+  margin: 0 0 8px 12px;
+}
+.ds-sidebar-nav { list-style: none; padding: 0; margin: 0 0 24px; }
+.ds-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-sidebar-nav a:hover { background: var(--ds-surface-hover); color: var(--ds-fg); text-decoration: none; }
+.ds-sidebar-nav a.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-weight: 500;
+}
+.ds-sidebar-nav .ds-count {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-sidebar-nav a.active .ds-count { color: var(--ds-accent); opacity: 0.75; }
+
+.ds-sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.ds-sidebar-footer a { color: var(--ds-fg-muted); }
+.ds-sidebar-footer a:hover { color: var(--ds-accent); text-decoration: none; }
+
+/* --- Main column -------------------------------------------------------- */
+.ds-main {
+  padding: 48px 32px 80px 48px;
+  min-width: 0;
+}
+
+/* --- Hero --------------------------------------------------------------- */
+.ds-hero { max-width: 720px; margin-bottom: 96px; }
+.ds-hero h1 {
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+  color: var(--ds-fg);
+}
+.ds-hero-intro {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
+.ds-hero-intro code {
+  color: var(--ds-fg);
+  background: var(--ds-bg-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.ds-hero-stats {
+  display: flex;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-dim);
+}
+.ds-hero-stat strong {
+  display: block;
+  color: var(--ds-fg);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+/* --- Section containers ------------------------------------------------- */
+.ds-section { margin: 0 0 96px; scroll-margin-top: 80px; }
+.ds-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 12px;
+  color: var(--ds-fg);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.ds-section h2 .ds-section-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-section-intro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  max-width: 640px;
+  margin: 0 0 40px;
+}
+.ds-section.collapsed > :not(h2) { display: none; }
+.ds-section > h2 { cursor: default; } /* VIB-483 will add cursor: pointer via JS */
+
+.ds-family {
+  margin: 0 0 48px;
+  padding: 0 0 32px;
+  border-bottom: 1px solid var(--ds-divider);
+}
+.ds-family:last-child { border-bottom: 0; padding-bottom: 0; }
+.ds-family h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-fg-muted);
+  margin: 0 0 18px;
+}
+.ds-family-meta { font-size: 12px; color: var(--ds-fg-dim); margin-left: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* --- Grid layouts ------------------------------------------------------- */
+.ds-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.ds-grid-narrow {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* --- Swatch card -------------------------------------------------------- */
+.ds-swatch {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.ds-swatch-bars { display: flex; flex-direction: column; }
+.ds-swatch-bar {
+  height: 22px;
+  position: relative;
+}
+.ds-swatch-bar[data-role="dark"] { background: var(--ds-bar-dark); }
+.ds-swatch-bar[data-role="light"] { background: var(--ds-bar-light); }
+.ds-swatch-bar[data-role="screenshot"] { background: var(--ds-bar-screenshot); }
+.ds-swatch-fill {
+  position: absolute;
+  inset: 4px 10px;
+  border-radius: 4px;
+}
+.ds-swatch-meta {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--ds-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ds-swatch-name {
+  font-family: var(--ds-mono);
+  font-size: 12px;
+  color: var(--ds-fg);
+  word-break: break-all;
+}
+.ds-swatch-value {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-desc {
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+.ds-swatch-usage {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  margin-top: 4px;
+}
+
+/* --- Typography specimens ----------------------------------------------- */
+.ds-font-list { display: flex; flex-direction: column; gap: 24px; }
+.ds-font-sample {
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-font-specimen {
+  color: var(--ds-fg);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.ds-font-meta {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  padding-top: 10px;
+  border-top: 1px solid var(--ds-divider);
+}
+.ds-font-meta code { color: var(--ds-fg-muted); }
+
+/* --- Dimension cards ---------------------------------------------------- */
+.ds-dim-card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+}
+.ds-dim-value {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ds-fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.ds-dim-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+.ds-dim-name {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-muted);
+  margin-top: 14px;
+  word-break: break-all;
+}
+.ds-dim-desc { font-size: 11px; color: var(--ds-fg-dim); margin-top: 4px; line-height: 1.4; }
+
+/* --- Footer ------------------------------------------------------------- */
+.ds-footer {
+  margin-top: 120px;
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.ds-footer a { color: var(--ds-fg-muted); }
+.ds-footer code { color: var(--ds-fg-muted); font-size: 10px; }
+
+/* --- Placeholder for VIB-482 components --------------------------------- */
+.ds-placeholder {
+  padding: 20px 22px;
+  background: var(--ds-bg-muted);
+  border: 1px dashed var(--ds-border-strong);
+  border-radius: 10px;
+  color: var(--ds-fg-muted);
+  font-size: 13px;
+}
+.ds-placeholder code {
+  background: var(--ds-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--ds-fg);
+}
+.ds-placeholder ul { margin: 12px 0 0; padding-left: 20px; }
+.ds-placeholder li { margin: 3px 0; font-family: var(--ds-mono); font-size: 11px; color: var(--ds-fg); }
+
+/* --- Responsive --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .ds-layout { grid-template-columns: 1fr; padding: 0 20px; }
+  .ds-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 260px;
+    background: var(--ds-bg);
+    border-right: 1px solid var(--ds-border);
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    padding: 24px 20px 24px 24px;
+    z-index: 90;
+  }
+  body.ds-sidebar-open .ds-sidebar { transform: translateX(0); }
+  .ds-main { padding: 32px 0 64px; }
+  .ds-hero h1 { font-size: 36px; }
+  .ds-hamburger { display: inline-flex; }
+}
+
+/* Default active state for mode toggle (VIB-483 overrides with localStorage) */
 </style>
 </head>
 <body>
-<div class="banner">
-  <strong>This is the scaffolding stub.</strong> VIB-481/482/483 will replace this template with the real design.
+
+<header class="ds-header">
+  <div style="display: flex; align-items: center;">
+    <button class="ds-hamburger" type="button" aria-label="Toggle sidebar">
+      <span class="ds-hamburger-icon"></span>
+    </button>
+    <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Design System</div>
+  </div>
+  <div class="ds-mode-toggle" role="group" aria-label="Color mode">
+    <button data-mode="system" class="active" type="button">System</button>
+    <button data-mode="light" type="button">Light</button>
+    <button data-mode="dark" type="button">Dark</button>
+  </div>
+</header>
+
+<div class="ds-layout">
+
+  <aside class="ds-sidebar">
+    <p class="ds-sidebar-section-label">Contents</p>
+    <ul class="ds-sidebar-nav">
+    {% for section in sections %}
+      <li>
+        <a href="#{{ section.id }}">
+          <span>{{ section.title }}</span>
+          <span class="ds-count">{{ tokens_by_section[section.id] | length }}</span>
+        </a>
+      </li>
+    {% endfor %}
+    </ul>
+    <div class="ds-sidebar-footer">
+      <a href="tour-design.html">Tour Design →</a>
+    </div>
+  </aside>
+
+  <main class="ds-main">
+
+    <div class="ds-hero">
+      <h1>Every pixel, from code.</h1>
+      <p class="ds-hero-intro">
+        Vibeliner uses 4 universal component families and {{ token_count }} tokens
+        to keep every surface consistent. This page is generated from
+        <code>Vibeliner/Design/DesignTokens*.swift</code> — you cannot read a value
+        here that disagrees with the code.
+      </p>
+      <div class="ds-hero-stats">
+        <div class="ds-hero-stat">
+          <strong>{{ token_count }}</strong>
+          tokens in code
+        </div>
+        <div class="ds-hero-stat">
+          <strong>{{ yaml_token_count }}</strong>
+          in the catalog
+        </div>
+        <div class="ds-hero-stat">
+          <strong>{{ sections | length }}</strong>
+          sections
+        </div>
+      </div>
+    </div>
+
+    {# --- Live Components ----------------------------------------------- #}
+    {% set components = tokens_by_section['components'] %}
+    <section id="components" class="ds-section">
+      <h2>Live Components <span class="ds-section-count">{{ components | length }}</span></h2>
+      <p class="ds-section-intro">
+        Interactive previews of every reusable component family.
+        Hover an element to see its real state transitions — driven by CSS
+        pseudo-classes, not hand-painted "hover variant" cards.
+      </p>
+      <div class="ds-placeholder">
+        Component previews populate in <strong>VIB-482</strong>. In the meantime, here's
+        the family inventory this section will render:
+        <ul>
+        {% set seen_families = [] %}
+        {% for name, token in components %}
+          {% if token.family not in seen_families %}
+            {% set _ = seen_families.append(token.family) %}
+            <li>{{ token.family }} — {{ components | selectattr('1.family', 'equalto', token.family) | list | length }} tokens</li>
+          {% endif %}
+        {% endfor %}
+        </ul>
+      </div>
+    </section>
+
+    {# --- Color Palette ------------------------------------------------- #}
+    {% set colors = tokens_by_section['colors'] %}
+    <section id="colors" class="ds-section">
+      <h2>Color Palette <span class="ds-section-count">{{ colors | length }}</span></h2>
+      <p class="ds-section-intro">
+        Brand colors, annotation colors, role presets, and the ghost-preview
+        accents. Each swatch is rendered over a dark surface, a light surface,
+        and a screenshot gradient — the same three contexts Vibeliner's UI lives in.
+      </p>
+      <div class="ds-grid">
+      {% for name, token in colors %}
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+          {% if token.kind == 'static' %}
+            {% set fill = token.rgba or token.raw %}
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+          {% elif token.kind == 'dynamic' %}
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
+          {% else %}
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: transparent;"></div></div>
+          {% endif %}
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">{{ name }}</div>
+            <div class="ds-swatch-value">
+              {%- if token.kind == 'static' -%}
+                {{ token.hex or '—' }} · {{ token.rgba or token.raw }}
+              {%- elif token.kind == 'dynamic' -%}
+                dark {{ token.dark.rgba if token.dark else '?' }} · light {{ token.light.rgba if token.light else '?' }}
+              {%- elif token.kind == 'alias' -%}
+                alias → {{ token.target }}
+              {%- else -%}
+                {{ token.raw }}
+              {%- endif -%}
+            </div>
+            {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
+            {% if token.consumed_by %}
+              <div class="ds-swatch-usage">Used by {{ token.consumed_by | length }} file{{ '' if token.consumed_by | length == 1 else 's' }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </section>
+
+    {# --- Typography ---------------------------------------------------- #}
+    {% set typography = tokens_by_section['typography'] %}
+    <section id="typography" class="ds-section">
+      <h2>Typography <span class="ds-section-count">{{ typography | length }}</span></h2>
+      <p class="ds-section-intro">
+        System font at Vibeliner's sizes and weights. Each specimen is rendered
+        at the exact size, weight, and family the token compiles to.
+      </p>
+      <div class="ds-font-list">
+      {% for name, token in typography %}
+        {% set is_mono = 'monospaced' in (token.raw or '') %}
+        {% set font_stack = (is_mono and 'ui-monospace, \"SF Mono\", Menlo, Consolas, monospace') or '-apple-system, BlinkMacSystemFont, \"SF Pro Display\", \"Segoe UI\", sans-serif' %}
+        {% set weight_num = {'ultralight': 100, 'thin': 200, 'light': 300, 'regular': 400, 'medium': 500, 'semibold': 600, 'bold': 700, 'heavy': 800, 'black': 900}.get(token.weight, 400) %}
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: {{ font_stack }}; font-size: {{ token.size or 14 }}px; font-weight: {{ weight_num }};">
+            {%- if is_mono -%}
+              1024 × 768  /Users/jon/captures
+            {%- else -%}
+              The quick brown fox jumps over the lazy dog
+            {%- endif -%}
+          </div>
+          <div class="ds-font-meta">
+            <code>{{ name }}</code> — {{ 'monospace' if is_mono else 'system' }} · {{ token.size }}px · {{ token.weight }} ({{ weight_num }})
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </section>
+
+    {# --- Dimensions ---------------------------------------------------- #}
+    {% set dimensions = tokens_by_section['dimensions'] %}
+    <section id="dimensions" class="ds-section">
+      <h2>Dimensions <span class="ds-section-count">{{ dimensions | length }}</span></h2>
+      <p class="ds-section-intro">
+        Measurements that define Vibeliner's spatial rhythm — badge sizes, toolbar
+        heights, corner radii, gaps. Every number in the app resolves to one of these.
+      </p>
+      <div class="ds-grid-narrow">
+      {% for name, token in dimensions %}
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">{{ token.value }}<span class="ds-dim-unit">{{ token.unit }}</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">{{ name }}</div>
+            {% if token.description %}<div class="ds-dim-desc">{{ token.description }}</div>{% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </section>
+
+    {# --- Surfaces ------------------------------------------------------ #}
+    {% set surfaces = tokens_by_section['surfaces'] %}
+    <section id="surfaces" class="ds-section">
+      <h2>Surfaces <span class="ds-section-count">{{ surfaces | length }}</span></h2>
+      <p class="ds-section-intro">
+        Appearance-aware background and border tokens — toolbar, status pill,
+        settings field, setup window. Dark/light variants shown side by side;
+        the third bar shows how the color reads on an arbitrary screenshot.
+      </p>
+      <div class="ds-grid">
+      {% for name, token in surfaces %}
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+          {% if token.kind == 'dynamic' %}
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
+          {% elif token.kind == 'static' %}
+            {% set fill = token.rgba or token.raw %}
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+          {% else %}
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: transparent;"></div></div>
+          {% endif %}
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">{{ name }}</div>
+            <div class="ds-swatch-value">
+              {%- if token.kind == 'dynamic' -%}
+                dark {{ token.dark.rgba if token.dark else '?' }} · light {{ token.light.rgba if token.light else '?' }}
+              {%- elif token.kind == 'static' -%}
+                {{ token.hex or '' }} {{ token.rgba or token.raw }}
+              {%- else -%}
+                {{ token.raw }}
+              {%- endif -%}
+            </div>
+            {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
+            {% if token.consumed_by %}
+              <div class="ds-swatch-usage">Used by {{ token.consumed_by | length }} file{{ '' if token.consumed_by | length == 1 else 's' }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+      </div>
+    </section>
+
+    <footer class="ds-footer">
+      <div>
+        {{ token_count }} tokens generated from <code>{{ source_files | join(', ') }}</code>
+      </div>
+      <div>
+        <a href="https://github.com/janaj2g-hub/vibeliner">GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="tour-design.html">Tour Design</a>
+        &nbsp;·&nbsp;
+        <code>python3 scripts/design_system_codegen.py</code>
+      </div>
+    </footer>
+
+  </main>
 </div>
 
-<h1>Vibeliner Design System</h1>
-<p>{{ token_count }} tokens loaded. {{ yaml_token_count }} in metadata.</p>
+{# JS is added in VIB-483. #}
 
-{% for section in sections %}
-<h2>{{ section.title }} <span class="count">({{ tokens_by_section[section.id] | length }})</span></h2>
-{% if section.intro %}<p>{{ section.intro }}</p>{% endif %}
-<ul>
-{% for entry in tokens_by_section[section.id] %}
-  <li>
-    <strong>{{ entry[0] }}</strong>
-    — {{ entry[1].description | default('(no description)') }}
-  </li>
-{% endfor %}
-</ul>
-{% endfor %}
-
-<footer>
-  <p style="color: #666; font-size: 11px;">
-    Generated from {{ source_files | join(', ') }}.
-    Regenerate: <code>python3 scripts/design_system_codegen.py</code>
-  </p>
-</footer>
 </body>
 </html>

@@ -2,758 +2,1921 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Vibeliner Design System (scaffolding stub)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Vibeliner Design System</title>
 <style>
-  body { font-family: system-ui, sans-serif; max-width: 800px; margin: 2em auto; padding: 0 1em; }
-  h1 { font-size: 28px; }
-  h2 { font-size: 20px; margin-top: 2em; border-bottom: 1px solid #ddd; padding-bottom: 0.3em; }
-  ul { list-style: none; padding: 0; }
-  li { padding: 4px 0; font-family: 'SF Mono', monospace; font-size: 13px; }
-  .count { color: #666; font-weight: normal; }
-  .banner { background: #ffeaa7; padding: 1em; border-radius: 4px; margin-bottom: 2em; }
+/* ==========================================================================
+   Vibeliner Design System — doc chrome
+   Chrome intentionally uses Vibeliner's own tokens where practical.
+   ========================================================================== */
+
+/* --- Tokens: doc theme (light default, dark via body.dark / system media) - */
+:root {
+  /* Typography */
+  --ds-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+  --ds-mono: ui-monospace, "SF Mono", Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces (light default) */
+  --ds-bg: #fafbfc;
+  --ds-bg-muted: #f2f3f5;
+  --ds-surface: #ffffff;
+  --ds-surface-hover: #f6f7f9;
+  --ds-border: rgba(15, 23, 42, 0.10);
+  --ds-border-strong: rgba(15, 23, 42, 0.18);
+  --ds-divider: rgba(15, 23, 42, 0.08);
+
+  /* Foreground */
+  --ds-fg: #0f172a;
+  --ds-fg-muted: rgba(15, 23, 42, 0.64);
+  --ds-fg-dim: rgba(15, 23, 42, 0.42);
+
+  /* Brand — Vibeliner purple */
+  --ds-accent: #534AB7;                 /* purpleDark */
+  --ds-accent-soft: rgba(83, 74, 183, 0.08);
+  --ds-accent-strong: rgba(83, 74, 183, 0.22);
+
+  /* Chrome tokens (mirroring Vibeliner runtime) */
+  --ds-chrome-border: rgba(175, 169, 236, 0.22);
+  --ds-pill-border: rgba(83, 74, 183, 0.42);
+  --ds-pill-bg: rgba(83, 74, 183, 0.08);
+  --ds-pill-text: #534AB7;
+
+  /* Triple-bar swatch reference backgrounds */
+  --ds-bar-dark: #1e1e1e;               /* toolbarBg dark */
+  --ds-bar-light: #f5f5f7;              /* toolbarBg light (approx) */
+  --ds-bar-screenshot: linear-gradient(135deg, #d7d9de 0%, #a4a8b0 55%, #6c707a 100%);
+}
+
+/* Dark mode — explicit override via body.dark */
+body.dark {
+  --ds-bg: #0b0d12;
+  --ds-bg-muted: #12141b;
+  --ds-surface: #15181f;
+  --ds-surface-hover: #1a1e27;
+  --ds-border: rgba(255, 255, 255, 0.08);
+  --ds-border-strong: rgba(255, 255, 255, 0.16);
+  --ds-divider: rgba(255, 255, 255, 0.06);
+  --ds-fg: rgba(255, 255, 255, 0.92);
+  --ds-fg-muted: rgba(255, 255, 255, 0.62);
+  --ds-fg-dim: rgba(255, 255, 255, 0.38);
+  --ds-accent: #AFA9EC;                 /* purpleLight */
+  --ds-accent-soft: rgba(175, 169, 236, 0.10);
+  --ds-accent-strong: rgba(175, 169, 236, 0.28);
+  --ds-pill-border: rgba(175, 169, 236, 0.44);
+  --ds-pill-bg: rgba(116, 97, 194, 0.18);
+  --ds-pill-text: #AFA9EC;
+}
+
+/* System mode — follow OS when neither .light nor .dark is on body */
+@media (prefers-color-scheme: dark) {
+  body:not(.light):not(.dark) {
+    --ds-bg: #0b0d12;
+    --ds-bg-muted: #12141b;
+    --ds-surface: #15181f;
+    --ds-surface-hover: #1a1e27;
+    --ds-border: rgba(255, 255, 255, 0.08);
+    --ds-border-strong: rgba(255, 255, 255, 0.16);
+    --ds-divider: rgba(255, 255, 255, 0.06);
+    --ds-fg: rgba(255, 255, 255, 0.92);
+    --ds-fg-muted: rgba(255, 255, 255, 0.62);
+    --ds-fg-dim: rgba(255, 255, 255, 0.38);
+    --ds-accent: #AFA9EC;
+    --ds-accent-soft: rgba(175, 169, 236, 0.10);
+    --ds-accent-strong: rgba(175, 169, 236, 0.28);
+    --ds-pill-border: rgba(175, 169, 236, 0.44);
+    --ds-pill-bg: rgba(116, 97, 194, 0.18);
+    --ds-pill-text: #AFA9EC;
+  }
+}
+
+/* --- Reset / base --------------------------------------------------------- */
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  background: var(--ds-bg);
+  color: var(--ds-fg);
+  font-family: var(--ds-system);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+code, pre { font-family: var(--ds-mono); font-size: 0.88em; }
+a { color: var(--ds-accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* --- Sticky header ------------------------------------------------------- */
+.ds-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  padding: 0 32px;
+  background: rgba(var(--ds-surface-rgb, 255, 255, 255), 0.88);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--ds-divider);
+}
+body.dark .ds-header,
+body:not(.light):not(.dark) .ds-header {
+  background: rgba(11, 13, 18, 0.72);
+}
+body.light .ds-header {
+  background: rgba(250, 251, 252, 0.82);
+}
+.ds-header-title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ds-header-title .ds-mark { color: var(--ds-accent); }
+
+/* --- Mode toggle (segmented-control styling, static HTML) ---------------- */
+.ds-mode-toggle {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+}
+.ds-mode-toggle button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-mode-toggle button:hover { color: var(--ds-fg); }
+.ds-mode-toggle button.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+/* --- Hamburger (CSS only; JS in VIB-483) --------------------------------- */
+.ds-hamburger {
+  display: none;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  cursor: pointer;
+  padding: 6px 8px;
+  margin-right: 12px;
+}
+.ds-hamburger-icon, .ds-hamburger-icon::before, .ds-hamburger-icon::after {
+  display: block;
+  width: 18px;
+  height: 2px;
+  background: currentColor;
+  border-radius: 1px;
+  position: relative;
+}
+.ds-hamburger-icon::before, .ds-hamburger-icon::after { content: ""; position: absolute; left: 0; }
+.ds-hamburger-icon::before { top: -6px; }
+.ds-hamburger-icon::after { top: 6px; }
+
+/* --- Layout grid: sidebar + main ---------------------------------------- */
+.ds-layout {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+.ds-sidebar {
+  position: sticky;
+  top: 56px;
+  align-self: start;
+  height: calc(100vh - 56px);
+  overflow-y: auto;
+  padding: 32px 24px 32px 0;
+  border-right: 1px solid var(--ds-divider);
+}
+.ds-sidebar-section-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ds-fg-dim);
+  margin: 0 0 8px 12px;
+}
+.ds-sidebar-nav { list-style: none; padding: 0; margin: 0 0 24px; }
+.ds-sidebar-nav a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  color: var(--ds-fg-muted);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+.ds-sidebar-nav a:hover { background: var(--ds-surface-hover); color: var(--ds-fg); text-decoration: none; }
+.ds-sidebar-nav a.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  font-weight: 500;
+}
+.ds-sidebar-nav .ds-count {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-sidebar-nav a.active .ds-count { color: var(--ds-accent); opacity: 0.75; }
+
+.ds-sidebar-footer {
+  padding: 16px 12px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+}
+.ds-sidebar-footer a { color: var(--ds-fg-muted); }
+.ds-sidebar-footer a:hover { color: var(--ds-accent); text-decoration: none; }
+
+/* --- Main column -------------------------------------------------------- */
+.ds-main {
+  padding: 48px 32px 80px 48px;
+  min-width: 0;
+}
+
+/* --- Hero --------------------------------------------------------------- */
+.ds-hero { max-width: 720px; margin-bottom: 96px; }
+.ds-hero h1 {
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 20px;
+  color: var(--ds-fg);
+}
+.ds-hero-intro {
+  font-size: 18px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  margin: 0 0 24px;
+}
+.ds-hero-intro code {
+  color: var(--ds-fg);
+  background: var(--ds-bg-muted);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 14px;
+}
+.ds-hero-stats {
+  display: flex;
+  gap: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 12px;
+  color: var(--ds-fg-dim);
+}
+.ds-hero-stat strong {
+  display: block;
+  color: var(--ds-fg);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+
+/* --- Section containers ------------------------------------------------- */
+.ds-section { margin: 0 0 96px; scroll-margin-top: 80px; }
+.ds-section h2 {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 12px;
+  color: var(--ds-fg);
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.ds-section h2 .ds-section-count {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  font-variant-numeric: tabular-nums;
+}
+.ds-section-intro {
+  font-size: 16px;
+  line-height: 1.6;
+  color: var(--ds-fg-muted);
+  max-width: 640px;
+  margin: 0 0 40px;
+}
+.ds-section.collapsed > :not(h2) { display: none; }
+.ds-section > h2 { cursor: default; } /* VIB-483 will add cursor: pointer via JS */
+
+.ds-family {
+  margin: 0 0 48px;
+  padding: 0 0 32px;
+  border-bottom: 1px solid var(--ds-divider);
+}
+.ds-family:last-child { border-bottom: 0; padding-bottom: 0; }
+.ds-family h3 {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ds-fg-muted);
+  margin: 0 0 18px;
+}
+.ds-family-meta { font-size: 12px; color: var(--ds-fg-dim); margin-left: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; }
+
+/* --- Grid layouts ------------------------------------------------------- */
+.ds-grid {
+  display: grid;
+  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+}
+.ds-grid-narrow {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+/* --- Swatch card -------------------------------------------------------- */
+.ds-swatch {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.ds-swatch-bars { display: flex; flex-direction: column; }
+.ds-swatch-bar {
+  height: 22px;
+  position: relative;
+}
+.ds-swatch-bar[data-role="dark"] { background: var(--ds-bar-dark); }
+.ds-swatch-bar[data-role="light"] { background: var(--ds-bar-light); }
+.ds-swatch-bar[data-role="screenshot"] { background: var(--ds-bar-screenshot); }
+.ds-swatch-fill {
+  position: absolute;
+  inset: 4px 10px;
+  border-radius: 4px;
+}
+.ds-swatch-meta {
+  padding: 12px 14px 14px;
+  border-top: 1px solid var(--ds-divider);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ds-swatch-name {
+  font-family: var(--ds-mono);
+  font-size: 12px;
+  color: var(--ds-fg);
+  word-break: break-all;
+}
+.ds-swatch-value {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+}
+.ds-swatch-desc {
+  font-size: 12px;
+  color: var(--ds-fg-muted);
+  line-height: 1.45;
+  margin-top: 2px;
+}
+.ds-swatch-usage {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  margin-top: 4px;
+}
+
+/* --- Typography specimens ----------------------------------------------- */
+.ds-font-list { display: flex; flex-direction: column; gap: 24px; }
+.ds-font-sample {
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-font-specimen {
+  color: var(--ds-fg);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+.ds-font-meta {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  font-family: var(--ds-mono);
+  padding-top: 10px;
+  border-top: 1px solid var(--ds-divider);
+}
+.ds-font-meta code { color: var(--ds-fg-muted); }
+
+/* --- Dimension cards ---------------------------------------------------- */
+.ds-dim-card {
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 120px;
+}
+.ds-dim-value {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--ds-fg);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.ds-dim-unit {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ds-fg-dim);
+  margin-left: 4px;
+  letter-spacing: 0;
+}
+.ds-dim-name {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-muted);
+  margin-top: 14px;
+  word-break: break-all;
+}
+.ds-dim-desc { font-size: 11px; color: var(--ds-fg-dim); margin-top: 4px; line-height: 1.4; }
+
+/* --- Footer ------------------------------------------------------------- */
+.ds-footer {
+  margin-top: 120px;
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--ds-divider);
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+.ds-footer a { color: var(--ds-fg-muted); }
+.ds-footer code { color: var(--ds-fg-muted); font-size: 10px; }
+
+/* --- Placeholder for VIB-482 components --------------------------------- */
+.ds-placeholder {
+  padding: 20px 22px;
+  background: var(--ds-bg-muted);
+  border: 1px dashed var(--ds-border-strong);
+  border-radius: 10px;
+  color: var(--ds-fg-muted);
+  font-size: 13px;
+}
+.ds-placeholder code {
+  background: var(--ds-surface);
+  padding: 1px 5px;
+  border-radius: 3px;
+  color: var(--ds-fg);
+}
+.ds-placeholder ul { margin: 12px 0 0; padding-left: 20px; }
+.ds-placeholder li { margin: 3px 0; font-family: var(--ds-mono); font-size: 11px; color: var(--ds-fg); }
+
+/* --- Responsive --------------------------------------------------------- */
+@media (max-width: 900px) {
+  .ds-layout { grid-template-columns: 1fr; padding: 0 20px; }
+  .ds-sidebar {
+    position: fixed;
+    top: 56px;
+    left: 0;
+    width: 260px;
+    background: var(--ds-bg);
+    border-right: 1px solid var(--ds-border);
+    transform: translateX(-100%);
+    transition: transform 0.24s ease;
+    padding: 24px 20px 24px 24px;
+    z-index: 90;
+  }
+  body.ds-sidebar-open .ds-sidebar { transform: translateX(0); }
+  .ds-main { padding: 32px 0 64px; }
+  .ds-hero h1 { font-size: 36px; }
+  .ds-hamburger { display: inline-flex; }
+}
+
+/* Default active state for mode toggle (VIB-483 overrides with localStorage) */
 </style>
 </head>
 <body>
-<div class="banner">
-  <strong>This is the scaffolding stub.</strong> VIB-481/482/483 will replace this template with the real design.
+
+<header class="ds-header">
+  <div style="display: flex; align-items: center;">
+    <button class="ds-hamburger" type="button" aria-label="Toggle sidebar">
+      <span class="ds-hamburger-icon"></span>
+    </button>
+    <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Design System</div>
+  </div>
+  <div class="ds-mode-toggle" role="group" aria-label="Color mode">
+    <button data-mode="system" class="active" type="button">System</button>
+    <button data-mode="light" type="button">Light</button>
+    <button data-mode="dark" type="button">Dark</button>
+  </div>
+</header>
+
+<div class="ds-layout">
+
+  <aside class="ds-sidebar">
+    <p class="ds-sidebar-section-label">Contents</p>
+    <ul class="ds-sidebar-nav">
+      <li>
+        <a href="#components">
+          <span>Live Components</span>
+          <span class="ds-count">46</span>
+        </a>
+      </li>
+      <li>
+        <a href="#colors">
+          <span>Color Palette</span>
+          <span class="ds-count">23</span>
+        </a>
+      </li>
+      <li>
+        <a href="#typography">
+          <span>Typography</span>
+          <span class="ds-count">21</span>
+        </a>
+      </li>
+      <li>
+        <a href="#dimensions">
+          <span>Dimensions</span>
+          <span class="ds-count">54</span>
+        </a>
+      </li>
+      <li>
+        <a href="#surfaces">
+          <span>Surfaces</span>
+          <span class="ds-count">34</span>
+        </a>
+      </li>
+    </ul>
+    <div class="ds-sidebar-footer">
+      <a href="tour-design.html">Tour Design →</a>
+    </div>
+  </aside>
+
+  <main class="ds-main">
+
+    <div class="ds-hero">
+      <h1>Every pixel, from code.</h1>
+      <p class="ds-hero-intro">
+        Vibeliner uses 4 universal component families and 370 tokens
+        to keep every surface consistent. This page is generated from
+        <code>Vibeliner/Design/DesignTokens*.swift</code> — you cannot read a value
+        here that disagrees with the code.
+      </p>
+      <div class="ds-hero-stats">
+        <div class="ds-hero-stat">
+          <strong>370</strong>
+          tokens in code
+        </div>
+        <div class="ds-hero-stat">
+          <strong>178</strong>
+          in the catalog
+        </div>
+        <div class="ds-hero-stat">
+          <strong>5</strong>
+          sections
+        </div>
+      </div>
+    </div>
+
+    <section id="components" class="ds-section">
+      <h2>Live Components <span class="ds-section-count">46</span></h2>
+      <p class="ds-section-intro">
+        Interactive previews of every reusable component family.
+        Hover an element to see its real state transitions — driven by CSS
+        pseudo-classes, not hand-painted "hover variant" cards.
+      </p>
+      <div class="ds-placeholder">
+        Component previews populate in <strong>VIB-482</strong>. In the meantime, here's
+        the family inventory this section will render:
+        <ul>
+            <li>pill-button — 6 tokens</li>
+            <li>pill-button-primary — 5 tokens</li>
+            <li>segmented-control — 6 tokens</li>
+            <li>secondary-button — 6 tokens</li>
+            <li>note-pill — 10 tokens</li>
+            <li>status-pill — 3 tokens</li>
+            <li>add-image — 2 tokens</li>
+            <li>editor-annotation — 4 tokens</li>
+            <li>copied-green — 4 tokens</li>
+        </ul>
+      </div>
+    </section>
+
+    <section id="colors" class="ds-section">
+      <h2>Color Palette <span class="ds-section-count">23</span></h2>
+      <p class="ds-section-intro">
+        Brand colors, annotation colors, role presets, and the ghost-preview
+        accents. Each swatch is rendered over a dark surface, a light surface,
+        and a screenshot gradient — the same three contexts Vibeliner's UI lives in.
+      </p>
+      <div class="ds-grid">
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">purpleDark</div>
+            <div class="ds-swatch-value">#534AB7 · rgba(83,74,183,1)</div>
+<div class="ds-swatch-desc">#534AB7 — dimension label bg, settings accents</div>              <div class="ds-swatch-usage">Used by 6 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">purpleLight</div>
+            <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,1)</div>
+<div class="ds-swatch-desc">#AFA9EC — crosshair, selection border, active tool highlight</div>              <div class="ds-swatch-usage">Used by 12 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(239,68,68,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">red</div>
+            <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,1)</div>
+<div class="ds-swatch-desc">#EF4444 — all annotation marks</div>              <div class="ds-swatch-usage">Used by 17 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.06);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">redFill</div>
+            <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.06)</div>
+<div class="ds-swatch-desc">rgba(239, 68, 68, 0.06) — shape fills</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.12);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">chromeBorder</div>
+            <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,0.12)</div>
+<div class="ds-swatch-desc">rgba(175, 169, 236, 0.12) — toolbar/canvas border</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.5);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">dimOverlay</div>
+            <div class="ds-swatch-value">#000000 · rgba(0,0,0,0.5)</div>
+<div class="ds-swatch-desc">rgba(0, 0, 0, 0.5) — capture overlay dim</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.08);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">dividerColor</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.08)</div>
+<div class="ds-swatch-desc">Divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(22,100,52,0.85);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleExpectedBg</div>
+            <div class="ds-swatch-value">#166434 · rgba(22,100,52,0.85)</div>
+<div class="ds-swatch-desc">Role expected background — green tint (VIB-335: 0.85 alpha for readability)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleExpectedBorder</div>
+            <div class="ds-swatch-value">#22C55E · rgba(34,197,94,1)</div>
+<div class="ds-swatch-desc">Role expected border: #22C55E (green)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(107,114,128,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleGrayBorder</div>
+            <div class="ds-swatch-value">#6B7280 · rgba(107,114,128,1)</div>
+<div class="ds-swatch-desc">Role gray border: #6B7280</div>          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.85);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleObservedBg</div>
+            <div class="ds-swatch-value">#534AB7 · rgba(83,74,183,0.85)</div>
+<div class="ds-swatch-desc">Role observed background — purple tint (VIB-335: 0.85 alpha for readability)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleObservedBorder</div>
+            <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,1)</div>
+<div class="ds-swatch-desc">Role observed border: #AFA9EC (purple)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(249,115,22,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleOrangeBorder</div>
+            <div class="ds-swatch-value">#F97316 · rgba(249,115,22,1)</div>
+<div class="ds-swatch-desc">Role orange border: #F97316</div>          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(236,72,153,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">rolePinkBorder</div>
+            <div class="ds-swatch-value">#EC4899 · rgba(236,72,153,1)</div>
+<div class="ds-swatch-desc">Role pink border: #EC4899</div>          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(30,70,140,0.85);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleReferenceBg</div>
+            <div class="ds-swatch-value">#1E468C · rgba(30,70,140,0.85)</div>
+<div class="ds-swatch-desc">Role reference background — blue tint (VIB-335: 0.85 alpha for readability)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(59,130,246,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleReferenceBorder</div>
+            <div class="ds-swatch-value">#3B82F6 · rgba(59,130,246,1)</div>
+<div class="ds-swatch-desc">Role reference border: #3B82F6 (blue)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.22);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.82);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.82);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleSwatchInnerBorder</div>
+            <div class="ds-swatch-value">dark rgba(0,0,0,0.22) · light rgba(255,255,255,0.82)</div>
+<div class="ds-swatch-desc">Role swatch inner contrast border</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.16);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.16);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.16);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleSwatchOutline</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.16) · light rgba(15,23,42,0.16)</div>
+<div class="ds-swatch-desc">Role swatch outer outline for light and dark mode visibility</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.92);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.78);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.78);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleSwatchSelectedRing</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.92) · light rgba(83,74,183,0.78)</div>
+<div class="ds-swatch-desc">Role swatch selected ring</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(20,184,166,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleTealBorder</div>
+            <div class="ds-swatch-value">#14B8A6 · rgba(20,184,166,1)</div>
+<div class="ds-swatch-desc">Role teal border: #14B8A6</div>          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(234,179,8,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">roleYellowBorder</div>
+            <div class="ds-swatch-value">#EAB308 · rgba(234,179,8,1)</div>
+<div class="ds-swatch-desc">Role yellow border: #EAB308</div>          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.85);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">ghostDotColor</div>
+            <div class="ds-swatch-value">#AFA9EC · rgba(175,169,236,0.85)</div>
+<div class="ds-swatch-desc">Ghost anchor dot color: #AFA9EC at 85%</div>              <div class="ds-swatch-usage">Used by 6 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(239,68,68,0.22);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">ghostStrokeColor</div>
+            <div class="ds-swatch-value">#EF4444 · rgba(239,68,68,0.22)</div>
+<div class="ds-swatch-desc">Ghost silhouette stroke color: #EF4444 at 22%</div>              <div class="ds-swatch-usage">Used by 5 files</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="typography" class="ds-section">
+      <h2>Typography <span class="ds-section-count">21</span></h2>
+      <p class="ds-section-intro">
+        System font at Vibeliner's sizes and weights. Each specimen is rendered
+        at the exact size, weight, and family the token compiles to.
+      </p>
+      <div class="ds-font-list">
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 9.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>badgeFont</code> — system · 9.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 11.0px; font-weight: 500;">1024 × 768  /Users/jon/captures</div>
+          <div class="ds-font-meta">
+            <code>dimensionLabelFont</code> — monospace · 11.0px · medium (500)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 400;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>noteTextFont</code> — system · 12.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 400;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>settingsBodyFont</code> — system · 12.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12.0px; font-weight: 400;">1024 × 768  /Users/jon/captures</div>
+          <div class="ds-font-meta">
+            <code>settingsFieldFont</code> — monospace · 12.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>settingsPillFont</code> — system · 11.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 500;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>settingsSectionFont</code> — system · 13.0px · medium (500)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>settingsSegmentedPrimaryFont</code> — system · 12.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 500;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>settingsSegmentedSecondaryFont</code> — system · 11.0px · medium (500)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupActionLabelFont</code> — system · 13.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 16.0px; font-weight: 700;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupBadgeCheckFont</code> — system · 16.0px · bold (700)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 14.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupBadgeFont</code> — system · 14.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 400;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupDescFont</code> — system · 13.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 400;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupHelperFont</code> — system · 11.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupKbdFont</code> — system · 12.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 16.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupPanelTitleFont</code> — system · 16.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.0px; font-weight: 400;">1024 × 768  /Users/jon/captures</div>
+          <div class="ds-font-meta">
+            <code>setupPathFont</code> — monospace · 13.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 12.0px; font-weight: 400;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupShortcutHintFont</code> — system · 12.0px · regular (400)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 11.0px; font-weight: 500;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupSmallPillFont</code> — system · 11.0px · medium (500)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif; font-size: 13.0px; font-weight: 600;">The quick brown fox jumps over the lazy dog</div>
+          <div class="ds-font-meta">
+            <code>setupStatusFont</code> — system · 13.0px · semibold (600)
+          </div>
+        </div>
+        <div class="ds-font-sample">
+          <div class="ds-font-specimen" style="font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 10.0px; font-weight: 500;">1024 × 768  /Users/jon/captures</div>
+          <div class="ds-font-meta">
+            <code>statusPillFont</code> — monospace · 10.0px · medium (500)
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="dimensions" class="ds-section">
+      <h2>Dimensions <span class="ds-section-count">54</span></h2>
+      <p class="ds-section-intro">
+        Measurements that define Vibeliner's spatial rhythm — badge sizes, toolbar
+        heights, corner radii, gaps. Every number in the app resolves to one of these.
+      </p>
+      <div class="ds-grid-narrow">
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">arrowChevronAngle</div>
+<div class="ds-dim-desc">28 degrees arrow chevron angle</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">12<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">arrowChevronLength</div>
+<div class="ds-dim-desc">12px arrow chevron arm length</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">18<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">badgeDiameter</div>
+<div class="ds-dim-desc">18px badge diameter (radius 9)</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">0.85<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">crosshairOpacity</div>
+<div class="ds-dim-desc">0.85 crosshair opacity</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">2.3<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">crosshairThickness</div>
+<div class="ds-dim-desc">2.3px crosshair line thickness</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">crosshairTickLength</div>
+<div class="ds-dim-desc">10px crosshair tick length</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">5<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">dimensionLabelCornerRadius</div>
+<div class="ds-dim-desc">5px dimension label corner radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">dimensionLabelGap</div>
+<div class="ds-dim-desc">10px gap below selection to dimension label</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">dimensionLabelHeight</div>
+<div class="ds-dim-desc">24px dimension label height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">dimensionLabelPaddingH</div>
+<div class="ds-dim-desc">10px dimension label horizontal padding</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">3<span class="ds-dim-unit">int</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">freehandMinPoints</div>
+<div class="ds-dim-desc">3 minimum points for freehand</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">freehandSampleInterval</div>
+<div class="ds-dim-desc">3px freehand sample interval</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">minimumSelectionSize</div>
+<div class="ds-dim-desc">10px minimum selection size</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">13<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">noteCornerRadius</div>
+<div class="ds-dim-desc">13px note pill corner radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">26<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">noteHeight</div>
+<div class="ds-dim-desc">26px note pill height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">rectCornerRadius</div>
+<div class="ds-dim-desc">3px rectangle corner radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">1.5<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">selectionBorderWidth</div>
+<div class="ds-dim-desc">1.5px selection border width</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">10<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">stakeLength</div>
+<div class="ds-dim-desc">10px pin stake length</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">stakeWidth</div>
+<div class="ds-dim-desc">2px pin stake width</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">2.5<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">strokeWidth</div>
+<div class="ds-dim-desc">2.5px stroke width for all annotation tools</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">24<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">closeButtonSize</div>
+<div class="ds-dim-desc">24px close button size</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">iconButtonSize</div>
+<div class="ds-dim-desc">28px icon button size</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">30<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">toolButtonSize</div>
+<div class="ds-dim-desc">30px tool button size</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">20<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">toolbarCornerRadius</div>
+<div class="ds-dim-desc">20px toolbar corner radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">40<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">toolbarHeight</div>
+<div class="ds-dim-desc">40px toolbar height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">toolbarToolButtonGap</div>
+<div class="ds-dim-desc">2px visual separation between adjacent tool buttons</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">12<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">statusPillCornerRadius</div>
+<div class="ds-dim-desc">12px status pill corner radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsContentPadding</div>
+<div class="ds-dim-desc">Settings content horizontal padding</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">32<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsFieldHeight</div>
+<div class="ds-dim-desc">Settings field height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">18<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsFramePadding</div>
+<div class="ds-dim-desc">Settings framed section padding</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">18<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsFrameRadius</div>
+<div class="ds-dim-desc">Settings framed section radius</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsPillHeight</div>
+<div class="ds-dim-desc">Settings pill button height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsSectionGap</div>
+<div class="ds-dim-desc">Settings section inner gap</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">128<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsSectionLabelWidth</div>
+<div class="ds-dim-desc">Settings section title width</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsSegmentedHeight</div>
+<div class="ds-dim-desc">Settings segmented control height</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">2<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsSegmentedInset</div>
+<div class="ds-dim-desc">Settings segmented control inset</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">settingsSegmentedItemPadding</div>
+<div class="ds-dim-desc">Horizontal padding inside each selector item</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">36<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupArrowSize</div>
+<div class="ds-dim-desc">setupArrowSize (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">32<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupBadgeSize</div>
+<div class="ds-dim-desc">setupBadgeSize (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">36<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupFooterButtonHeight</div>
+<div class="ds-dim-desc">setupFooterButtonHeight (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">56<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupFooterHeight</div>
+<div class="ds-dim-desc">setupFooterHeight (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">48<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupFooterPrimaryPadding</div>
+<div class="ds-dim-desc">setupFooterPrimaryPadding (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">36<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupFooterSecondaryPadding</div>
+<div class="ds-dim-desc">setupFooterSecondaryPadding (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">310<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupPanelHeight</div>
+<div class="ds-dim-desc">setupPanelHeight (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">28<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupPanelPad</div>
+<div class="ds-dim-desc">setupPanelPad (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">8<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupPathBoxRadius</div>
+<div class="ds-dim-desc">setupPathBoxRadius (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">22<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupSmallPillHeight</div>
+<div class="ds-dim-desc">setupSmallPillHeight (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">700<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">setupWindowWidth</div>
+<div class="ds-dim-desc">setupWindowWidth (setup-window).</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">filmstripGap</div>
+<div class="ds-dim-desc">Filmstrip gap between cells: 14px</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">14<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">filmstripPadding</div>
+<div class="ds-dim-desc">Filmstrip container padding: 14px</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">6<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">titlePillGap</div>
+<div class="ds-dim-desc">Gap between title pill bottom and image top: 6px</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">30<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">titlePillHeight</div>
+<div class="ds-dim-desc">Title pill height: 30px</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">3<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">ghostDotRadius</div>
+<div class="ds-dim-desc">Ghost anchor dot radius: 3px</div>          </div>
+        </div>
+        <div class="ds-dim-card">
+          <div>
+            <div class="ds-dim-value">1.5<span class="ds-dim-unit">pt</span></div>
+          </div>
+          <div>
+            <div class="ds-dim-name">ghostStrokeWidth</div>
+<div class="ds-dim-desc">Ghost silhouette stroke width: 1.5px</div>          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="surfaces" class="ds-section">
+      <h2>Surfaces <span class="ds-section-count">34</span></h2>
+      <p class="ds-section-intro">
+        Appearance-aware background and border tokens — toolbar, status pill,
+        settings field, setup window. Dark/light variants shown side by side;
+        the third bar shows how the color reads on an arbitrary screenshot.
+      </p>
+      <div class="ds-grid">
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(30,30,30,0.92);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.88);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.88);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarBg</div>
+            <div class="ds-swatch-value">dark rgba(30,30,30,0.92) · light rgba(255,255,255,0.88)</div>
+<div class="ds-swatch-desc">Toolbar background — dark: rgba(30,30,30,0.92), light: rgba(255,255,255,0.88)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarBorder</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(0,0,0,0.1)</div>
+<div class="ds-swatch-desc">Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.06);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarButtonHoverBg</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.06)</div>
+<div class="ds-swatch-desc">Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.2);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarCloseHoverBg</div>
+            <div class="ds-swatch-value">dark rgba(255,87,87,0.2) · light rgba(255,87,87,0.15)</div>
+<div class="ds-swatch-desc">Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(255,95,87,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarCloseIconHover</div>
+            <div class="ds-swatch-value">#FF5F57 rgba(255,95,87,1)</div>
+<div class="ds-swatch-desc">Toolbar close icon hover — dark: #FF5F57, light: #FF5F57 (same)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.12);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarDivider</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.12)</div>
+<div class="ds-swatch-desc">Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.4);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.45);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.45);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarIconDefault</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.4) · light rgba(0,0,0,0.45)</div>
+<div class="ds-swatch-desc">Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.7);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.7);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarIconHover</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.7) · light rgba(0,0,0,0.7)</div>
+<div class="ds-swatch-desc">Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(83,74,183,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarPurpleActive</div>
+            <div class="ds-swatch-value">dark rgba(175,169,236,1) · light rgba(83,74,183,1)</div>
+<div class="ds-swatch-desc">Toolbar purple active — dark: #AFA9EC, light: #534AB7</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(175,169,236,0.2);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(83,74,183,0.12);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarToolActiveBg</div>
+            <div class="ds-swatch-value">dark rgba(175,169,236,0.2) · light rgba(83,74,183,0.12)</div>
+<div class="ds-swatch-desc">Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.15);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(255,87,87,0.12);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">toolbarTrashHoverBg</div>
+            <div class="ds-swatch-value">dark rgba(255,87,87,0.15) · light rgba(255,87,87,0.12)</div>
+<div class="ds-swatch-desc">Toolbar trash hover bg — dark: rgba(255,87,87,0.15), light: rgba(255,87,87,0.12)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.12);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">settingsFieldBorder</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(15,23,42,0.12)</div>
+<div class="ds-swatch-desc">Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.06);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(238,240,246,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(238,240,246,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">settingsFieldSurface</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.06) · light rgba(238,240,246,1)</div>
+<div class="ds-swatch-desc">Settings field surface — prototype: --surface-field</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.02);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.02);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(15,23,42,0.02);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">settingsFrameSurface</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.02) · light rgba(15,23,42,0.02)</div>
+<div class="ds-swatch-desc">Settings framed section surface</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(21,22,26,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(248,250,252,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(248,250,252,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">settingsPreviewSurface</div>
+            <div class="ds-swatch-value">dark rgba(21,22,26,1) · light rgba(248,250,252,1)</div>
+<div class="ds-swatch-desc">Settings preview surface</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(180,83,9,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupAmberText</div>
+            <div class="ds-swatch-value">#B45309 rgba(180,83,9,1)</div>
+<div class="ds-swatch-desc">#b45309 — amber status text</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupBorder</div>
+            <div class="ds-swatch-value"> NSColor.separatorColor</div>
+<div class="ds-swatch-desc">Setup dividers and borders</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.05);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupFieldBg</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.05) · light rgba(0,0,0,0.03)</div>
+<div class="ds-swatch-desc">Setup field background (path box, shortcut group)</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.separatorColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupFieldBorder</div>
+            <div class="ds-swatch-value"> NSColor.separatorColor</div>
+<div class="ds-swatch-desc">Setup field border</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,34,34,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(240,240,240,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(240,240,240,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupFooterBg</div>
+            <div class="ds-swatch-value">dark rgba(34,34,34,1) · light rgba(240,240,240,1)</div>
+<div class="ds-swatch-desc">Setup footer background — slightly different from window bg</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.03);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.03);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGrayBg</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.03) · light rgba(0,0,0,0.03)</div>
+<div class="ds-swatch-desc">Setup locked badge bg</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGrayText</div>
+            <div class="ds-swatch-value"> NSColor.tertiaryLabelColor</div>
+<div class="ds-swatch-desc">Setup locked badge/gray status text</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(34,197,94,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGreen</div>
+            <div class="ds-swatch-value">#22C55E rgba(34,197,94,1)</div>
+<div class="ds-swatch-desc">#22c55e — badge done border/text</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGreenBadgeBg</div>
+            <div class="ds-swatch-value">#22C55E rgba(34,197,94,0.1)</div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.1) — badge done fill</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.08);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGreenBg</div>
+            <div class="ds-swatch-value">#22C55E rgba(34,197,94,0.08)</div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.08) — green button fill</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(34,197,94,0.5);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGreenBorder</div>
+            <div class="ds-swatch-value">#22C55E rgba(34,197,94,0.5)</div>
+<div class="ds-swatch-desc">rgba(34, 197, 94, 0.5) — green button border</div>              <div class="ds-swatch-usage">Used by 1 file</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(22,163,74,1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupGreenText</div>
+            <div class="ds-swatch-value">#16A34A rgba(22,163,74,1)</div>
+<div class="ds-swatch-desc">#16a34a — status text, green button text</div>              <div class="ds-swatch-usage">Used by 4 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.08);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.05);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupKbdBg</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.08) · light rgba(0,0,0,0.05)</div>
+<div class="ds-swatch-desc">Setup kbd pill bg</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.12);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.1);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupKbdBorder</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.12) · light rgba(0,0,0,0.1)</div>
+<div class="ds-swatch-desc">Setup kbd pill border</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: rgba(255,255,255,0.55);"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.6);"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: rgba(0,0,0,0.6);"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupKbdText</div>
+            <div class="ds-swatch-value">dark rgba(255,255,255,0.55) · light rgba(0,0,0,0.6)</div>
+<div class="ds-swatch-desc">Setup kbd pill text</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.tertiaryLabelColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupTextDim</div>
+            <div class="ds-swatch-value"> NSColor.tertiaryLabelColor</div>
+<div class="ds-swatch-desc">Setup dim/helper text</div>              <div class="ds-swatch-usage">Used by 2 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.labelColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupTextPrimary</div>
+            <div class="ds-swatch-value"> NSColor.labelColor</div>
+<div class="ds-swatch-desc">Setup primary text</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.secondaryLabelColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupTextSecondary</div>
+            <div class="ds-swatch-value"> NSColor.secondaryLabelColor</div>
+<div class="ds-swatch-desc">Setup secondary text</div>              <div class="ds-swatch-usage">Used by 4 files</div>
+          </div>
+        </div>
+        <div class="ds-swatch">
+          <div class="ds-swatch-bars">
+            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
+            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: NSColor.windowBackgroundColor;"></div></div>
+          </div>
+          <div class="ds-swatch-meta">
+            <div class="ds-swatch-name">setupWindowBg</div>
+            <div class="ds-swatch-value"> NSColor.windowBackgroundColor</div>
+<div class="ds-swatch-desc">Setup window background — follows system</div>              <div class="ds-swatch-usage">Used by 3 files</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="ds-footer">
+      <div>
+        370 tokens generated from <code>DesignTokens+Layout.swift, DesignTokens+Settings.swift, DesignTokens+SetupTour.swift, DesignTokens+TourIllustrations.swift, DesignTokens.swift</code>
+      </div>
+      <div>
+        <a href="https://github.com/janaj2g-hub/vibeliner">GitHub</a>
+        &nbsp;·&nbsp;
+        <a href="tour-design.html">Tour Design</a>
+        &nbsp;·&nbsp;
+        <code>python3 scripts/design_system_codegen.py</code>
+      </div>
+    </footer>
+
+  </main>
 </div>
 
-<h1>Vibeliner Design System</h1>
-<p>370 tokens loaded. 178 in metadata.</p>
 
-<h2>Live Components <span class="count">(46)</span></h2>
-<p>Interactive previews of every reusable component family.</p><ul>
-  <li>
-    <strong>pillButtonBg</strong>
-    — Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)
-  </li>
-  <li>
-    <strong>pillButtonBorder</strong>
-    — Pill button border — dark: #A796EB, light: #534AB7
-  </li>
-  <li>
-    <strong>pillButtonHoverBg</strong>
-    — Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)
-  </li>
-  <li>
-    <strong>pillButtonHoverBorder</strong>
-    — Pill button hover border — dark: #C4B8F5, light: #7461C2
-  </li>
-  <li>
-    <strong>pillButtonHoverText</strong>
-    — Pill button hover text — dark: #C4B8F5, light: #7461C2
-  </li>
-  <li>
-    <strong>pillButtonText</strong>
-    — Pill button text — dark: #A796EB, light: #534AB7
-  </li>
-  <li>
-    <strong>pillButtonPrimaryBg</strong>
-    — Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)
-  </li>
-  <li>
-    <strong>pillButtonPrimaryBorder</strong>
-    — Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7
-  </li>
-  <li>
-    <strong>pillButtonPrimaryHoverBg</strong>
-    — Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4
-  </li>
-  <li>
-    <strong>pillButtonPrimaryHoverBorder</strong>
-    — Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4
-  </li>
-  <li>
-    <strong>pillButtonPrimaryText</strong>
-    — Primary pill button text — dark: #AFA9EC, light: white (solid CTA)
-  </li>
-  <li>
-    <strong>segmentedActiveBorder</strong>
-    — Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)
-  </li>
-  <li>
-    <strong>segmentedActiveFill</strong>
-    — Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)
-  </li>
-  <li>
-    <strong>segmentedActiveText</strong>
-    — Segmented active text — dark: #AFA9EC, light: #7267DD
-  </li>
-  <li>
-    <strong>segmentedInactiveText</strong>
-    — Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)
-  </li>
-  <li>
-    <strong>segmentedTrack</strong>
-    — Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)
-  </li>
-  <li>
-    <strong>segmentedTrackBorder</strong>
-    — Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)
-  </li>
-  <li>
-    <strong>toolbarSecondaryBg</strong>
-    — Secondary button bg — transparent
-  </li>
-  <li>
-    <strong>toolbarSecondaryBorder</strong>
-    — Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)
-  </li>
-  <li>
-    <strong>toolbarSecondaryHoverBg</strong>
-    — Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)
-  </li>
-  <li>
-    <strong>toolbarSecondaryHoverBorder</strong>
-    — Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)
-  </li>
-  <li>
-    <strong>toolbarSecondaryHoverText</strong>
-    — Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)
-  </li>
-  <li>
-    <strong>toolbarSecondaryText</strong>
-    — Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)
-  </li>
-  <li>
-    <strong>editorNoteBorderDefault</strong>
-    — Editor note pill border — resting
-  </li>
-  <li>
-    <strong>editorNoteBorderHover</strong>
-    — Editor note pill border — hover
-  </li>
-  <li>
-    <strong>editorNoteBorderSelected</strong>
-    — Editor note pill border — selected
-  </li>
-  <li>
-    <strong>editorNoteSurfaceDefault</strong>
-    — Editor note pill surface — resting
-  </li>
-  <li>
-    <strong>editorNoteSurfaceEditing</strong>
-    — Editor note pill surface — editing
-  </li>
-  <li>
-    <strong>editorNoteSurfaceHover</strong>
-    — Editor note pill surface — hover
-  </li>
-  <li>
-    <strong>editorNoteSurfaceSelected</strong>
-    — Editor note pill surface — selected
-  </li>
-  <li>
-    <strong>noteTextColor</strong>
-    — Note text color: #7f1d1d
-  </li>
-  <li>
-    <strong>redNoteBg</strong>
-    — Note pill default: rgba(255, 248, 248, 0.82)
-  </li>
-  <li>
-    <strong>redNoteBorder</strong>
-    — Note pill default border: rgba(239, 68, 68, 0.18)
-  </li>
-  <li>
-    <strong>statusPillBg</strong>
-    — Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)
-  </li>
-  <li>
-    <strong>statusPillBorder</strong>
-    — Status pill border — dark: clear, light: rgba(0,0,0,0.06)
-  </li>
-  <li>
-    <strong>statusPillTextColor</strong>
-    — Status pill text — dark: white, light: rgba(0,0,0,0.70)
-  </li>
-  <li>
-    <strong>addImageBg</strong>
-    — Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
-  </li>
-  <li>
-    <strong>addImageBorder</strong>
-    — Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)
-  </li>
-  <li>
-    <strong>editorAnnotationHoverFill</strong>
-    — Editor annotation hover fill halo
-  </li>
-  <li>
-    <strong>editorAnnotationHoverShadow</strong>
-    — Editor annotation hover shadow glow
-  </li>
-  <li>
-    <strong>editorAnnotationHoverShapeFill</strong>
-    — Editor annotation hover fill for shapes
-  </li>
-  <li>
-    <strong>editorAnnotationHoverStroke</strong>
-    — Editor annotation hover outline/shadow accent
-  </li>
-  <li>
-    <strong>copiedGreen</strong>
-    — rgba(22, 163, 74, 0.9) — copied state green
-  </li>
-  <li>
-    <strong>copiedGreenBg</strong>
-    — Copy success bg: rgba(22, 163, 74, 0.12)
-  </li>
-  <li>
-    <strong>copiedGreenBorder</strong>
-    — Copy success green: rgba(22, 163, 74, 0.5) — border
-  </li>
-  <li>
-    <strong>copiedGreenText</strong>
-    — Copy success text: rgba(22, 163, 74, 0.8)
-  </li>
-</ul>
-<h2>Color Palette <span class="count">(23)</span></h2>
-<p>Brand colors, annotation colors, semantic accents, and role presets.</p><ul>
-  <li>
-    <strong>purpleDark</strong>
-    — #534AB7 — dimension label bg, settings accents
-  </li>
-  <li>
-    <strong>purpleLight</strong>
-    — #AFA9EC — crosshair, selection border, active tool highlight
-  </li>
-  <li>
-    <strong>red</strong>
-    — #EF4444 — all annotation marks
-  </li>
-  <li>
-    <strong>redFill</strong>
-    — rgba(239, 68, 68, 0.06) — shape fills
-  </li>
-  <li>
-    <strong>chromeBorder</strong>
-    — rgba(175, 169, 236, 0.12) — toolbar/canvas border
-  </li>
-  <li>
-    <strong>dimOverlay</strong>
-    — rgba(0, 0, 0, 0.5) — capture overlay dim
-  </li>
-  <li>
-    <strong>dividerColor</strong>
-    — Divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)
-  </li>
-  <li>
-    <strong>roleExpectedBg</strong>
-    — Role expected background — green tint (VIB-335: 0.85 alpha for readability)
-  </li>
-  <li>
-    <strong>roleExpectedBorder</strong>
-    — Role expected border: #22C55E (green)
-  </li>
-  <li>
-    <strong>roleGrayBorder</strong>
-    — Role gray border: #6B7280
-  </li>
-  <li>
-    <strong>roleObservedBg</strong>
-    — Role observed background — purple tint (VIB-335: 0.85 alpha for readability)
-  </li>
-  <li>
-    <strong>roleObservedBorder</strong>
-    — Role observed border: #AFA9EC (purple)
-  </li>
-  <li>
-    <strong>roleOrangeBorder</strong>
-    — Role orange border: #F97316
-  </li>
-  <li>
-    <strong>rolePinkBorder</strong>
-    — Role pink border: #EC4899
-  </li>
-  <li>
-    <strong>roleReferenceBg</strong>
-    — Role reference background — blue tint (VIB-335: 0.85 alpha for readability)
-  </li>
-  <li>
-    <strong>roleReferenceBorder</strong>
-    — Role reference border: #3B82F6 (blue)
-  </li>
-  <li>
-    <strong>roleSwatchInnerBorder</strong>
-    — Role swatch inner contrast border
-  </li>
-  <li>
-    <strong>roleSwatchOutline</strong>
-    — Role swatch outer outline for light and dark mode visibility
-  </li>
-  <li>
-    <strong>roleSwatchSelectedRing</strong>
-    — Role swatch selected ring
-  </li>
-  <li>
-    <strong>roleTealBorder</strong>
-    — Role teal border: #14B8A6
-  </li>
-  <li>
-    <strong>roleYellowBorder</strong>
-    — Role yellow border: #EAB308
-  </li>
-  <li>
-    <strong>ghostDotColor</strong>
-    — Ghost anchor dot color: #AFA9EC at 85%
-  </li>
-  <li>
-    <strong>ghostStrokeColor</strong>
-    — Ghost silhouette stroke color: #EF4444 at 22%
-  </li>
-</ul>
-<h2>Typography <span class="count">(21)</span></h2>
-<p>System font at Vibeliner's sizes and weights.</p><ul>
-  <li>
-    <strong>badgeFont</strong>
-    — Badge number: system 9px weight 600
-  </li>
-  <li>
-    <strong>dimensionLabelFont</strong>
-    — Dimension label: monospace 11px weight 500
-  </li>
-  <li>
-    <strong>noteTextFont</strong>
-    — Note text: system 12px weight regular
-  </li>
-  <li>
-    <strong>settingsBodyFont</strong>
-    — Settings body copy: system 12px weight regular
-  </li>
-  <li>
-    <strong>settingsFieldFont</strong>
-    — Settings field text: monospace 12px regular
-  </li>
-  <li>
-    <strong>settingsPillFont</strong>
-    — Settings pill text: system 11px weight 600
-  </li>
-  <li>
-    <strong>settingsSectionFont</strong>
-    — Settings section label: system 13px weight 500
-  </li>
-  <li>
-    <strong>settingsSegmentedPrimaryFont</strong>
-    — Primary settings selector label
-  </li>
-  <li>
-    <strong>settingsSegmentedSecondaryFont</strong>
-    — Secondary settings selector label
-  </li>
-  <li>
-    <strong>setupActionLabelFont</strong>
-    — setupActionLabelFont (setup-window).
-  </li>
-  <li>
-    <strong>setupBadgeCheckFont</strong>
-    — setupBadgeCheckFont (setup-window).
-  </li>
-  <li>
-    <strong>setupBadgeFont</strong>
-    — setupBadgeFont (setup-window).
-  </li>
-  <li>
-    <strong>setupDescFont</strong>
-    — setupDescFont (setup-window).
-  </li>
-  <li>
-    <strong>setupHelperFont</strong>
-    — setupHelperFont (setup-window).
-  </li>
-  <li>
-    <strong>setupKbdFont</strong>
-    — setupKbdFont (setup-window).
-  </li>
-  <li>
-    <strong>setupPanelTitleFont</strong>
-    — setupPanelTitleFont (setup-window).
-  </li>
-  <li>
-    <strong>setupPathFont</strong>
-    — setupPathFont (setup-window).
-  </li>
-  <li>
-    <strong>setupShortcutHintFont</strong>
-    — setupShortcutHintFont (setup-window).
-  </li>
-  <li>
-    <strong>setupSmallPillFont</strong>
-    — setupSmallPillFont (setup-window).
-  </li>
-  <li>
-    <strong>setupStatusFont</strong>
-    — setupStatusFont (setup-window).
-  </li>
-  <li>
-    <strong>statusPillFont</strong>
-    — Status pill: monospace 10px weight 500
-  </li>
-</ul>
-<h2>Dimensions <span class="count">(54)</span></h2>
-<p>Measurements that define the app's spatial rhythm.</p><ul>
-  <li>
-    <strong>arrowChevronAngle</strong>
-    — 28 degrees arrow chevron angle
-  </li>
-  <li>
-    <strong>arrowChevronLength</strong>
-    — 12px arrow chevron arm length
-  </li>
-  <li>
-    <strong>badgeDiameter</strong>
-    — 18px badge diameter (radius 9)
-  </li>
-  <li>
-    <strong>crosshairOpacity</strong>
-    — 0.85 crosshair opacity
-  </li>
-  <li>
-    <strong>crosshairThickness</strong>
-    — 2.3px crosshair line thickness
-  </li>
-  <li>
-    <strong>crosshairTickLength</strong>
-    — 10px crosshair tick length
-  </li>
-  <li>
-    <strong>dimensionLabelCornerRadius</strong>
-    — 5px dimension label corner radius
-  </li>
-  <li>
-    <strong>dimensionLabelGap</strong>
-    — 10px gap below selection to dimension label
-  </li>
-  <li>
-    <strong>dimensionLabelHeight</strong>
-    — 24px dimension label height
-  </li>
-  <li>
-    <strong>dimensionLabelPaddingH</strong>
-    — 10px dimension label horizontal padding
-  </li>
-  <li>
-    <strong>freehandMinPoints</strong>
-    — 3 minimum points for freehand
-  </li>
-  <li>
-    <strong>freehandSampleInterval</strong>
-    — 3px freehand sample interval
-  </li>
-  <li>
-    <strong>minimumSelectionSize</strong>
-    — 10px minimum selection size
-  </li>
-  <li>
-    <strong>noteCornerRadius</strong>
-    — 13px note pill corner radius
-  </li>
-  <li>
-    <strong>noteHeight</strong>
-    — 26px note pill height
-  </li>
-  <li>
-    <strong>rectCornerRadius</strong>
-    — 3px rectangle corner radius
-  </li>
-  <li>
-    <strong>selectionBorderWidth</strong>
-    — 1.5px selection border width
-  </li>
-  <li>
-    <strong>stakeLength</strong>
-    — 10px pin stake length
-  </li>
-  <li>
-    <strong>stakeWidth</strong>
-    — 2px pin stake width
-  </li>
-  <li>
-    <strong>strokeWidth</strong>
-    — 2.5px stroke width for all annotation tools
-  </li>
-  <li>
-    <strong>closeButtonSize</strong>
-    — 24px close button size
-  </li>
-  <li>
-    <strong>iconButtonSize</strong>
-    — 28px icon button size
-  </li>
-  <li>
-    <strong>toolButtonSize</strong>
-    — 30px tool button size
-  </li>
-  <li>
-    <strong>toolbarCornerRadius</strong>
-    — 20px toolbar corner radius
-  </li>
-  <li>
-    <strong>toolbarHeight</strong>
-    — 40px toolbar height
-  </li>
-  <li>
-    <strong>toolbarToolButtonGap</strong>
-    — 2px visual separation between adjacent tool buttons
-  </li>
-  <li>
-    <strong>statusPillCornerRadius</strong>
-    — 12px status pill corner radius
-  </li>
-  <li>
-    <strong>settingsContentPadding</strong>
-    — Settings content horizontal padding
-  </li>
-  <li>
-    <strong>settingsFieldHeight</strong>
-    — Settings field height
-  </li>
-  <li>
-    <strong>settingsFramePadding</strong>
-    — Settings framed section padding
-  </li>
-  <li>
-    <strong>settingsFrameRadius</strong>
-    — Settings framed section radius
-  </li>
-  <li>
-    <strong>settingsPillHeight</strong>
-    — Settings pill button height
-  </li>
-  <li>
-    <strong>settingsSectionGap</strong>
-    — Settings section inner gap
-  </li>
-  <li>
-    <strong>settingsSectionLabelWidth</strong>
-    — Settings section title width
-  </li>
-  <li>
-    <strong>settingsSegmentedHeight</strong>
-    — Settings segmented control height
-  </li>
-  <li>
-    <strong>settingsSegmentedInset</strong>
-    — Settings segmented control inset
-  </li>
-  <li>
-    <strong>settingsSegmentedItemPadding</strong>
-    — Horizontal padding inside each selector item
-  </li>
-  <li>
-    <strong>setupArrowSize</strong>
-    — setupArrowSize (setup-window).
-  </li>
-  <li>
-    <strong>setupBadgeSize</strong>
-    — setupBadgeSize (setup-window).
-  </li>
-  <li>
-    <strong>setupFooterButtonHeight</strong>
-    — setupFooterButtonHeight (setup-window).
-  </li>
-  <li>
-    <strong>setupFooterHeight</strong>
-    — setupFooterHeight (setup-window).
-  </li>
-  <li>
-    <strong>setupFooterPrimaryPadding</strong>
-    — setupFooterPrimaryPadding (setup-window).
-  </li>
-  <li>
-    <strong>setupFooterSecondaryPadding</strong>
-    — setupFooterSecondaryPadding (setup-window).
-  </li>
-  <li>
-    <strong>setupPanelHeight</strong>
-    — setupPanelHeight (setup-window).
-  </li>
-  <li>
-    <strong>setupPanelPad</strong>
-    — setupPanelPad (setup-window).
-  </li>
-  <li>
-    <strong>setupPathBoxRadius</strong>
-    — setupPathBoxRadius (setup-window).
-  </li>
-  <li>
-    <strong>setupSmallPillHeight</strong>
-    — setupSmallPillHeight (setup-window).
-  </li>
-  <li>
-    <strong>setupWindowWidth</strong>
-    — setupWindowWidth (setup-window).
-  </li>
-  <li>
-    <strong>filmstripGap</strong>
-    — Filmstrip gap between cells: 14px
-  </li>
-  <li>
-    <strong>filmstripPadding</strong>
-    — Filmstrip container padding: 14px
-  </li>
-  <li>
-    <strong>titlePillGap</strong>
-    — Gap between title pill bottom and image top: 6px
-  </li>
-  <li>
-    <strong>titlePillHeight</strong>
-    — Title pill height: 30px
-  </li>
-  <li>
-    <strong>ghostDotRadius</strong>
-    — Ghost anchor dot radius: 3px
-  </li>
-  <li>
-    <strong>ghostStrokeWidth</strong>
-    — Ghost silhouette stroke width: 1.5px
-  </li>
-</ul>
-<h2>Surfaces <span class="count">(34)</span></h2>
-<p>Composed surfaces combining multiple tokens.</p><ul>
-  <li>
-    <strong>toolbarBg</strong>
-    — Toolbar background — dark: rgba(30,30,30,0.92), light: rgba(255,255,255,0.88)
-  </li>
-  <li>
-    <strong>toolbarBorder</strong>
-    — Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
-  </li>
-  <li>
-    <strong>toolbarButtonHoverBg</strong>
-    — Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)
-  </li>
-  <li>
-    <strong>toolbarCloseHoverBg</strong>
-    — Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)
-  </li>
-  <li>
-    <strong>toolbarCloseIconHover</strong>
-    — Toolbar close icon hover — dark: #FF5F57, light: #FF5F57 (same)
-  </li>
-  <li>
-    <strong>toolbarDivider</strong>
-    — Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)
-  </li>
-  <li>
-    <strong>toolbarIconDefault</strong>
-    — Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)
-  </li>
-  <li>
-    <strong>toolbarIconHover</strong>
-    — Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)
-  </li>
-  <li>
-    <strong>toolbarPurpleActive</strong>
-    — Toolbar purple active — dark: #AFA9EC, light: #534AB7
-  </li>
-  <li>
-    <strong>toolbarToolActiveBg</strong>
-    — Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)
-  </li>
-  <li>
-    <strong>toolbarTrashHoverBg</strong>
-    — Toolbar trash hover bg — dark: rgba(255,87,87,0.15), light: rgba(255,87,87,0.12)
-  </li>
-  <li>
-    <strong>settingsFieldBorder</strong>
-    — Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
-  </li>
-  <li>
-    <strong>settingsFieldSurface</strong>
-    — Settings field surface — prototype: --surface-field
-  </li>
-  <li>
-    <strong>settingsFrameSurface</strong>
-    — Settings framed section surface
-  </li>
-  <li>
-    <strong>settingsPreviewSurface</strong>
-    — Settings preview surface
-  </li>
-  <li>
-    <strong>setupAmberText</strong>
-    — #b45309 — amber status text
-  </li>
-  <li>
-    <strong>setupBorder</strong>
-    — Setup dividers and borders
-  </li>
-  <li>
-    <strong>setupFieldBg</strong>
-    — Setup field background (path box, shortcut group)
-  </li>
-  <li>
-    <strong>setupFieldBorder</strong>
-    — Setup field border
-  </li>
-  <li>
-    <strong>setupFooterBg</strong>
-    — Setup footer background — slightly different from window bg
-  </li>
-  <li>
-    <strong>setupGrayBg</strong>
-    — Setup locked badge bg
-  </li>
-  <li>
-    <strong>setupGrayText</strong>
-    — Setup locked badge/gray status text
-  </li>
-  <li>
-    <strong>setupGreen</strong>
-    — #22c55e — badge done border/text
-  </li>
-  <li>
-    <strong>setupGreenBadgeBg</strong>
-    — rgba(34, 197, 94, 0.1) — badge done fill
-  </li>
-  <li>
-    <strong>setupGreenBg</strong>
-    — rgba(34, 197, 94, 0.08) — green button fill
-  </li>
-  <li>
-    <strong>setupGreenBorder</strong>
-    — rgba(34, 197, 94, 0.5) — green button border
-  </li>
-  <li>
-    <strong>setupGreenText</strong>
-    — #16a34a — status text, green button text
-  </li>
-  <li>
-    <strong>setupKbdBg</strong>
-    — Setup kbd pill bg
-  </li>
-  <li>
-    <strong>setupKbdBorder</strong>
-    — Setup kbd pill border
-  </li>
-  <li>
-    <strong>setupKbdText</strong>
-    — Setup kbd pill text
-  </li>
-  <li>
-    <strong>setupTextDim</strong>
-    — Setup dim/helper text
-  </li>
-  <li>
-    <strong>setupTextPrimary</strong>
-    — Setup primary text
-  </li>
-  <li>
-    <strong>setupTextSecondary</strong>
-    — Setup secondary text
-  </li>
-  <li>
-    <strong>setupWindowBg</strong>
-    — Setup window background — follows system
-  </li>
-</ul>
-
-<footer>
-  <p style="color: #666; font-size: 11px;">
-    Generated from DesignTokens+Layout.swift, DesignTokens+Settings.swift, DesignTokens+SetupTour.swift, DesignTokens+TourIllustrations.swift, DesignTokens.swift.
-    Regenerate: <code>python3 scripts/design_system_codegen.py</code>
-  </p>
-</footer>
 </body>
 </html>
