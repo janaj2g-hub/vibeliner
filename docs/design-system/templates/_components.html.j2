@@ -1,5 +1,271 @@
 {#
-  Component macros — populated in VIB-482.
-  Each macro renders a single component preview: pill-button, segmented-control,
-  note-pill, etc. Called from design-system.html.j2.
+  Component macros for the Vibeliner design system HTML.
+  Imported as `c` by design-system.html.j2.
+
+  These macros rely on CSS classes defined in the main template — do NOT
+  duplicate CSS here. Every macro produces visually complete output and
+  relies on real CSS :hover states (no fake "hover variant" cards).
 #}
+
+{# ============================================================ swatch #}
+{% macro swatch(name, token, mode=None) -%}
+  {%- set m = mode or (token.rendering.mode if token.rendering else 'triple') -%}
+  <div class="ds-swatch">
+    <div class="ds-swatch-bars">
+    {%- if m == 'alias' -%}
+      <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill ds-swatch-fill-alias">→ {{ token.target or '?' }}</div></div>
+    {%- elif token.kind == 'dynamic' -%}
+      <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
+      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
+      {% if m == 'triple' %}<div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>{% endif %}
+    {%- else -%}
+      {%- set fill = token.rgba or token.raw -%}
+      <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+      <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
+      {% if m == 'triple' %}<div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>{% endif %}
+    {%- endif -%}
+    </div>
+    <div class="ds-swatch-meta">
+      <div class="ds-swatch-name">{{ name }}</div>
+      <div class="ds-swatch-value">{{ token | format_value }}</div>
+      {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
+      {% if token.consumed_by %}<div class="ds-swatch-usage">{{ consumed_by(token.consumed_by) }}</div>{% endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ==================================================== consumed_by line #}
+{% macro consumed_by(files, truncate=3) -%}
+  {%- if not files -%}
+    <em>Unused</em>
+  {%- else -%}
+    Used by <span title="{{ files | join(', ') }}">{{ files | truncate_list(truncate) }}</span>
+  {%- endif -%}
+{%- endmacro %}
+
+{# ==================================================== pill button base #}
+{% macro pill_button(label='Copy Prompt', variant='default') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--{{ variant }}">{{ label }}</button>
+{%- endmacro %}
+
+{% macro pill_button_group() -%}
+  <div class="ds-preview-row">
+    {{ pill_button('Copy Prompt', 'default') }}
+    {{ pill_button('Copy Prompt', 'default') }}
+    {{ pill_button('Copied ✓', 'copied') }}
+  </div>
+  <p class="ds-preview-caption">Hover the middle button to see the real hover state transition.</p>
+{%- endmacro %}
+
+{% macro pill_button_primary(label='Next', variant='default') -%}
+  <button type="button" class="ds-pill-btn ds-pill-btn--primary">{{ label }}</button>
+{%- endmacro %}
+
+{% macro pill_button_primary_group() -%}
+  <div class="ds-preview-row">
+    {{ pill_button_primary('Next') }}
+    {{ pill_button_primary('Get started') }}
+  </div>
+  <p class="ds-preview-caption">Solid purple CTA used in tour and setup.</p>
+{%- endmacro %}
+
+{# ==================================================== secondary button #}
+{% macro secondary_button(label='+ Add image') -%}
+  <button type="button" class="ds-secondary-btn">{{ label }}</button>
+{%- endmacro %}
+
+{% macro secondary_button_group() -%}
+  <div class="ds-preview-row">
+    {{ secondary_button('+ Add image') }}
+    {{ secondary_button('New capture') }}
+  </div>
+{%- endmacro %}
+
+{# =================================================== segmented control #}
+{% macro segmented_control(items=['IDE', 'App'], active=0, variant='default') -%}
+  <div class="ds-segmented ds-segmented--{{ variant }}" role="group">
+    {% for item in items %}
+      <button type="button" class="ds-segmented-item{% if loop.index0 == active %} active{% endif %}">{{ item }}</button>
+    {% endfor %}
+  </div>
+{%- endmacro %}
+
+{% macro segmented_control_group() -%}
+  <div class="ds-preview-stack">
+    {{ segmented_control(items=['IDE', 'App'], active=0, variant='default') }}
+    {{ segmented_control(items=['Preamble', 'Tools', 'Footer', 'Multi-image'], active=0, variant='primary') }}
+  </div>
+{%- endmacro %}
+
+{# ========================================================== note pill #}
+{% macro note_pill(text='Fix this padding', state='default') -%}
+  <span class="ds-note-pill ds-note-pill--{{ state }}">{{ text }}</span>
+{%- endmacro %}
+
+{% macro note_pill_group() -%}
+  <div class="ds-preview-row">
+    {{ note_pill('Default state', 'default') }}
+    {{ note_pill('Hover me', 'hover') }}
+    {{ note_pill('Selected', 'selected') }}
+    {{ note_pill('Editing…', 'editing') }}
+  </div>
+{%- endmacro %}
+
+{# ======================================================== status pill #}
+{% macro status_pill(text='3 notes · 1024×768', mode='dark') -%}
+  <span class="ds-status-pill ds-status-pill--{{ mode }}"><code>{{ text }}</code></span>
+{%- endmacro %}
+
+{% macro status_pill_group() -%}
+  <div class="ds-preview-row">
+    {{ status_pill('3 notes · 1024×768', 'dark') }}
+    {{ status_pill('1 note · 640×480', 'light') }}
+  </div>
+{%- endmacro %}
+
+{# ======================================================== tool button #}
+{#
+  Tool icons adapted from Vibeliner/Editor/ToolbarIcons.swift, 15×15 viewBox.
+  Stroke width 1.4 (pin ring) / 1.5 (others) — mirrors the runtime.
+#}
+{% macro tool_icon(tool) -%}
+  <svg viewBox="0 0 15 15" width="16" height="16" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+  {%- if tool == 'pin' -%}
+    <circle cx="7.5" cy="5" r="3.8" stroke-width="1.4"/>
+    <line x1="7.5" y1="9" x2="7.5" y2="14" stroke-width="1.5"/>
+  {%- elif tool == 'arrow' -%}
+    <path d="M 2 13 L 13 2 M 8 2 L 13 2 L 13 7" stroke-width="1.4"/>
+  {%- elif tool == 'line' -%}
+    <path d="M 2 13 L 13 2" stroke-width="1.4"/>
+  {%- elif tool == 'rectangle' -%}
+    <rect x="1.25" y="1.25" width="12.5" height="12.5" rx="2" ry="2" stroke-width="1.5"/>
+  {%- elif tool == 'circle' -%}
+    <ellipse cx="7.5" cy="7.5" rx="6.25" ry="6.25" stroke-width="1.5"/>
+  {%- elif tool == 'freehand' -%}
+    <path d="M 1 7.5 Q 3 1 7.5 7.5 T 14 7.5" stroke-width="1.5"/>
+  {%- elif tool == 'select' -%}
+    <path d="M 3 2 L 12 7.5 L 8 8.5 L 10.5 13 L 9 13.8 L 6.5 9.3 L 3.5 12.3 Z" fill="currentColor" stroke-width="0.5"/>
+  {%- endif -%}
+  </svg>
+{%- endmacro %}
+
+{% macro tool_button(tool='pin', state='default') -%}
+  <button type="button" class="ds-tool-btn ds-tool-btn--{{ state }}" aria-label="{{ tool }}">
+    {{ tool_icon(tool) }}
+  </button>
+{%- endmacro %}
+
+{% macro tool_button_group() -%}
+  <div class="ds-preview-row ds-preview-row--dark">
+    {% for t in ['select', 'pin', 'arrow', 'line', 'rectangle', 'circle', 'freehand'] %}
+      {{ tool_button(t, 'default') }}
+    {% endfor %}
+  </div>
+  <p class="ds-preview-caption">Hover any tool to see the icon-hover state. Seven tools, one circular button family.</p>
+{%- endmacro %}
+
+{# ========================================================= font sample #}
+{% macro font_sample(name, token) -%}
+  {%- set is_mono = 'monospaced' in (token.raw or '') -%}
+  {%- set weight_num = {'ultralight': 100, 'thin': 200, 'light': 300, 'regular': 400, 'medium': 500, 'semibold': 600, 'bold': 700, 'heavy': 800, 'black': 900}.get(token.weight, 400) -%}
+  <div class="ds-font-sample">
+    <div class="ds-font-specimen" style="font-family: {{ 'ui-monospace, \"SF Mono\", Menlo, Consolas, monospace' if is_mono else '-apple-system, BlinkMacSystemFont, \"SF Pro Display\", \"Segoe UI\", sans-serif' }}; font-size: {{ token.size or 14 }}px; font-weight: {{ weight_num }};">{{ token | sample_text }}</div>
+    <div class="ds-font-meta">
+      <code>{{ name }}</code> — {{ 'monospace' if is_mono else 'system' }} · {{ token.size }}px · {{ token.weight }} ({{ weight_num }})
+      {% if token.description %}<br><span style="text-transform: none; letter-spacing: 0;">{{ token.description }}</span>{% endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# ===================================================== dimension card #}
+{% macro dimension_card(name, token) -%}
+  <div class="ds-dim-card">
+    <div>
+      <div class="ds-dim-value">{{ token.value }}<span class="ds-dim-unit">{{ token.unit }}</span></div>
+    </div>
+    <div>
+      <div class="ds-dim-name">{{ name }}</div>
+      {% if token.description %}<div class="ds-dim-desc">{{ token.description }}</div>{% endif %}
+    </div>
+  </div>
+{%- endmacro %}
+
+{# =================================================== composed surfaces #}
+{#
+  For the Surfaces section we dispatch a family-specific mini composition
+  when we have one; otherwise fall back to a dual-bar swatch.
+#}
+{% macro surface_sample(name, token) -%}
+  {%- set fam = token.family -%}
+  {%- if fam == 'toolbar' and name == 'toolbarBg' -%}
+    {{ surface_toolbar() }}
+  {%- elif fam == 'status-pill' and name == 'statusPillBg' -%}
+    {{ surface_status_pill() }}
+  {%- elif fam == 'settings-field' and name == 'settingsFieldSurface' -%}
+    {{ surface_settings_field() }}
+  {%- elif fam == 'settings-field' and name == 'settingsFrameSurface' -%}
+    {{ surface_settings_frame() }}
+  {%- elif fam == 'settings-field' and name == 'settingsPreviewSurface' -%}
+    {{ surface_preview() }}
+  {%- elif fam == 'setup-window' and name == 'setupFieldBg' -%}
+    {{ surface_setup_field() }}
+  {%- else -%}
+    {{ swatch(name, token, mode='dual') }}
+  {%- endif -%}
+{%- endmacro %}
+
+{% macro surface_toolbar() -%}
+  <div class="ds-surface-demo ds-surface-demo--toolbar">
+    <div class="ds-mini-toolbar">
+      {{ tool_button('select', 'default') }}
+      {{ tool_button('pin', 'default') }}
+      {{ tool_button('arrow', 'default') }}
+      <span class="ds-mini-divider"></span>
+      {{ pill_button('Copy Prompt') }}
+    </div>
+    <div class="ds-surface-caption"><code>toolbarBg</code> · floating editor toolbar</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_status_pill() -%}
+  <div class="ds-surface-demo ds-surface-demo--screenshot">
+    {{ status_pill('3 notes · 1024×768', 'dark') }}
+    <div class="ds-surface-caption"><code>statusPillBg</code> · under the editor</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_settings_field() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-field">
+      <code>/Users/jon/captures</code>
+      {{ pill_button('Change') }}
+    </div>
+    <div class="ds-surface-caption"><code>settingsFieldSurface</code> · path field in General</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_settings_frame() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-frame">
+      <div class="ds-mini-frame-title">Hotkey</div>
+      <div class="ds-mini-frame-body">⌘ ⇧ 6 — Capture</div>
+    </div>
+    <div class="ds-surface-caption"><code>settingsFrameSurface</code> · framed sections</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_preview() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-preview"><code>&gt; A note I wrote about padding.</code></div>
+    <div class="ds-surface-caption"><code>settingsPreviewSurface</code> · prompt preview</div>
+  </div>
+{%- endmacro %}
+
+{% macro surface_setup_field() -%}
+  <div class="ds-surface-demo">
+    <div class="ds-mini-kbd-row">
+      <kbd>⌘</kbd><kbd>⇧</kbd><kbd>6</kbd>
+    </div>
+    <div class="ds-surface-caption"><code>setupFieldBg</code> · shortcut display</div>
+  </div>
+{%- endmacro %}

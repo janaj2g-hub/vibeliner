@@ -62,7 +62,49 @@ DEFAULT_COMPONENTS_TEMPLATE = _REPO_ROOT / "docs" / "design-system" / "templates
 DEFAULT_OUTPUT = _REPO_ROOT / "docs" / "design-system" / "design-system.html"
 
 # Rendering modes the template knows how to handle. Unknown modes fall back to "dual".
-_KNOWN_MODES = {"dual", "triple", "single"}
+_KNOWN_MODES = {"dual", "triple", "single", "alias"}
+
+
+# --- Jinja filters ------------------------------------------------------------
+
+
+def _filter_truncate_list(items: list[Any], n: int = 3) -> str:
+    if not items:
+        return ""
+    if len(items) <= n:
+        return ", ".join(str(x) for x in items)
+    head = ", ".join(str(x) for x in items[:n])
+    return f"{head} · +{len(items) - n} more"
+
+
+def _filter_format_value(token: dict[str, Any]) -> str:
+    """Canonical short display string for a token's value."""
+    t = token.get("type")
+    kind = token.get("kind")
+    if kind == "alias":
+        return f"alias → {token.get('target', '?')}"
+    if t == "dimension":
+        return f"{token.get('value')}{token.get('unit', '')}"
+    if t == "font":
+        return f"{token.get('size')}px · {token.get('weight', '')}"
+    # Color
+    if kind == "dynamic":
+        dark = (token.get("dark") or {}).get("rgba") or "?"
+        light = (token.get("light") or {}).get("rgba") or "?"
+        return f"dark {dark} · light {light}"
+    if kind == "static":
+        hex_val = token.get("hex")
+        rgba = token.get("rgba") or token.get("raw", "")
+        return f"{hex_val} · {rgba}" if hex_val else rgba
+    return token.get("raw", "")
+
+
+def _filter_sample_text(token: dict[str, Any]) -> str:
+    """Representative sample text for a font token."""
+    raw = token.get("raw", "")
+    if "monospaced" in raw:
+        return "1024 × 768  /Users/jon/captures"
+    return "The quick brown fox jumps over the lazy dog"
 
 
 # --- Loading / merging --------------------------------------------------------
@@ -187,6 +229,9 @@ def _render(
         keep_trailing_newline=True,
     )
     env.filters["items"] = lambda d: list(d)
+    env.filters["truncate_list"] = _filter_truncate_list
+    env.filters["format_value"] = _filter_format_value
+    env.filters["sample_text"] = _filter_sample_text
     template = env.get_template(template_path.name)
     return template.render(**context)
 

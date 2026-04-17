@@ -1,3 +1,4 @@
+{% import "_components.html.j2" as c %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -473,23 +474,291 @@ body.light .ds-header {
 .ds-footer a { color: var(--ds-fg-muted); }
 .ds-footer code { color: var(--ds-fg-muted); font-size: 10px; }
 
-/* --- Placeholder for VIB-482 components --------------------------------- */
-.ds-placeholder {
+/* --- Component previews ------------------------------------------------- */
+.ds-preview-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
   padding: 20px 22px;
-  background: var(--ds-bg-muted);
-  border: 1px dashed var(--ds-border-strong);
-  border-radius: 10px;
-  color: var(--ds-fg-muted);
-  font-size: 13px;
-}
-.ds-placeholder code {
   background: var(--ds-surface);
-  padding: 1px 5px;
-  border-radius: 3px;
-  color: var(--ds-fg);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
 }
-.ds-placeholder ul { margin: 12px 0 0; padding-left: 20px; }
-.ds-placeholder li { margin: 3px 0; font-family: var(--ds-mono); font-size: 11px; color: var(--ds-fg); }
+.ds-preview-row--dark { background: #1e1e1e; color: rgba(255,255,255,0.8); }
+.ds-preview-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 22px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+}
+.ds-preview-caption {
+  font-size: 11px;
+  color: var(--ds-fg-dim);
+  margin: 8px 0 0;
+}
+
+/* Pill button family (default + hover via CSS :hover) */
+.ds-pill-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  line-height: 1;
+}
+.ds-pill-btn--default {
+  background: var(--ds-pill-bg);
+  border: 1.5px solid var(--ds-pill-border);
+  color: var(--ds-pill-text);
+}
+.ds-pill-btn--default:hover {
+  background: rgba(83, 74, 183, 0.16);
+  border-color: rgba(83, 74, 183, 0.65);
+  color: var(--ds-accent);
+}
+body.dark .ds-pill-btn--default:hover,
+body:not(.light):not(.dark) .ds-pill-btn--default:hover {
+  background: rgba(116, 97, 194, 0.35);
+  border-color: #C4B8F5;
+  color: #C4B8F5;
+}
+.ds-pill-btn--copied {
+  background: rgba(22, 163, 74, 0.12);
+  border: 1.5px solid rgba(22, 163, 74, 0.5);
+  color: rgba(22, 163, 74, 0.9);
+}
+.ds-pill-btn--primary {
+  background: var(--ds-accent);
+  color: white;
+  border: 1.5px solid var(--ds-accent);
+}
+body.dark .ds-pill-btn--primary,
+body:not(.light):not(.dark) .ds-pill-btn--primary {
+  background: rgba(175, 169, 236, 0.16);
+  color: #AFA9EC;
+  border-color: rgba(175, 169, 236, 0.36);
+}
+.ds-pill-btn--primary:hover { filter: brightness(1.05); }
+
+/* Secondary (ghost) pill */
+.ds-secondary-btn {
+  appearance: none;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 5px 12px;
+  border-radius: 999px;
+  background: transparent;
+  border: 1.5px solid rgba(15, 23, 42, 0.15);
+  color: rgba(15, 23, 42, 0.65);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+body.dark .ds-secondary-btn,
+body:not(.light):not(.dark) .ds-secondary-btn {
+  border-color: rgba(255,255,255,0.20);
+  color: rgba(255,255,255,0.60);
+}
+.ds-secondary-btn:hover {
+  border-color: rgba(15, 23, 42, 0.25);
+  color: rgba(15, 23, 42, 0.75);
+  background: rgba(15, 23, 42, 0.04);
+}
+body.dark .ds-secondary-btn:hover,
+body:not(.light):not(.dark) .ds-secondary-btn:hover {
+  border-color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.80);
+  background: rgba(255,255,255,0.05);
+}
+
+/* Segmented control */
+.ds-segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+}
+.ds-segmented--primary { padding: 3px; border-radius: 12px; }
+.ds-segmented-item {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ds-fg-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+.ds-segmented--primary .ds-segmented-item {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 16px;
+  border-radius: 9px;
+}
+.ds-segmented-item:hover { color: var(--ds-fg); }
+.ds-segmented-item.active {
+  background: var(--ds-accent-soft);
+  color: var(--ds-accent);
+  box-shadow: inset 0 0 0 1px var(--ds-accent-strong);
+}
+
+/* Note pill (red family) */
+.ds-note-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 13px;
+  color: #7f1d1d;
+  background: rgba(255, 248, 248, 0.82);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  transition: all 0.12s ease;
+}
+.ds-note-pill--hover,
+.ds-note-pill:hover {
+  background: rgba(255, 248, 248, 0.92);
+  border-color: rgba(239, 68, 68, 0.45);
+}
+.ds-note-pill--selected {
+  background: rgba(255, 248, 248, 0.96);
+  border-color: rgba(239, 68, 68, 0.55);
+}
+.ds-note-pill--editing {
+  background: rgba(255, 252, 252, 0.98);
+  border-color: rgba(239, 68, 68, 0.55);
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.10);
+}
+
+/* Status pill */
+.ds-status-pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-family: var(--ds-mono);
+  font-size: 10px;
+}
+.ds-status-pill--dark { background: rgba(30,30,30,0.88); color: white; }
+.ds-status-pill--light { background: rgba(255,255,255,0.85); color: rgba(0,0,0,0.70); border: 1px solid rgba(0,0,0,0.06); }
+
+/* Tool button */
+.ds-tool-btn {
+  appearance: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 0;
+  background: transparent;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.12s ease;
+}
+.ds-tool-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: rgba(255,255,255,0.80);
+}
+.ds-preview-row--dark .ds-mini-divider { background: rgba(255,255,255,0.12); }
+
+/* Surface composed demos */
+.ds-surface-demo {
+  padding: 16px 18px;
+  background: var(--ds-surface);
+  border: 1px solid var(--ds-border);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ds-surface-demo--toolbar { background: linear-gradient(135deg, #d7d9de, #a4a8b0); padding: 20px; }
+.ds-surface-demo--screenshot { background: linear-gradient(135deg, #d7d9de, #6c707a); padding: 20px; }
+.ds-surface-caption { font-size: 11px; color: var(--ds-fg-dim); font-family: var(--ds-mono); }
+.ds-surface-caption code { color: var(--ds-fg-muted); }
+
+.ds-mini-toolbar {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  background: rgba(30,30,30,0.92);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  color: rgba(255,255,255,0.8);
+}
+.ds-mini-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.12); margin: 0 4px; }
+.ds-mini-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 8px 6px 14px;
+  background: var(--ds-bg-muted);
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+}
+.ds-mini-field code { color: var(--ds-fg); flex: 1; }
+.ds-mini-frame {
+  padding: 14px 16px;
+  background: rgba(15, 23, 42, 0.02);
+  border-radius: 18px;
+}
+.ds-mini-frame-title { font-size: 13px; font-weight: 500; margin-bottom: 4px; }
+.ds-mini-frame-body { font-size: 12px; color: var(--ds-fg-muted); font-family: var(--ds-mono); }
+.ds-mini-preview {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border-radius: 8px;
+  font-family: var(--ds-mono);
+  font-size: 12px;
+}
+body.dark .ds-mini-preview,
+body:not(.light):not(.dark) .ds-mini-preview {
+  background: #15161a;
+  color: rgba(255,255,255,0.8);
+}
+.ds-mini-kbd-row { display: flex; gap: 4px; }
+.ds-mini-kbd-row kbd {
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.03);
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 6px;
+}
+body.dark .ds-mini-kbd-row kbd,
+body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.55);
+}
+
+/* Alias swatch: target pointer instead of color fill */
+.ds-swatch-fill-alias {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ds-mono);
+  font-size: 11px;
+  color: var(--ds-fg-muted);
+  position: absolute;
+  inset: 4px 10px;
+  background: var(--ds-bg-muted);
+  border-radius: 4px;
+}
 
 /* --- Responsive --------------------------------------------------------- */
 @media (max-width: 900px) {
@@ -585,18 +854,45 @@ body.light .ds-header {
         Hover an element to see its real state transitions — driven by CSS
         pseudo-classes, not hand-painted "hover variant" cards.
       </p>
-      <div class="ds-placeholder">
-        Component previews populate in <strong>VIB-482</strong>. In the meantime, here's
-        the family inventory this section will render:
-        <ul>
-        {% set seen_families = [] %}
-        {% for name, token in components %}
-          {% if token.family not in seen_families %}
-            {% set _ = seen_families.append(token.family) %}
-            <li>{{ token.family }} — {{ components | selectattr('1.family', 'equalto', token.family) | list | length }} tokens</li>
-          {% endif %}
-        {% endfor %}
-        </ul>
+
+      {% set ns = namespace(seen=[]) %}
+      {% for name, token in components %}
+        {% if token.family not in ns.seen %}
+          {% set _ = ns.seen.append(token.family) %}
+          {% set family = token.family %}
+          {% set family_tokens = components | selectattr('1.family', 'equalto', family) | list %}
+          <div class="ds-family" id="family-{{ family }}">
+            <h3>{{ family }} <span class="ds-family-meta">· {{ family_tokens | length }} token{{ '' if family_tokens | length == 1 else 's' }}</span></h3>
+
+            {% if family == 'pill-button' %}{{ c.pill_button_group() }}
+            {% elif family == 'pill-button-primary' %}{{ c.pill_button_primary_group() }}
+            {% elif family == 'segmented-control' %}{{ c.segmented_control_group() }}
+            {% elif family == 'secondary-button' %}{{ c.secondary_button_group() }}
+            {% elif family == 'note-pill' %}{{ c.note_pill_group() }}
+            {% elif family == 'status-pill' %}{{ c.status_pill_group() }}
+            {% elif family == 'add-image' %}
+              <div class="ds-preview-row">{{ c.secondary_button('+ Add image') }}</div>
+            {% elif family == 'copied-green' %}
+              <div class="ds-preview-row">{{ c.pill_button('Copied ✓', 'copied') }}</div>
+            {% elif family == 'editor-annotation' %}
+              {{ c.note_pill_group() }}
+            {% else %}
+              <div class="ds-preview-row"><em style="color: var(--ds-fg-dim);">No preview for family {{ family }} yet.</em></div>
+            {% endif %}
+
+            <div class="ds-grid" style="margin-top: 20px;">
+            {% for tname, tok in family_tokens %}
+              {{ c.swatch(tname, tok, mode='dual') }}
+            {% endfor %}
+            </div>
+          </div>
+        {% endif %}
+      {% endfor %}
+
+      {# Also surface the tool-button family (its tokens live in surfaces/annotation) #}
+      <div class="ds-family" id="family-tool-button">
+        <h3>tool-button <span class="ds-family-meta">· 7 tools · one circular family</span></h3>
+        {{ c.tool_button_group() }}
       </div>
     </section>
 
@@ -610,42 +906,7 @@ body.light .ds-header {
         and a screenshot gradient — the same three contexts Vibeliner's UI lives in.
       </p>
       <div class="ds-grid">
-      {% for name, token in colors %}
-        <div class="ds-swatch">
-          <div class="ds-swatch-bars">
-          {% if token.kind == 'static' %}
-            {% set fill = token.rgba or token.raw %}
-            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-          {% elif token.kind == 'dynamic' %}
-            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
-            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-          {% else %}
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: transparent;"></div></div>
-          {% endif %}
-          </div>
-          <div class="ds-swatch-meta">
-            <div class="ds-swatch-name">{{ name }}</div>
-            <div class="ds-swatch-value">
-              {%- if token.kind == 'static' -%}
-                {{ token.hex or '—' }} · {{ token.rgba or token.raw }}
-              {%- elif token.kind == 'dynamic' -%}
-                dark {{ token.dark.rgba if token.dark else '?' }} · light {{ token.light.rgba if token.light else '?' }}
-              {%- elif token.kind == 'alias' -%}
-                alias → {{ token.target }}
-              {%- else -%}
-                {{ token.raw }}
-              {%- endif -%}
-            </div>
-            {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
-            {% if token.consumed_by %}
-              <div class="ds-swatch-usage">Used by {{ token.consumed_by | length }} file{{ '' if token.consumed_by | length == 1 else 's' }}</div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+      {% for name, token in colors %}{{ c.swatch(name, token) }}{% endfor %}
       </div>
     </section>
 
@@ -658,23 +919,7 @@ body.light .ds-header {
         at the exact size, weight, and family the token compiles to.
       </p>
       <div class="ds-font-list">
-      {% for name, token in typography %}
-        {% set is_mono = 'monospaced' in (token.raw or '') %}
-        {% set font_stack = (is_mono and 'ui-monospace, \"SF Mono\", Menlo, Consolas, monospace') or '-apple-system, BlinkMacSystemFont, \"SF Pro Display\", \"Segoe UI\", sans-serif' %}
-        {% set weight_num = {'ultralight': 100, 'thin': 200, 'light': 300, 'regular': 400, 'medium': 500, 'semibold': 600, 'bold': 700, 'heavy': 800, 'black': 900}.get(token.weight, 400) %}
-        <div class="ds-font-sample">
-          <div class="ds-font-specimen" style="font-family: {{ font_stack }}; font-size: {{ token.size or 14 }}px; font-weight: {{ weight_num }};">
-            {%- if is_mono -%}
-              1024 × 768  /Users/jon/captures
-            {%- else -%}
-              The quick brown fox jumps over the lazy dog
-            {%- endif -%}
-          </div>
-          <div class="ds-font-meta">
-            <code>{{ name }}</code> — {{ 'monospace' if is_mono else 'system' }} · {{ token.size }}px · {{ token.weight }} ({{ weight_num }})
-          </div>
-        </div>
-      {% endfor %}
+      {% for name, token in typography %}{{ c.font_sample(name, token) }}{% endfor %}
       </div>
     </section>
 
@@ -687,17 +932,7 @@ body.light .ds-header {
         heights, corner radii, gaps. Every number in the app resolves to one of these.
       </p>
       <div class="ds-grid-narrow">
-      {% for name, token in dimensions %}
-        <div class="ds-dim-card">
-          <div>
-            <div class="ds-dim-value">{{ token.value }}<span class="ds-dim-unit">{{ token.unit }}</span></div>
-          </div>
-          <div>
-            <div class="ds-dim-name">{{ name }}</div>
-            {% if token.description %}<div class="ds-dim-desc">{{ token.description }}</div>{% endif %}
-          </div>
-        </div>
-      {% endfor %}
+      {% for name, token in dimensions %}{{ c.dimension_card(name, token) }}{% endfor %}
       </div>
     </section>
 
@@ -707,44 +942,11 @@ body.light .ds-header {
       <h2>Surfaces <span class="ds-section-count">{{ surfaces | length }}</span></h2>
       <p class="ds-section-intro">
         Appearance-aware background and border tokens — toolbar, status pill,
-        settings field, setup window. Dark/light variants shown side by side;
-        the third bar shows how the color reads on an arbitrary screenshot.
+        settings field, setup window. Where a token anchors a recognizable composed
+        surface, we show the composition. Everything else gets a dual-bar swatch.
       </p>
       <div class="ds-grid">
-      {% for name, token in surfaces %}
-        <div class="ds-swatch">
-          <div class="ds-swatch-bars">
-          {% if token.kind == 'dynamic' %}
-            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ token.dark.rgba if token.dark else 'transparent' }};"></div></div>
-            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ token.light.rgba if token.light else 'transparent' }};"></div></div>
-          {% elif token.kind == 'static' %}
-            {% set fill = token.rgba or token.raw %}
-            <div class="ds-swatch-bar" data-role="dark"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-            <div class="ds-swatch-bar" data-role="light"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: {{ fill }};"></div></div>
-          {% else %}
-            <div class="ds-swatch-bar" data-role="screenshot"><div class="ds-swatch-fill" style="background: transparent;"></div></div>
-          {% endif %}
-          </div>
-          <div class="ds-swatch-meta">
-            <div class="ds-swatch-name">{{ name }}</div>
-            <div class="ds-swatch-value">
-              {%- if token.kind == 'dynamic' -%}
-                dark {{ token.dark.rgba if token.dark else '?' }} · light {{ token.light.rgba if token.light else '?' }}
-              {%- elif token.kind == 'static' -%}
-                {{ token.hex or '' }} {{ token.rgba or token.raw }}
-              {%- else -%}
-                {{ token.raw }}
-              {%- endif -%}
-            </div>
-            {% if token.description %}<div class="ds-swatch-desc">{{ token.description }}</div>{% endif %}
-            {% if token.consumed_by %}
-              <div class="ds-swatch-usage">Used by {{ token.consumed_by | length }} file{{ '' if token.consumed_by | length == 1 else 's' }}</div>
-            {% endif %}
-          </div>
-        </div>
-      {% endfor %}
+      {% for name, token in surfaces %}{{ c.surface_sample(name, token) }}{% endfor %}
       </div>
     </section>
 
