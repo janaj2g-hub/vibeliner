@@ -7,7 +7,7 @@ sections:
     intro: Interactive previews of every reusable component family.
   - id: colors
     title: Color Palette
-    intro: Two brand colors, one annotation color, semantic accents.
+    intro: Brand colors, annotation colors, semantic accents, and role presets.
   - id: typography
     title: Typography
     intro: System font at Vibeliner's sizes and weights.
@@ -18,64 +18,1694 @@ sections:
     title: Surfaces
     intro: Composed surfaces combining multiple tokens.
 
-# Token presentation metadata. Real population of all ~370 tokens happens in VIB-475.
+# Token presentation metadata. Generated from DesignTokens*.swift by VIB-475.
+# Tour illustration tokens are excluded (quarantined).
 tokens:
+
+  # --- components ---
   pillButtonBg:
     section: components
     family: pill-button
+    description: "Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)"
     consumed_by:
-      - ToolbarButtons.swift
-      - SettingsControls.swift
-      - SetupComponents.swift
-      - CaptureRowView.swift
-      - PromptTabView.swift
-      - AboutTabView.swift
-    description: Background fill for outlined purple pill buttons.
+      - App/HarnessPreviewSurfaces.swift
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Settings/SettingsControls.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
     rendering:
       mode: dual
       preview_component: pill-button
+  pillButtonBorder:
+    section: components
+    family: pill-button
+    description: "Pill button border — dark: #A796EB, light: #534AB7"
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Settings/SettingsControls.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button
+  pillButtonHoverBg:
+    section: components
+    family: pill-button
+    description: "Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button
+  pillButtonHoverBorder:
+    section: components
+    family: pill-button
+    description: "Pill button hover border — dark: #C4B8F5, light: #7461C2"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button
+  pillButtonHoverText:
+    section: components
+    family: pill-button
+    description: "Pill button hover text — dark: #C4B8F5, light: #7461C2"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button
+  pillButtonText:
+    section: components
+    family: pill-button
+    description: "Pill button text — dark: #A796EB, light: #534AB7"
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Settings/PromptTabCustomViews.swift
+      - Settings/PromptTabView.swift
+      - Settings/SettingsControls.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button
+  pillButtonPrimaryBg:
+    section: components
+    family: pill-button-primary
+    description: "Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)"
+    consumed_by:
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button-primary
+  pillButtonPrimaryBorder:
+    section: components
+    family: pill-button-primary
+    description: "Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7"
+    consumed_by:
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button-primary
+  pillButtonPrimaryHoverBg:
+    section: components
+    family: pill-button-primary
+    description: "Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4"
+    consumed_by:
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button-primary
+  pillButtonPrimaryHoverBorder:
+    section: components
+    family: pill-button-primary
+    description: "Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4"
+    consumed_by:
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button-primary
+  pillButtonPrimaryText:
+    section: components
+    family: pill-button-primary
+    description: "Primary pill button text — dark: #AFA9EC, light: white (solid CTA)"
+    consumed_by:
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+      preview_component: pill-button-primary
+  segmentedActiveBorder:
+    section: components
+    family: segmented-control
+    description: "Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+      preview_component: segmented-control
+  segmentedActiveFill:
+    section: components
+    family: segmented-control
+    description: "Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Settings/SettingsUI.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: segmented-control
+  segmentedActiveText:
+    section: components
+    family: segmented-control
+    description: "Segmented active text — dark: #AFA9EC, light: #7267DD"
+    consumed_by:
+      - Settings/SettingsControls.swift
+    target: pillButtonText
+    rendering:
+      mode: alias
+      preview_component: segmented-control
+  segmentedInactiveText:
+    section: components
+    family: segmented-control
+    description: "Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Settings/SettingsControls.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: segmented-control
+  segmentedTrack:
+    section: components
+    family: segmented-control
+    description: "Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: segmented-control
+  segmentedTrackBorder:
+    section: components
+    family: segmented-control
+    description: "Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+      preview_component: segmented-control
+  toolbarSecondaryBg:
+    section: components
+    family: secondary-button
+    description: Secondary button bg — transparent
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: single
+      preview_component: secondary-button
+  toolbarSecondaryBorder:
+    section: components
+    family: secondary-button
+    description: "Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: secondary-button
+  toolbarSecondaryHoverBg:
+    section: components
+    family: secondary-button
+    description: "Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: secondary-button
+  toolbarSecondaryHoverBorder:
+    section: components
+    family: secondary-button
+    description: "Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: secondary-button
+  toolbarSecondaryHoverText:
+    section: components
+    family: secondary-button
+    description: "Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: secondary-button
+  toolbarSecondaryText:
+    section: components
+    family: secondary-button
+    description: "Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+    rendering:
+      mode: dual
+      preview_component: secondary-button
+  editorNoteBorderDefault:
+    section: components
+    family: note-pill
+    description: Editor note pill border — resting
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteBorderHover:
+    section: components
+    family: note-pill
+    description: Editor note pill border — hover
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteBorderSelected:
+    section: components
+    family: note-pill
+    description: Editor note pill border — selected
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteSurfaceDefault:
+    section: components
+    family: note-pill
+    description: Editor note pill surface — resting
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteSurfaceEditing:
+    section: components
+    family: note-pill
+    description: Editor note pill surface — editing
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+      - Editor/CanvasView+NoteEditing.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteSurfaceHover:
+    section: components
+    family: note-pill
+    description: Editor note pill surface — hover
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  editorNoteSurfaceSelected:
+    section: components
+    family: note-pill
+    description: Editor note pill surface — selected
+    consumed_by:
+      - Annotations/Renderers/NotePillView.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  noteTextColor:
+    section: components
+    family: note-pill
+    description: "Note text color: #7f1d1d"
+    consumed_by:
+      - Annotations/Renderers/NotePillRenderer.swift
+      - Annotations/Renderers/NotePillView.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  redNoteBg:
+    section: components
+    family: note-pill
+    description: "Note pill default: rgba(255, 248, 248, 0.82)"
+    consumed_by:
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  redNoteBorder:
+    section: components
+    family: note-pill
+    description: "Note pill default border: rgba(239, 68, 68, 0.18)"
+    consumed_by:
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+      preview_component: note-pill
+  statusPillBg:
+    section: components
+    family: status-pill
+    description: "Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)"
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: dual
+      preview_component: status-pill
+  statusPillBorder:
+    section: components
+    family: status-pill
+    description: "Status pill border — dark: clear, light: rgba(0,0,0,0.06)"
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: dual
+      preview_component: status-pill
+  statusPillTextColor:
+    section: components
+    family: status-pill
+    description: "Status pill text — dark: white, light: rgba(0,0,0,0.70)"
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: dual
+      preview_component: status-pill
+  addImageBg:
+    section: components
+    family: add-image
+    description: "Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)"
+    consumed_by:
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: add-image
+  addImageBorder:
+    section: components
+    family: add-image
+    description: "Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)"
+    consumed_by:
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+      preview_component: add-image
+  editorAnnotationHoverFill:
+    section: components
+    family: editor-annotation
+    description: Editor annotation hover fill halo
+    consumed_by:
+      - Editor/MarksLayerView.swift
+    rendering:
+      mode: single
+      preview_component: editor-annotation
+  editorAnnotationHoverShadow:
+    section: components
+    family: editor-annotation
+    description: Editor annotation hover shadow glow
+    consumed_by:
+      - Editor/MarksLayerView.swift
+    rendering:
+      mode: single
+      preview_component: editor-annotation
+  editorAnnotationHoverShapeFill:
+    section: components
+    family: editor-annotation
+    description: Editor annotation hover fill for shapes
+    consumed_by:
+      - Editor/MarksLayerView.swift
+    rendering:
+      mode: single
+      preview_component: editor-annotation
+  editorAnnotationHoverStroke:
+    section: components
+    family: editor-annotation
+    description: Editor annotation hover outline/shadow accent
+    consumed_by:
+      - Editor/MarksLayerView.swift
+    rendering:
+      mode: single
+      preview_component: editor-annotation
+  copiedGreen:
+    section: components
+    family: copied-green
+    description: rgba(22, 163, 74, 0.9) — copied state green
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: single
+      preview_component: copied-green
+  copiedGreenBg:
+    section: components
+    family: copied-green
+    description: "Copy success bg: rgba(22, 163, 74, 0.12)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: single
+      preview_component: copied-green
+  copiedGreenBorder:
+    section: components
+    family: copied-green
+    description: "Copy success green: rgba(22, 163, 74, 0.5) — border"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: single
+      preview_component: copied-green
+  copiedGreenText:
+    section: components
+    family: copied-green
+    description: "Copy success text: rgba(22, 163, 74, 0.8)"
+    consumed_by:
+      - Editor/ToolbarButtons.swift
+      - Popover/CaptureRowView.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: single
+      preview_component: copied-green
 
+  # --- colors ---
+  purpleDark:
+    section: colors
+    family: purple-brand
+    description: "#534AB7 — dimension label bg, settings accents"
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Settings/AboutTabView.swift
+      - Settings/SettingsControls.swift
+      - Tour/Illustrations/TourIllustration0.swift
+      - Tour/Illustrations/TourIllustration1.swift
+      - Tour/Illustrations/WireframeAppMock.swift
+    rendering:
+      mode: single
+  purpleLight:
+    section: colors
+    family: purple-brand
+    description: "#AFA9EC — crosshair, selection border, active tool highlight"
+    consumed_by:
+      - App/EditorHarnessSurfaceView.swift
+      - Capture/CrosshairView.swift
+      - Editor/MarksLayerView.swift
+      - Settings/AboutTabView.swift
+      - Settings/PromptTabView+State.swift
+      - Settings/SettingsControls.swift
+      - Tour/Illustrations/TourIllustration0.swift
+      - Tour/Illustrations/TourIllustration1.swift
+      - Tour/Illustrations/TourIllustration4.swift
+      - Tour/Illustrations/TourIllustration5.swift
+      - Tour/Illustrations/TourIllustration6.swift
+      - Tour/Illustrations/WireframeAppMock.swift
+    rendering:
+      mode: single
   red:
     section: colors
     family: red
-    description: All annotation marks (pin, arrow, line, rect, circle, freehand badges).
+    description: "#EF4444 — all annotation marks"
     consumed_by:
-      - BadgeRenderer.swift
-      - ArrowRenderer.swift
-      - LineRenderer.swift
-      - PinRenderer.swift
-      - RectangleRenderer.swift
-      - CircleRenderer.swift
-      - FreehandRenderer.swift
+      - Annotations/Renderers/ArrowRenderer.swift
+      - Annotations/Renderers/BadgeRenderer.swift
+      - Annotations/Renderers/CircleRenderer.swift
+      - Annotations/Renderers/FreehandRenderer.swift
+      - Annotations/Renderers/LineRenderer.swift
+      - Annotations/Renderers/NotePillView.swift
+      - Annotations/Renderers/PinRenderer.swift
+      - Annotations/Renderers/RectangleRenderer.swift
+      - App/EditorHarnessSurfaceView.swift
+      - Editor/CanvasView+NoteEditing.swift
+      - Editor/MarksLayerView.swift
+      - Editor/ToolButton.swift
+      - Settings/AboutTabView.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+      - Tour/Illustrations/TourFilmstripCell.swift
+      - Tour/Illustrations/TourMiniScreenshot.swift
+      - Tour/Illustrations/TourPromptSheet.swift
     rendering:
-      mode: triple
-
-  badgeDiameter:
-    section: dimensions
-    family: annotation
-    description: Diameter of every annotation badge circle.
+      mode: single
+  redFill:
+    section: colors
+    family: red
+    description: rgba(239, 68, 68, 0.06) — shape fills
     consumed_by:
-      - BadgeRenderer.swift
+      - Annotations/Renderers/CircleRenderer.swift
+      - Annotations/Renderers/RectangleRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  chromeBorder:
+    section: colors
+    family: chrome
+    description: rgba(175, 169, 236, 0.12) — toolbar/canvas border
+    consumed_by:
+      - Editor/ScreenshotCanvasView.swift
+    rendering:
+      mode: single
+  dimOverlay:
+    section: colors
+    family: chrome
+    description: rgba(0, 0, 0, 0.5) — capture overlay dim
+    consumed_by:
+      - Capture/CrosshairView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  dividerColor:
+    section: colors
+    family: chrome
+    description: "Divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.08)"
+    consumed_by:
+      - Tour/Illustrations/TourIllustration4.swift
+    rendering:
+      mode: dual
+  roleExpectedBg:
+    section: colors
+    family: role-color
+    description: "Role expected background — green tint (VIB-335: 0.85 alpha for readability)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleExpectedBorder:
+    section: colors
+    family: role-color
+    description: "Role expected border: #22C55E (green)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleGrayBorder:
+    section: colors
+    family: role-color
+    description: "Role gray border: #6B7280"
+    consumed_by: []
+    rendering:
+      mode: single
+  roleObservedBg:
+    section: colors
+    family: role-color
+    description: "Role observed background — purple tint (VIB-335: 0.85 alpha for readability)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleObservedBorder:
+    section: colors
+    family: role-color
+    description: "Role observed border: #AFA9EC (purple)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleOrangeBorder:
+    section: colors
+    family: role-color
+    description: "Role orange border: #F97316"
+    consumed_by: []
+    rendering:
+      mode: single
+  rolePinkBorder:
+    section: colors
+    family: role-color
+    description: "Role pink border: #EC4899"
+    consumed_by: []
+    rendering:
+      mode: single
+  roleReferenceBg:
+    section: colors
+    family: role-color
+    description: "Role reference background — blue tint (VIB-335: 0.85 alpha for readability)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleReferenceBorder:
+    section: colors
+    family: role-color
+    description: "Role reference border: #3B82F6 (blue)"
+    consumed_by:
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  roleSwatchInnerBorder:
+    section: colors
+    family: role-color
+    description: Role swatch inner contrast border
+    consumed_by:
+      - Settings/PromptTabCustomViews.swift
+    rendering:
+      mode: dual
+  roleSwatchOutline:
+    section: colors
+    family: role-color
+    description: Role swatch outer outline for light and dark mode visibility
+    consumed_by:
+      - Settings/PromptTabCustomViews.swift
+      - Settings/PromptTabView+State.swift
+    rendering:
+      mode: dual
+  roleSwatchSelectedRing:
+    section: colors
+    family: role-color
+    description: Role swatch selected ring
+    consumed_by:
+      - Settings/PromptTabCustomViews.swift
+      - Settings/PromptTabView+State.swift
+    rendering:
+      mode: dual
+  roleTealBorder:
+    section: colors
+    family: role-color
+    description: "Role teal border: #14B8A6"
+    consumed_by: []
+    rendering:
+      mode: single
+  roleYellowBorder:
+    section: colors
+    family: role-color
+    description: "Role yellow border: #EAB308"
+    consumed_by: []
+    rendering:
+      mode: single
+  ghostDotColor:
+    section: colors
+    family: ghost-preview
+    description: "Ghost anchor dot color: #AFA9EC at 85%"
+    consumed_by:
+      - Annotations/Tools/ArrowTool.swift
+      - Annotations/Tools/CircleTool.swift
+      - Annotations/Tools/FreehandTool.swift
+      - Annotations/Tools/LineTool.swift
+      - Annotations/Tools/PinTool.swift
+      - Annotations/Tools/RectangleTool.swift
+    rendering:
+      mode: single
+  ghostStrokeColor:
+    section: colors
+    family: ghost-preview
+    description: "Ghost silhouette stroke color: #EF4444 at 22%"
+    consumed_by:
+      - Annotations/Tools/ArrowTool.swift
+      - Annotations/Tools/CircleTool.swift
+      - Annotations/Tools/LineTool.swift
+      - Annotations/Tools/PinTool.swift
+      - Annotations/Tools/RectangleTool.swift
+    rendering:
+      mode: single
 
+  # --- typography ---
   badgeFont:
     section: typography
     family: annotation
-    description: Font for the number inside each annotation badge.
+    description: "Badge number: system 9px weight 600"
     consumed_by:
-      - BadgeRenderer.swift
+      - Annotations/Renderers/BadgeRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  dimensionLabelFont:
+    section: typography
+    family: annotation
+    description: "Dimension label: monospace 11px weight 500"
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  noteTextFont:
+    section: typography
+    family: annotation
+    description: "Note text: system 12px weight regular"
+    consumed_by:
+      - Annotations/Renderers/NotePillRenderer.swift
+      - Annotations/Renderers/NotePillView.swift
+      - Editor/CanvasView+NoteEditing.swift
+    rendering:
+      mode: single
+  settingsBodyFont:
+    section: typography
+    family: settings-field
+    description: "Settings body copy: system 12px weight regular"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsFieldFont:
+    section: typography
+    family: settings-field
+    description: "Settings field text: monospace 12px regular"
+    consumed_by:
+      - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsPillFont:
+    section: typography
+    family: settings-field
+    description: "Settings pill text: system 11px weight 600"
+    consumed_by:
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  settingsSectionFont:
+    section: typography
+    family: settings-field
+    description: "Settings section label: system 13px weight 500"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsSegmentedPrimaryFont:
+    section: typography
+    family: settings-field
+    description: Primary settings selector label
+    consumed_by:
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  settingsSegmentedSecondaryFont:
+    section: typography
+    family: settings-field
+    description: Secondary settings selector label
+    consumed_by:
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  setupActionLabelFont:
+    section: typography
+    family: setup-window
+    description: setupActionLabelFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupBadgeCheckFont:
+    section: typography
+    family: setup-window
+    description: setupBadgeCheckFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupBadgeFont:
+    section: typography
+    family: setup-window
+    description: setupBadgeFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupDescFont:
+    section: typography
+    family: setup-window
+    description: setupDescFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupHelperFont:
+    section: typography
+    family: setup-window
+    description: setupHelperFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupKbdFont:
+    section: typography
+    family: setup-window
+    description: setupKbdFont (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: single
+  setupPanelTitleFont:
+    section: typography
+    family: setup-window
+    description: setupPanelTitleFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupPathFont:
+    section: typography
+    family: setup-window
+    description: setupPathFont (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupShortcutHintFont:
+    section: typography
+    family: setup-window
+    description: setupShortcutHintFont (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupSmallPillFont:
+    section: typography
+    family: setup-window
+    description: setupSmallPillFont (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupStatusFont:
+    section: typography
+    family: setup-window
+    description: setupStatusFont (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  statusPillFont:
+    section: typography
+    family: status-pill
+    description: "Status pill: monospace 10px weight 500"
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: single
 
+  # --- dimensions ---
+  arrowChevronAngle:
+    section: dimensions
+    family: annotation
+    description: 28 degrees arrow chevron angle
+    consumed_by:
+      - Annotations/Renderers/ArrowRenderer.swift
+    rendering:
+      mode: single
+  arrowChevronLength:
+    section: dimensions
+    family: annotation
+    description: 12px arrow chevron arm length
+    consumed_by:
+      - Annotations/Renderers/ArrowRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  badgeDiameter:
+    section: dimensions
+    family: annotation
+    description: 18px badge diameter (radius 9)
+    consumed_by:
+      - Annotations/Renderers/ArrowRenderer.swift
+      - Annotations/Renderers/BadgeRenderer.swift
+      - Annotations/Renderers/LineRenderer.swift
+      - Annotations/Renderers/NotePillRenderer.swift
+      - Annotations/Renderers/PinRenderer.swift
+      - Annotations/Tools/PinTool.swift
+      - Annotations/Tools/SelectTool.swift
+      - App/EditorHarnessSurfaceView+Annotations.swift
+      - Editor/MarksLayerView.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+      - Tour/Illustrations/TourIllustration2.swift
+      - Tour/Illustrations/TourIllustration3.swift
+    rendering:
+      mode: single
+  crosshairOpacity:
+    section: dimensions
+    family: annotation
+    description: 0.85 crosshair opacity
+    consumed_by:
+      - Capture/CrosshairView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  crosshairThickness:
+    section: dimensions
+    family: annotation
+    description: 2.3px crosshair line thickness
+    consumed_by:
+      - Capture/CrosshairView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  crosshairTickLength:
+    section: dimensions
+    family: annotation
+    description: 10px crosshair tick length
+    consumed_by:
+      - Capture/CrosshairView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  dimensionLabelCornerRadius:
+    section: dimensions
+    family: annotation
+    description: 5px dimension label corner radius
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  dimensionLabelGap:
+    section: dimensions
+    family: annotation
+    description: 10px gap below selection to dimension label
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  dimensionLabelHeight:
+    section: dimensions
+    family: annotation
+    description: 24px dimension label height
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  dimensionLabelPaddingH:
+    section: dimensions
+    family: annotation
+    description: 10px dimension label horizontal padding
+    consumed_by:
+      - Capture/DimensionLabelView.swift
+      - Tour/Illustrations/TourIllustration1.swift
+    rendering:
+      mode: single
+  freehandMinPoints:
+    section: dimensions
+    family: annotation
+    description: 3 minimum points for freehand
+    consumed_by:
+      - Annotations/Tools/FreehandTool.swift
+    rendering:
+      mode: single
+  freehandSampleInterval:
+    section: dimensions
+    family: annotation
+    description: 3px freehand sample interval
+    consumed_by:
+      - Annotations/Tools/FreehandTool.swift
+    rendering:
+      mode: single
+  minimumSelectionSize:
+    section: dimensions
+    family: annotation
+    description: 10px minimum selection size
+    consumed_by:
+      - Capture/CaptureCoordinator.swift
+    rendering:
+      mode: single
+  noteCornerRadius:
+    section: dimensions
+    family: annotation
+    description: 13px note pill corner radius
+    consumed_by:
+      - Annotations/Renderers/NotePillRenderer.swift
+      - Editor/CanvasView+NoteEditing.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  noteHeight:
+    section: dimensions
+    family: annotation
+    description: 26px note pill height
+    consumed_by:
+      - Annotations/Renderers/NotePillRenderer.swift
+      - Annotations/Renderers/NotePillView.swift
+      - Editor/CanvasView+NoteEditing.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  rectCornerRadius:
+    section: dimensions
+    family: annotation
+    description: 3px rectangle corner radius
+    consumed_by:
+      - Annotations/Renderers/RectangleRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  selectionBorderWidth:
+    section: dimensions
+    family: annotation
+    description: 1.5px selection border width
+    consumed_by:
+      - Capture/CrosshairView.swift
+    rendering:
+      mode: single
+  stakeLength:
+    section: dimensions
+    family: annotation
+    description: 10px pin stake length
+    consumed_by:
+      - Annotations/Renderers/PinRenderer.swift
+      - Annotations/Tools/PinTool.swift
+      - App/EditorHarnessSurfaceView+Annotations.swift
+      - Editor/MarksLayerView.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  stakeWidth:
+    section: dimensions
+    family: annotation
+    description: 2px pin stake width
+    consumed_by:
+      - Annotations/Renderers/PinRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  strokeWidth:
+    section: dimensions
+    family: annotation
+    description: 2.5px stroke width for all annotation tools
+    consumed_by:
+      - Annotations/Renderers/ArrowRenderer.swift
+      - Annotations/Renderers/CircleRenderer.swift
+      - Annotations/Renderers/FreehandRenderer.swift
+      - Annotations/Renderers/LineRenderer.swift
+      - Annotations/Renderers/RectangleRenderer.swift
+      - Tour/Illustrations/AnnotationMarkViews.swift
+    rendering:
+      mode: single
+  closeButtonSize:
+    section: dimensions
+    family: toolbar
+    description: 24px close button size
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  iconButtonSize:
+    section: dimensions
+    family: toolbar
+    description: 28px icon button size
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  toolButtonSize:
+    section: dimensions
+    family: toolbar
+    description: 30px tool button size
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  toolbarCornerRadius:
+    section: dimensions
+    family: toolbar
+    description: 20px toolbar corner radius
+    consumed_by:
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  toolbarHeight:
+    section: dimensions
+    family: toolbar
+    description: 40px toolbar height
+    consumed_by:
+      - Editor/EditorPanel+Filmstrip.swift
+      - Editor/EditorPanel.swift
+      - Editor/ToolbarView+State.swift
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  toolbarToolButtonGap:
+    section: dimensions
+    family: toolbar
+    description: 2px visual separation between adjacent tool buttons
+    consumed_by:
+      - Editor/ToolbarView.swift
+    rendering:
+      mode: single
+  statusPillCornerRadius:
+    section: dimensions
+    family: status-pill
+    description: 12px status pill corner radius
+    consumed_by:
+      - Editor/StatusPillView.swift
+    rendering:
+      mode: single
+  settingsContentPadding:
+    section: dimensions
+    family: settings-field
+    description: Settings content horizontal padding
+    consumed_by:
+      - Settings/GeneralTabView.swift
+      - Settings/PromptTabView.swift
+    rendering:
+      mode: single
+  settingsFieldHeight:
+    section: dimensions
+    family: settings-field
+    description: Settings field height
+    consumed_by:
+      - Settings/GeneralTabView.swift
+      - Settings/PromptTabView+State.swift
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  settingsFramePadding:
+    section: dimensions
+    family: settings-field
+    description: Settings framed section padding
+    consumed_by:
+      - Settings/PromptTabView.swift
+    rendering:
+      mode: single
+  settingsFrameRadius:
+    section: dimensions
+    family: settings-field
+    description: Settings framed section radius
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsPillHeight:
+    section: dimensions
+    family: settings-field
+    description: Settings pill button height
+    consumed_by:
+      - Settings/PromptTabView+ContentBuilders.swift
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  settingsSectionGap:
+    section: dimensions
+    family: settings-field
+    description: Settings section inner gap
+    consumed_by:
+      - Settings/GeneralTabView.swift
+    rendering:
+      mode: single
+  settingsSectionLabelWidth:
+    section: dimensions
+    family: settings-field
+    description: Settings section title width
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsSegmentedHeight:
+    section: dimensions
+    family: settings-field
+    description: Settings segmented control height
+    consumed_by:
+      - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsSegmentedInset:
+    section: dimensions
+    family: settings-field
+    description: Settings segmented control inset
+    consumed_by:
+      - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: single
+  settingsSegmentedItemPadding:
+    section: dimensions
+    family: settings-field
+    description: Horizontal padding inside each selector item
+    consumed_by:
+      - Settings/SettingsControls.swift
+    rendering:
+      mode: single
+  setupArrowSize:
+    section: dimensions
+    family: setup-window
+    description: setupArrowSize (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupBadgeSize:
+    section: dimensions
+    family: setup-window
+    description: setupBadgeSize (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupFooterButtonHeight:
+    section: dimensions
+    family: setup-window
+    description: setupFooterButtonHeight (setup-window).
+    consumed_by:
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupFooterHeight:
+    section: dimensions
+    family: setup-window
+    description: setupFooterHeight (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Setup/SetupWindowController.swift
+    rendering:
+      mode: single
+  setupFooterPrimaryPadding:
+    section: dimensions
+    family: setup-window
+    description: setupFooterPrimaryPadding (setup-window).
+    consumed_by:
+      - Setup/SetupComponents.swift
+    rendering:
+      mode: single
+  setupFooterSecondaryPadding:
+    section: dimensions
+    family: setup-window
+    description: setupFooterSecondaryPadding (setup-window).
+    consumed_by:
+      - Setup/SetupComponents.swift
+    rendering:
+      mode: single
+  setupPanelHeight:
+    section: dimensions
+    family: setup-window
+    description: setupPanelHeight (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController.swift
+    rendering:
+      mode: single
+  setupPanelPad:
+    section: dimensions
+    family: setup-window
+    description: setupPanelPad (setup-window).
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupPathBoxRadius:
+    section: dimensions
+    family: setup-window
+    description: setupPathBoxRadius (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+Actions.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupSmallPillHeight:
+    section: dimensions
+    family: setup-window
+    description: setupSmallPillHeight (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupWindowWidth:
+    section: dimensions
+    family: setup-window
+    description: setupWindowWidth (setup-window).
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Setup/SetupWindowController.swift
+    rendering:
+      mode: single
+  filmstripGap:
+    section: dimensions
+    family: filmstrip
+    description: "Filmstrip gap between cells: 14px"
+    consumed_by:
+      - Editor/EditorPanel+Filmstrip.swift
+      - Editor/FilmstripGridView.swift
+      - Services/CompositeStitcher.swift
+    rendering:
+      mode: single
+  filmstripPadding:
+    section: dimensions
+    family: filmstrip
+    description: "Filmstrip container padding: 14px"
+    consumed_by:
+      - Services/CompositeStitcher.swift
+    rendering:
+      mode: single
+  titlePillGap:
+    section: dimensions
+    family: filmstrip
+    description: "Gap between title pill bottom and image top: 6px"
+    consumed_by:
+      - Editor/EditorPanel+Filmstrip.swift
+      - Editor/FilmstripCellView.swift
+      - Editor/FilmstripGridView.swift
+      - Views/FilmCellView.swift
+    rendering:
+      mode: single
+  titlePillHeight:
+    section: dimensions
+    family: filmstrip
+    description: "Title pill height: 30px"
+    consumed_by:
+      - Editor/EditorPanel+Filmstrip.swift
+      - Editor/FilmstripCellView.swift
+      - Editor/FilmstripGridView.swift
+      - Services/CompositeStitcher.swift
+      - Views/FilmCellView.swift
+      - Views/TitlePillView.swift
+    rendering:
+      mode: single
+  ghostDotRadius:
+    section: dimensions
+    family: ghost-preview
+    description: "Ghost anchor dot radius: 3px"
+    consumed_by:
+      - Annotations/Tools/ArrowTool.swift
+      - Annotations/Tools/CircleTool.swift
+      - Annotations/Tools/FreehandTool.swift
+      - Annotations/Tools/LineTool.swift
+      - Annotations/Tools/PinTool.swift
+      - Annotations/Tools/RectangleTool.swift
+    rendering:
+      mode: single
+  ghostStrokeWidth:
+    section: dimensions
+    family: ghost-preview
+    description: "Ghost silhouette stroke width: 1.5px"
+    consumed_by:
+      - Annotations/Tools/ArrowTool.swift
+      - Annotations/Tools/CircleTool.swift
+      - Annotations/Tools/LineTool.swift
+      - Annotations/Tools/PinTool.swift
+      - Annotations/Tools/RectangleTool.swift
+    rendering:
+      mode: single
+
+  # --- surfaces ---
   toolbarBg:
     section: surfaces
     family: toolbar
-    description: Toolbar background fill, appearance-aware.
+    description: "Toolbar background — dark: rgba(30,30,30,0.92), light: rgba(255,255,255,0.88)"
     consumed_by:
-      - ToolbarView.swift
+      - Editor/ToolbarView.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
     rendering:
       mode: dual
+  toolbarBorder:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)"
+    consumed_by:
+      - Editor/ToolbarView.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+  toolbarButtonHoverBg:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)"
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Popover/CaptureRowView.swift
+      - Popover/PopoverWindow.swift
+    rendering:
+      mode: dual
+  toolbarCloseHoverBg:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)"
+    consumed_by:
+      - Editor/ToolButton.swift
+    rendering:
+      mode: dual
+  toolbarCloseIconHover:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar close icon hover — dark: #FF5F57, light: #FF5F57 (same)"
+    consumed_by:
+      - Editor/ToolButton.swift
+    rendering:
+      mode: single
+  toolbarDivider:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)"
+    consumed_by:
+      - Editor/ToolbarView.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+  toolbarIconDefault:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)"
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+  toolbarIconHover:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)"
+    consumed_by:
+      - Editor/ToolButton.swift
+    rendering:
+      mode: dual
+  toolbarPurpleActive:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar purple active — dark: #AFA9EC, light: #534AB7"
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Editor/ToolbarButtons.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+  toolbarToolActiveBg:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)"
+    consumed_by:
+      - Editor/ToolButton.swift
+      - Tour/Illustrations/TourMiniToolbar.swift
+    rendering:
+      mode: dual
+  toolbarTrashHoverBg:
+    section: surfaces
+    family: toolbar
+    description: "Toolbar trash hover bg — dark: rgba(255,87,87,0.15), light: rgba(255,87,87,0.12)"
+    consumed_by:
+      - Editor/ToolButton.swift
+    rendering:
+      mode: dual
+  settingsFieldBorder:
+    section: surfaces
+    family: settings-field
+    description: "Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+  settingsFieldSurface:
+    section: surfaces
+    family: settings-field
+    description: "Settings field surface — prototype: --surface-field"
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+  settingsFrameSurface:
+    section: surfaces
+    family: settings-field
+    description: Settings framed section surface
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+  settingsPreviewSurface:
+    section: surfaces
+    family: settings-field
+    description: Settings preview surface
+    consumed_by:
+      - Settings/SettingsUI.swift
+    rendering:
+      mode: dual
+  setupAmberText:
+    section: surfaces
+    family: setup-window
+    description: "#b45309 — amber status text"
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupBorder:
+    section: surfaces
+    family: setup-window
+    description: Setup dividers and borders
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+Actions.swift
+    rendering:
+      mode: single
+  setupFieldBg:
+    section: surfaces
+    family: setup-window
+    description: Setup field background (path box, shortcut group)
+    consumed_by:
+      - Setup/SetupWindowController+Actions.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: dual
+  setupFieldBorder:
+    section: surfaces
+    family: setup-window
+    description: Setup field border
+    consumed_by:
+      - Setup/SetupWindowController+Actions.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupFooterBg:
+    section: surfaces
+    family: setup-window
+    description: Setup footer background — slightly different from window bg
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+Actions.swift
+    rendering:
+      mode: dual
+  setupGrayBg:
+    section: surfaces
+    family: setup-window
+    description: Setup locked badge bg
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: dual
+  setupGrayText:
+    section: surfaces
+    family: setup-window
+    description: Setup locked badge/gray status text
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupGreen:
+    section: surfaces
+    family: setup-window
+    description: "#22c55e — badge done border/text"
+    consumed_by:
+      - App/EditorHarnessSurfaceView.swift
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupGreenBadgeBg:
+    section: surfaces
+    family: setup-window
+    description: rgba(34, 197, 94, 0.1) — badge done fill
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupGreenBg:
+    section: surfaces
+    family: setup-window
+    description: rgba(34, 197, 94, 0.08) — green button fill
+    consumed_by:
+      - Setup/SetupComponents.swift
+    rendering:
+      mode: single
+  setupGreenBorder:
+    section: surfaces
+    family: setup-window
+    description: rgba(34, 197, 94, 0.5) — green button border
+    consumed_by:
+      - Setup/SetupComponents.swift
+    rendering:
+      mode: single
+  setupGreenText:
+    section: surfaces
+    family: setup-window
+    description: "#16a34a — status text, green button text"
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupKbdBg:
+    section: surfaces
+    family: setup-window
+    description: Setup kbd pill bg
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+  setupKbdBorder:
+    section: surfaces
+    family: setup-window
+    description: Setup kbd pill border
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+  setupKbdText:
+    section: surfaces
+    family: setup-window
+    description: Setup kbd pill text
+    consumed_by:
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/TourWindowController+Content.swift
+    rendering:
+      mode: dual
+  setupTextDim:
+    section: surfaces
+    family: setup-window
+    description: Setup dim/helper text
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupTextPrimary:
+    section: surfaces
+    family: setup-window
+    description: Setup primary text
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Actions.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  setupTextSecondary:
+    section: surfaces
+    family: setup-window
+    description: Setup secondary text
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  setupWindowBg:
+    section: surfaces
+    family: setup-window
+    description: Setup window background — follows system
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Actions.swift
+      - Setup/SetupWindowController.swift
+    rendering:
+      mode: single
 
-# Optional explicit ordering within a section. Families not listed fall back to
-# alphabetical. This determines the order of component FAMILIES; individual
-# tokens within a family remain alphabetical unless listed explicitly.
+# Within-section family ordering. Families not listed fall back to alphabetical.
 order:
   components:
     - pill-button
@@ -85,14 +1715,40 @@ order:
     - note-pill
     - status-pill
     - tool-button
-  colors:
-    - purple
-    - red
+    - add-image
+    - editor-annotation
     - copied-green
+  colors:
+    - purple-brand
+    - red
     - chrome
-  typography: []
-  dimensions: []
-  surfaces: []
+    - role-color
+    - ghost-preview
+  typography:
+    - annotation
+    - settings-field
+    - setup-window
+    - status-pill
+    - toolbar
+    - filmstrip
+  dimensions:
+    - annotation
+    - toolbar
+    - note-pill
+    - status-pill
+    - pill-button
+    - settings-field
+    - setup-window
+    - filmstrip
+    - ghost-preview
+  surfaces:
+    - toolbar
+    - status-pill
+    - settings-field
+    - setup-window
+    - filmstrip
 
-# Tokens excluded from HTML rendering (still validated for existence in VIB-477).
-excluded: []
+# Tokens excluded from HTML rendering (still exist in Swift; internal-only).
+excluded:
+  - editorNoteShadow
+  - titlePillExportShadow
