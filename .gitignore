@@ -1,0 +1,2 @@
+# Design system validation escape hatch — see scripts/validate_design_system.py
+.skip-validation
