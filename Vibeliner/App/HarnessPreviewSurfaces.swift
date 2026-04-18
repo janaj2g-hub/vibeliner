@@ -149,7 +149,7 @@ final class SetupHarnessSurfaceView: NSView {
         )
 
         let footerAttrs: [NSAttributedString.Key: Any] = [
-            .font: DesignTokens.setupDescFont,
+            .font: DesignTokens.fontBody,
             .foregroundColor: DesignTokens.setupGrayText,
         ]
         let footerText = NSAttributedString(string: "Complete all steps to continue", attributes: footerAttrs)
@@ -176,19 +176,19 @@ final class SetupHarnessSurfaceView: NSView {
         drawBadge(in: badgeRect, index: index, state: state)
 
         let titleRect = CGRect(x: badgeRect.maxX + 12, y: pad + 2, width: contentWidth - 44, height: 22)
-        drawText(title, rect: titleRect, font: DesignTokens.setupPanelTitleFont, color: DesignTokens.setupTextPrimary)
+        drawText(title, rect: titleRect, font: DesignTokens.fontTitle, color: DesignTokens.setupTextPrimary)
 
         let descriptionRect = CGRect(x: panelRect.minX + pad, y: badgeRect.maxY + 18, width: contentWidth, height: 72)
-        drawText(description, rect: descriptionRect, font: DesignTokens.setupDescFont, color: DesignTokens.setupTextSecondary)
+        drawText(description, rect: descriptionRect, font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary)
 
         if let helperText {
             let helperRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 86, width: contentWidth, height: 30)
-            drawText(helperText, rect: helperRect, font: DesignTokens.setupHelperFont, color: DesignTokens.setupTextDim, alignment: .center)
+            drawText(helperText, rect: helperRect, font: DesignTokens.fontCaption, color: DesignTokens.setupTextDim, alignment: .center)
         }
 
         if showsAction {
             let labelRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 64, width: contentWidth, height: 18)
-            drawText(actionLabel, rect: labelRect, font: DesignTokens.setupActionLabelFont, color: DesignTokens.pillButtonText, alignment: .center)
+            drawText(actionLabel, rect: labelRect, font: DesignTokens.fontLabel, color: DesignTokens.pillButtonText, alignment: .center)
             drawCircleArrow(in: CGRect(
                 x: panelRect.midX - DesignTokens.setupArrowSize / 2,
                 y: panelRect.maxY - 64 + 26,
@@ -198,7 +198,7 @@ final class SetupHarnessSurfaceView: NSView {
         } else if let statusText {
             let statusColor: NSColor = state == .done ? DesignTokens.setupGreenText : DesignTokens.setupGrayText
             let statusRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 42, width: contentWidth, height: 20)
-            drawText(statusText, rect: statusRect, font: DesignTokens.setupStatusFont, color: statusColor, alignment: .center)
+            drawText(statusText, rect: statusRect, font: DesignTokens.fontLabel, color: statusColor, alignment: .center)
         }
     }
 
@@ -211,19 +211,19 @@ final class SetupHarnessSurfaceView: NSView {
             DesignTokens.setupGreen.setStroke()
             path.fill()
             path.stroke()
-            drawText("✓", rect: rect, font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, alignment: .center)
+            drawText("✓", rect: rect, font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, alignment: .center)
         case .active:
             DesignTokens.pillButtonBg.setFill()
             DesignTokens.pillButtonBorder.setStroke()
             path.fill()
             path.stroke()
-            drawText("\(index)", rect: rect, font: DesignTokens.setupBadgeFont, color: DesignTokens.pillButtonText, alignment: .center)
+            drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: DesignTokens.pillButtonText, alignment: .center)
         case .locked:
             DesignTokens.setupGrayBg.setFill()
             DesignTokens.setupGrayText.setStroke()
             path.fill()
             path.stroke()
-            drawText("\(index)", rect: rect, font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, alignment: .center)
+            drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: DesignTokens.setupGrayText, alignment: .center)
         }
     }
 
