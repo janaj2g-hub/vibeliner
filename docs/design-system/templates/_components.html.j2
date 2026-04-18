@@ -690,6 +690,155 @@
 </svg>
 {%- endmacro %}
 
+{# ==================================================== typography card =====
+
+  Contextual composition card for a single typography token. Reuses the
+  `.ds-dim-group` shape from the Dimensions section: two-panel layout with a
+  split dark/light illustration on the left and a metadata column on the
+  right. The illustration halves render real UI mocks using the token at its
+  real size — what a designer actually sees in the product when this token
+  is consumed.
+
+  gid       — token name, used to dispatch to the per-token _font_illus macro
+  name      — token identifier (same as gid, passed separately for clarity)
+  token     — merged token info (size, weight, raw, description, consumed_by)
+
+  The mode toggle (Both/Light/Dark) hides one half via the same body-class
+  mechanism that drives swatches and dimension illustrations — no new JS.
+#}
+{% macro typography_card(gid, name, token) -%}
+  {%- set is_mono = 'monospaced' in (token.raw or '') -%}
+  <div class="ds-dim-group ds-font-card">
+    <div class="ds-dim-illus-panel">
+      <div class="ds-illus-half ds-illus-half--dark">{{ _font_illus(gid, 'dark') }}</div>
+      <div class="ds-illus-half ds-illus-half--light">{{ _font_illus(gid, 'light') }}</div>
+    </div>
+    <div class="ds-dim-meta">
+      <h4 class="ds-dim-title"><code>{{ name }}</code></h4>
+      <p class="ds-font-spec">{{ 'monospace' if is_mono else 'system' }} · {{ token.size }}pt · {{ token.weight }}</p>
+      {% if token.description %}<p class="ds-dim-description">{{ token.description }}</p>{% endif %}
+      <div class="ds-dim-used-by">
+        {% if token.consumed_by -%}
+          Used by: {{ token.consumed_by | truncate_list(3) }}
+        {%- else -%}
+          Used by: <em>(none)</em>
+        {%- endif %}
+      </div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- Font illustration dispatcher ---------------------------------------- #}
+{% macro _font_illus(gid, variant) -%}
+  {%- if gid == 'fontTitle' -%}{{ font_illus_title(variant) }}
+  {%- elif gid == 'fontLabel' -%}{{ font_illus_label(variant) }}
+  {%- elif gid == 'fontLabelSm' -%}{{ font_illus_label_sm(variant) }}
+  {%- elif gid == 'fontBody' -%}{{ font_illus_body(variant) }}
+  {%- elif gid == 'fontCaption' -%}{{ font_illus_caption(variant) }}
+  {%- elif gid == 'fontMonoBody' -%}{{ font_illus_mono_body(variant) }}
+  {%- elif gid == 'fontMonoSm' -%}{{ font_illus_mono_sm(variant) }}
+  {%- elif gid == 'fontNumberSm' -%}{{ font_illus_number_sm(variant) }}
+  {%- elif gid == 'fontNumberLg' -%}{{ font_illus_number_lg(variant) }}
+  {%- endif -%}
+{%- endmacro %}
+
+{# --- fontTitle: setup panel heading (step badge + title text) ------------ #}
+{% macro font_illus_title(variant) -%}
+  <div class="ds-fd-stack">
+    <div class="ds-fd-setup-head">
+      <div class="ds-fd-step-badge ds-fd-step-badge--active">1</div>
+      <div class="ds-fd-title">Captures folder</div>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- fontLabel: settings section header + setup action button ----------- #}
+{% macro font_illus_label(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--wide">
+    <div class="ds-fd-section-header">Hotkey</div>
+    <div class="ds-fd-action-row">
+      <span class="ds-fd-action-label">Choose folder…</span>
+    </div>
+    <div class="ds-fd-status-green">Folder ready</div>
+  </div>
+{%- endmacro %}
+
+{# --- fontLabelSm: pill button + segmented + kbd pill -------------------- #}
+{% macro font_illus_label_sm(variant) -%}
+  <div class="ds-fd-stack">
+    {{ pill_button('Copy Prompt', 'default') }}
+    <div class="ds-segmented ds-segmented--primary" role="group">
+      <button type="button" class="ds-segmented-item active">Preamble</button>
+      <button type="button" class="ds-segmented-item">Tools</button>
+      <button type="button" class="ds-segmented-item">Footer</button>
+    </div>
+    <div class="ds-fd-kbd-row">
+      <span class="ds-fd-kbd">⌘</span><span class="ds-fd-kbd">⇧</span><span class="ds-fd-kbd">6</span>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- fontBody: note pill + setup description paragraph ------------------ #}
+{% macro font_illus_body(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--wide">
+    {{ note_pill('fix padding on the login card', 'default') }}
+    <div class="ds-fd-description">Choose where Vibeliner saves screenshots and prompts.</div>
+  </div>
+{%- endmacro %}
+
+{# --- fontCaption: helper text under a permission step ------------------- #}
+{% macro font_illus_caption(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--wide ds-fd-stack--centered">
+    <div class="ds-fd-helper">You may need to relaunch after granting.</div>
+  </div>
+{%- endmacro %}
+
+{# --- fontMonoBody: settings path field --------------------------------- #}
+{% macro font_illus_mono_body(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--wide">
+    <div class="ds-fd-path-field">
+      <code>~/Documents/vibeliner/2026-04-18</code>
+    </div>
+  </div>
+{%- endmacro %}
+
+{# --- fontMonoSm: status pill + dimension label ------------------------- #}
+{% macro font_illus_mono_sm(variant) -%}
+  <div class="ds-fd-stack">
+    {{ status_pill('3 notes · 1024×768', variant) }}
+    <div class="ds-fd-dim-label">420 × 270</div>
+  </div>
+{%- endmacro %}
+
+{# --- fontNumberSm: annotation badges at real 9pt size ------------------- #}
+{% macro font_illus_number_sm(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--row">
+    <div class="ds-fd-badge-sm">1</div>
+    <div class="ds-fd-badge-sm">12</div>
+  </div>
+{%- endmacro %}
+
+{# --- fontNumberLg: setup step badges at real 14pt size ----------------- #}
+{% macro font_illus_number_lg(variant) -%}
+  <div class="ds-fd-stack ds-fd-stack--row">
+    <div class="ds-fd-step-badge ds-fd-step-badge--active">1</div>
+    <div class="ds-fd-step-badge ds-fd-step-badge--locked">3</div>
+  </div>
+{%- endmacro %}
+
+{# ================================================= tour quarantine card ===
+  Simpler treatment for the 3 tour-prefixed typography tokens. Compact
+  2-up grid, name + spec + one-sentence description — no contextual
+  surfaces (they're not consumed by the main app).
+#}
+{% macro tour_quarantine_card(name, spec, description) -%}
+  <div class="ds-tour-qc">
+    <div class="ds-tour-qc-name"><code>{{ name }}</code></div>
+    <div class="ds-tour-qc-spec">{{ spec }}</div>
+    <div class="ds-tour-qc-desc">{{ description }}</div>
+  </div>
+{%- endmacro %}
+
 {# =================================================== composed surfaces #}
 {#
   For the Surfaces section we dispatch a family-specific mini composition
