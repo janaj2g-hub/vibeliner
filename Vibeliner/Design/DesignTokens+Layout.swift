@@ -73,17 +73,14 @@ extension DesignTokens {
     /// Settings field height
     static let settingsFieldHeight: CGFloat = 32
 
-    /// Settings segmented control height
-    static let settingsSegmentedHeight: CGFloat = 28
-
-    /// Settings segmented control inset
+    /// Segmented control inset
     static let settingsSegmentedInset: CGFloat = 2
 
     /// Horizontal padding inside each selector item
     static let settingsSegmentedItemPadding: CGFloat = 14
 
-    /// Settings pill button height
-    static let settingsPillHeight: CGFloat = 28
+    /// Universal pill button / segmented control height (VIB-500: renamed from settingsPillHeight; absorbed settingsSegmentedHeight).
+    static let pillButtonHeight: CGFloat = 28
 
     /// 12px arrow chevron arm length
     static let arrowChevronLength: CGFloat = 12

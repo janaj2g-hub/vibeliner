@@ -20,7 +20,7 @@ extension SetupWindowController {
         step1DoneArea.isHidden = false
 
         pathDisplay.stringValue = abbreviatePath(folderPath)
-        pathDisplay.textColor = DesignTokens.setupTextPrimary
+        pathDisplay.textColor = NSColor.labelColor
 
         // Unlock panel 2
         NSAnimationContext.runAnimationGroup { ctx in
@@ -117,15 +117,15 @@ extension SetupWindowController {
     /// VIB-332: Re-apply all layer-backed CGColors after an appearance change.
     /// Dynamic NSColor resolves correctly when .cgColor is called again.
     func reapplyLayerColors() {
-        window?.backgroundColor = DesignTokens.setupWindowBg
+        window?.backgroundColor = NSColor.windowBackgroundColor
         SettingsUI.styleSurface(footerContent, background: DesignTokens.setupFooterBg, borderWidth: 0)
-        if let divider1 { SettingsUI.styleDividerSurface(divider1, color: DesignTokens.setupBorder) }
-        if let divider2 { SettingsUI.styleDividerSurface(divider2, color: DesignTokens.setupBorder) }
-        if let footerBorderView { SettingsUI.styleDividerSurface(footerBorderView, color: DesignTokens.setupBorder) }
+        if let divider1 { SettingsUI.styleDividerSurface(divider1, color: NSColor.separatorColor) }
+        if let divider2 { SettingsUI.styleDividerSurface(divider2, color: NSColor.separatorColor) }
+        if let footerBorderView { SettingsUI.styleDividerSurface(footerBorderView, color: NSColor.separatorColor) }
         SettingsUI.styleSurface(
             pathDisplay,
             background: DesignTokens.setupFieldBg,
-            border: DesignTokens.setupFieldBorder,
+            border: NSColor.separatorColor,
             cornerRadius: DesignTokens.setupPathBoxRadius
         )
         // Rebuild footer (shortcut group, start button) with fresh colors

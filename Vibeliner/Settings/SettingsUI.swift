@@ -92,7 +92,7 @@ enum SettingsUI {
             view,
             background: DesignTokens.segmentedTrack,
             border: DesignTokens.segmentedTrackBorder,
-            cornerRadius: DesignTokens.settingsSegmentedHeight / 2
+            cornerRadius: DesignTokens.pillButtonHeight / 2
         )
     }
 
@@ -101,7 +101,7 @@ enum SettingsUI {
             view,
             background: DesignTokens.segmentedActiveFill,
             border: DesignTokens.segmentedActiveBorder,
-            cornerRadius: (DesignTokens.settingsSegmentedHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
+            cornerRadius: (DesignTokens.pillButtonHeight - (DesignTokens.settingsSegmentedInset * 2)) / 2
         )
     }
 

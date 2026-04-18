@@ -19,30 +19,18 @@ extension DesignTokens {
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
     // Window/container backgrounds — appearance-aware
-    /// Setup window background — follows system
-    static let setupWindowBg = NSColor.windowBackgroundColor
+    // VIB-500: `setupWindowBg`, `setupBorder`, `setupFieldBorder`, `setupTextPrimary`,
+    // `setupTextSecondary`, `setupTextDim`, `setupGrayText` were system-color aliases;
+    // deleted. Consumers use `NSColor.*` constants directly.
+
     /// Setup footer background — slightly different from window bg
     static let setupFooterBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 0.133, alpha: 1) : NSColor(white: 0.94, alpha: 1)
     }
-    /// Setup dividers and borders
-    static let setupBorder = NSColor.separatorColor
     /// Setup field background (path box, shortcut group)
     static let setupFieldBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.05) : NSColor(white: 0, alpha: 0.03)
     }
-    /// Setup field border
-    static let setupFieldBorder = NSColor.separatorColor
-
-    // Text — appearance-aware (system colors)
-    /// Setup primary text
-    static let setupTextPrimary = NSColor.labelColor
-    /// Setup secondary text
-    static let setupTextSecondary = NSColor.secondaryLabelColor
-    /// Setup dim/helper text
-    static let setupTextDim = NSColor.tertiaryLabelColor
-    /// Setup locked badge/gray status text
-    static let setupGrayText = NSColor.tertiaryLabelColor
     /// Setup locked badge bg
     static let setupGrayBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.03) : NSColor(white: 0, alpha: 0.03)
@@ -98,11 +86,8 @@ extension DesignTokens {
         dark: NSColor(white: 1.0, alpha: 0.04),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.05)
     )
-    /// Tour progress active
-    static let tourProgressActive = dynamicColor(
-        dark: purpleLight,
-        light: purpleDark
-    )
+    /// Tour progress active — alias of `purpleBrand` (tour → main direction allowed).
+    static let tourProgressActive = purpleBrand
     /// Tour progress inactive
     static let tourProgressInactive = dynamicColor(
         dark: NSColor(white: 1.0, alpha: 0.06),

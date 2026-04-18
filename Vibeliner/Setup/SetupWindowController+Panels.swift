@@ -13,11 +13,11 @@ extension SetupWindowController {
         badge1View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge1View)
 
-        let title = makeLabel("Captures folder", font: DesignTokens.fontTitle, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Captures folder", font: DesignTokens.fontTitle, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Choose where Vibeliner saves screenshots and prompts.", font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
@@ -31,7 +31,7 @@ extension SetupWindowController {
         centeredCell.isBezeled = false
         centeredCell.drawsBackground = false
         centeredCell.font = DesignTokens.fontMonoBody
-        centeredCell.textColor = isRerun ? DesignTokens.setupTextPrimary : DesignTokens.setupTextSecondary
+        centeredCell.textColor = isRerun ? NSColor.labelColor : NSColor.secondaryLabelColor
         centeredCell.stringValue = pathText
         centeredCell.usesSingleLineMode = true
         centeredCell.lineBreakMode = .byTruncatingHead
@@ -40,7 +40,7 @@ extension SetupWindowController {
         SettingsUI.styleSurface(
             pathDisplay,
             background: DesignTokens.setupFieldBg,
-            border: DesignTokens.setupFieldBorder,
+            border: NSColor.separatorColor,
             cornerRadius: DesignTokens.setupPathBoxRadius
         )
         pathDisplay.frame = NSRect(x: pad, y: pathBoxY, width: contentW, height: 36)
@@ -93,16 +93,16 @@ extension SetupWindowController {
         badge2View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge2View)
 
-        let title = makeLabel("Accessibility", font: DesignTokens.fontTitle, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Accessibility", font: DesignTokens.fontTitle, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Vibeliner needs accessibility permission so the capture hotkey works from any app.", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Vibeliner needs accessibility permission so the capture hotkey works from any app.", font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
         // Helper text — always positioned for stable layout, visibility toggled
-        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.fontCaption, color: DesignTokens.setupTextDim)
+        step2Helper = makeLabel("You may need to relaunch after granting.", font: DesignTokens.fontCaption, color: NSColor.tertiaryLabelColor)
         step2Helper.frame = NSRect(x: pad, y: desc.frame.origin.y - 14 - 14, width: contentW, height: 14)
         step2Helper.isHidden = true  // visible only when step 2 is active
         c.addSubview(step2Helper)
@@ -130,11 +130,11 @@ extension SetupWindowController {
         badge3View.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize)
         c.addSubview(badge3View)
 
-        let title = makeLabel("Screen recording", font: DesignTokens.fontTitle, color: DesignTokens.setupTextPrimary)
+        let title = makeLabel("Screen recording", font: DesignTokens.fontTitle, color: NSColor.labelColor)
         title.frame = NSRect(x: pad + 44, y: h - pad - 28, width: contentW - 44, height: 22)
         c.addSubview(title)
 
-        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary, width: contentW)
+        let desc = makeWrappingLabel("Vibeliner needs screen recording permission to capture screenshots of your running app.", font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor, width: contentW)
         desc.frame.origin = NSPoint(x: pad, y: h - pad - DesignTokens.setupBadgeSize - 18 - desc.frame.height)
         c.addSubview(desc)
 
@@ -142,7 +142,7 @@ extension SetupWindowController {
         step3RestartNote = makeWrappingLabel(
             "You may need to restart the app after granting.",
             font: DesignTokens.fontCaption,
-            color: DesignTokens.setupTextDim,
+            color: NSColor.tertiaryLabelColor,
             width: contentW
         )
         step3RestartNote.alignment = .center

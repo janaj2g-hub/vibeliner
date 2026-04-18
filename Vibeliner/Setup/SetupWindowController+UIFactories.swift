@@ -18,8 +18,8 @@ extension SetupWindowController {
             let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2)
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: DesignTokens.setupGrayText, in: badgeRect)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: NSColor.tertiaryLabelColor, cornerRadius: size / 2)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: NSColor.tertiaryLabelColor, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
             SettingsUI.styleSurface(
@@ -90,7 +90,7 @@ extension SetupWindowController {
         case .green:
             label.textColor = DesignTokens.setupGreenText
         case .gray:
-            label.textColor = DesignTokens.setupGrayText
+            label.textColor = NSColor.tertiaryLabelColor
         }
     }
 
@@ -135,7 +135,7 @@ extension SetupWindowController {
             )
             footerContent.addSubview(startBtn)
         } else {
-            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.fontBody, color: DesignTokens.setupGrayText)
+            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.fontBody, color: NSColor.tertiaryLabelColor)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
             footerContent.addSubview(msg)
         }
@@ -143,7 +143,7 @@ extension SetupWindowController {
 
     func buildShortcutGroup() -> NSView {
         // Build all children first to measure total width
-        let hint = makeLabel("Shortcut:", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary)
+        let hint = makeLabel("Shortcut:", font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor)
         let keys = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey)
         var kbdPills: [NSView] = []
         for key in keys {

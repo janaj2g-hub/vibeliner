@@ -98,7 +98,7 @@ final class SetupHarnessSurfaceView: NSView {
     override func draw(_ dirtyRect: NSRect) {
         super.draw(dirtyRect)
 
-        DesignTokens.setupWindowBg.setFill()
+        NSColor.windowBackgroundColor.setFill()
         bounds.fill()
 
         let footerHeight: CGFloat = 52
@@ -109,7 +109,7 @@ final class SetupHarnessSurfaceView: NSView {
         DesignTokens.setupFooterBg.setFill()
         footerRect.fill()
 
-        DesignTokens.setupBorder.setFill()
+        NSColor.separatorColor.setFill()
         CGRect(x: panelWidth, y: 0, width: 1, height: panelHeight).fill()
         CGRect(x: panelWidth * 2 + 1, y: 0, width: 1, height: panelHeight).fill()
         CGRect(x: 0, y: panelHeight, width: bounds.width, height: 1).fill()
@@ -150,7 +150,7 @@ final class SetupHarnessSurfaceView: NSView {
 
         let footerAttrs: [NSAttributedString.Key: Any] = [
             .font: DesignTokens.fontBody,
-            .foregroundColor: DesignTokens.setupGrayText,
+            .foregroundColor: NSColor.tertiaryLabelColor,
         ]
         let footerText = NSAttributedString(string: "Complete all steps to continue", attributes: footerAttrs)
         let footerSize = footerText.size()
@@ -176,14 +176,14 @@ final class SetupHarnessSurfaceView: NSView {
         drawBadge(in: badgeRect, index: index, state: state)
 
         let titleRect = CGRect(x: badgeRect.maxX + 12, y: pad + 2, width: contentWidth - 44, height: 22)
-        drawText(title, rect: titleRect, font: DesignTokens.fontTitle, color: DesignTokens.setupTextPrimary)
+        drawText(title, rect: titleRect, font: DesignTokens.fontTitle, color: NSColor.labelColor)
 
         let descriptionRect = CGRect(x: panelRect.minX + pad, y: badgeRect.maxY + 18, width: contentWidth, height: 72)
-        drawText(description, rect: descriptionRect, font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary)
+        drawText(description, rect: descriptionRect, font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor)
 
         if let helperText {
             let helperRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 86, width: contentWidth, height: 30)
-            drawText(helperText, rect: helperRect, font: DesignTokens.fontCaption, color: DesignTokens.setupTextDim, alignment: .center)
+            drawText(helperText, rect: helperRect, font: DesignTokens.fontCaption, color: NSColor.tertiaryLabelColor, alignment: .center)
         }
 
         if showsAction {
@@ -196,7 +196,7 @@ final class SetupHarnessSurfaceView: NSView {
                 height: DesignTokens.setupArrowSize
             ))
         } else if let statusText {
-            let statusColor: NSColor = state == .done ? DesignTokens.setupGreenText : DesignTokens.setupGrayText
+            let statusColor: NSColor = state == .done ? DesignTokens.setupGreenText : NSColor.tertiaryLabelColor
             let statusRect = CGRect(x: panelRect.minX + pad, y: panelRect.maxY - 42, width: contentWidth, height: 20)
             drawText(statusText, rect: statusRect, font: DesignTokens.fontLabel, color: statusColor, alignment: .center)
         }
@@ -220,10 +220,10 @@ final class SetupHarnessSurfaceView: NSView {
             drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: DesignTokens.pillButtonText, alignment: .center)
         case .locked:
             DesignTokens.setupGrayBg.setFill()
-            DesignTokens.setupGrayText.setStroke()
+            NSColor.tertiaryLabelColor.setStroke()
             path.fill()
             path.stroke()
-            drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: DesignTokens.setupGrayText, alignment: .center)
+            drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: NSColor.tertiaryLabelColor, alignment: .center)
         }
     }
 

@@ -21,6 +21,10 @@ enum DesignTokens {
     /// #534AB7 — dimension label bg, settings accents
     static let purpleDark = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
 
+    /// Brand purple text/accent — light mode #534AB7, dark mode #AFA9EC.
+    /// Canonical "purple label on dark/light surface" color.
+    static let purpleBrand = dynamicColor(dark: purpleLight, light: purpleDark)
+
     /// #EF4444 — all annotation marks
     static let red = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0)
 
@@ -69,12 +73,8 @@ enum DesignTokens {
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
     }
 
-    /// Pill button text — dark: #A796EB, light: #534AB7
-    static let pillButtonText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
+    /// Pill button text — alias of `purpleBrand`.
+    static let pillButtonText = purpleBrand
 
     /// Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)
     static let pillButtonBg = NSColor(name: nil) { appearance in
@@ -184,12 +184,8 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.12)
     }
 
-    /// Toolbar purple active — dark: #AFA9EC, light: #534AB7
-    static let toolbarPurpleActive = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
+    /// Toolbar purple active — alias of `purpleBrand`.
+    static let toolbarPurpleActive = purpleBrand
 
     // MARK: - Secondary Toolbar Buttons (VIB-330)
     // Used by + Add image and New capture — subtle outlined style, secondary to Copy Prompt/Image

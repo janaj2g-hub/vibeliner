@@ -83,7 +83,7 @@ tokens:
   pillButtonText:
     section: components
     family: pill-button
-    description: "Pill button text — dark: #A796EB, light: #534AB7"
+    description: "Pill button text — alias of purpleBrand."
     consumed_by:
       - App/HarnessPreviewSurfaces.swift
       - Editor/ToolbarButtons.swift
@@ -94,8 +94,9 @@ tokens:
       - Setup/SetupComponents.swift
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/Illustrations/TourMiniToolbar.swift
+    target: purpleBrand
     rendering:
-      mode: dual
+      mode: alias
       preview_component: pill-button
   pillButtonPrimaryBg:
     section: components
@@ -489,6 +490,14 @@ tokens:
       - Tour/Illustrations/WireframeAppMock.swift
     rendering:
       mode: single
+  purpleBrand:
+    section: colors
+    family: purple-brand
+    description: "Brand purple text/accent — dark #AFA9EC, light #534AB7. Canonical purple label color."
+    consumed_by:
+      - Design/DesignTokens.swift
+    rendering:
+      mode: dual
   purpleLight:
     section: colors
     family: purple-brand
@@ -601,11 +610,12 @@ tokens:
   roleObservedBorder:
     section: colors
     family: role-color
-    description: "Role observed border: #AFA9EC (purple)"
+    description: "Role observed border — alias of purpleLight (#AFA9EC)."
     consumed_by:
       - Tour/Illustrations/TourTitlePill.swift
+    target: purpleLight
     rendering:
-      mode: single
+      mode: alias
   roleOrangeBorder:
     section: colors
     family: role-color
@@ -1120,13 +1130,14 @@ tokens:
       - Settings/SettingsUI.swift
     rendering:
       mode: single
-  settingsPillHeight:
+  pillButtonHeight:
     section: dimensions
     family: settings-field
-    description: Settings pill button height
+    description: Universal pill button / segmented control height (28pt, VIB-500).
     consumed_by:
       - Settings/PromptTabView+ContentBuilders.swift
       - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
     rendering:
       mode: single
   settingsSectionGap:
@@ -1142,15 +1153,6 @@ tokens:
     family: settings-field
     description: Settings section title width
     consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: single
-  settingsSegmentedHeight:
-    section: dimensions
-    family: settings-field
-    description: Settings segmented control height
-    consumed_by:
-      - Settings/SettingsControls.swift
       - Settings/SettingsUI.swift
     rendering:
       mode: single
@@ -1410,13 +1412,14 @@ tokens:
   toolbarPurpleActive:
     section: surfaces
     family: toolbar
-    description: "Toolbar purple active — dark: #AFA9EC, light: #534AB7"
+    description: "Toolbar purple active — alias of purpleBrand."
     consumed_by:
       - Editor/ToolButton.swift
       - Editor/ToolbarButtons.swift
       - Tour/Illustrations/TourMiniToolbar.swift
+    target: purpleBrand
     rendering:
-      mode: dual
+      mode: alias
   toolbarToolActiveBg:
     section: surfaces
     family: toolbar
@@ -1474,16 +1477,6 @@ tokens:
       - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  setupBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup dividers and borders
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+Actions.swift
-    rendering:
-      mode: single
   setupFieldBg:
     section: surfaces
     family: setup-window
@@ -1493,15 +1486,6 @@ tokens:
       - Setup/SetupWindowController+Panels.swift
     rendering:
       mode: dual
-  setupFieldBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup field border
-    consumed_by:
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
   setupFooterBg:
     section: surfaces
     family: setup-window
@@ -1521,15 +1505,6 @@ tokens:
       - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: dual
-  setupGrayText:
-    section: surfaces
-    family: setup-window
-    description: Setup locked badge/gray status text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
   setupGreen:
     section: surfaces
     family: setup-window
@@ -1603,46 +1578,6 @@ tokens:
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupTextDim:
-    section: surfaces
-    family: setup-window
-    description: Setup dim/helper text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupTextPrimary:
-    section: surfaces
-    family: setup-window
-    description: Setup primary text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupTextSecondary:
-    section: surfaces
-    family: setup-window
-    description: Setup secondary text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+Panels.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupWindowBg:
-    section: surfaces
-    family: setup-window
-    description: Setup window background — follows system
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController.swift
-    rendering:
-      mode: single
 
 # Within-section family ordering. Families not listed fall back to alphabetical.
 order:

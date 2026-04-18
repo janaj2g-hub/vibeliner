@@ -18,7 +18,7 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
         refreshColors()
 
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: DesignTokens.settingsPillHeight)
+            heightAnchor.constraint(equalToConstant: DesignTokens.pillButtonHeight)
         ])
     }
 
@@ -30,7 +30,7 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
             self,
             background: DesignTokens.pillButtonBg,
             border: DesignTokens.pillButtonBorder,
-            cornerRadius: DesignTokens.settingsPillHeight / 2
+            cornerRadius: DesignTokens.pillButtonHeight / 2
         )
     }
 
@@ -187,7 +187,7 @@ final class SettingsSegmentedControl: NSView {
         let insets = DesignTokens.settingsSegmentedInset * 2
         return NSSize(
             width: itemWidth + spacing + insets,
-            height: DesignTokens.settingsSegmentedHeight
+            height: DesignTokens.pillButtonHeight
         )
     }
 
@@ -214,7 +214,7 @@ final class SettingsSegmentedControl: NSView {
         trackView.addSubview(stackView)
 
         NSLayoutConstraint.activate([
-            heightAnchor.constraint(equalToConstant: DesignTokens.settingsSegmentedHeight),
+            heightAnchor.constraint(equalToConstant: DesignTokens.pillButtonHeight),
             trackView.leadingAnchor.constraint(equalTo: leadingAnchor),
             trackView.trailingAnchor.constraint(equalTo: trailingAnchor),
             trackView.topAnchor.constraint(equalTo: topAnchor),
@@ -264,7 +264,7 @@ final class SettingsSegmentedControl: NSView {
             x: targetFrame.minX,
             y: inset,
             width: targetFrame.width,
-            height: DesignTokens.settingsSegmentedHeight - (inset * 2)
+            height: DesignTokens.pillButtonHeight - (inset * 2)
         )
     }
 

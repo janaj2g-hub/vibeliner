@@ -51,8 +51,8 @@ extension DesignTokens {
         return NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.78)
     }
 
-    /// Role observed border: #AFA9EC (purple)
-    static let roleObservedBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
+    /// Role observed border — alias of `purpleLight` (same #AFA9EC, VIB-500).
+    static let roleObservedBorder = purpleLight
 
     /// Role observed background — purple tint (VIB-335: 0.85 alpha for readability)
     static let roleObservedBg = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.85)
