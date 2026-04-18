@@ -144,13 +144,13 @@ extension TourWindowController {
         pill.wantsLayer = true
         pill.layer?.cornerRadius = 5
         pill.layer?.borderWidth = 1
-        pill.layer?.borderColor = DesignTokens.setupKbdBorder.cgColor
-        pill.layer?.backgroundColor = DesignTokens.setupKbdBg.cgColor
+        pill.layer?.borderColor = DesignTokens.kbdBorder.cgColor
+        pill.layer?.backgroundColor = DesignTokens.kbdBg.cgColor
 
         let label = NSTextField(labelWithString: text)
         label.translatesAutoresizingMaskIntoConstraints = false
         label.font = DesignTokens.tourKbdFont
-        label.textColor = DesignTokens.setupKbdText
+        label.textColor = DesignTokens.kbdText
         label.alignment = .center
         label.isBezeled = false
         label.drawsBackground = false

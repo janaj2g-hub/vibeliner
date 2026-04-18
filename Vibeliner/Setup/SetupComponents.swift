@@ -17,7 +17,7 @@ class SetupContentView: NSView {
 
 final class SetupDividerView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
-        SettingsUI.styleDividerSurface(self, color: DesignTokens.setupBorder)
+        SettingsUI.styleDividerSurface(self, color: NSColor.separatorColor)
     }
 }
 
@@ -93,11 +93,11 @@ class SetupPillButton: AppearanceAwareSurfaceButton {
                 cornerRadius: heightValue / 2
             )
         case .ghost:
-            contentTintColor = DesignTokens.setupTextSecondary
+            contentTintColor = NSColor.secondaryLabelColor
             SettingsUI.styleSurface(
                 self,
                 background: .clear,
-                border: DesignTokens.setupBorder,
+                border: NSColor.separatorColor,
                 cornerRadius: heightValue / 2
             )
         }

@@ -14,12 +14,12 @@ extension SetupWindowController {
         let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2)
-            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, in: badgeRect)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.green, cornerRadius: size / 2)
+            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.green, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2)
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: DesignTokens.setupGrayText, in: badgeRect)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupFieldBg, border: NSColor.tertiaryLabelColor, cornerRadius: size / 2)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: NSColor.tertiaryLabelColor, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
             SettingsUI.styleSurface(
@@ -90,7 +90,7 @@ extension SetupWindowController {
         case .green:
             label.textColor = DesignTokens.setupGreenText
         case .gray:
-            label.textColor = DesignTokens.setupGrayText
+            label.textColor = NSColor.tertiaryLabelColor
         }
     }
 
@@ -135,7 +135,7 @@ extension SetupWindowController {
             )
             footerContent.addSubview(startBtn)
         } else {
-            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.fontBody, color: DesignTokens.setupGrayText)
+            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.fontBody, color: NSColor.tertiaryLabelColor)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
             footerContent.addSubview(msg)
         }
@@ -143,7 +143,7 @@ extension SetupWindowController {
 
     func buildShortcutGroup() -> NSView {
         // Build all children first to measure total width
-        let hint = makeLabel("Shortcut:", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary)
+        let hint = makeLabel("Shortcut:", font: DesignTokens.fontBody, color: NSColor.secondaryLabelColor)
         let keys = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey)
         var kbdPills: [NSView] = []
         for key in keys {
@@ -186,12 +186,12 @@ extension SetupWindowController {
     }
 
     func makeKbdPill(_ text: String) -> NSView {
-        let label = makeLabel(text, font: DesignTokens.fontLabelSm, color: DesignTokens.setupKbdText)
+        let label = makeLabel(text, font: DesignTokens.fontLabelSm, color: DesignTokens.kbdText)
         label.alignment = .center
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
-        SettingsUI.styleSurface(pill, background: DesignTokens.setupKbdBg, border: DesignTokens.setupKbdBorder, cornerRadius: 5)
+        SettingsUI.styleSurface(pill, background: DesignTokens.kbdBg, border: DesignTokens.kbdBorder, cornerRadius: 5)
         label.frame = NSRect(x: 0, y: (h - label.frame.height) / 2, width: w, height: label.frame.height)
         pill.addSubview(label)
         return pill

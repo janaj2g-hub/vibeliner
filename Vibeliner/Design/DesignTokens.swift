@@ -21,6 +21,13 @@ enum DesignTokens {
     /// #534AB7 — dimension label bg, settings accents
     static let purpleDark = NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
 
+    /// Brand purple text/accent — light mode #534AB7, dark mode #AFA9EC.
+    /// Canonical "purple label on dark/light surface" color.
+    static let purpleBrand = dynamicColor(dark: purpleLight, light: purpleDark)
+
+    /// Brand green — #22C55E. Canonical success / positive-state color.
+    static let green = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
+
     /// #EF4444 — all annotation marks
     static let red = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0)
 
@@ -36,17 +43,17 @@ enum DesignTokens {
     /// Note text color: #7f1d1d
     static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
 
-    /// Copy success green: rgba(22, 163, 74, 0.5) — border
-    static let copiedGreenBorder = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.5)
+    /// Copy success green — alias of green @ 0.5 alpha (VIB-503).
+    static let copiedGreenBorder = green.withAlphaComponent(0.5)
 
-    /// Copy success text: rgba(22, 163, 74, 0.8)
-    static let copiedGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.8)
+    /// Copy success text — alias of green @ 0.8 alpha (VIB-503).
+    static let copiedGreenText = green.withAlphaComponent(0.8)
 
-    /// Copy success bg: rgba(22, 163, 74, 0.12)
-    static let copiedGreenBg = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
+    /// Copy success bg — alias of green @ 0.12 alpha (VIB-503).
+    static let copiedGreenBg = green.withAlphaComponent(0.12)
 
-    /// rgba(22, 163, 74, 0.9) — copied state green
-    static let copiedGreen = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.9)
+    /// Copied state green — alias of green @ 0.9 alpha (VIB-503).
+    static let copiedGreen = green.withAlphaComponent(0.9)
 
     /// rgba(0, 0, 0, 0.5) — capture overlay dim
     static let dimOverlay = NSColor.black.withAlphaComponent(0.5)
@@ -60,6 +67,21 @@ enum DesignTokens {
     /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
     static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
 
+    // MARK: - Kbd pill (VIB-502: promoted from setupKbd* since consumed by Setup + Tour)
+
+    /// Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
+    static let kbdBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
+    }
+    /// Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)
+    static let kbdBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
+    }
+    /// Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)
+    static let kbdText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
+    }
+
     // MARK: - Universal pill button (VIB-440)
 
     /// Pill button border — dark: #A796EB, light: #534AB7
@@ -69,12 +91,8 @@ enum DesignTokens {
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
     }
 
-    /// Pill button text — dark: #A796EB, light: #534AB7
-    static let pillButtonText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
+    /// Pill button text — alias of `purpleBrand`.
+    static let pillButtonText = purpleBrand
 
     /// Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)
     static let pillButtonBg = NSColor(name: nil) { appearance in
@@ -184,12 +202,8 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.12)
     }
 
-    /// Toolbar purple active — dark: #AFA9EC, light: #534AB7
-    static let toolbarPurpleActive = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
+    /// Toolbar purple active — alias of `purpleBrand`.
+    static let toolbarPurpleActive = purpleBrand
 
     // MARK: - Secondary Toolbar Buttons (VIB-330)
     // Used by + Add image and New capture — subtle outlined style, secondary to Copy Prompt/Image

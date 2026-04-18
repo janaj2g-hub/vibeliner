@@ -49,7 +49,7 @@ final class SetupWindowController: NSWindowController {
         window.center()
         window.isReleasedWhenClosed = false
         // VIB-332: Follow system appearance — no forced dark mode
-        window.backgroundColor = DesignTokens.setupWindowBg
+        window.backgroundColor = NSColor.windowBackgroundColor
         self.init(window: window)
         buildUI()
         startPermissionPolling()

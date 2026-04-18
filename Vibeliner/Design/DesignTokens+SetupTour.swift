@@ -4,63 +4,32 @@ extension DesignTokens {
 
     // MARK: - Setup Window Colors (appearance-aware)
 
-    // Green/amber status — fixed brand colors (must be visible in both modes)
-    /// #22c55e — badge done border/text
-    static let setupGreen = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
-    /// rgba(34, 197, 94, 0.1) — badge done fill
-    static let setupGreenBadgeBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.1)
-    /// #16a34a — status text, green button text
-    static let setupGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1.0)
-    /// rgba(34, 197, 94, 0.08) — green button fill
-    static let setupGreenBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08)
-    /// rgba(34, 197, 94, 0.5) — green button border
-    static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
+    // Green/amber status
+    // VIB-503: setupGreen (#22C55E) deleted — consumers use `green` primitive directly.
+    /// Setup badge done fill — alias of `copiedGreenBg` (VIB-503).
+    static let setupGreenBadgeBg = copiedGreenBg
+    /// Setup status / green button text — alias of `copiedGreenText` (VIB-503).
+    static let setupGreenText = copiedGreenText
+    /// Setup green button fill — alias of `copiedGreenBg` (VIB-503).
+    static let setupGreenBg = copiedGreenBg
+    /// Setup green button border — alias of `copiedGreenBorder` (VIB-503).
+    static let setupGreenBorder = copiedGreenBorder
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
     // Window/container backgrounds — appearance-aware
-    /// Setup window background — follows system
-    static let setupWindowBg = NSColor.windowBackgroundColor
+    // VIB-500: `setupWindowBg`, `setupBorder`, `setupFieldBorder`, `setupTextPrimary`,
+    // `setupTextSecondary`, `setupTextDim`, `setupGrayText` were system-color aliases;
+    // deleted. Consumers use `NSColor.*` constants directly.
+
     /// Setup footer background — slightly different from window bg
     static let setupFooterBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 0.133, alpha: 1) : NSColor(white: 0.94, alpha: 1)
     }
-    /// Setup dividers and borders
-    static let setupBorder = NSColor.separatorColor
-    /// Setup field background (path box, shortcut group)
-    static let setupFieldBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.05) : NSColor(white: 0, alpha: 0.03)
-    }
-    /// Setup field border
-    static let setupFieldBorder = NSColor.separatorColor
+    /// Alias — setup field background matches settings field surface (VIB-501).
+    static let setupFieldBg = settingsFieldSurface
 
-    // Text — appearance-aware (system colors)
-    /// Setup primary text
-    static let setupTextPrimary = NSColor.labelColor
-    /// Setup secondary text
-    static let setupTextSecondary = NSColor.secondaryLabelColor
-    /// Setup dim/helper text
-    static let setupTextDim = NSColor.tertiaryLabelColor
-    /// Setup locked badge/gray status text
-    static let setupGrayText = NSColor.tertiaryLabelColor
-    /// Setup locked badge bg
-    static let setupGrayBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.03) : NSColor(white: 0, alpha: 0.03)
-    }
-
-    // Kbd pills — appearance-aware
-    /// Setup kbd pill border
-    static let setupKbdBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
-    }
-    /// Setup kbd pill bg
-    static let setupKbdBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
-    }
-    /// Setup kbd pill text
-    static let setupKbdText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
-    }
+    // VIB-502: kbd* tokens (previously setupKbd*) promoted to main scale — consumed by both Setup and Tour.
 
     // MARK: - Setup Window Dimensions
 
@@ -98,11 +67,8 @@ extension DesignTokens {
         dark: NSColor(white: 1.0, alpha: 0.04),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.05)
     )
-    /// Tour progress active
-    static let tourProgressActive = dynamicColor(
-        dark: purpleLight,
-        light: purpleDark
-    )
+    /// Tour progress active — alias of `purpleBrand` (tour → main direction allowed).
+    static let tourProgressActive = purpleBrand
     /// Tour progress inactive
     static let tourProgressInactive = dynamicColor(
         dark: NSColor(white: 1.0, alpha: 0.06),
@@ -128,11 +94,8 @@ extension DesignTokens {
         dark: NSColor(white: 0.0, alpha: 0.08),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.02)
     )
-    /// Exit/ghost button border
-    static let tourGhostButtonBorder = dynamicColor(
-        dark: NSColor(white: 1.0, alpha: 0.07),
-        light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
-    )
+    /// Exit/ghost button border — alias of `tourWindowBorder` (VIB-502, identical value).
+    static let tourGhostButtonBorder = tourWindowBorder
     /// Exit/ghost button hover border
     static let tourGhostButtonHoverBorder = dynamicColor(
         dark: NSColor(white: 1.0, alpha: 0.12),
@@ -142,8 +105,8 @@ extension DesignTokens {
     static let tourDoneButtonBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.14)
     /// Done action hover background
     static let tourDoneButtonHoverBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.20)
-    /// Done action border
-    static let tourDoneButtonBorder = NSColor(red: 74/255, green: 222/255, blue: 128/255, alpha: 0.34)
+    /// Done action border — alias of `copiedGreenBorder` (VIB-503, success-state semantic).
+    static let tourDoneButtonBorder = copiedGreenBorder
     /// Done action text
     static let tourDoneButtonText = NSColor.white
 

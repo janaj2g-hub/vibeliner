@@ -35,6 +35,9 @@ _RE_NSCOLOR_NAMED = re.compile(r"^NSColor\.(\w+)$")
 _RE_NSCOLOR_WITH_ALPHA = re.compile(
     r"^NSColor\.(\w+)\s*\.withAlphaComponent\(\s*([^)]+?)\s*\)$"
 )
+_RE_IDENT_WITH_ALPHA = re.compile(
+    r"^(\w+)\s*\.withAlphaComponent\(\s*([^)]+?)\s*\)$"
+)
 _RE_NSCOLOR_NAME_NIL = re.compile(r"^NSColor\(\s*name:\s*nil\s*\)\s*\{")
 _RE_DYNAMIC_HELPER = re.compile(r"^dynamicColor\(\s*dark:\s*(.+?)\s*,\s*light:\s*(.+?)\s*\)$")
 _RE_NSFONT_SYSTEM = re.compile(
@@ -261,6 +264,12 @@ def _classify(name: str, type_annot: Optional[str], expr: str) -> Optional[dict[
 
     if _RE_IDENTIFIER.match(expr):
         return {"type": "color", "kind": "alias", "target": expr, "raw": expr}
+
+    m = _RE_IDENT_WITH_ALPHA.match(expr)
+    if m and m.group(1) != "NSColor":
+        base = m.group(1)
+        alpha = _eval_channel(m.group(2))
+        return {"type": "color", "kind": "alias", "target": base, "alpha": alpha, "raw": expr}
 
     if _RE_NUMBER.match(expr):
         value = float(expr) if "." in expr else int(expr)

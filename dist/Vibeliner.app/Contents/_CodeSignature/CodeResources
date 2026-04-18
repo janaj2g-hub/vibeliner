@@ -10,7 +10,7 @@
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		0I7/pOI0zDUK950RjIyETtQS/Z8=
+		om0u5eNgJueTb7uR1feb2j2LQzc=
 		</data>
 		<key>Resources/Jersey25-Regular.ttf</key>
 		<data>
@@ -23,6 +23,24 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>MacOS/Vibeliner.debug.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			4unSSEk1IHybmrYa+NJIpPlbdP4=
+			</data>
+			<key>requirement</key>
+			<string>cdhash H"e2e9d2484935207c9b9ab61af8d248a4f95b74fe"</string>
+		</dict>
+		<key>MacOS/__preview.dylib</key>
+		<dict>
+			<key>cdhash</key>
+			<data>
+			319JWwPBokK9x+OhNnd22XceDW4=
+			</data>
+			<key>requirement</key>
+			<string>cdhash H"df5f495b03c1a242bdc7e3a1367776d9771e0d6e"</string>
+		</dict>
 		<key>Resources/AppIcon.icns</key>
 		<dict>
 			<key>hash2</key>
@@ -34,7 +52,7 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			ZOYtqoS8oPE0ipS2BD68bjH7Mo9Q17C4Hw4yM2jrI4o=
+			szL0bJJOD5FgKkh/MZgrKlOl3qE8eOsKqNduZn6STio=
 			</data>
 		</dict>
 		<key>Resources/Jersey25-Regular.ttf</key>

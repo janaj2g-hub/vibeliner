@@ -83,7 +83,7 @@ tokens:
   pillButtonText:
     section: components
     family: pill-button
-    description: "Pill button text — dark: #A796EB, light: #534AB7"
+    description: "Pill button text — alias of purpleBrand."
     consumed_by:
       - App/HarnessPreviewSurfaces.swift
       - Editor/ToolbarButtons.swift
@@ -94,8 +94,9 @@ tokens:
       - Setup/SetupComponents.swift
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/Illustrations/TourMiniToolbar.swift
+    target: purpleBrand
     rendering:
-      mode: dual
+      mode: alias
       preview_component: pill-button
   pillButtonPrimaryBg:
     section: components
@@ -435,44 +436,48 @@ tokens:
   copiedGreen:
     section: components
     family: copied-green
-    description: rgba(22, 163, 74, 0.9) — copied state green
+    description: "Copied state green — alias of green @ 0.9 alpha (VIB-503)."
     consumed_by:
       - Editor/StatusPillView.swift
+    target: green
     rendering:
-      mode: single
+      mode: alias
       preview_component: copied-green
   copiedGreenBg:
     section: components
     family: copied-green
-    description: "Copy success bg: rgba(22, 163, 74, 0.12)"
+    description: "Copy success bg — alias of green @ 0.12 alpha (VIB-503)."
     consumed_by:
       - Editor/ToolbarButtons.swift
       - Popover/CaptureRowView.swift
       - Tour/TourWindowController+Content.swift
+    target: green
     rendering:
-      mode: single
+      mode: alias
       preview_component: copied-green
   copiedGreenBorder:
     section: components
     family: copied-green
-    description: "Copy success green: rgba(22, 163, 74, 0.5) — border"
+    description: "Copy success border — alias of green @ 0.5 alpha (VIB-503)."
     consumed_by:
       - Editor/ToolbarButtons.swift
       - Popover/CaptureRowView.swift
       - Tour/TourWindowController+Content.swift
+    target: green
     rendering:
-      mode: single
+      mode: alias
       preview_component: copied-green
   copiedGreenText:
     section: components
     family: copied-green
-    description: "Copy success text: rgba(22, 163, 74, 0.8)"
+    description: "Copy success text — alias of green @ 0.8 alpha (VIB-503)."
     consumed_by:
       - Editor/ToolbarButtons.swift
       - Popover/CaptureRowView.swift
       - Tour/TourWindowController+Content.swift
+    target: green
     rendering:
-      mode: single
+      mode: alias
       preview_component: copied-green
 
   # --- colors ---
@@ -489,6 +494,25 @@ tokens:
       - Tour/Illustrations/WireframeAppMock.swift
     rendering:
       mode: single
+  green:
+    section: colors
+    family: green-brand
+    description: "Brand green — #22C55E. Canonical success / positive-state primitive (VIB-503)."
+    consumed_by:
+      - App/EditorHarnessSurfaceView.swift
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
+      - Tour/Illustrations/TourTitlePill.swift
+    rendering:
+      mode: single
+  purpleBrand:
+    section: colors
+    family: purple-brand
+    description: "Brand purple text/accent — dark #AFA9EC, light #534AB7. Canonical purple label color."
+    consumed_by:
+      - Design/DesignTokens.swift
+    rendering:
+      mode: dual
   purpleLight:
     section: colors
     family: purple-brand
@@ -578,11 +602,12 @@ tokens:
   roleExpectedBorder:
     section: colors
     family: role-color
-    description: "Role expected border: #22C55E (green)"
+    description: "Role expected border — alias of green (#22C55E)."
     consumed_by:
       - Tour/Illustrations/TourTitlePill.swift
+    target: green
     rendering:
-      mode: single
+      mode: alias
   roleGrayBorder:
     section: colors
     family: role-color
@@ -601,11 +626,12 @@ tokens:
   roleObservedBorder:
     section: colors
     family: role-color
-    description: "Role observed border: #AFA9EC (purple)"
+    description: "Role observed border — alias of purpleLight (#AFA9EC)."
     consumed_by:
       - Tour/Illustrations/TourTitlePill.swift
+    target: purpleLight
     rendering:
-      mode: single
+      mode: alias
   roleOrangeBorder:
     section: colors
     family: role-color
@@ -1120,13 +1146,14 @@ tokens:
       - Settings/SettingsUI.swift
     rendering:
       mode: single
-  settingsPillHeight:
+  pillButtonHeight:
     section: dimensions
     family: settings-field
-    description: Settings pill button height
+    description: Universal pill button / segmented control height (28pt, VIB-500).
     consumed_by:
       - Settings/PromptTabView+ContentBuilders.swift
       - Settings/SettingsControls.swift
+      - Settings/SettingsUI.swift
     rendering:
       mode: single
   settingsSectionGap:
@@ -1142,15 +1169,6 @@ tokens:
     family: settings-field
     description: Settings section title width
     consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: single
-  settingsSegmentedHeight:
-    section: dimensions
-    family: settings-field
-    description: Settings segmented control height
-    consumed_by:
-      - Settings/SettingsControls.swift
       - Settings/SettingsUI.swift
     rendering:
       mode: single
@@ -1410,13 +1428,14 @@ tokens:
   toolbarPurpleActive:
     section: surfaces
     family: toolbar
-    description: "Toolbar purple active — dark: #AFA9EC, light: #534AB7"
+    description: "Toolbar purple active — alias of purpleBrand."
     consumed_by:
       - Editor/ToolButton.swift
       - Editor/ToolbarButtons.swift
       - Tour/Illustrations/TourMiniToolbar.swift
+    target: purpleBrand
     rendering:
-      mode: dual
+      mode: alias
   toolbarToolActiveBg:
     section: surfaces
     family: toolbar
@@ -1474,34 +1493,18 @@ tokens:
       - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  setupBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup dividers and borders
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+Actions.swift
-    rendering:
-      mode: single
   setupFieldBg:
     section: surfaces
     family: setup-window
-    description: Setup field background (path box, shortcut group)
+    description: "Setup field background — alias of settingsFieldSurface (VIB-501)."
     consumed_by:
+      - App/HarnessPreviewSurfaces.swift
       - Setup/SetupWindowController+Actions.swift
       - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    target: settingsFieldSurface
     rendering:
-      mode: dual
-  setupFieldBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup field border
-    consumed_by:
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
+      mode: alias
   setupFooterBg:
     section: surfaces
     family: setup-window
@@ -1512,137 +1515,73 @@ tokens:
       - Setup/SetupWindowController+Actions.swift
     rendering:
       mode: dual
-  setupGrayBg:
-    section: surfaces
-    family: setup-window
-    description: Setup locked badge bg
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: dual
-  setupGrayText:
-    section: surfaces
-    family: setup-window
-    description: Setup locked badge/gray status text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupGreen:
-    section: surfaces
-    family: setup-window
-    description: "#22c55e — badge done border/text"
-    consumed_by:
-      - App/EditorHarnessSurfaceView.swift
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
   setupGreenBadgeBg:
     section: surfaces
     family: setup-window
-    description: rgba(34, 197, 94, 0.1) — badge done fill
+    description: "Setup badge done fill — alias of copiedGreenBg (VIB-503)."
     consumed_by:
       - App/HarnessPreviewSurfaces.swift
       - Setup/SetupWindowController+UIFactories.swift
+    target: copiedGreenBg
     rendering:
-      mode: single
+      mode: alias
   setupGreenBg:
     section: surfaces
     family: setup-window
-    description: rgba(34, 197, 94, 0.08) — green button fill
+    description: "Setup green button fill — alias of copiedGreenBg (VIB-503)."
     consumed_by:
       - Setup/SetupComponents.swift
+    target: copiedGreenBg
     rendering:
-      mode: single
+      mode: alias
   setupGreenBorder:
     section: surfaces
     family: setup-window
-    description: rgba(34, 197, 94, 0.5) — green button border
+    description: "Setup green button border — alias of copiedGreenBorder (VIB-503)."
     consumed_by:
       - Setup/SetupComponents.swift
+    target: copiedGreenBorder
     rendering:
-      mode: single
+      mode: alias
   setupGreenText:
     section: surfaces
     family: setup-window
-    description: "#16a34a — status text, green button text"
+    description: "Setup status / green button text — alias of copiedGreenText (VIB-503)."
     consumed_by:
       - App/HarnessPreviewSurfaces.swift
       - Setup/SetupComponents.swift
       - Setup/SetupWindowController+Panels.swift
       - Setup/SetupWindowController+UIFactories.swift
+    target: copiedGreenText
     rendering:
-      mode: single
-  setupKbdBg:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill bg
+      mode: alias
+  kbdBg:
+    section: components
+    family: kbd
+    description: "Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupKbdBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill border
+  kbdBorder:
+    section: components
+    family: kbd
+    description: "Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupKbdText:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill text
+  kbdText:
+    section: components
+    family: kbd
+    description: "Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupTextDim:
-    section: surfaces
-    family: setup-window
-    description: Setup dim/helper text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupTextPrimary:
-    section: surfaces
-    family: setup-window
-    description: Setup primary text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupTextSecondary:
-    section: surfaces
-    family: setup-window
-    description: Setup secondary text
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+Panels.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupWindowBg:
-    section: surfaces
-    family: setup-window
-    description: Setup window background — follows system
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Actions.swift
-      - Setup/SetupWindowController.swift
-    rendering:
-      mode: single
 
 # Within-section family ordering. Families not listed fall back to alphabetical.
 order:

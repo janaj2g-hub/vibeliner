@@ -116,7 +116,7 @@ extension PromptTabView {
         addBtnRow.addSubview(addBtn)
         // Leading offset: swatch(8+16+12) + nameField(120+10) = 166
         NSLayoutConstraint.activate([
-            addBtnRow.heightAnchor.constraint(equalToConstant: DesignTokens.settingsPillHeight),
+            addBtnRow.heightAnchor.constraint(equalToConstant: DesignTokens.pillButtonHeight),
             addBtn.leadingAnchor.constraint(equalTo: addBtnRow.leadingAnchor, constant: 166),
             addBtn.trailingAnchor.constraint(equalTo: addBtnRow.trailingAnchor, constant: -30),
             addBtn.centerYAnchor.constraint(equalTo: addBtnRow.centerYAnchor),
