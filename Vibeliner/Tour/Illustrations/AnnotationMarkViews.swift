@@ -18,7 +18,7 @@ final class TourAnnotationBadge: NSView {
         layer?.shadowOpacity = 1
 
         let label = NSTextField(labelWithString: "\(number)")
-        label.font = DesignTokens.badgeFont
+        label.font = DesignTokens.tourMockBadgeFont
         label.textColor = .white
         label.alignment = .center
         label.isBezeled = false

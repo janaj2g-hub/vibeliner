@@ -15,6 +15,19 @@ extension DesignTokens {
 
     // MARK: - Tour Illustration
 
+    // -- Tour quarantine font copies (VIB-489) --
+    // Tour-prefixed copies of legacy fonts so the tour can migrate off the main
+    // scale independently. Do not use outside Vibeliner/Tour/.
+
+    /// Tour-specific copy of badge font — quarantined from main scale. System 9pt semibold.
+    static let tourMockBadgeFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
+
+    /// Tour-specific copy of dimension label font — quarantined from main scale. Monospace 11pt medium.
+    static let tourMockDimensionFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
+
+    /// Tour-specific copy of keyboard shortcut font — quarantined from main scale. System 12pt semibold.
+    static let tourKbdFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
+
     // -- Illustration pane --
     static let tourIllustrationPadding: CGFloat = 24
 
