@@ -37,7 +37,7 @@ final class StatusPillView: NSView {
         tintView.layer?.borderWidth = 1
         addSubview(tintView)
 
-        label.font = DesignTokens.statusPillFont
+        label.font = DesignTokens.fontMonoSm
         label.textColor = DesignTokens.statusPillTextColor
         label.alignment = .center
         label.isBezeled = false

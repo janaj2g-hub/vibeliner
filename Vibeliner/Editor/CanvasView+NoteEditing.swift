@@ -34,7 +34,7 @@ extension CanvasView {
         let estTextX: CGFloat = 12 + 20 + 7  // prefix width (~20) + gap
         let maxTextW = maxPillW - estTextX - 12
         let tempField = NSTextField(labelWithString: annotation.noteText)
-        tempField.font = DesignTokens.noteTextFont
+        tempField.font = DesignTokens.fontBody
         tempField.maximumNumberOfLines = 0
         tempField.lineBreakMode = .byWordWrapping
         tempField.cell?.wraps = true
@@ -122,7 +122,7 @@ extension CanvasView {
         guard !liveText.isEmpty else { return }
         // Measure with a temp label matching the editing field's wrapping config
         let measurer = NSTextField(labelWithString: liveText)
-        measurer.font = DesignTokens.noteTextFont
+        measurer.font = DesignTokens.fontBody
         measurer.maximumNumberOfLines = 0
         measurer.lineBreakMode = .byWordWrapping
         measurer.cell?.wraps = true

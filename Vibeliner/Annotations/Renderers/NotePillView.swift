@@ -31,7 +31,7 @@ final class NotePillView: NSView {
         let prefixSize = prefixStr.size(withAttributes: prefixAttrs)
 
         // Text label
-        let textFont = DesignTokens.noteTextFont
+        let textFont = DesignTokens.fontBody
         let textAttrs: [NSAttributedString.Key: Any] = [
             .font: textFont,
             .foregroundColor: DesignTokens.noteTextColor

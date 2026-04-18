@@ -270,7 +270,7 @@ enum PillChromeBuilder {
 
     static func createEditableTextField(pillWidth: CGFloat, pillHeight: CGFloat, text: String, prefixWidth: CGFloat) -> NSTextField {
         let textField = NSTextField()
-        textField.font = DesignTokens.noteTextFont
+        textField.font = DesignTokens.fontBody
         textField.textColor = DesignTokens.noteTextColor
         textField.backgroundColor = .clear
         textField.drawsBackground = false

@@ -19,7 +19,7 @@ final class DimensionLabelView: NSView {
         layer?.backgroundColor = DesignTokens.purpleDark.cgColor
         layer?.cornerRadius = DesignTokens.dimensionLabelCornerRadius
 
-        label.font = DesignTokens.dimensionLabelFont
+        label.font = DesignTokens.fontMonoSm
         label.textColor = .white
         label.alignment = .center
         label.isBezeled = false
