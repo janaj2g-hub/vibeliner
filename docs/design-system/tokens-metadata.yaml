@@ -1545,28 +1545,28 @@ tokens:
       - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  setupKbdBg:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill bg
+  kbdBg:
+    section: components
+    family: kbd
+    description: "Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupKbdBorder:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill border
+  kbdBorder:
+    section: components
+    family: kbd
+    description: "Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift
     rendering:
       mode: dual
-  setupKbdText:
-    section: surfaces
-    family: setup-window
-    description: Setup kbd pill text
+  kbdText:
+    section: components
+    family: kbd
+    description: "Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)"
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift

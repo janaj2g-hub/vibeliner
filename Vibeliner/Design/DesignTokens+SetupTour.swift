@@ -30,19 +30,7 @@ extension DesignTokens {
     /// Alias — setup field background matches settings field surface (VIB-501).
     static let setupFieldBg = settingsFieldSurface
 
-    // Kbd pills — appearance-aware
-    /// Setup kbd pill border
-    static let setupKbdBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
-    }
-    /// Setup kbd pill bg
-    static let setupKbdBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
-    }
-    /// Setup kbd pill text
-    static let setupKbdText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
-    }
+    // VIB-502: kbd* tokens (previously setupKbd*) promoted to main scale — consumed by both Setup and Tour.
 
     // MARK: - Setup Window Dimensions
 
@@ -107,11 +95,8 @@ extension DesignTokens {
         dark: NSColor(white: 0.0, alpha: 0.08),
         light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.02)
     )
-    /// Exit/ghost button border
-    static let tourGhostButtonBorder = dynamicColor(
-        dark: NSColor(white: 1.0, alpha: 0.07),
-        light: NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
-    )
+    /// Exit/ghost button border — alias of `tourWindowBorder` (VIB-502, identical value).
+    static let tourGhostButtonBorder = tourWindowBorder
     /// Exit/ghost button hover border
     static let tourGhostButtonHoverBorder = dynamicColor(
         dark: NSColor(white: 1.0, alpha: 0.12),

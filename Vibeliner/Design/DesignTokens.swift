@@ -64,6 +64,21 @@ enum DesignTokens {
     /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
     static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
 
+    // MARK: - Kbd pill (VIB-502: promoted from setupKbd* since consumed by Setup + Tour)
+
+    /// Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
+    static let kbdBorder = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
+    }
+    /// Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)
+    static let kbdBg = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
+    }
+    /// Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)
+    static let kbdText = NSColor(name: nil) { appearance in
+        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
+    }
+
     // MARK: - Universal pill button (VIB-440)
 
     /// Pill button border — dark: #A796EB, light: #534AB7
