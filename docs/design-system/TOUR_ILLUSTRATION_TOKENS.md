@@ -12,12 +12,13 @@
 
 ## Maintenance contract
 
+Tour illustration tokens are **quarantined** — they live only in `DesignTokens+TourIllustrations.swift` and must not be used outside `Vibeliner/Tour/`. They are documented in the hand-authored `docs/design-system/tour-design.html`, NOT in the main codegen (`tokens-metadata.yaml` / `design-system.html`).
+
 Any ticket that modifies tour illustrations MUST:
-1. Use tokens from `DesignTokens.swift` for ALL colors, dimensions, and fonts
-2. If a new illustration-only token is needed, add it to `DesignTokens.swift` under `// MARK: - Tour Illustration`
-3. Document new tokens in `docs/design-system/DESIGN_SYSTEM.md` with value, usage, and consuming files
-4. Add any new visual controls to `docs/design-system/Design_Tester.html`
-5. Update `docs/design-system/design-system.html` with new color swatches if applicable
+1. Use tokens from `DesignTokens+TourIllustrations.swift` (or appearance-aware tokens from `+SetupTour.swift`) for ALL colors, dimensions, and fonts
+2. If a new illustration-only token is needed, add it to `DesignTokens+TourIllustrations.swift`
+3. Document new tokens in `docs/design-system/tour-design.html` (hand-authored) with value, usage, and consuming files. Do NOT add tour tokens to `docs/design-system/tokens-metadata.yaml` — the validator's coverage check already whitelists the tour quarantine.
+4. If the change affects an existing tour-window mock in `tour-design.html`, update the mock
 
 ---
 

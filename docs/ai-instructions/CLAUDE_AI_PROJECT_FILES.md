@@ -32,9 +32,9 @@ This document lists which Claude.ai project files need updating to match the cur
 
 ### 3. Design_System_Rules.md (if used as a project file)
 
-**Status:** Review against `docs/design-system/DESIGN_SYSTEM.md`
+**Status (as of VIB-473):** The rules now point at `docs/design-system/tokens-metadata.yaml` (hand-maintained metadata) and `docs/design-system/design-system.html` (generated visual reference). The legacy `DESIGN_SYSTEM.md` markdown was removed when the codegen pipeline landed. If you keep this rule file in a Claude.ai project, sync the wording to `CLAUDE.md`'s current "Design System" and "Design token rules" sections.
 
-**What changed in VIB-429:**
+**What changed in VIB-429 (historical):**
 - Added 31 previously undocumented tokens (tour buttons, role preset colors, popover buttons, settings segmented fonts, tour editor frame, tour LLM dimensions)
 - Removed 2 phantom tokens (`minCellWidth`, `tourEditorFrameBgLight`) that were documented but not in code
 - Added Line Tool section (no new tokens — reuses Arrow's tokens)

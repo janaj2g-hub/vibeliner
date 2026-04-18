@@ -188,26 +188,30 @@ To add a new tool, add one entry to `allDefinitions` and create the correspondin
 
 ## Design system
 
-Vibeliner has a formalized design system. Every UI ticket must use it.
+Vibeliner has a formalized, codegen-driven design system. Every UI ticket must use it.
 
-**Files (PROTECTED — never delete):**
+**Files:**
 
-* `docs/design-system/DESIGN_SYSTEM.md` — token inventory (names, values, consuming files)
-* `docs/design-system/design-system.html` — visual reference with light/dark toggle
-* `docs/design-system/Design_Tester.html` — interactive control playground with hover/click states
-* `Vibeliner/Design/DesignTokens.swift` — runtime token source (the single source of truth)
+* `Vibeliner/Design/DesignTokens.swift` (+ `+Layout`, `+Settings`, `+SetupTour`, `+TourIllustrations`) — the runtime **source of truth**
+* `docs/design-system/tokens-metadata.yaml` — hand-maintained presentation metadata (section, family, description, consumers, rendering)
+* `docs/design-system/templates/design-system.html.j2` + `_components.html.j2` — Jinja2 templates (hand-maintained)
+* `docs/design-system/design-system.html` — **generated** visual reference (never hand-edit)
+* `docs/design-system/tour-design.html` — hand-authored reference for quarantined tour tokens (separate file; `tour*` tokens and `DesignTokens+TourIllustrations.swift` live only here)
+* `scripts/design_system_codegen.py` + `validate_design_system.py` — codegen + validator
 
 **Rules:**
 
 1. Never hardcode colors, dimensions, or fonts — use `DesignTokens.tokenName` or system colors
-2. Before creating a new button/control, check `Design_Tester.html` for an existing pattern to reuse
+2. Before creating a new token, grep `Vibeliner/Design/DesignTokens*.swift` (or browse `docs/design-system/design-system.html`) for an existing one that fits
 3. When writing prompts for UI tickets, always include a **Design tokens** section listing which tokens to use
-4. If no existing token fits, recommend creating one — specify name, value, and where to add it
-5. Any ticket that adds/changes/removes tokens must also update `DESIGN_SYSTEM.md`
-6. Any ticket that adds a new button/control must also add it to `Design_Tester.html`
-7. These 3 documentation files are PROTECTED — never delete or overwrite them
+4. If no existing token fits, recommend creating one — specify name, value, where in the Swift hierarchy to add it, and which section/family to add to `tokens-metadata.yaml`
+5. Any ticket that adds/changes/removes a token must update BOTH the Swift source AND `tokens-metadata.yaml`, then run `python3 scripts/design_system_codegen.py` and commit the regenerated HTML
+6. Any ticket that adds a new button/control family must update the component macros in `docs/design-system/templates/_components.html.j2`
+7. Tour illustration tokens are quarantined — they live in `DesignTokens+TourIllustrations.swift` and are documented in `tour-design.html` only; never add them to `tokens-metadata.yaml` or use them outside `Tour/` source files
 
-**When the user describes a UI change**, proactively recommend specific tokens and reference `Design_Tester.html` for existing patterns.
+**Build integration:** Every `xcodebuild` runs `validate_design_system.py` as the first build phase. Out-of-sync docs fail the build immediately. Developers can install a matching pre-commit hook via `./scripts/install_pre_commit_hook.sh`.
+
+**When the user describes a UI change**, proactively recommend specific tokens and point them at `design-system.html` for existing patterns.
 
 ---
 
