@@ -208,10 +208,10 @@ final class SetupHarnessSurfaceView: NSView {
         switch state {
         case .done:
             DesignTokens.setupGreenBadgeBg.setFill()
-            DesignTokens.setupGreen.setStroke()
+            DesignTokens.green.setStroke()
             path.fill()
             path.stroke()
-            drawText("✓", rect: rect, font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, alignment: .center)
+            drawText("✓", rect: rect, font: DesignTokens.fontTitle, color: DesignTokens.green, alignment: .center)
         case .active:
             DesignTokens.pillButtonBg.setFill()
             DesignTokens.pillButtonBorder.setStroke()

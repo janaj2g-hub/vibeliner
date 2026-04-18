@@ -4,17 +4,16 @@ extension DesignTokens {
 
     // MARK: - Setup Window Colors (appearance-aware)
 
-    // Green/amber status — fixed brand colors (must be visible in both modes)
-    /// #22c55e — badge done border/text
-    static let setupGreen = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
-    /// rgba(34, 197, 94, 0.1) — badge done fill
-    static let setupGreenBadgeBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.1)
-    /// #16a34a — status text, green button text
-    static let setupGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 1.0)
-    /// rgba(34, 197, 94, 0.08) — green button fill
-    static let setupGreenBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.08)
-    /// rgba(34, 197, 94, 0.5) — green button border
-    static let setupGreenBorder = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.5)
+    // Green/amber status
+    // VIB-503: setupGreen (#22C55E) deleted — consumers use `green` primitive directly.
+    /// Setup badge done fill — alias of `copiedGreenBg` (VIB-503).
+    static let setupGreenBadgeBg = copiedGreenBg
+    /// Setup status / green button text — alias of `copiedGreenText` (VIB-503).
+    static let setupGreenText = copiedGreenText
+    /// Setup green button fill — alias of `copiedGreenBg` (VIB-503).
+    static let setupGreenBg = copiedGreenBg
+    /// Setup green button border — alias of `copiedGreenBorder` (VIB-503).
+    static let setupGreenBorder = copiedGreenBorder
     /// #b45309 — amber status text
     static let setupAmberText = NSColor(red: 180/255, green: 83/255, blue: 9/255, alpha: 1.0)
 
@@ -106,8 +105,8 @@ extension DesignTokens {
     static let tourDoneButtonBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.14)
     /// Done action hover background
     static let tourDoneButtonHoverBg = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 0.20)
-    /// Done action border
-    static let tourDoneButtonBorder = NSColor(red: 74/255, green: 222/255, blue: 128/255, alpha: 0.34)
+    /// Done action border — alias of `copiedGreenBorder` (VIB-503, success-state semantic).
+    static let tourDoneButtonBorder = copiedGreenBorder
     /// Done action text
     static let tourDoneButtonText = NSColor.white
 

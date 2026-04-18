@@ -14,8 +14,8 @@ extension SetupWindowController {
         let badgeRect = NSRect(x: 0, y: 0, width: size, height: size)
         switch state {
         case .done:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2)
-            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, in: badgeRect)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.green, cornerRadius: size / 2)
+            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.green, in: badgeRect)
             view.addSubview(check)
         case .locked:
             SettingsUI.styleSurface(view, background: DesignTokens.setupFieldBg, border: NSColor.tertiaryLabelColor, cornerRadius: size / 2)

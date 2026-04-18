@@ -25,6 +25,9 @@ enum DesignTokens {
     /// Canonical "purple label on dark/light surface" color.
     static let purpleBrand = dynamicColor(dark: purpleLight, light: purpleDark)
 
+    /// Brand green — #22C55E. Canonical success / positive-state color.
+    static let green = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
+
     /// #EF4444 — all annotation marks
     static let red = NSColor(red: 239/255, green: 68/255, blue: 68/255, alpha: 1.0)
 
@@ -40,17 +43,17 @@ enum DesignTokens {
     /// Note text color: #7f1d1d
     static let noteTextColor = NSColor(red: 127/255, green: 29/255, blue: 29/255, alpha: 1.0)
 
-    /// Copy success green: rgba(22, 163, 74, 0.5) — border
-    static let copiedGreenBorder = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.5)
+    /// Copy success green — alias of green @ 0.5 alpha (VIB-503).
+    static let copiedGreenBorder = green.withAlphaComponent(0.5)
 
-    /// Copy success text: rgba(22, 163, 74, 0.8)
-    static let copiedGreenText = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.8)
+    /// Copy success text — alias of green @ 0.8 alpha (VIB-503).
+    static let copiedGreenText = green.withAlphaComponent(0.8)
 
-    /// Copy success bg: rgba(22, 163, 74, 0.12)
-    static let copiedGreenBg = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.12)
+    /// Copy success bg — alias of green @ 0.12 alpha (VIB-503).
+    static let copiedGreenBg = green.withAlphaComponent(0.12)
 
-    /// rgba(22, 163, 74, 0.9) — copied state green
-    static let copiedGreen = NSColor(red: 22/255, green: 163/255, blue: 74/255, alpha: 0.9)
+    /// Copied state green — alias of green @ 0.9 alpha (VIB-503).
+    static let copiedGreen = green.withAlphaComponent(0.9)
 
     /// rgba(0, 0, 0, 0.5) — capture overlay dim
     static let dimOverlay = NSColor.black.withAlphaComponent(0.5)

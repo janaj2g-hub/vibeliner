@@ -89,7 +89,7 @@ final class EditorHarnessSurfaceView: NSView {
     private func buildFilmstripScene() {
         let images = [
             Self.makeCaptureImage(width: 320, height: 200, title: "Current", role: .observed, accent: DesignTokens.purpleLight, index: 0),
-            Self.makeCaptureImage(width: 280, height: 200, title: "Target", role: .expected, accent: DesignTokens.setupGreen, index: 1),
+            Self.makeCaptureImage(width: 280, height: 200, title: "Target", role: .expected, accent: DesignTokens.green, index: 1),
             Self.makeCaptureImage(width: 300, height: 200, title: "Reference", role: .reference, accent: NSColor.systemBlue, index: 2),
         ]
         let session = CaptureSession(images: images)
