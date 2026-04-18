@@ -18,7 +18,7 @@ enum BadgeRenderer {
         guard number > 0 else { return }
         let numStr = "\(number)" as NSString
         let attrs: [NSAttributedString.Key: Any] = [
-            .font: DesignTokens.badgeFont,
+            .font: DesignTokens.fontNumberSm,
             .foregroundColor: NSColor.white
         ]
         let textSize = numStr.size(withAttributes: attrs)

@@ -15,11 +15,11 @@ extension SetupWindowController {
         switch state {
         case .done:
             SettingsUI.styleSurface(view, background: DesignTokens.setupGreenBadgeBg, border: DesignTokens.setupGreen, cornerRadius: size / 2)
-            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.setupBadgeCheckFont, color: DesignTokens.setupGreen, in: badgeRect)
+            let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
             SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: DesignTokens.setupGrayText, cornerRadius: size / 2)
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.setupGrayText, in: badgeRect)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: DesignTokens.setupGrayText, in: badgeRect)
             view.addSubview(numLabel)
         case .active:
             SettingsUI.styleSurface(
@@ -28,7 +28,7 @@ extension SetupWindowController {
                 border: DesignTokens.pillButtonBorder,
                 cornerRadius: size / 2
             )
-            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.setupBadgeFont, color: DesignTokens.pillButtonText, in: badgeRect)
+            let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: DesignTokens.pillButtonText, in: badgeRect)
             view.addSubview(numLabel)
         }
 
@@ -52,7 +52,7 @@ extension SetupWindowController {
         let labelBtn = NSButton(title: label, target: self, action: action)
         labelBtn.isBordered = false
         labelBtn.wantsLayer = true
-        labelBtn.font = DesignTokens.setupActionLabelFont
+        labelBtn.font = DesignTokens.fontLabel
         labelBtn.contentTintColor = DesignTokens.pillButtonText
         labelBtn.sizeToFit()
         let labelW = labelBtn.frame.width
@@ -77,7 +77,7 @@ extension SetupWindowController {
 
     func makeStatusLabel(_ text: String, style: StatusStyle) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = DesignTokens.setupStatusFont
+        label.font = DesignTokens.fontLabel
         label.alignment = .center
         applyStatusStyle(label, style: style)
         return label
@@ -102,7 +102,7 @@ extension SetupWindowController {
             title: title,
             role: role,
             height: DesignTokens.setupSmallPillHeight,
-            font: DesignTokens.setupSmallPillFont,
+            font: DesignTokens.fontLabelSm,
             horizontalPadding: 20,
             target: nil,
             action: nil
@@ -135,7 +135,7 @@ extension SetupWindowController {
             )
             footerContent.addSubview(startBtn)
         } else {
-            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.setupDescFont, color: DesignTokens.setupGrayText)
+            let msg = makeLabel("Complete all steps to continue", font: DesignTokens.fontBody, color: DesignTokens.setupGrayText)
             msg.frame.origin = NSPoint(x: winW - 24 - msg.frame.width, y: (DesignTokens.setupFooterHeight - msg.frame.height) / 2)
             footerContent.addSubview(msg)
         }
@@ -143,7 +143,7 @@ extension SetupWindowController {
 
     func buildShortcutGroup() -> NSView {
         // Build all children first to measure total width
-        let hint = makeLabel("Shortcut:", font: DesignTokens.setupShortcutHintFont, color: DesignTokens.setupTextSecondary)
+        let hint = makeLabel("Shortcut:", font: DesignTokens.fontBody, color: DesignTokens.setupTextSecondary)
         let keys = HotkeyManager.shared.displayParts(for: ConfigManager.shared.hotkey)
         var kbdPills: [NSView] = []
         for key in keys {
@@ -186,7 +186,7 @@ extension SetupWindowController {
     }
 
     func makeKbdPill(_ text: String) -> NSView {
-        let label = makeLabel(text, font: DesignTokens.setupKbdFont, color: DesignTokens.setupKbdText)
+        let label = makeLabel(text, font: DesignTokens.fontLabelSm, color: DesignTokens.setupKbdText)
         label.alignment = .center
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22

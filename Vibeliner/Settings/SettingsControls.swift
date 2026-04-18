@@ -10,7 +10,7 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
         isBordered = false
         bezelStyle = .regularSquare
         focusRingType = .none
-        font = DesignTokens.settingsPillFont
+        font = DesignTokens.fontLabelSm
         contentTintColor = DesignTokens.pillButtonText
         wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
@@ -47,7 +47,7 @@ final class SettingsTextField: NSTextField {
         super.init(frame: .zero)
         let savedFont = monospaced
             ? NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
-            : DesignTokens.settingsFieldFont
+            : DesignTokens.fontMonoBody
         cell = VerticallyCenteredTextFieldCell()
         // VIB-338: Replacing the cell resets isEditable to false (NSTextFieldCell default).
         // Re-enable so role name/description fields are actually editable.
@@ -98,7 +98,7 @@ final class SettingsKeyPillRow: NSStackView {
 
         for key in keys {
             let label = NSTextField(labelWithString: key)
-            label.font = DesignTokens.settingsPillFont
+            label.font = DesignTokens.fontLabelSm
             label.textColor = DesignTokens.pillButtonText
             label.alignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
@@ -144,9 +144,9 @@ final class SettingsSegmentedControl: NSView {
         var font: NSFont {
             switch self {
             case .primary:
-                return DesignTokens.settingsSegmentedPrimaryFont
+                return DesignTokens.fontLabelSm
             case .secondary:
-                return DesignTokens.settingsSegmentedSecondaryFont
+                return DesignTokens.fontLabelSm
             }
         }
     }

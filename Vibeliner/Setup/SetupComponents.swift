@@ -111,7 +111,7 @@ final class SetupFooterButton: SetupPillButton {
             title: title,
             role: role,
             height: DesignTokens.setupFooterButtonHeight,
-            font: DesignTokens.setupActionLabelFont,
+            font: DesignTokens.fontLabel,
             horizontalPadding: padding,
             target: target,
             action: action
