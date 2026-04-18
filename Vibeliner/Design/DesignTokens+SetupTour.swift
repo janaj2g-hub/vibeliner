@@ -76,20 +76,6 @@ extension DesignTokens {
     static let setupFooterSecondaryPadding: CGFloat = 36
     static let setupPathBoxRadius: CGFloat = 8
 
-    // MARK: - Setup Window Fonts
-
-    static let setupPanelTitleFont = NSFont.systemFont(ofSize: 16, weight: .semibold)
-    static let setupDescFont = NSFont.systemFont(ofSize: 13, weight: .regular)
-    static let setupActionLabelFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
-    static let setupHelperFont = NSFont.systemFont(ofSize: 11, weight: .regular)
-    static let setupPathFont = NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-    static let setupStatusFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
-    static let setupSmallPillFont = NSFont.systemFont(ofSize: 11, weight: .medium)
-    static let setupBadgeFont = NSFont.systemFont(ofSize: 14, weight: .semibold)
-    static let setupBadgeCheckFont = NSFont.systemFont(ofSize: 16, weight: .bold)
-    static let setupKbdFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
-    static let setupShortcutHintFont = NSFont.systemFont(ofSize: 12, weight: .regular)
-
     // MARK: - Tour Window Colors (appearance-aware)
 
     /// Tour window surface — dark: rgba(24,24,30,0.97), light: rgba(248,248,254,0.98)

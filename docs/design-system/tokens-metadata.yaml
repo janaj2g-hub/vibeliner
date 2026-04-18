@@ -703,188 +703,98 @@ tokens:
       mode: single
 
   # --- typography ---
-  badgeFont:
+  # VIB-487: unified 9-token scale (7 core + 2 number outliers).
+  # Tour-prefixed copies (tourMockBadgeFont, tourMockDimensionFont, tourKbdFont)
+  # live in DesignTokens+TourIllustrations.swift and are quarantined — documented
+  # in docs/design-system/tour-design.html, not here.
+  fontTitle:
     section: typography
-    family: annotation
-    description: "Badge number: system 9px weight 600"
+    family: heading
+    description: "Large title: setup panel headings, about window heading. System 16pt semibold."
     consumed_by:
-      - Annotations/Renderers/BadgeRenderer.swift
-      - Tour/Illustrations/AnnotationMarkViews.swift
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  dimensionLabelFont:
+  fontLabel:
     section: typography
-    family: annotation
-    description: "Dimension label: monospace 11px weight 500"
+    family: label
+    description: "Primary UI label: settings section headers, setup action buttons, setup status. System 13pt semibold."
     consumed_by:
-      - Capture/DimensionLabelView.swift
-      - Tour/Illustrations/TourIllustration1.swift
+      - App/HarnessPreviewSurfaces.swift
+      - Settings/SettingsUI.swift
+      - Setup/SetupComponents.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  noteTextFont:
+  fontLabelSm:
     section: typography
-    family: annotation
-    description: "Note text: system 12px weight regular"
+    family: label
+    description: "Small label: pill buttons, segmented controls, small pills, keyboard shortcuts. System 11pt semibold."
+    consumed_by:
+      - Settings/SettingsControls.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    rendering:
+      mode: single
+  fontBody:
+    section: typography
+    family: body
+    description: "Body copy: note pill text, settings body rows, setup descriptions, shortcut hints. System 12pt regular."
     consumed_by:
       - Annotations/Renderers/NotePillRenderer.swift
       - Annotations/Renderers/NotePillView.swift
+      - App/HarnessPreviewSurfaces.swift
       - Editor/CanvasView+NoteEditing.swift
-    rendering:
-      mode: single
-  settingsBodyFont:
-    section: typography
-    family: settings-field
-    description: "Settings body copy: system 12px weight regular"
-    consumed_by:
       - Settings/SettingsUI.swift
+      - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
-  settingsFieldFont:
+  fontCaption:
     section: typography
-    family: settings-field
-    description: "Settings field text: monospace 12px regular"
+    family: body
+    description: "Caption / helper / hint: secondary text under permission steps. System 11pt regular."
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+Panels.swift
+    rendering:
+      mode: single
+  fontMonoBody:
+    section: typography
+    family: mono
+    description: "Monospace body: path displays, text fields. Monospace 12pt regular."
     consumed_by:
       - Settings/SettingsControls.swift
       - Settings/SettingsUI.swift
-    rendering:
-      mode: single
-  settingsPillFont:
-    section: typography
-    family: settings-field
-    description: "Settings pill text: system 11px weight 600"
-    consumed_by:
-      - Settings/SettingsControls.swift
-    rendering:
-      mode: single
-  settingsSectionFont:
-    section: typography
-    family: settings-field
-    description: "Settings section label: system 13px weight 500"
-    consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: single
-  settingsSegmentedPrimaryFont:
-    section: typography
-    family: settings-field
-    description: Primary settings selector label
-    consumed_by:
-      - Settings/SettingsControls.swift
-    rendering:
-      mode: single
-  settingsSegmentedSecondaryFont:
-    section: typography
-    family: settings-field
-    description: Secondary settings selector label
-    consumed_by:
-      - Settings/SettingsControls.swift
-    rendering:
-      mode: single
-  setupActionLabelFont:
-    section: typography
-    family: setup-window
-    description: setupActionLabelFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupBadgeCheckFont:
-    section: typography
-    family: setup-window
-    description: setupBadgeCheckFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupBadgeFont:
-    section: typography
-    family: setup-window
-    description: setupBadgeFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupDescFont:
-    section: typography
-    family: setup-window
-    description: setupDescFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Panels.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupHelperFont:
-    section: typography
-    family: setup-window
-    description: setupHelperFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
       - Setup/SetupWindowController+Panels.swift
     rendering:
       mode: single
-  setupKbdFont:
+  fontMonoSm:
     section: typography
-    family: setup-window
-    description: setupKbdFont (setup-window).
+    family: mono
+    description: "Monospace small: dimension label during capture, editor status pill. Monospace 11pt medium."
     consumed_by:
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: single
-  setupPanelTitleFont:
-    section: typography
-    family: setup-window
-    description: setupPanelTitleFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupPathFont:
-    section: typography
-    family: setup-window
-    description: setupPathFont (setup-window).
-    consumed_by:
-      - Setup/SetupWindowController+Panels.swift
-    rendering:
-      mode: single
-  setupShortcutHintFont:
-    section: typography
-    family: setup-window
-    description: setupShortcutHintFont (setup-window).
-    consumed_by:
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupSmallPillFont:
-    section: typography
-    family: setup-window
-    description: setupSmallPillFont (setup-window).
-    consumed_by:
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  setupStatusFont:
-    section: typography
-    family: setup-window
-    description: setupStatusFont (setup-window).
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+Panels.swift
-      - Setup/SetupWindowController+UIFactories.swift
-    rendering:
-      mode: single
-  statusPillFont:
-    section: typography
-    family: status-pill
-    description: "Status pill: monospace 10px weight 500"
-    consumed_by:
+      - Capture/DimensionLabelView.swift
       - Editor/StatusPillView.swift
+    rendering:
+      mode: single
+  fontNumberSm:
+    section: typography
+    family: number
+    description: "Small numeric glyph: annotation badge. System 9pt semibold. Preserved outlier — fits inside 18pt badge circle."
+    consumed_by:
+      - Annotations/Renderers/BadgeRenderer.swift
+    rendering:
+      mode: single
+  fontNumberLg:
+    section: typography
+    family: number
+    description: "Large numeric glyph: setup step badge. System 14pt semibold. Preserved outlier — fits inside 32pt badge circle."
+    consumed_by:
+      - App/HarnessPreviewSurfaces.swift
+      - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: single
 
@@ -1754,12 +1664,11 @@ order:
     - role-color
     - ghost-preview
   typography:
-    - annotation
-    - settings-field
-    - setup-window
-    - status-pill
-    - toolbar
-    - filmstrip
+    - heading
+    - label
+    - body
+    - mono
+    - number
   dimensions:
     - annotation
     - toolbar
