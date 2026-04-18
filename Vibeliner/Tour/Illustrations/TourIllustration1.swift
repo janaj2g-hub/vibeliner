@@ -76,7 +76,7 @@ final class TourIllustration1: NSView {
 
         let dimText = "420 × 270"
         let dimAttrs: [NSAttributedString.Key: Any] = [
-            .font: DesignTokens.dimensionLabelFont,
+            .font: DesignTokens.tourMockDimensionFont,
             .foregroundColor: NSColor.white,
         ]
         let dimStr = NSAttributedString(string: dimText, attributes: dimAttrs)

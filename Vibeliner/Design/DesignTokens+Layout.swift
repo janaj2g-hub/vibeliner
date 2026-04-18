@@ -155,6 +155,35 @@ extension DesignTokens {
     /// Ghost silhouette dash pattern: 3,2
     static let ghostDashPattern: [CGFloat] = [3, 2]
 
+    // MARK: - Typography scale (VIB-487)
+
+    /// Large title: setup panel headings, about window heading. System 16pt semibold.
+    static let fontTitle = NSFont.systemFont(ofSize: 16, weight: .semibold)
+
+    /// Primary UI label: settings section headers, setup action buttons, setup status. System 13pt semibold.
+    static let fontLabel = NSFont.systemFont(ofSize: 13, weight: .semibold)
+
+    /// Small label: pill buttons, segmented controls, small pills, keyboard shortcuts. System 11pt semibold.
+    static let fontLabelSm = NSFont.systemFont(ofSize: 11, weight: .semibold)
+
+    /// Body copy: note pill text, settings body rows, setup descriptions, shortcut hints. System 12pt regular.
+    static let fontBody = NSFont.systemFont(ofSize: 12, weight: .regular)
+
+    /// Caption / helper / hint: secondary text under permission steps. System 11pt regular.
+    static let fontCaption = NSFont.systemFont(ofSize: 11, weight: .regular)
+
+    /// Monospace body: path displays, text fields. Monospace 12pt regular.
+    static let fontMonoBody = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
+
+    /// Monospace small: dimension label during capture, editor status pill. Monospace 11pt medium.
+    static let fontMonoSm = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
+
+    /// Small numeric glyph: annotation badge. System 9pt semibold. Preserved outlier — fits inside 18pt badge circle.
+    static let fontNumberSm = NSFont.systemFont(ofSize: 9, weight: .semibold)
+
+    /// Large numeric glyph: setup step badge. System 14pt semibold. Preserved outlier — fits inside 32pt badge circle.
+    static let fontNumberLg = NSFont.systemFont(ofSize: 14, weight: .semibold)
+
     // MARK: - Fonts
 
     /// Badge number: system 9px weight 600

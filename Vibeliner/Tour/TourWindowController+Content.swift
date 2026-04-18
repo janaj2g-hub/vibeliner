@@ -149,7 +149,7 @@ extension TourWindowController {
 
         let label = NSTextField(labelWithString: text)
         label.translatesAutoresizingMaskIntoConstraints = false
-        label.font = DesignTokens.setupKbdFont
+        label.font = DesignTokens.tourKbdFont
         label.textColor = DesignTokens.setupKbdText
         label.alignment = .center
         label.isBezeled = false
