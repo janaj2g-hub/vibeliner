@@ -573,6 +573,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = A80000010000000000000003 /* Build configuration list for PBXNativeTarget "Vibeliner" */;
 			buildPhases = (
+				A90000010000000000000002 /* Validate Design System */,
 				A70000010000000000000001 /* Sources */,
 				A30000010000000000000001 /* Frameworks */,
 				IC0000030000000000000001 /* Resources */,
@@ -616,6 +617,21 @@
 /* End PBXProject section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		A90000010000000000000002 /* Validate Design System */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Validate Design System";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "# Design system validation — added by VIB-484 (473D2)\n# Runs before Swift compile to fail fast on token drift.\npython3 \"${PROJECT_DIR}/scripts/validate_design_system.py\"\nif [ $? -ne 0 ]; then\n  echo \"error: Design system docs are out of sync with Vibeliner/Design/DesignTokens*.swift. See above.\"\n  exit 1\nfi\n";
+		};
 		A90000010000000000000001 /* Copy App to dist */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
