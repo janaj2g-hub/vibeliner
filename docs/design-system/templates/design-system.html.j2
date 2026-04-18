@@ -1500,14 +1500,35 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 
     {# --- Typography ---------------------------------------------------- #}
     {% set typography = tokens_by_section['typography'] %}
+    {% set typo_by_name = dict(typography) %}
+    {% set _typo_order = ['fontTitle', 'fontLabel', 'fontLabelSm', 'fontBody', 'fontCaption', 'fontMonoBody', 'fontMonoSm', 'fontNumberSm', 'fontNumberLg'] %}
     <section id="typography" class="ds-section">
       <h2>Typography <span class="ds-section-count">{{ typography | length }}</span></h2>
       <p class="ds-section-intro">
-        System font at Vibeliner's sizes and weights. Each specimen is rendered
-        at the exact size, weight, and family the token compiles to.
+        Vibeliner uses 9 font tokens — 7 core scale tokens plus 2 preserved number
+        outliers for badges. Every piece of text in the app resolves to one of these.
+        Tokens are shown below in the real UI surfaces where they appear.
       </p>
-      <div class="ds-font-list">
-      {% for name, token in typography %}{{ c.font_sample(name, token) }}{% endfor %}
+
+      <div class="ds-dim-groups">
+      {% for tname in _typo_order %}
+        {% if tname in typo_by_name %}
+          {{ c.typography_card(tname, tname, typo_by_name[tname]) }}
+        {% endif %}
+      {% endfor %}
+      </div>
+
+      <div class="ds-tour-quarantine">
+        <h3>Tour quarantine <span class="ds-dim-singletons-count">3</span></h3>
+        <p class="ds-tour-quarantine-intro">
+          These tokens are scoped to the product tour only. They are not consumed by
+          the main app and therefore don't get contextual surface cards.
+        </p>
+        <div class="ds-tour-qc-grid">
+          {{ c.tour_quarantine_card('tourMockBadgeFont', 'system · 9pt · semibold', 'Tour-specific copy of the annotation badge font, quarantined from the main scale.') }}
+          {{ c.tour_quarantine_card('tourMockDimensionFont', 'monospace · 11pt · medium', 'Tour-specific copy of the capture dimension label font, quarantined from the main scale.') }}
+          {{ c.tour_quarantine_card('tourKbdFont', 'system · 12pt · semibold', 'Tour-specific copy of the keyboard-shortcut pill font, quarantined from the main scale.') }}
+        </div>
       </div>
     </section>
 
