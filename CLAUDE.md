@@ -248,26 +248,57 @@ Vibeliner/
 
 ## Design System
 
-The canonical design-system documentation lives in `docs/design-system/`. These three files are PROTECTED — never delete them.
+### Source of truth
 
-| File | Purpose | Audience |
-|------|---------|----------|
-| `DESIGN_SYSTEM.md` | Machine-readable token reference — names, values (light + dark), usage, consuming files | Claude Code prompts |
-| `design-system.html` | Visual token reference — color swatches, typography, component previews with light/dark toggle | Human review |
-| `Design_Tester.html` | Interactive control playground — every button/control with hover/click states, token mappings | Human review, QA |
+The **runtime source of truth** is `Vibeliner/Design/DesignTokens.swift` and its extensions (`+Layout`, `+Settings`, `+SetupTour`, `+TourIllustrations`). Everything else is derived from or points at those files.
 
-**Rules:**
-- The runtime source of truth is `Vibeliner/Design/DesignTokens.swift`
-- Any ticket that adds, changes, or removes a token in DesignTokens.swift MUST also update all 3 design system files
-- Any ticket that adds a new button or interactive control MUST add it to Design_Tester.html
-- Never delete these files or overwrite them with empty content
-- Do not recreate root-level duplicate peers such as `docs/DESIGN_SYSTEM.md` or `docs/design-system.html`
+### Codegen workflow
+
+Design system reference docs are **generated**, not hand-authored. The pipeline:
+
+```
+Vibeliner/Design/DesignTokens*.swift              ← source of truth (Swift)
+docs/design-system/tokens-metadata.yaml           ← presentation metadata (hand-maintained)
+docs/design-system/templates/design-system.html.j2  ← main Jinja2 template
+docs/design-system/templates/_components.html.j2    ← component macros
+           │
+           │   python3 scripts/design_system_codegen.py
+           ▼
+docs/design-system/design-system.html             ← generated (DO NOT edit by hand)
+```
+
+**Regenerate:** `python3 scripts/design_system_codegen.py`
+**Validate:** `python3 scripts/validate_design_system.py`
+
+Validation also runs automatically as the first phase of every `xcodebuild`. If the YAML and the Swift source drift out of sync, the build fails with `error: Design system docs are out of sync...`.
+
+### File roles
+
+| File | Purpose | Hand-edit? |
+|------|---------|-----------|
+| `Vibeliner/Design/DesignTokens*.swift` | Runtime token source — canonical values | Yes |
+| `docs/design-system/tokens-metadata.yaml` | Presentation metadata (section, family, description, consumers, rendering mode) | Yes |
+| `docs/design-system/templates/design-system.html.j2` | Main Jinja2 template (layout, CSS, JS) | Yes |
+| `docs/design-system/templates/_components.html.j2` | Component macros (pill button, swatch, tool button, etc.) | Yes |
+| `docs/design-system/design-system.html` | Generated reference — visual token browser | **No — regenerate** |
+| `docs/design-system/tour-design.html` | Hand-authored reference for quarantined tour tokens | Yes (manually) |
+| `scripts/parse_design_tokens.py` | Swift → dict parser | Yes |
+| `scripts/design_system_codegen.py` | Codegen driver | Yes |
+| `scripts/validate_design_system.py` | Validator (build + commit hook) | Yes |
+| `scripts/install_pre_commit_hook.sh` + `pre-commit-template.sh` | Optional commit-time validation hook | Yes |
+| `docs/design-system/README.md` | Workflow guide | Yes |
+
+### Rules
+
+- Never hand-edit `design-system.html`. Edit the YAML / template / Swift, then regenerate.
+- The `design-system.html` must always be regenerable byte-for-byte — a fresh `python3 scripts/design_system_codegen.py` should produce `git diff` clean against the committed HTML.
+- Every build runs validation. To emergency-skip: `touch .skip-validation` (gitignored).
 
 ## Design token rules
 
 These rules are mandatory for every ticket that touches UI.
 
-1. **NEVER create a new color token without checking first.** Before adding any NSColor to DesignTokens.swift, search `docs/design-system/DESIGN_SYSTEM.md` for an existing token with the same purpose. If one exists, use it. If you think a new token is needed, say so in the PR description — do not silently create one.
+1. **NEVER create a new color token without checking first.** Before adding any NSColor to `DesignTokens.swift`, check `Vibeliner/Design/DesignTokens*.swift` and/or browse `docs/design-system/design-system.html` for an existing token with the same purpose. If one exists, use it. If you think a new token is needed, say so in the PR description — do not silently create one.
 
 2. **NEVER create a new button style.** The app has exactly these button families:
    - `pillButton*` (6 tokens) — all purple outlined pill buttons (Copy Prompt, Change, Save, etc.)
@@ -280,9 +311,9 @@ These rules are mandatory for every ticket that touches UI.
 
 4. **NEVER hardcode colors.** Every color in UI code must reference a `DesignTokens.*` token or a system color (`.labelColor`, `.separatorColor`, etc.). No raw `NSColor(red:green:blue:alpha:)` in view files.
 
-5. **Token creation requires a DESIGN_SYSTEM.md update.** If a genuinely new token is approved, add it to both `DesignTokens.swift` AND `docs/design-system/DESIGN_SYSTEM.md` in the same commit.
+5. **Adding or changing a token requires BOTH the Swift source AND `tokens-metadata.yaml`.** The validator (running on every build) fails if the YAML references a token not in Swift, or if YAML metadata is missing for a new Swift token (coverage warning). After the edit, regenerate the HTML (`python3 scripts/design_system_codegen.py`) and commit the regenerated file along with the Swift + YAML changes.
 
-6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files. Tour UI chrome (buttons, controls) must use the universal component tokens above.
+6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files. They are documented in the separate hand-authored `docs/design-system/tour-design.html` — **not** in the main `design-system.html` or `tokens-metadata.yaml`. Tour UI chrome (buttons, controls) must use the universal component tokens above.
 
 ## Reference docs
 

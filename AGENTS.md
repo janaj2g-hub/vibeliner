@@ -83,16 +83,27 @@ Every line from the prompt's `Verification` section must be included with `Pass`
 - Do not use SwiftUI `Canvas` for annotations; use AppKit `NSView` + Core Graphics
 - Do not use `NSToolbar`; the toolbar is a custom `NSView`
 
+## Design system
+
+The runtime source of truth for tokens is `Vibeliner/Design/DesignTokens.swift` and its extensions. The reference document at `docs/design-system/design-system.html` is **generated** by `scripts/design_system_codegen.py` from the Swift source + `tokens-metadata.yaml`. The quarantined tour tokens have their own hand-authored reference at `docs/design-system/tour-design.html`.
+
+- Regenerate: `python3 scripts/design_system_codegen.py`
+- Validate: `python3 scripts/validate_design_system.py` (also runs on every `xcodebuild`)
+- Skip validation in emergencies: `touch .skip-validation`
+- Never hand-edit `design-system.html` — edit the YAML / Swift / templates and regenerate.
+
+See `docs/design-system/README.md` and `CLAUDE.md` for the full workflow.
+
 ## Design token rules
 
 Mandatory for every ticket that touches UI.
 
-1. **NEVER create a new color token without checking first.** Search `docs/design-system/DESIGN_SYSTEM.md` for an existing token before adding any NSColor to DesignTokens.swift.
+1. **NEVER create a new color token without checking first.** Browse `docs/design-system/design-system.html` (or grep `Vibeliner/Design/DesignTokens*.swift`) for an existing token before adding any NSColor.
 2. **NEVER create a new button style.** Use `pillButton*` (outlined), `pillButtonPrimary*` (solid CTA), `toolbarSecondary*` (ghost), or `copiedGreen*` (success). No new families.
 3. **NEVER create a new segmented control style.** All segmented controls use `segmented*` (6 tokens).
 4. **NEVER hardcode colors.** Use `DesignTokens.*` or system colors (`.labelColor`, `.separatorColor`). No raw `NSColor(red:green:blue:alpha:)` in view files.
-5. **Token creation requires a DESIGN_SYSTEM.md update.** New tokens must be added to both `DesignTokens.swift` and `docs/design-system/DESIGN_SYSTEM.md` in the same commit.
-6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files.
+5. **Adding or changing a token requires BOTH the Swift source AND `tokens-metadata.yaml`.** The build-time validator fails if they drift. After the edit, run `python3 scripts/design_system_codegen.py` and commit the regenerated HTML alongside the Swift + YAML changes.
+6. **Tour illustration tokens are quarantined.** They live in `DesignTokens+TourIllustrations.swift` and must never be used outside `Tour/` files. They are documented in `docs/design-system/tour-design.html` — **not** in `tokens-metadata.yaml`.
 
 ## Git
 
