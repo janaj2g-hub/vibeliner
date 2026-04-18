@@ -1111,7 +1111,7 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
 /* Default active state for mode toggle (VIB-483 overrides with localStorage) */
 </style>
 </head>
-<body>
+<body class="light swatch-mode-light">
 
 <header class="ds-header">
   <div style="display: flex; align-items: center;">
@@ -1121,8 +1121,8 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
     <div class="ds-header-title"><span class="ds-mark">◆</span> Vibeliner Design System</div>
   </div>
   <div class="ds-mode-toggle" role="group" aria-label="Color mode">
-    <button data-mode="both" class="active" type="button">Both</button>
-    <button data-mode="light" type="button">Light</button>
+    <button data-mode="both" type="button">Both</button>
+    <button data-mode="light" class="active" type="button">Light</button>
     <button data-mode="dark" type="button">Dark</button>
   </div>
 </header>
@@ -1336,7 +1336,7 @@ body:not(.light):not(.dark) .ds-mini-kbd-row kbd {
       btn.classList.toggle('active', btn.dataset.mode === mode);
     });
   }
-  function getSaved() { try { return localStorage.getItem(KEY) || 'both'; } catch (e) { return 'both'; } }
+  function getSaved() { try { return localStorage.getItem(KEY) || 'light'; } catch (e) { return 'light'; } }
   function save(mode) { try { localStorage.setItem(KEY, mode); } catch (e) {} }
   toggle.addEventListener('click', function (e) {
     var btn = e.target.closest('[data-mode]');
