@@ -27,14 +27,8 @@ extension DesignTokens {
     static let setupFooterBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 0.133, alpha: 1) : NSColor(white: 0.94, alpha: 1)
     }
-    /// Setup field background (path box, shortcut group)
-    static let setupFieldBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.05) : NSColor(white: 0, alpha: 0.03)
-    }
-    /// Setup locked badge bg
-    static let setupGrayBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.03) : NSColor(white: 0, alpha: 0.03)
-    }
+    /// Alias — setup field background matches settings field surface (VIB-501).
+    static let setupFieldBg = settingsFieldSurface
 
     // Kbd pills — appearance-aware
     /// Setup kbd pill border

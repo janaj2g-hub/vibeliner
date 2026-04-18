@@ -18,7 +18,7 @@ extension SetupWindowController {
             let check = DesignTokens.makeCenteredTextField("✓", font: DesignTokens.fontTitle, color: DesignTokens.setupGreen, in: badgeRect)
             view.addSubview(check)
         case .locked:
-            SettingsUI.styleSurface(view, background: DesignTokens.setupGrayBg, border: NSColor.tertiaryLabelColor, cornerRadius: size / 2)
+            SettingsUI.styleSurface(view, background: DesignTokens.setupFieldBg, border: NSColor.tertiaryLabelColor, cornerRadius: size / 2)
             let numLabel = DesignTokens.makeCenteredTextField("\(num)", font: DesignTokens.fontNumberLg, color: NSColor.tertiaryLabelColor, in: badgeRect)
             view.addSubview(numLabel)
         case .active:

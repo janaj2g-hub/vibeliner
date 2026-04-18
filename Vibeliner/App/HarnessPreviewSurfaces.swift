@@ -219,7 +219,7 @@ final class SetupHarnessSurfaceView: NSView {
             path.stroke()
             drawText("\(index)", rect: rect, font: DesignTokens.fontNumberLg, color: DesignTokens.pillButtonText, alignment: .center)
         case .locked:
-            DesignTokens.setupGrayBg.setFill()
+            DesignTokens.setupFieldBg.setFill()
             NSColor.tertiaryLabelColor.setStroke()
             path.fill()
             path.stroke()

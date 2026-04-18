@@ -1480,12 +1480,15 @@ tokens:
   setupFieldBg:
     section: surfaces
     family: setup-window
-    description: Setup field background (path box, shortcut group)
+    description: "Setup field background — alias of settingsFieldSurface (VIB-501)."
     consumed_by:
+      - App/HarnessPreviewSurfaces.swift
       - Setup/SetupWindowController+Actions.swift
       - Setup/SetupWindowController+Panels.swift
+      - Setup/SetupWindowController+UIFactories.swift
+    target: settingsFieldSurface
     rendering:
-      mode: dual
+      mode: alias
   setupFooterBg:
     section: surfaces
     family: setup-window
@@ -1494,15 +1497,6 @@ tokens:
       - App/HarnessPreviewSurfaces.swift
       - Setup/SetupComponents.swift
       - Setup/SetupWindowController+Actions.swift
-    rendering:
-      mode: dual
-  setupGrayBg:
-    section: surfaces
-    family: setup-window
-    description: Setup locked badge bg
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Setup/SetupWindowController+UIFactories.swift
     rendering:
       mode: dual
   setupGreen:
