@@ -40,7 +40,58 @@ Touching any design token means two files need to stay in sync:
 2. Add/edit the matching entry in `docs/design-system/tokens-metadata.yaml` (section, family, description, `consumed_by`, optional `rendering.mode`).
 3. Run `python3 scripts/design_system_codegen.py` and commit the regenerated `design-system.html`.
 
-The codegen driver prints a warning (does **not** fail) when a Swift token is missing YAML metadata, or vice versa. A hard validation step will land in VIB-477 and wire into xcodebuild in VIB-484 — until then, the warnings are advisory.
+The codegen driver prints warnings (not errors) when a Swift token is missing from YAML or vice versa. The **validation** step (below) catches the same drift as a build-blocking error.
+
+## Validation
+
+Every `xcodebuild` run invokes `scripts/validate_design_system.py` as the first build phase. The build fails if docs are out of sync with `Vibeliner/Design/DesignTokens*.swift`.
+
+If the build fails with `Design system docs are out of sync`, run:
+
+```
+python3 scripts/validate_design_system.py
+```
+
+to see the errors, then fix them in either the Swift source or `tokens-metadata.yaml`.
+
+The validator checks:
+
+1. **Existence** (error) — every YAML token must exist in Swift
+2. **Value match** (error) — YAML entries with `explicit_value` must match Swift
+3. **Coverage** (warning) — every non-tour Swift token should be in YAML
+4. **HTML scan** (error) — every token-like identifier in the generated HTML must resolve to a real Swift token
+
+Exit codes: `0` clean · `1` hard error · `2` script-level error (missing YAML, PyYAML, etc.).
+
+### Pre-commit hook (optional)
+
+To catch drift before it even reaches the build:
+
+```
+./scripts/install_pre_commit_hook.sh
+```
+
+This installs `.git/hooks/pre-commit` to run the validator on every commit. The installer won't overwrite an existing hook without asking. To bypass in an emergency: `git commit --no-verify`.
+
+Uninstall by deleting `.git/hooks/pre-commit`.
+
+### Skipping validation
+
+If you need to build without validation (e.g., fresh clone before the Python deps are installed, or an emergency build):
+
+```
+touch .skip-validation
+```
+
+The sentinel file is in `.gitignore` and must never be committed. Delete it when you're done.
+
+### Dependency setup
+
+The validator needs PyYAML. First-time setup on a build machine:
+
+```
+pip3 install jinja2 pyyaml --break-system-packages
+```
 
 ## Files in this workflow
 
