@@ -184,39 +184,6 @@ extension DesignTokens {
     /// Large numeric glyph: setup step badge. System 14pt semibold. Preserved outlier — fits inside 32pt badge circle.
     static let fontNumberLg = NSFont.systemFont(ofSize: 14, weight: .semibold)
 
-    // MARK: - Fonts
-
-    /// Badge number: system 9px weight 600
-    static let badgeFont = NSFont.systemFont(ofSize: 9, weight: .semibold)
-
-    /// Note text: system 12px weight regular
-    static let noteTextFont = NSFont.systemFont(ofSize: 12, weight: .regular)
-
-    /// Dimension label: monospace 11px weight 500
-    static let dimensionLabelFont = NSFont.monospacedSystemFont(ofSize: 11, weight: .medium)
-
-    /// Status pill: monospace 10px weight 500
-    static let statusPillFont = NSFont.monospacedSystemFont(ofSize: 10, weight: .medium)
-
-    /// Settings section label: system 13px weight 500
-    static let settingsSectionFont = NSFont.systemFont(ofSize: 13, weight: .medium)
-
-    /// Settings body copy: system 12px weight regular
-    static let settingsBodyFont = NSFont.systemFont(ofSize: 12, weight: .regular)
-
-    /// Settings field text: monospace 12px regular
-    static let settingsFieldFont = NSFont.monospacedSystemFont(ofSize: 12, weight: .regular)
-
-    /// Settings pill text: system 11px weight 600
-    static let settingsPillFont = NSFont.systemFont(ofSize: 11, weight: .semibold)
-
-    /// Primary settings selector label
-    static let settingsSegmentedPrimaryFont = NSFont.systemFont(ofSize: 12, weight: .semibold)
-
-    /// Secondary settings selector label
-    static let settingsSegmentedSecondaryFont = NSFont.systemFont(ofSize: 11, weight: .medium)
-
-
     // MARK: - Vertically Centered Text Field
 
     /// Creates an NSTextField that is vertically centered within a given container height.
