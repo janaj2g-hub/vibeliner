@@ -4,7 +4,7 @@ enum SettingsUI {
 
     static func sectionTitle(_ text: String) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = DesignTokens.settingsSectionFont
+        label.font = DesignTokens.fontLabel
         label.textColor = .secondaryLabelColor
         label.alignment = .left
         return label
@@ -12,7 +12,7 @@ enum SettingsUI {
 
     static func bodyCopy(_ text: String) -> NSTextField {
         let label = NSTextField(wrappingLabelWithString: text)
-        label.font = DesignTokens.settingsBodyFont
+        label.font = DesignTokens.fontBody
         label.textColor = .tertiaryLabelColor
         label.lineBreakMode = .byWordWrapping
         label.maximumNumberOfLines = 0
@@ -21,7 +21,7 @@ enum SettingsUI {
 
     static func rowTitle(_ text: String) -> NSTextField {
         let label = NSTextField(labelWithString: text)
-        label.font = DesignTokens.settingsSectionFont
+        label.font = DesignTokens.fontLabel
         label.textColor = .secondaryLabelColor
         label.alignment = .left
         return label
@@ -39,7 +39,7 @@ enum SettingsUI {
         let label = NSTextField(labelWithString: text)
         label.font = monospaced
             ? NSFont.monospacedSystemFont(ofSize: 13, weight: .regular)
-            : DesignTokens.settingsFieldFont
+            : DesignTokens.fontMonoBody
         label.textColor = .secondaryLabelColor
         label.lineBreakMode = .byTruncatingMiddle
         label.maximumNumberOfLines = 1
