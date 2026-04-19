@@ -25,6 +25,88 @@ enum DesignTokens {
     /// Canonical "purple label on dark/light surface" color.
     static let purpleBrand = dynamicColor(dark: purpleLight, light: purpleDark)
 
+    // MARK: - Purple opacity ladder
+    //
+    // Derived alpha variants of the two brand purples. Any surface that needs
+    // "a tinted purple fill" or "a purple border" should reference one of these
+    // primitives instead of defining its own alpha. Added in VIB-505.
+
+    /// Purple at 6% alpha — barely-there tinted surface. Reserved for future use
+    /// by the faintest purple-on-background fills.
+    static let purpleFaint = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.06),
+        light: purpleDark.withAlphaComponent(0.06)
+    )
+
+    /// Purple at 14% alpha — subtle tinted fill. Used for tool-active backgrounds,
+    /// add-image button backgrounds, segmented-control active fills.
+    static let purpleSubtle = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.14),
+        light: purpleDark.withAlphaComponent(0.14)
+    )
+
+    /// Purple at 22% alpha — emphasized tinted fill. Used for pill button
+    /// backgrounds in dark mode, primary button hover fills, segmented-control
+    /// active borders.
+    static let purpleStrong = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.22),
+        light: purpleDark.withAlphaComponent(0.22)
+    )
+
+    /// Purple at 36% alpha — tinted border. Used for pill button primary borders
+    /// in dark mode.
+    static let purpleBorder = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.36),
+        light: purpleDark.withAlphaComponent(0.36)
+    )
+
+    /// Purple hover accent — one step brighter than `purpleBrand`. Used for
+    /// pill button hover borders and text. The two raw hex values are
+    /// intentional: they represent a deliberately-lightened hover shift that
+    /// `purpleLight.withAlphaComponent(...)` cannot produce.
+    static let purpleHover = dynamicColor(
+        dark:  NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1),  // #C4B8F5
+        light: NSColor(red: 96/255,  green: 85/255,  blue: 196/255, alpha: 1)   // #6055C4
+    )
+
+    // MARK: - Neutral opacity ladder
+    //
+    // White-on-dark and black-on-light at canonical alpha levels. Any surface
+    // needing "a gray border" or "a dimmed icon" should reference these
+    // primitives instead of defining its own alpha. Added in VIB-505.
+
+    /// Hairline at ~8% alpha — subtle dividers, faint borders, button hover
+    /// backgrounds.
+    static let neutralHairline = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.08),
+        light: NSColor(white: 0, alpha: 0.08)
+    )
+
+    /// Standard border at ~12% alpha — 1px borders on chrome surfaces
+    /// (toolbars, input fields, kbd pills).
+    static let neutralBorder = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.12),
+        light: NSColor(white: 0, alpha: 0.12)
+    )
+
+    /// Dimmed at ~45% alpha — secondary text, inactive icons.
+    static let neutralDim = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.45),
+        light: NSColor(white: 0, alpha: 0.45)
+    )
+
+    /// Strong at ~70% alpha — primary icons, emphasized labels.
+    static let neutralStrong = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.70),
+        light: NSColor(white: 0, alpha: 0.70)
+    )
+
+    /// Primary at ~100% alpha — primary text labels.
+    static let neutralPrimary = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 1.0),
+        light: NSColor(white: 0, alpha: 1.0)
+    )
+
     /// Brand green — #22C55E. Canonical success / positive-state color.
     static let green = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
 

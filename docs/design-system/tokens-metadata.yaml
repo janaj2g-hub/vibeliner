@@ -513,6 +513,76 @@ tokens:
       - Design/DesignTokens.swift
     rendering:
       mode: dual
+  purpleFaint:
+    section: colors
+    family: purple-ladder
+    description: "Purple at 6% alpha — barely-there tinted surface."
+    consumed_by: []
+    rendering:
+      mode: dual
+  purpleSubtle:
+    section: colors
+    family: purple-ladder
+    description: "Purple at 14% alpha — subtle tinted fill (tool-active bg, add-image bg, segmented active fill)."
+    consumed_by: []
+    rendering:
+      mode: dual
+  purpleStrong:
+    section: colors
+    family: purple-ladder
+    description: "Purple at 22% alpha — emphasized tinted fill (pill button dark-mode bg, primary hover fill)."
+    consumed_by: []
+    rendering:
+      mode: dual
+  purpleBorder:
+    section: colors
+    family: purple-ladder
+    description: "Purple at 36% alpha — tinted border (pill button primary dark-mode border)."
+    consumed_by: []
+    rendering:
+      mode: dual
+  purpleHover:
+    section: colors
+    family: purple-ladder
+    description: "Purple hover accent — one step brighter than purpleBrand. Dark #C4B8F5, light #6055C4."
+    consumed_by: []
+    rendering:
+      mode: dual
+  neutralHairline:
+    section: colors
+    family: neutral-ladder
+    description: "Neutral at 8% alpha — subtle dividers, faint borders, button hover backgrounds."
+    consumed_by: []
+    rendering:
+      mode: dual
+  neutralBorder:
+    section: colors
+    family: neutral-ladder
+    description: "Neutral at 12% alpha — standard 1px borders on chrome surfaces."
+    consumed_by: []
+    rendering:
+      mode: dual
+  neutralDim:
+    section: colors
+    family: neutral-ladder
+    description: "Neutral at 45% alpha — secondary text, inactive icons."
+    consumed_by: []
+    rendering:
+      mode: dual
+  neutralStrong:
+    section: colors
+    family: neutral-ladder
+    description: "Neutral at 70% alpha — primary icons, emphasized labels."
+    consumed_by: []
+    rendering:
+      mode: dual
+  neutralPrimary:
+    section: colors
+    family: neutral-ladder
+    description: "Neutral at 100% alpha — primary text labels."
+    consumed_by: []
+    rendering:
+      mode: dual
   purpleLight:
     section: colors
     family: purple-brand
