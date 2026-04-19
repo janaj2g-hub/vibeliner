@@ -143,24 +143,6 @@ tokens:
     rendering:
       mode: dual
       preview_component: status-pill
-  addImageBg:
-    section: components
-    family: add-image
-    description: "Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)"
-    consumed_by:
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: add-image
-  addImageBorder:
-    section: components
-    family: add-image
-    description: "Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)"
-    consumed_by:
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: add-image
   editorAnnotationHoverFill:
     section: components
     family: editor-annotation
@@ -1222,14 +1204,6 @@ tokens:
       - Editor/ToolButton.swift
     rendering:
       mode: dual
-  settingsFieldBorder:
-    section: surfaces
-    family: settings-field
-    description: "Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)"
-    consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: dual
   settingsFieldSurface:
     section: surfaces
     family: settings-field
@@ -1324,28 +1298,10 @@ tokens:
     target: copiedGreenText
     rendering:
       mode: alias
-  kbdBg:
-    section: components
-    family: kbd
-    description: "Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)"
-    consumed_by:
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-  kbdBorder:
-    section: components
-    family: kbd
-    description: "Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)"
-    consumed_by:
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
   kbdText:
     section: components
     family: kbd
-    description: "Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)"
+    description: "Kbd pill text — bespoke: dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60). Intentionally outside the ladder (see VIB-510)."
     consumed_by:
       - Setup/SetupWindowController+UIFactories.swift
       - Tour/TourWindowController+Content.swift

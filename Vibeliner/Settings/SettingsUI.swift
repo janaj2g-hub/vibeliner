@@ -64,7 +64,7 @@ enum SettingsUI {
         styleSurface(
             view,
             background: DesignTokens.settingsFieldSurface,
-            border: DesignTokens.settingsFieldBorder,
+            border: DesignTokens.neutralBorder,
             cornerRadius: cornerRadius
         )
     }
@@ -82,7 +82,7 @@ enum SettingsUI {
         styleSurface(
             view,
             background: DesignTokens.settingsPreviewSurface,
-            border: DesignTokens.settingsFieldBorder,
+            border: DesignTokens.neutralBorder,
             cornerRadius: DesignTokens.settingsFrameRadius
         )
     }

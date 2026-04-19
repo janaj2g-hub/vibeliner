@@ -191,7 +191,7 @@ extension SetupWindowController {
         let w = max(22, label.frame.width + 10)
         let h: CGFloat = 22
         let pill = NSView(frame: NSRect(x: 0, y: 0, width: w, height: h))
-        SettingsUI.styleSurface(pill, background: DesignTokens.kbdBg, border: DesignTokens.kbdBorder, cornerRadius: 5)
+        SettingsUI.styleSurface(pill, background: DesignTokens.neutralHairline, border: DesignTokens.neutralBorder, cornerRadius: 5)
         label.frame = NSRect(x: 0, y: (h - label.frame.height) / 2, width: w, height: label.frame.height)
         pill.addSubview(label)
         return pill

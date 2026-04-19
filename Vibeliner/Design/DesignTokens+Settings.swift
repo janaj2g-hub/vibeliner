@@ -105,14 +105,6 @@ extension DesignTokens {
         return border.blended(withFraction: 0.55, of: .black) ?? border
     }
 
-    /// Settings field border color — dark: rgba(255,255,255,0.12), light: rgba(15,23,42,0.12)
-    static let settingsFieldBorder = NSColor(name: nil) { appearance in
-        if isDarkAppearance(appearance) {
-            return NSColor(white: 1.0, alpha: 0.12)
-        }
-        return NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.12)
-    }
-
     // MARK: - Editor interaction tokens (VIB-411)
 
     /// Editor annotation hover fill halo

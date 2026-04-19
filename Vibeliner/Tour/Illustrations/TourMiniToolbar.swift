@@ -237,12 +237,12 @@ final class TourMiniToolbar: NSView {
         let pillY = (h - 20) / 2
         let pillRect = CGRect(x: x, y: pillY, width: width, height: 20)
 
-        ctx.setFillColor(DesignTokens.addImageBg.cgColor)
+        ctx.setFillColor(DesignTokens.purpleSubtle.cgColor)
         let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(path)
         ctx.fillPath()
 
-        ctx.setStrokeColor(DesignTokens.addImageBorder.cgColor)
+        ctx.setStrokeColor(DesignTokens.purpleStrong.cgColor)
         ctx.setLineWidth(1)
         ctx.addPath(path)
         ctx.strokePath()
