@@ -168,7 +168,7 @@ final class TourMiniToolbar: NSView {
         let toggleRect = CGRect(x: x, y: toggleY, width: toggleWidth, height: toggleHeight)
 
         // Track background
-        ctx.setFillColor(DesignTokens.segmentedTrack.cgColor)
+        ctx.setFillColor(DesignTokens.neutralHairline.withAlphaComponent(0.03).cgColor)
         let togglePath = CGPath(roundedRect: toggleRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(togglePath)
         ctx.fillPath()
@@ -177,7 +177,7 @@ final class TourMiniToolbar: NSView {
         let ideActive = config.mode == .ide
         let activeX = ideActive ? x : x + toggleSegmentWidth
         let segRect = CGRect(x: activeX + 2, y: toggleY + 2, width: toggleSegmentWidth - 4, height: toggleHeight - 4)
-        ctx.setFillColor(DesignTokens.segmentedActiveFill.cgColor)
+        ctx.setFillColor(DesignTokens.purpleSubtle.cgColor)
         let segPath = CGPath(roundedRect: segRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(segPath)
         ctx.fillPath()
@@ -185,11 +185,11 @@ final class TourMiniToolbar: NSView {
         // Labels
         let ideAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.toolbarPurpleActive : DesignTokens.segmentedInactiveText,
+            .foregroundColor: ideActive ? DesignTokens.toolbarPurpleActive : DesignTokens.neutralStrong,
         ]
         let appAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.segmentedInactiveText : DesignTokens.toolbarPurpleActive,
+            .foregroundColor: ideActive ? DesignTokens.neutralStrong : DesignTokens.toolbarPurpleActive,
         ]
         let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
         let appStr = NSAttributedString(string: "App", attributes: appAttrs)

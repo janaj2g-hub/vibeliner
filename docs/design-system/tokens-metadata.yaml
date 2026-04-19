@@ -23,68 +23,6 @@ sections:
 tokens:
 
   # --- components ---
-  segmentedActiveBorder:
-    section: components
-    family: segmented-control
-    description: "Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)"
-    consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: dual
-      preview_component: segmented-control
-  segmentedActiveFill:
-    section: components
-    family: segmented-control
-    description: "Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-      - Settings/SettingsUI.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: segmented-control
-  segmentedActiveText:
-    section: components
-    family: segmented-control
-    description: "Segmented active text — alias of purpleBrand."
-    consumed_by:
-      - Settings/SettingsControls.swift
-    target: purpleBrand
-    rendering:
-      mode: alias
-      preview_component: segmented-control
-  segmentedInactiveText:
-    section: components
-    family: segmented-control
-    description: "Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-      - Settings/SettingsControls.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: segmented-control
-  segmentedTrack:
-    section: components
-    family: segmented-control
-    description: "Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-      - Settings/SettingsControls.swift
-      - Settings/SettingsUI.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: segmented-control
-  segmentedTrackBorder:
-    section: components
-    family: segmented-control
-    description: "Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)"
-    consumed_by:
-      - Settings/SettingsUI.swift
-    rendering:
-      mode: dual
-      preview_component: segmented-control
   toolbarSecondaryBg:
     section: components
     family: secondary-button

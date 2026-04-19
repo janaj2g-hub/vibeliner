@@ -248,7 +248,7 @@ final class SettingsSegmentedControl: NSView {
     private func updateButtonStates() {
         for (index, button) in buttons.enumerated() {
             let isActive = index == selectedIndex
-            button.contentTintColor = isActive ? DesignTokens.segmentedActiveText : DesignTokens.segmentedInactiveText
+            button.contentTintColor = isActive ? DesignTokens.purpleBrand : DesignTokens.neutralStrong
             button.font = isActive
                 ? NSFont.systemFont(ofSize: style.font.pointSize, weight: .semibold)
                 : style.font
@@ -638,7 +638,7 @@ final class SettingsToggleControl: NSView {
     private func updateStates() {
         for (index, button) in buttons.enumerated() {
             let isActive = index == selectedIndex
-            button.contentTintColor = isActive ? .white : DesignTokens.segmentedInactiveText
+            button.contentTintColor = isActive ? .white : DesignTokens.neutralStrong
             button.setAccessibilityValue(isActive ? "selected" : "")
         }
     }
@@ -660,7 +660,7 @@ final class SettingsToggleControl: NSView {
         let cr = Self.controlHeight / 2
         trackView.layer?.cornerRadius = cr
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            self.trackView.layer?.backgroundColor = DesignTokens.segmentedTrack.cgColor
+            self.trackView.layer?.backgroundColor = DesignTokens.neutralHairline.withAlphaComponent(0.03).cgColor
             self.highlightView.layer?.backgroundColor = DesignTokens.purpleDark.cgColor
         }
         updateStates()

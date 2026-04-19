@@ -26,7 +26,7 @@ final class ModeToggleView: NSView {
 
     private func setupView() {
         wantsLayer = true
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedTrack, cornerRadius: 14, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.neutralHairline.withAlphaComponent(0.03), cornerRadius: 14, borderWidth: 0)
         addSubview(highlightView)
 
         for label in [ideLabel, appLabel] {
@@ -63,7 +63,7 @@ final class ModeToggleView: NSView {
     }
 
     private func refreshToggleColors() {
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedTrack, cornerRadius: 14, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.neutralHairline.withAlphaComponent(0.03), cornerRadius: 14, borderWidth: 0)
         highlightView.refreshSurfaceAppearance()
         updateAppearance()
     }
@@ -72,11 +72,11 @@ final class ModeToggleView: NSView {
         if currentMode == "ide" {
             highlightView.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
             ideLabel.textColor = DesignTokens.toolbarPurpleActive
-            appLabel.textColor = DesignTokens.segmentedInactiveText
+            appLabel.textColor = DesignTokens.neutralStrong
         } else {
             highlightView.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
             appLabel.textColor = DesignTokens.toolbarPurpleActive
-            ideLabel.textColor = DesignTokens.segmentedInactiveText
+            ideLabel.textColor = DesignTokens.neutralStrong
         }
     }
 
@@ -90,7 +90,7 @@ final class ModeToggleView: NSView {
 
 final class ToolbarModeToggleHighlightView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedActiveFill, cornerRadius: 12, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.purpleSubtle, cornerRadius: 12, borderWidth: 0)
     }
 }
 
