@@ -20,7 +20,9 @@ A token with zero non-preview consumers is not "future intent" — it's dead wei
 
 ## 5. Aliases over duplicates
 
-When a token should always equal another token, declare it as a typed alias in Swift — do not copy the literal value. `segmentedActiveText = pillButtonText` is the pattern: if the canonical pill-button color shifts, the segmented control follows automatically. Two independently-defined `NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)` declarations will drift the first time someone tweaks one and forgets the other. If the equivalence is intentional, encode it in the type system.
+When a token should always equal another token, declare it as a typed alias in Swift — do not copy the literal value. Two independently-defined `NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)` declarations will drift the first time someone tweaks one and forgets the other. If the equivalence is intentional, encode it in the type system.
+
+The stronger form of this principle is a **ladder**: when a set of tokens share a derivation rule (e.g., five alphas of the same color), define them once at the base and let every consumer reference the ladder rather than spelling its own alpha. The purple ladder (`purpleFaint`, `purpleSubtle`, `purpleStrong`, `purpleBorder`, `purpleHover`) and neutral ladder (`neutralHairline`, `neutralBorder`, `neutralDim`, `neutralStrong`, `neutralPrimary`) are the canonical example — ~45 surface-specific purple/gray tokens collapsed to these 10 primitives in VIB-504..512. Before defining a new alpha variant, check whether a ladder step already encodes it.
 
 ## 6. When in doubt, don't add the token
 

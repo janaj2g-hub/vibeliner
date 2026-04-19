@@ -1,7 +1,58 @@
-# Vibeliner Design Token Audit — Visual-Pattern Pass
+# Vibeliner Design Token Audit
+
+## Visual-pattern consolidation complete (post-VIB-505..512)
+
+Shipped 2026-04-18. Established purple and neutral opacity ladders (VIB-505). Deleted surface-specific tokens across the pill-button, pill-button-primary, segmented-control, toolbar, settings, kbd, and add-image families (VIB-506..510). Swept residual #0F172A blue-tint (VIB-511; no-op — VIB-506..510 had already cleaned every instance).
+
+**Main-app `static let` count:** 204 → 171 (net −33 in-scope). Adds: 10 ladder primitives. Deletes: ~43 surface tokens. Retains: ~10 bespoke tokens with rationale.
+
+**New primitives (10):**
+
+Purple ladder (derived from `purpleLight` / `purpleDark`):
+- `purpleFaint` (6% alpha) — reserved for the faintest purple-on-background fills
+- `purpleSubtle` (14%) — tool-active bg, add-image bg, segmented active fill
+- `purpleStrong` (22%) — pill-button dark-mode bg, primary hover fill, segmented active border
+- `purpleBorder` (36%) — pill-button primary dark-mode border
+- `purpleHover` (bright hover accent) — pill-button hover border/text
+
+Neutral ladder (pure black / white):
+- `neutralHairline` (8%) — subtle dividers, faint borders, button hover bg
+- `neutralBorder` (12%) — 1px borders on chrome
+- `neutralDim` (45%) — secondary text, inactive icons
+- `neutralStrong` (70%) — primary icons, emphasized labels
+- `neutralPrimary` (100%) — primary text labels
+
+**Deleted (by family):**
+- `pillButton*` — 6 tokens (VIB-506): `pillButtonBg`, `pillButtonBorder`, `pillButtonHoverBg`, `pillButtonHoverBorder`, `pillButtonHoverText`, `pillButtonText`
+- `pillButtonPrimary*` — 5 tokens (VIB-507): `Bg`, `Border`, `HoverBg`, `HoverBorder`, `Text`
+- `segmented*` — 6 tokens (VIB-508): `ActiveBorder`, `ActiveFill`, `ActiveText`, `InactiveText`, `Track`, `TrackBorder`
+- `toolbar*` chrome subset — 13 tokens (VIB-509): `Border`, `Divider`, `ButtonHoverBg`, `IconDefault`, `IconHover`, `PurpleActive`, `ToolActiveBg`, `Secondary{Bg,Border,Text,HoverBg,HoverBorder,HoverText}`
+- Settings/kbd/add-image — 5 tokens (VIB-510): `settingsFieldBorder`, `kbdBg`, `kbdBorder`, `addImageBg`, `addImageBorder`
+
+**Bespoke tokens preserved (with rationale):**
+- `toolbarBg` — chrome "dark glass" surface at 0.92/0.88, not a ladder alpha
+- `toolbarCloseHoverBg`, `toolbarCloseIconHover`, `toolbarTrashHoverBg` — red family, outside purple/neutral ladder scope
+- `statusPillBg`, `statusPillBorder`, `statusPillTextColor` — chrome over screenshot content; bespoke tuning is intentional
+- `roleSwatchSelectedRing`, `roleSwatchInnerBorder`, `roleSwatchOutline` — settings role picker; 0.82/0.92 alpha far off ladder
+- `settingsFieldSurface`, `settingsFrameSurface`, `settingsPreviewSurface` — solid overlay surfaces, not alpha values
+- `kbdText` — small text (~11pt) at 0.55/0.60 alpha between ladder steps; legibility-critical
+- `SecondaryToolbarBorder.{idle,hover}` (file-private in `ToolbarButtons.swift`) — alphas 0.15/0.20 and 0.25/0.35 don't fit ladder; kept file-local per principle 2
+
+**Visual shifts (intentional, subtle):**
+- Light-mode chrome: Tailwind slate-950 (`rgba(15,23,42,X)`) blue tint removed. Borders, dividers, and kbd pill backgrounds are now pure neutral gray.
+- Some ladder aliases shifted alpha by ±0.02–0.06 vs source tokens (documented in per-commit bodies; imperceptible at rendered scale in most cases).
+- Role pills (Observed/Expected/Reference): verified IDENTICAL to pre-branch state.
+
+**Principle 5 updated** (PRINCIPLES.md) to document the ladder pattern as the stronger form of "aliases over duplicates."
+
+**Remaining systemic drift:** none known. If new duplicates appear post-ship, file a ticket citing principles 3 (contextual semantics) and 5 (aliases / ladders).
+
+---
+
+# Visual-Pattern Pass (VIB-499, 2026-04-13)
 
 **Date:** 2026-04-18
-**Current token count:** 364 `static let` declarations (160 tour-illustration quarantined; 204 main-app in-scope)
+**Historical token count at audit time:** 364 `static let` declarations (160 tour-illustration quarantined; 204 main-app in-scope)
 **Complements:** the [VIB-498 principles-lens audit](https://linear.app/jonworkinghub/issue/VIB-498/496b-audit-all-370-tokens-against-design-system-principles#comment-84803797)
 **Lens:** visual pattern — "what looks the same at a glance?" This audit deliberately uses a different heuristic than VIB-498, which scanned against the 7 principles in [PRINCIPLES.md](PRINCIPLES.md). The two audits are cumulative: VIB-498's 9 consolidation groups + this pass's groups combine into the approved execution plan.
 
