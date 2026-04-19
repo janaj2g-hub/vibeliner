@@ -23,60 +23,6 @@ sections:
 tokens:
 
   # --- components ---
-  toolbarSecondaryBg:
-    section: components
-    family: secondary-button
-    description: Secondary button bg — transparent
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: single
-      preview_component: secondary-button
-  toolbarSecondaryBorder:
-    section: components
-    family: secondary-button
-    description: "Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: secondary-button
-  toolbarSecondaryHoverBg:
-    section: components
-    family: secondary-button
-    description: "Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: secondary-button
-  toolbarSecondaryHoverBorder:
-    section: components
-    family: secondary-button
-    description: "Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: secondary-button
-  toolbarSecondaryHoverText:
-    section: components
-    family: secondary-button
-    description: "Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: secondary-button
-  toolbarSecondaryText:
-    section: components
-    family: secondary-button
-    description: "Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: secondary-button
   editorNoteBorderDefault:
     section: components
     family: note-pill
@@ -1252,25 +1198,6 @@ tokens:
       - Tour/Illustrations/TourMiniToolbar.swift
     rendering:
       mode: dual
-  toolbarBorder:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)"
-    consumed_by:
-      - Editor/ToolbarView.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-  toolbarButtonHoverBg:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)"
-    consumed_by:
-      - Editor/ToolButton.swift
-      - Popover/CaptureRowView.swift
-      - Popover/PopoverWindow.swift
-    rendering:
-      mode: dual
   toolbarCloseHoverBg:
     section: surfaces
     family: toolbar
@@ -1287,52 +1214,6 @@ tokens:
       - Editor/ToolButton.swift
     rendering:
       mode: single
-  toolbarDivider:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)"
-    consumed_by:
-      - Editor/ToolbarView.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-  toolbarIconDefault:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)"
-    consumed_by:
-      - Editor/ToolButton.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-  toolbarIconHover:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)"
-    consumed_by:
-      - Editor/ToolButton.swift
-    rendering:
-      mode: dual
-  toolbarPurpleActive:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar purple active — alias of purpleBrand."
-    consumed_by:
-      - Editor/ToolButton.swift
-      - Editor/ToolbarButtons.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    target: purpleBrand
-    rendering:
-      mode: alias
-  toolbarToolActiveBg:
-    section: surfaces
-    family: toolbar
-    description: "Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)"
-    consumed_by:
-      - Editor/ToolButton.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
   toolbarTrashHoverBg:
     section: surfaces
     family: toolbar

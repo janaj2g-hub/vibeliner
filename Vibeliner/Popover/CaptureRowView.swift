@@ -200,7 +200,7 @@ private final class PopoverCopyButton: AppearanceAwareSurfaceButton {
         let borderColor = isHovered ? DesignTokens.purpleBrand : NSColor.separatorColor
         SettingsUI.styleSurface(
             self,
-            background: isHovered ? DesignTokens.toolbarButtonHoverBg : DesignTokens.purpleStrong,
+            background: isHovered ? DesignTokens.neutralHairline : DesignTokens.purpleStrong,
             border: borderColor,
             cornerRadius: 6
         )

@@ -26,7 +26,7 @@ final class ToolbarTintOverlayView: AppearanceAwareSurfaceView {
 
 final class ToolbarDividerView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
-        SettingsUI.styleDividerSurface(self, color: DesignTokens.toolbarDivider)
+        SettingsUI.styleDividerSurface(self, color: DesignTokens.dynamicColor(dark: DesignTokens.neutralHairline, light: DesignTokens.neutralBorder))
     }
 }
 
@@ -321,7 +321,7 @@ final class ToolbarView: NSView {
 
     func refreshAppearanceColors() {
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            self.layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+            self.layer?.borderColor = DesignTokens.neutralBorder.cgColor
         }
         tintOverlay?.refreshSurfaceAppearance()
         for case let divider as ToolbarDividerView in subviews {

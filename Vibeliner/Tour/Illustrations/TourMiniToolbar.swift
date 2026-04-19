@@ -57,7 +57,7 @@ final class TourMiniToolbar: NSView {
         layer?.masksToBounds = true
         layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
         layer?.borderWidth = 1
-        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+        layer?.borderColor = DesignTokens.neutralBorder.cgColor
     }
 
     required init?(coder: NSCoder) { fatalError() }
@@ -66,7 +66,7 @@ final class TourMiniToolbar: NSView {
 
     override func updateLayer() {
         layer?.backgroundColor = DesignTokens.toolbarBg.cgColor
-        layer?.borderColor = DesignTokens.toolbarBorder.cgColor
+        layer?.borderColor = DesignTokens.neutralBorder.cgColor
     }
 
     override func draw(_ dirtyRect: NSRect) {
@@ -80,7 +80,7 @@ final class TourMiniToolbar: NSView {
             let toolY = (h - toolSize) / 2
             let cx = x + toolSize / 2
             let cy = toolY + toolSize / 2
-            ctx.setStrokeColor(DesignTokens.toolbarIconDefault.cgColor)
+            ctx.setStrokeColor(DesignTokens.neutralDim.cgColor)
             ctx.setLineWidth(1.5)
             ctx.setLineCap(.round)
             let s: CGFloat = 3.5
@@ -93,7 +93,7 @@ final class TourMiniToolbar: NSView {
             x += toolSize + toolSpacing
 
             // Divider after close
-            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+            ctx.setFillColor(DesignTokens.dynamicColor(dark: DesignTokens.neutralHairline, light: DesignTokens.neutralBorder).cgColor)
             ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
             x += dividerWidth + sectionPadding
         }
@@ -106,13 +106,13 @@ final class TourMiniToolbar: NSView {
                 let toolRect = CGRect(x: x, y: toolY, width: toolSize, height: toolSize)
 
                 if tool == config.activeTool {
-                    ctx.setFillColor(DesignTokens.toolbarToolActiveBg.cgColor)
+                    ctx.setFillColor(DesignTokens.purpleSubtle.cgColor)
                     ctx.fillEllipse(in: toolRect)
                 }
 
                 let iconColor = tool == config.activeTool
-                    ? DesignTokens.toolbarPurpleActive
-                    : DesignTokens.toolbarIconDefault
+                    ? DesignTokens.purpleBrand
+                    : DesignTokens.neutralDim
 
                 switch tool {
                 case .pin:
@@ -132,7 +132,7 @@ final class TourMiniToolbar: NSView {
             x += sectionPadding - toolSpacing
 
             // -- Divider --
-            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+            ctx.setFillColor(DesignTokens.dynamicColor(dark: DesignTokens.neutralHairline, light: DesignTokens.neutralBorder).cgColor)
             ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
             x += dividerWidth + sectionPadding
         }
@@ -143,7 +143,7 @@ final class TourMiniToolbar: NSView {
 
         // -- Copy / Add Image buttons --
         if config.showCopyPrompt || config.showCopyImage || config.showAddImage {
-            ctx.setFillColor(DesignTokens.toolbarDivider.cgColor)
+            ctx.setFillColor(DesignTokens.dynamicColor(dark: DesignTokens.neutralHairline, light: DesignTokens.neutralBorder).cgColor)
             ctx.fill(CGRect(x: x, y: h * 0.2, width: dividerWidth, height: h * 0.6))
             x += dividerWidth + sectionPadding
 
@@ -185,11 +185,11 @@ final class TourMiniToolbar: NSView {
         // Labels
         let ideAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.toolbarPurpleActive : DesignTokens.neutralStrong,
+            .foregroundColor: ideActive ? DesignTokens.purpleBrand : DesignTokens.neutralStrong,
         ]
         let appAttrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: ideActive ? DesignTokens.neutralStrong : DesignTokens.toolbarPurpleActive,
+            .foregroundColor: ideActive ? DesignTokens.neutralStrong : DesignTokens.purpleBrand,
         ]
         let ideStr = NSAttributedString(string: "IDE", attributes: ideAttrs)
         let appStr = NSAttributedString(string: "App", attributes: appAttrs)

@@ -173,13 +173,6 @@ enum DesignTokens {
             : NSColor(white: 1.0, alpha: 0.88)
     }
 
-    /// Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
-    static let toolbarBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.12)
-            : NSColor(white: 0.0, alpha: 0.10)
-    }
-
     /// Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)
     static let statusPillBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
@@ -199,65 +192,6 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor.clear : NSColor(white: 0.0, alpha: 0.06)
     }
 
-    /// Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)
-    static let toolbarIconDefault = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.40) : NSColor(white: 0.0, alpha: 0.45)
-    }
-
-    /// Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)
-    static let toolbarIconHover = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.70) : NSColor(white: 0.0, alpha: 0.70)
-    }
-
-    /// Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)
-    static let toolbarDivider = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.12)
-    }
-
-    /// Toolbar purple active — alias of `purpleBrand`.
-    static let toolbarPurpleActive = purpleBrand
-
-    // MARK: - Secondary Toolbar Buttons (VIB-330)
-    // Used by + Add image and New capture — subtle outlined style, secondary to Copy Prompt/Image
-
-    /// Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)
-    static let toolbarSecondaryBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.20)
-            : NSColor(white: 0.0, alpha: 0.15)
-    }
-
-    /// Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)
-    static let toolbarSecondaryText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.60)
-            : NSColor(white: 0.0, alpha: 0.65)
-    }
-
-    /// Secondary button bg — transparent
-    static let toolbarSecondaryBg = NSColor.clear
-
-    /// Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)
-    static let toolbarSecondaryHoverBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.35)
-            : NSColor(white: 0.0, alpha: 0.25)
-    }
-
-    /// Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)
-    static let toolbarSecondaryHoverText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.80)
-            : NSColor(white: 0.0, alpha: 0.75)
-    }
-
-    /// Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)
-    static let toolbarSecondaryHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.05)
-            : NSColor(white: 0.0, alpha: 0.04)
-    }
-
     /// Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
     static let addImageBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
@@ -270,11 +204,6 @@ enum DesignTokens {
         isDarkAppearance(appearance)
             ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
             : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.15)
-    }
-
-    /// Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)
-    static let toolbarButtonHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.06)
     }
 
     /// Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)
@@ -292,13 +221,6 @@ enum DesignTokens {
         isDarkAppearance(appearance)
             ? NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.15)
             : NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.12)
-    }
-
-    /// Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)
-    static let toolbarToolActiveBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
     }
 
 }
