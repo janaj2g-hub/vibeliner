@@ -1,5 +1,20 @@
 import AppKit
 
+// Bespoke border alphas for the secondary toolbar button (+ Add image,
+// New capture). These don't align with the neutral ladder (idle 0.15/0.20,
+// hover 0.25/0.35) and stay file-local per VIB-509. Kept as file-scoped
+// `static let` to avoid re-resolving the dynamicColor on every call.
+private enum SecondaryToolbarBorder {
+    static let idle = DesignTokens.dynamicColor(
+        dark: NSColor(white: 1, alpha: 0.20),
+        light: NSColor(white: 0, alpha: 0.15)
+    )
+    static let hover = DesignTokens.dynamicColor(
+        dark: NSColor(white: 1, alpha: 0.35),
+        light: NSColor(white: 0, alpha: 0.25)
+    )
+}
+
 // MARK: - Mode Toggle
 
 final class ModeToggleView: NSView {
@@ -26,7 +41,7 @@ final class ModeToggleView: NSView {
 
     private func setupView() {
         wantsLayer = true
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedTrack, cornerRadius: 14, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.neutralHairline.withAlphaComponent(0.03), cornerRadius: 14, borderWidth: 0)
         addSubview(highlightView)
 
         for label in [ideLabel, appLabel] {
@@ -63,7 +78,7 @@ final class ModeToggleView: NSView {
     }
 
     private func refreshToggleColors() {
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedTrack, cornerRadius: 14, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.neutralHairline.withAlphaComponent(0.03), cornerRadius: 14, borderWidth: 0)
         highlightView.refreshSurfaceAppearance()
         updateAppearance()
     }
@@ -71,12 +86,12 @@ final class ModeToggleView: NSView {
     private func updateAppearance() {
         if currentMode == "ide" {
             highlightView.frame = NSRect(x: 2, y: 2, width: segW, height: 24)
-            ideLabel.textColor = DesignTokens.toolbarPurpleActive
-            appLabel.textColor = DesignTokens.segmentedInactiveText
+            ideLabel.textColor = DesignTokens.purpleBrand
+            appLabel.textColor = DesignTokens.neutralStrong
         } else {
             highlightView.frame = NSRect(x: 2 + segW, y: 2, width: segW, height: 24)
-            appLabel.textColor = DesignTokens.toolbarPurpleActive
-            ideLabel.textColor = DesignTokens.segmentedInactiveText
+            appLabel.textColor = DesignTokens.purpleBrand
+            ideLabel.textColor = DesignTokens.neutralStrong
         }
     }
 
@@ -90,7 +105,7 @@ final class ModeToggleView: NSView {
 
 final class ToolbarModeToggleHighlightView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
-        SettingsUI.styleSurface(self, background: DesignTokens.segmentedActiveFill, cornerRadius: 12, borderWidth: 0)
+        SettingsUI.styleSurface(self, background: DesignTokens.purpleSubtle, cornerRadius: 12, borderWidth: 0)
     }
 }
 
@@ -116,7 +131,7 @@ final class CopyPillButton: NSView {
         layer?.borderWidth = 1.5
 
         label.font = NSFont.systemFont(ofSize: 12, weight: .medium)
-        label.textColor = DesignTokens.pillButtonText
+        label.textColor = DesignTokens.purpleBrand
         label.isBezeled = false
         label.drawsBackground = false
         label.isEditable = false
@@ -185,8 +200,13 @@ final class CopyPillButton: NSView {
             )
             label.textColor = DesignTokens.copiedGreenText
         } else {
-            let borderColor = isHovered ? DesignTokens.pillButtonHoverBorder : DesignTokens.pillButtonBorder
-            let bgColor = isHovered ? DesignTokens.pillButtonHoverBg : DesignTokens.pillButtonBg
+            let borderColor = isHovered ? DesignTokens.purpleHover : DesignTokens.purpleBrand
+            let bgColor: NSColor = isHovered
+                ? DesignTokens.dynamicColor(
+                    dark: DesignTokens.purpleHover.withAlphaComponent(0.35),
+                    light: DesignTokens.purpleBrand.withAlphaComponent(0.12)
+                )
+                : DesignTokens.purpleStrong
             SettingsUI.styleSurface(
                 self,
                 background: bgColor,
@@ -194,7 +214,7 @@ final class CopyPillButton: NSView {
                 cornerRadius: 14,
                 borderWidth: 1.5
             )
-            label.textColor = isHovered ? DesignTokens.pillButtonHoverText : DesignTokens.pillButtonText
+            label.textColor = isHovered ? DesignTokens.purpleHover : DesignTokens.purpleBrand
         }
     }
 
@@ -256,27 +276,27 @@ final class SecondaryPillButton: NSView {
 
     private func updateAppearance() {
         if !isButtonEnabled {
-            label.textColor = DesignTokens.toolbarSecondaryText.withAlphaComponent(0.3)
+            label.textColor = DesignTokens.neutralStrong.withAlphaComponent(0.3)
             SettingsUI.styleSurface(
                 self,
                 background: .clear,
-                border: DesignTokens.toolbarSecondaryBorder.withAlphaComponent(0.15),
+                border: SecondaryToolbarBorder.idle.withAlphaComponent(0.15),
                 cornerRadius: 13
             )
         } else if isHovered {
-            label.textColor = DesignTokens.toolbarSecondaryHoverText
+            label.textColor = DesignTokens.neutralStrong
             SettingsUI.styleSurface(
                 self,
-                background: DesignTokens.toolbarSecondaryHoverBg,
-                border: DesignTokens.toolbarSecondaryHoverBorder,
+                background: DesignTokens.neutralHairline.withAlphaComponent(0.05),
+                border: SecondaryToolbarBorder.hover,
                 cornerRadius: 13
             )
         } else {
-            label.textColor = DesignTokens.toolbarSecondaryText
+            label.textColor = DesignTokens.neutralStrong
             SettingsUI.styleSurface(
                 self,
-                background: DesignTokens.toolbarSecondaryBg,
-                border: DesignTokens.toolbarSecondaryBorder,
+                background: .clear,
+                border: SecondaryToolbarBorder.idle,
                 cornerRadius: 13
             )
         }

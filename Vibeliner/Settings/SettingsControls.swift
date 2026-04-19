@@ -11,7 +11,7 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
         bezelStyle = .regularSquare
         focusRingType = .none
         font = DesignTokens.fontLabelSm
-        contentTintColor = DesignTokens.pillButtonText
+        contentTintColor = DesignTokens.purpleBrand
         wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
         setButtonType(.momentaryPushIn)
@@ -25,11 +25,11 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
     required init?(coder: NSCoder) { fatalError() }
 
     func refreshColors() {
-        contentTintColor = DesignTokens.pillButtonText
+        contentTintColor = DesignTokens.purpleBrand
         SettingsUI.styleSurface(
             self,
-            background: DesignTokens.pillButtonBg,
-            border: DesignTokens.pillButtonBorder,
+            background: DesignTokens.purpleStrong,
+            border: DesignTokens.purpleBrand,
             cornerRadius: DesignTokens.pillButtonHeight / 2
         )
     }
@@ -99,7 +99,7 @@ final class SettingsKeyPillRow: NSStackView {
         for key in keys {
             let label = NSTextField(labelWithString: key)
             label.font = DesignTokens.fontLabelSm
-            label.textColor = DesignTokens.pillButtonText
+            label.textColor = DesignTokens.purpleBrand
             label.alignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
 
@@ -248,7 +248,7 @@ final class SettingsSegmentedControl: NSView {
     private func updateButtonStates() {
         for (index, button) in buttons.enumerated() {
             let isActive = index == selectedIndex
-            button.contentTintColor = isActive ? DesignTokens.segmentedActiveText : DesignTokens.segmentedInactiveText
+            button.contentTintColor = isActive ? DesignTokens.purpleBrand : DesignTokens.neutralStrong
             button.font = isActive
                 ? NSFont.systemFont(ofSize: style.font.pointSize, weight: .semibold)
                 : style.font
@@ -638,7 +638,7 @@ final class SettingsToggleControl: NSView {
     private func updateStates() {
         for (index, button) in buttons.enumerated() {
             let isActive = index == selectedIndex
-            button.contentTintColor = isActive ? .white : DesignTokens.segmentedInactiveText
+            button.contentTintColor = isActive ? .white : DesignTokens.neutralStrong
             button.setAccessibilityValue(isActive ? "selected" : "")
         }
     }
@@ -660,7 +660,7 @@ final class SettingsToggleControl: NSView {
         let cr = Self.controlHeight / 2
         trackView.layer?.cornerRadius = cr
         effectiveAppearance.performAsCurrentDrawingAppearance {
-            self.trackView.layer?.backgroundColor = DesignTokens.segmentedTrack.cgColor
+            self.trackView.layer?.backgroundColor = DesignTokens.neutralHairline.withAlphaComponent(0.03).cgColor
             self.highlightView.layer?.backgroundColor = DesignTokens.purpleDark.cgColor
         }
         updateStates()

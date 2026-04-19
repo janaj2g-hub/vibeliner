@@ -204,7 +204,7 @@ final class PromptTabView: NSView, NSTextViewDelegate, NSTextFieldDelegate {
         // Reset button row
         resetButton.isBordered = false
         resetButton.font = NSFont.systemFont(ofSize: 13, weight: .medium)
-        resetButton.contentTintColor = DesignTokens.pillButtonText
+        resetButton.contentTintColor = DesignTokens.purpleBrand
         resetButton.target = self
         resetButton.action = #selector(resetCurrentPromptSection)
         resetButton.translatesAutoresizingMaskIntoConstraints = false

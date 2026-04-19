@@ -23,7 +23,7 @@ class PopoverHoverSurfaceView: AppearanceAwareSurfaceView {
     override func refreshSurfaceAppearance() {
         SettingsUI.styleSurface(
             self,
-            background: isSurfaceHovered ? DesignTokens.toolbarButtonHoverBg : .clear,
+            background: isSurfaceHovered ? DesignTokens.neutralHairline : .clear,
             cornerRadius: hoverCornerRadius,
             borderWidth: 0
         )

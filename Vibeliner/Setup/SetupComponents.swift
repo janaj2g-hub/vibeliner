@@ -77,11 +77,11 @@ class SetupPillButton: AppearanceAwareSurfaceButton {
     override func refreshSurfaceAppearance() {
         switch role {
         case .accent:
-            contentTintColor = DesignTokens.pillButtonText
+            contentTintColor = DesignTokens.purpleBrand
             SettingsUI.styleSurface(
                 self,
-                background: DesignTokens.pillButtonBg,
-                border: DesignTokens.pillButtonBorder,
+                background: DesignTokens.purpleStrong,
+                border: DesignTokens.purpleBrand,
                 cornerRadius: heightValue / 2
             )
         case .success:
@@ -146,11 +146,11 @@ final class SetupCircleButton: AppearanceAwareSurfaceButton {
     }
 
     override func refreshSurfaceAppearance() {
-        contentTintColor = DesignTokens.pillButtonText
+        contentTintColor = DesignTokens.purpleBrand
         SettingsUI.styleSurface(
             self,
-            background: DesignTokens.pillButtonBg,
-            border: DesignTokens.pillButtonBorder,
+            background: DesignTokens.purpleStrong,
+            border: DesignTokens.purpleBrand,
             cornerRadius: bounds.height / 2
         )
     }

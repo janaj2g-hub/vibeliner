@@ -68,29 +68,29 @@ final class ToolButton: NSView {
         switch style {
         case .close:
             bgColor = isHovered ? DesignTokens.toolbarCloseHoverBg : .clear
-            iconColor = isHovered ? DesignTokens.toolbarCloseIconHover : DesignTokens.toolbarIconDefault
+            iconColor = isHovered ? DesignTokens.toolbarCloseIconHover : DesignTokens.neutralDim
         case .trash:
             if !isEnabled {
                 bgColor = .clear
-                iconColor = DesignTokens.toolbarIconDefault.withAlphaComponent(0.35)
+                iconColor = DesignTokens.neutralDim.withAlphaComponent(0.35)
             } else if isHovered {
                 bgColor = DesignTokens.toolbarTrashHoverBg
                 iconColor = DesignTokens.red
             } else {
                 bgColor = .clear
-                iconColor = DesignTokens.toolbarIconDefault
+                iconColor = DesignTokens.neutralDim
             }
         case .tool:
             if isActive {
-                bgColor = DesignTokens.toolbarToolActiveBg
-                iconColor = DesignTokens.toolbarPurpleActive
+                bgColor = DesignTokens.purpleSubtle
+                iconColor = DesignTokens.purpleBrand
             } else {
-                bgColor = isHovered ? DesignTokens.toolbarButtonHoverBg : .clear
-                iconColor = isHovered ? DesignTokens.toolbarIconHover : DesignTokens.toolbarIconDefault
+                bgColor = isHovered ? DesignTokens.neutralHairline : .clear
+                iconColor = isHovered ? DesignTokens.neutralStrong : DesignTokens.neutralDim
             }
         case .icon:
-            bgColor = isHovered ? DesignTokens.toolbarButtonHoverBg : .clear
-            iconColor = isHovered ? DesignTokens.toolbarIconHover : DesignTokens.toolbarIconDefault
+            bgColor = isHovered ? DesignTokens.neutralHairline : .clear
+            iconColor = isHovered ? DesignTokens.neutralStrong : DesignTokens.neutralDim
         }
 
         // Draw circular background

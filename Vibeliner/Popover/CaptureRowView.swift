@@ -196,11 +196,11 @@ private final class PopoverCopyButton: AppearanceAwareSurfaceButton {
             return
         }
 
-        contentTintColor = DesignTokens.pillButtonText
-        let borderColor = isHovered ? DesignTokens.pillButtonBorder : NSColor.separatorColor
+        contentTintColor = DesignTokens.purpleBrand
+        let borderColor = isHovered ? DesignTokens.purpleBrand : NSColor.separatorColor
         SettingsUI.styleSurface(
             self,
-            background: isHovered ? DesignTokens.toolbarButtonHoverBg : DesignTokens.pillButtonBg,
+            background: isHovered ? DesignTokens.neutralHairline : DesignTokens.purpleStrong,
             border: borderColor,
             cornerRadius: 6
         )

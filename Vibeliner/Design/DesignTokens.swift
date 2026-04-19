@@ -25,6 +25,88 @@ enum DesignTokens {
     /// Canonical "purple label on dark/light surface" color.
     static let purpleBrand = dynamicColor(dark: purpleLight, light: purpleDark)
 
+    // MARK: - Purple opacity ladder
+    //
+    // Derived alpha variants of the two brand purples. Any surface that needs
+    // "a tinted purple fill" or "a purple border" should reference one of these
+    // primitives instead of defining its own alpha. Added in VIB-505.
+
+    /// Purple at 6% alpha — barely-there tinted surface. Reserved for future use
+    /// by the faintest purple-on-background fills.
+    static let purpleFaint = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.06),
+        light: purpleDark.withAlphaComponent(0.06)
+    )
+
+    /// Purple at 14% alpha — subtle tinted fill. Used for tool-active backgrounds,
+    /// add-image button backgrounds, segmented-control active fills.
+    static let purpleSubtle = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.14),
+        light: purpleDark.withAlphaComponent(0.14)
+    )
+
+    /// Purple at 22% alpha — emphasized tinted fill. Used for pill button
+    /// backgrounds in dark mode, primary button hover fills, segmented-control
+    /// active borders.
+    static let purpleStrong = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.22),
+        light: purpleDark.withAlphaComponent(0.22)
+    )
+
+    /// Purple at 36% alpha — tinted border. Used for pill button primary borders
+    /// in dark mode.
+    static let purpleBorder = dynamicColor(
+        dark:  purpleLight.withAlphaComponent(0.36),
+        light: purpleDark.withAlphaComponent(0.36)
+    )
+
+    /// Purple hover accent — one step brighter than `purpleBrand`. Used for
+    /// pill button hover borders and text. The two raw hex values are
+    /// intentional: they represent a deliberately-lightened hover shift that
+    /// `purpleLight.withAlphaComponent(...)` cannot produce.
+    static let purpleHover = dynamicColor(
+        dark:  NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1),  // #C4B8F5
+        light: NSColor(red: 96/255,  green: 85/255,  blue: 196/255, alpha: 1)   // #6055C4
+    )
+
+    // MARK: - Neutral opacity ladder
+    //
+    // White-on-dark and black-on-light at canonical alpha levels. Any surface
+    // needing "a gray border" or "a dimmed icon" should reference these
+    // primitives instead of defining its own alpha. Added in VIB-505.
+
+    /// Hairline at ~8% alpha — subtle dividers, faint borders, button hover
+    /// backgrounds.
+    static let neutralHairline = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.08),
+        light: NSColor(white: 0, alpha: 0.08)
+    )
+
+    /// Standard border at ~12% alpha — 1px borders on chrome surfaces
+    /// (toolbars, input fields, kbd pills).
+    static let neutralBorder = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.12),
+        light: NSColor(white: 0, alpha: 0.12)
+    )
+
+    /// Dimmed at ~45% alpha — secondary text, inactive icons.
+    static let neutralDim = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.45),
+        light: NSColor(white: 0, alpha: 0.45)
+    )
+
+    /// Strong at ~70% alpha — primary icons, emphasized labels.
+    static let neutralStrong = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 0.70),
+        light: NSColor(white: 0, alpha: 0.70)
+    )
+
+    /// Primary at ~100% alpha — primary text labels.
+    static let neutralPrimary = dynamicColor(
+        dark:  NSColor(white: 1, alpha: 1.0),
+        light: NSColor(white: 0, alpha: 1.0)
+    )
+
     /// Brand green — #22C55E. Canonical success / positive-state color.
     static let green = NSColor(red: 34/255, green: 197/255, blue: 94/255, alpha: 1.0)
 
@@ -67,90 +149,16 @@ enum DesignTokens {
     /// rgba(175, 169, 236, 0.12) — toolbar/canvas border
     static let chromeBorder = NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.12)
 
-    // MARK: - Kbd pill (VIB-502: promoted from setupKbd* since consumed by Setup + Tour)
-
-    /// Kbd pill border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
-    static let kbdBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.12) : NSColor(white: 0, alpha: 0.10)
-    }
-    /// Kbd pill bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.05)
-    static let kbdBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.08) : NSColor(white: 0, alpha: 0.05)
-    }
-    /// Kbd pill text — dark: rgba(255,255,255,0.55), light: rgba(0,0,0,0.60)
+    // MARK: - Keyboard shortcut pill text (bespoke)
+    //
+    // Kbd labels are small (~11pt). At 0.55/0.60 alpha they sit between
+    // `neutralDim` (0.45) and `neutralStrong` (0.70). Neither ladder step
+    // preserves legibility without a visible shift, so this token stays
+    // outside the ladder. Bg/border were consolidated to the ladder in
+    // VIB-510; text intentionally kept bespoke.
     static let kbdText = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
     }
-
-    // MARK: - Universal pill button (VIB-440)
-
-    /// Pill button border — dark: #A796EB, light: #534AB7
-    static let pillButtonBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
-
-    /// Pill button text — alias of `purpleBrand`.
-    static let pillButtonText = purpleBrand
-
-    /// Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)
-    static let pillButtonBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.25)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08)
-    }
-
-    /// Pill button hover border — dark: #C4B8F5, light: #7461C2
-    static let pillButtonHoverBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1.0)
-            : NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 1.0)
-    }
-
-    /// Pill button hover text — dark: #C4B8F5, light: #7461C2
-    static let pillButtonHoverText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1.0)
-            : NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 1.0)
-    }
-
-    /// Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)
-    static let pillButtonHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.35)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
-    }
-
-    /// Primary pill button text — dark: #AFA9EC, light: white (solid CTA)
-    static let pillButtonPrimaryText = dynamicColor(
-        dark: purpleLight,
-        light: NSColor.white
-    )
-
-    /// Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)
-    static let pillButtonPrimaryBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16),
-        light: purpleDark
-    )
-
-    /// Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7
-    static let pillButtonPrimaryBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36),
-        light: purpleDark
-    )
-
-    /// Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4
-    static let pillButtonPrimaryHoverBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
-
-    /// Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4
-    static let pillButtonPrimaryHoverBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.48),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
 
     // MARK: - Appearance-aware toolbar tokens (VIB-235)
 
@@ -159,13 +167,6 @@ enum DesignTokens {
         isDarkAppearance(appearance)
             ? NSColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 0.92)
             : NSColor(white: 1.0, alpha: 0.88)
-    }
-
-    /// Toolbar border — dark: rgba(255,255,255,0.12), light: rgba(0,0,0,0.10)
-    static let toolbarBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.12)
-            : NSColor(white: 0.0, alpha: 0.10)
     }
 
     /// Status pill bg — dark: rgba(30,30,30,0.88), light: rgba(255,255,255,0.85)
@@ -187,84 +188,6 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor.clear : NSColor(white: 0.0, alpha: 0.06)
     }
 
-    /// Toolbar icon default — dark: rgba(255,255,255,0.40), light: rgba(0,0,0,0.45)
-    static let toolbarIconDefault = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.40) : NSColor(white: 0.0, alpha: 0.45)
-    }
-
-    /// Toolbar icon hover — dark: rgba(255,255,255,0.70), light: rgba(0,0,0,0.70)
-    static let toolbarIconHover = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.70) : NSColor(white: 0.0, alpha: 0.70)
-    }
-
-    /// Toolbar divider — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.12)
-    static let toolbarDivider = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.12)
-    }
-
-    /// Toolbar purple active — alias of `purpleBrand`.
-    static let toolbarPurpleActive = purpleBrand
-
-    // MARK: - Secondary Toolbar Buttons (VIB-330)
-    // Used by + Add image and New capture — subtle outlined style, secondary to Copy Prompt/Image
-
-    /// Secondary button border — dark: rgba(255,255,255,0.20), light: rgba(0,0,0,0.15)
-    static let toolbarSecondaryBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.20)
-            : NSColor(white: 0.0, alpha: 0.15)
-    }
-
-    /// Secondary button text — dark: rgba(255,255,255,0.60), light: rgba(0,0,0,0.55)
-    static let toolbarSecondaryText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.60)
-            : NSColor(white: 0.0, alpha: 0.65)
-    }
-
-    /// Secondary button bg — transparent
-    static let toolbarSecondaryBg = NSColor.clear
-
-    /// Secondary button hover border — dark: rgba(255,255,255,0.35), light: rgba(0,0,0,0.25)
-    static let toolbarSecondaryHoverBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.35)
-            : NSColor(white: 0.0, alpha: 0.25)
-    }
-
-    /// Secondary button hover text — dark: rgba(255,255,255,0.80), light: rgba(0,0,0,0.75)
-    static let toolbarSecondaryHoverText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.80)
-            : NSColor(white: 0.0, alpha: 0.75)
-    }
-
-    /// Secondary button hover bg — dark: rgba(255,255,255,0.05), light: rgba(0,0,0,0.04)
-    static let toolbarSecondaryHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.05)
-            : NSColor(white: 0.0, alpha: 0.04)
-    }
-
-    /// Add image button bg — dark: rgba(175,169,236,0.14), light: rgba(83,74,183,0.08)
-    static let addImageBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08)
-    }
-
-    /// Add image button border — dark: rgba(175,169,236,0.22), light: rgba(83,74,183,0.15)
-    static let addImageBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.15)
-    }
-
-    /// Toolbar button hover bg — dark: rgba(255,255,255,0.08), light: rgba(0,0,0,0.06)
-    static let toolbarButtonHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance) ? NSColor(white: 1.0, alpha: 0.08) : NSColor(white: 0.0, alpha: 0.06)
-    }
-
     /// Toolbar close hover bg — dark: rgba(255,87,87,0.2), light: rgba(255,87,87,0.15)
     static let toolbarCloseHoverBg = NSColor(name: nil) { appearance in
         isDarkAppearance(appearance)
@@ -280,53 +203,6 @@ enum DesignTokens {
         isDarkAppearance(appearance)
             ? NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.15)
             : NSColor(red: 255/255, green: 87/255, blue: 87/255, alpha: 0.12)
-    }
-
-    /// Toolbar tool active bg — dark: rgba(175,169,236,0.2), light: rgba(83,74,183,0.12)
-    static let toolbarToolActiveBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.2)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
-    }
-
-    // MARK: - Universal segmented control (VIB-441)
-
-    /// Segmented track bg — dark: rgba(255,255,255,0.03), light: rgba(15,23,42,0.04)
-    static let segmentedTrack = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.03)
-            : NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.04)
-    }
-
-    /// Segmented track border — dark: rgba(255,255,255,0.08), light: rgba(15,23,42,0.08)
-    static let segmentedTrackBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.08)
-            : NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.08)
-    }
-
-    /// Segmented active fill — dark: rgba(175,169,236,0.16), light: rgba(175,169,236,0.14)
-    static let segmentedActiveFill = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16)
-            : NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.14)
-    }
-
-    /// Segmented active border — dark: rgba(175,169,236,0.20), light: rgba(114,103,221,0.18)
-    static let segmentedActiveBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.20)
-            : NSColor(red: 114/255, green: 103/255, blue: 221/255, alpha: 0.18)
-    }
-
-    /// Segmented active text — dark: #AFA9EC, light: #7267DD
-    static let segmentedActiveText = pillButtonText
-
-    /// Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)
-    static let segmentedInactiveText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(white: 1.0, alpha: 0.58)
-            : NSColor(red: 15/255, green: 23/255, blue: 42/255, alpha: 0.58)
     }
 
 }
