@@ -211,19 +211,19 @@ final class TourMiniToolbar: NSView {
         let pillY = (h - 20) / 2
         let pillRect = CGRect(x: x, y: pillY, width: width, height: 20)
 
-        ctx.setFillColor(DesignTokens.pillButtonBg.cgColor)
+        ctx.setFillColor(DesignTokens.purpleStrong.cgColor)
         let path = CGPath(roundedRect: pillRect, cornerWidth: 999, cornerHeight: 999, transform: nil)
         ctx.addPath(path)
         ctx.fillPath()
 
-        ctx.setStrokeColor(DesignTokens.pillButtonBorder.cgColor)
+        ctx.setStrokeColor(DesignTokens.purpleBrand.cgColor)
         ctx.setLineWidth(1)
         ctx.addPath(path)
         ctx.strokePath()
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: DesignTokens.pillButtonText,
+            .foregroundColor: DesignTokens.purpleBrand,
         ]
         let str = NSAttributedString(string: text, attributes: attrs)
         let size = str.size()
@@ -249,7 +249,7 @@ final class TourMiniToolbar: NSView {
 
         let attrs: [NSAttributedString.Key: Any] = [
             .font: NSFont.systemFont(ofSize: 8, weight: .bold),
-            .foregroundColor: DesignTokens.pillButtonText,
+            .foregroundColor: DesignTokens.purpleBrand,
         ]
         let str = NSAttributedString(string: text, attributes: attrs)
         let size = str.size()

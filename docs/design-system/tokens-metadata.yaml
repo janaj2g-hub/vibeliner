@@ -23,81 +23,6 @@ sections:
 tokens:
 
   # --- components ---
-  pillButtonBg:
-    section: components
-    family: pill-button
-    description: "Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)"
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Editor/ToolbarButtons.swift
-      - Popover/CaptureRowView.swift
-      - Settings/SettingsControls.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button
-  pillButtonBorder:
-    section: components
-    family: pill-button
-    description: "Pill button border — dark: #A796EB, light: #534AB7"
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Editor/ToolbarButtons.swift
-      - Popover/CaptureRowView.swift
-      - Settings/SettingsControls.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button
-  pillButtonHoverBg:
-    section: components
-    family: pill-button
-    description: "Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button
-  pillButtonHoverBorder:
-    section: components
-    family: pill-button
-    description: "Pill button hover border — dark: #C4B8F5, light: #7461C2"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button
-  pillButtonHoverText:
-    section: components
-    family: pill-button
-    description: "Pill button hover text — dark: #C4B8F5, light: #7461C2"
-    consumed_by:
-      - Editor/ToolbarButtons.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button
-  pillButtonText:
-    section: components
-    family: pill-button
-    description: "Pill button text — alias of purpleBrand."
-    consumed_by:
-      - App/HarnessPreviewSurfaces.swift
-      - Editor/ToolbarButtons.swift
-      - Popover/CaptureRowView.swift
-      - Settings/PromptTabCustomViews.swift
-      - Settings/PromptTabView.swift
-      - Settings/SettingsControls.swift
-      - Setup/SetupComponents.swift
-      - Setup/SetupWindowController+UIFactories.swift
-      - Tour/Illustrations/TourMiniToolbar.swift
-    target: purpleBrand
-    rendering:
-      mode: alias
-      preview_component: pill-button
   pillButtonPrimaryBg:
     section: components
     family: pill-button-primary
@@ -166,10 +91,10 @@ tokens:
   segmentedActiveText:
     section: components
     family: segmented-control
-    description: "Segmented active text — dark: #AFA9EC, light: #7267DD"
+    description: "Segmented active text — alias of purpleBrand."
     consumed_by:
       - Settings/SettingsControls.swift
-    target: pillButtonText
+    target: purpleBrand
     rendering:
       mode: alias
       preview_component: segmented-control

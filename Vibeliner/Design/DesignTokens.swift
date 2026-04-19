@@ -164,46 +164,6 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
     }
 
-    // MARK: - Universal pill button (VIB-440)
-
-    /// Pill button border — dark: #A796EB, light: #534AB7
-    static let pillButtonBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 167/255, green: 150/255, blue: 235/255, alpha: 1.0)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 1.0)
-    }
-
-    /// Pill button text — alias of `purpleBrand`.
-    static let pillButtonText = purpleBrand
-
-    /// Pill button bg — dark: rgba(116,97,194,0.25), light: rgba(83,74,183,0.08)
-    static let pillButtonBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.25)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.08)
-    }
-
-    /// Pill button hover border — dark: #C4B8F5, light: #7461C2
-    static let pillButtonHoverBorder = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1.0)
-            : NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 1.0)
-    }
-
-    /// Pill button hover text — dark: #C4B8F5, light: #7461C2
-    static let pillButtonHoverText = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 196/255, green: 184/255, blue: 245/255, alpha: 1.0)
-            : NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 1.0)
-    }
-
-    /// Pill button hover bg — dark: rgba(116,97,194,0.35), light: rgba(83,74,183,0.12)
-    static let pillButtonHoverBg = NSColor(name: nil) { appearance in
-        isDarkAppearance(appearance)
-            ? NSColor(red: 116/255, green: 97/255, blue: 194/255, alpha: 0.35)
-            : NSColor(red: 83/255, green: 74/255, blue: 183/255, alpha: 0.12)
-    }
-
     /// Primary pill button text — dark: #AFA9EC, light: white (solid CTA)
     static let pillButtonPrimaryText = dynamicColor(
         dark: purpleLight,
@@ -402,7 +362,7 @@ enum DesignTokens {
     }
 
     /// Segmented active text — dark: #AFA9EC, light: #7267DD
-    static let segmentedActiveText = pillButtonText
+    static let segmentedActiveText = purpleBrand
 
     /// Segmented inactive text — dark: rgba(255,255,255,0.58), light: rgba(15,23,42,0.58)
     static let segmentedInactiveText = NSColor(name: nil) { appearance in

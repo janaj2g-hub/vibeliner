@@ -90,7 +90,7 @@ final class PromptDraftStateView: AppearanceAwareSurfaceView {
         case .saved:
             label.textColor = .tertiaryLabelColor
         case .unsaved:
-            label.textColor = DesignTokens.pillButtonText
+            label.textColor = DesignTokens.purpleBrand
         }
         SettingsUI.styleSurface(self, background: .clear, cornerRadius: 0, borderWidth: 0)
     }

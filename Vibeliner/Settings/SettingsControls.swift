@@ -11,7 +11,7 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
         bezelStyle = .regularSquare
         focusRingType = .none
         font = DesignTokens.fontLabelSm
-        contentTintColor = DesignTokens.pillButtonText
+        contentTintColor = DesignTokens.purpleBrand
         wantsLayer = true
         translatesAutoresizingMaskIntoConstraints = false
         setButtonType(.momentaryPushIn)
@@ -25,11 +25,11 @@ final class SettingsPillButton: AppearanceAwareSurfaceButton {
     required init?(coder: NSCoder) { fatalError() }
 
     func refreshColors() {
-        contentTintColor = DesignTokens.pillButtonText
+        contentTintColor = DesignTokens.purpleBrand
         SettingsUI.styleSurface(
             self,
-            background: DesignTokens.pillButtonBg,
-            border: DesignTokens.pillButtonBorder,
+            background: DesignTokens.purpleStrong,
+            border: DesignTokens.purpleBrand,
             cornerRadius: DesignTokens.pillButtonHeight / 2
         )
     }
@@ -99,7 +99,7 @@ final class SettingsKeyPillRow: NSStackView {
         for key in keys {
             let label = NSTextField(labelWithString: key)
             label.font = DesignTokens.fontLabelSm
-            label.textColor = DesignTokens.pillButtonText
+            label.textColor = DesignTokens.purpleBrand
             label.alignment = .center
             label.translatesAutoresizingMaskIntoConstraints = false
 
