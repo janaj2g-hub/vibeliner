@@ -16,9 +16,6 @@
        the token's dark value on top. Right half: light surface #f5f5f7
        with the light value on top. Static tokens use the same color on
        both halves. Alias tokens show "→ targetToken" spanning the row.
-       Text tokens in the pill-button family render a real "Copy Prompt"
-       mini pill using the surrounding bg/border tokens plus the token's
-       own color as text.
     3. Value (56px) — DARK / LIGHT labels + rgba strings in matching
        halves. Static tokens: single full-width STATIC cell. Alias: ALIAS
        cell with target name. Divider below.
@@ -29,28 +26,6 @@
   The card has a fixed minimum height; the page-level Both/Light/Dark
   swatch toggle uses CSS to hide/show halves without reflowing the card.
 #}
-{%- set _text_pill_tokens = {
-  'pillButtonText': ('pillButtonBg', 'pillButtonBorder'),
-  'pillButtonHoverText': ('pillButtonHoverBg', 'pillButtonHoverBorder'),
-  'pillButtonPrimaryText': ('pillButtonPrimaryBg', 'pillButtonPrimaryBorder'),
-} -%}
-
-{% macro _text_pill_halves(token, bg_name, border_name) -%}
-  {%- set bg = all_tokens.get(bg_name) if all_tokens else None -%}
-  {%- set border = all_tokens.get(border_name) if all_tokens else None -%}
-  {%- set bg_dark = (bg.dark | resolve_rgba) if bg else '' -%}
-  {%- set bg_light = (bg.light | resolve_rgba) if bg else '' -%}
-  {%- set br_dark = (border.dark | resolve_rgba) if border else '' -%}
-  {%- set br_light = (border.light | resolve_rgba) if border else '' -%}
-  {%- set tx_dark = token.dark | resolve_rgba -%}
-  {%- set tx_light = token.light | resolve_rgba -%}
-  <div class="ds-swatch-half ds-swatch-half--dark">
-    <div class="ds-text-pill" style="background: {{ bg_dark or 'transparent' }}; border-color: {{ br_dark or 'transparent' }}; color: {{ tx_dark or 'inherit' }};">Copy Prompt</div>
-  </div>
-  <div class="ds-swatch-half ds-swatch-half--light">
-    <div class="ds-text-pill" style="background: {{ bg_light or 'transparent' }}; border-color: {{ br_light or 'transparent' }}; color: {{ tx_light or 'inherit' }};">Copy Prompt</div>
-  </div>
-{%- endmacro %}
 
 {% macro _usage_footer(files) -%}
   <div class="ds-swatch-usage">
@@ -68,7 +43,6 @@
 {% macro swatch(name, token, mode=None) -%}
   {%- set is_alias = token.kind == 'alias' -%}
   {%- set is_dynamic = token.kind == 'dynamic' -%}
-  {%- set pill_pair = _text_pill_tokens.get(name) -%}
   <div class="ds-swatch{% if is_alias %} ds-swatch--alias{% endif %}">
     <div class="ds-swatch-title">{{ name }}</div>
 
@@ -76,10 +50,6 @@
     {% if is_alias %}
       <div class="ds-swatch-preview ds-swatch-preview--alias">
         <div class="ds-swatch-alias-target">→ <code>{{ token.target or '?' }}</code></div>
-      </div>
-    {% elif pill_pair %}
-      <div class="ds-swatch-preview">
-        {{ _text_pill_halves(token, pill_pair[0], pill_pair[1]) }}
       </div>
     {% elif is_dynamic %}
       {%- set d_rgba = (token.dark | resolve_rgba) or 'transparent' -%}
