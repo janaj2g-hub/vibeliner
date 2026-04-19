@@ -164,36 +164,6 @@ enum DesignTokens {
         isDarkAppearance(appearance) ? NSColor(white: 1, alpha: 0.55) : NSColor(white: 0, alpha: 0.6)
     }
 
-    /// Primary pill button text — dark: #AFA9EC, light: white (solid CTA)
-    static let pillButtonPrimaryText = dynamicColor(
-        dark: purpleLight,
-        light: NSColor.white
-    )
-
-    /// Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)
-    static let pillButtonPrimaryBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.16),
-        light: purpleDark
-    )
-
-    /// Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7
-    static let pillButtonPrimaryBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.36),
-        light: purpleDark
-    )
-
-    /// Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4
-    static let pillButtonPrimaryHoverBg = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.22),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
-
-    /// Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4
-    static let pillButtonPrimaryHoverBorder = dynamicColor(
-        dark: NSColor(red: 175/255, green: 169/255, blue: 236/255, alpha: 0.48),
-        light: NSColor(red: 96/255, green: 85/255, blue: 196/255, alpha: 1.0)
-    )
-
     // MARK: - Appearance-aware toolbar tokens (VIB-235)
 
     /// Toolbar background — dark: rgba(30,30,30,0.92), light: rgba(255,255,255,0.88)

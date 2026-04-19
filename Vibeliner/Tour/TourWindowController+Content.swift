@@ -1,5 +1,32 @@
 import AppKit
 
+// Tour Next / Get Started CTA styling. Values previously lived in the
+// `pillButtonPrimary*` token family (deleted in VIB-507); they're now
+// derived from the ladder primitives. Kept file-local to avoid
+// re-introducing surface-specific tokens into the global design system.
+private enum TourCtaColors {
+    static let bg = DesignTokens.dynamicColor(
+        dark: DesignTokens.purpleSubtle,
+        light: DesignTokens.purpleBrand
+    )
+    static let border = DesignTokens.dynamicColor(
+        dark: DesignTokens.purpleBorder,
+        light: DesignTokens.purpleBrand
+    )
+    static let hoverBg = DesignTokens.dynamicColor(
+        dark: DesignTokens.purpleStrong,
+        light: DesignTokens.purpleHover
+    )
+    static let hoverBorder = DesignTokens.dynamicColor(
+        dark: DesignTokens.purpleHover.withAlphaComponent(0.48),
+        light: DesignTokens.purpleHover
+    )
+    static let text = DesignTokens.dynamicColor(
+        dark: DesignTokens.purpleLight,
+        light: .white
+    )
+}
+
 extension TourWindowController {
 
     // MARK: - Illustration factory
@@ -177,9 +204,9 @@ extension TourWindowController {
         button.layer?.cornerRadius = DesignTokens.tourNextButtonHeight / 2
         button.layer?.borderWidth = 1
         if isPrimary {
-            updateButtonTitle(button, title: title, color: DesignTokens.pillButtonPrimaryText)
-            button.layer?.backgroundColor = DesignTokens.pillButtonPrimaryBg.cgColor
-            button.layer?.borderColor = DesignTokens.pillButtonPrimaryBorder.cgColor
+            updateButtonTitle(button, title: title, color: TourCtaColors.text)
+            button.layer?.backgroundColor = TourCtaColors.bg.cgColor
+            button.layer?.borderColor = TourCtaColors.border.cgColor
         } else {
             updateButtonTitle(button, title: title, color: DesignTokens.tourTextDim)
             button.layer?.backgroundColor = NSColor.clear.cgColor
@@ -220,11 +247,11 @@ extension TourWindowController {
             return
         }
 
-        let bg = hovered ? DesignTokens.pillButtonPrimaryHoverBg : DesignTokens.pillButtonPrimaryBg
-        let border = hovered ? DesignTokens.pillButtonPrimaryHoverBorder : DesignTokens.pillButtonPrimaryBorder
+        let bg = hovered ? TourCtaColors.hoverBg : TourCtaColors.bg
+        let border = hovered ? TourCtaColors.hoverBorder : TourCtaColors.border
         nextButton.layer?.backgroundColor = bg.cgColor
         nextButton.layer?.borderColor = border.cgColor
-        updateButtonTitle(nextButton, title: title, color: DesignTokens.pillButtonPrimaryText)
+        updateButtonTitle(nextButton, title: title, color: TourCtaColors.text)
     }
 
     func updateButtonTitle(_ button: NSButton, title: String, color: NSColor, font: NSFont = DesignTokens.tourButtonFont) {

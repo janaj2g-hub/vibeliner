@@ -23,51 +23,6 @@ sections:
 tokens:
 
   # --- components ---
-  pillButtonPrimaryBg:
-    section: components
-    family: pill-button-primary
-    description: "Primary pill button bg — dark: rgba(175,169,236,0.16), light: #534AB7 (solid CTA)"
-    consumed_by:
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button-primary
-  pillButtonPrimaryBorder:
-    section: components
-    family: pill-button-primary
-    description: "Primary pill button border — dark: rgba(175,169,236,0.36), light: #534AB7"
-    consumed_by:
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button-primary
-  pillButtonPrimaryHoverBg:
-    section: components
-    family: pill-button-primary
-    description: "Primary pill button hover bg — dark: rgba(175,169,236,0.22), light: #6055C4"
-    consumed_by:
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button-primary
-  pillButtonPrimaryHoverBorder:
-    section: components
-    family: pill-button-primary
-    description: "Primary pill button hover border — dark: rgba(175,169,236,0.48), light: #6055C4"
-    consumed_by:
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button-primary
-  pillButtonPrimaryText:
-    section: components
-    family: pill-button-primary
-    description: "Primary pill button text — dark: #AFA9EC, light: white (solid CTA)"
-    consumed_by:
-      - Tour/TourWindowController+Content.swift
-    rendering:
-      mode: dual
-      preview_component: pill-button-primary
   segmentedActiveBorder:
     section: components
     family: segmented-control
